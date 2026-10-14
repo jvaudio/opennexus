@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Node styles</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Geist:wght@400;500;600;700&amp;family=Geist+Mono:wght@400;500;600&amp;family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 40px 64px; background: #FFFFFF; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 22px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 32px">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">NS · NODE STYLES · 9 PRESETS · INDEPENDENT OF THEME AND STRUCTURE</div>
+      <h1 style="margin: 0; font: 700 38px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">One map, nine ways to draw a node</h1>
+    </div>
+    <div style="max-width: 520px; font-size: 13px; line-height: 1.5; color: #4A4A55">A node style sets shape, fill, border, weight and branch-line character. The colour theme supplies the colours and the structure sets the layout, so all three combine freely. Pick it in <b>Format › Map › Node style</b>, the palette (“Node style…”) or <span class="k">⌥⌘S</span>, which cycles with a 300 ms morph. Try it live in the P0 prototype’s Style menu.</div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px 20px">
+    <sc-for list="{{styles}}" as="s" hint-placeholder-count="9">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <div style="position: relative; height: 232px; border-radius: 16px; overflow: hidden; background: {{s.canvas}}; border: 1px solid #E2E2E6">
+          <svg width="100%" height="232" viewBox="0 0 400 232" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round; stroke-linejoin: round">
+            <sc-for list="{{s.edges}}" as="e" hint-placeholder-count="6">
+              <path d="{{e.d}}" stroke="{{e.c}}" stroke-width="{{s.lw}}" stroke-dasharray="{{s.dash}}" style="filter: {{s.lineFx}}"></path>
+            </sc-for>
+          </svg>
+          <sc-for list="{{s.nodes}}" as="n" hint-placeholder-count="7">
+            <div style="position: absolute; box-sizing: border-box; display: flex; align-items: center; justify-content: center; white-space: nowrap; {{n.css}}">{{n.t}}</div>
+          </sc-for>
+          <span style="position: absolute; right: 10px; top: 10px; padding: 3px 7px; border-radius: 6px; background: {{s.tagBg}}; color: {{s.tagFg}}; font: 600 10px/1.2 'Geist Mono', monospace; letter-spacing: .06em">{{s.n}}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 15px; font-weight: 700">{{s.name}}</span><span style="font-size: 11.5px; color: #6B6B76">{{s.best}}</span></div>
+        <span style="font-size: 12.5px; line-height: 1.45; color: #4A4A55">{{s.d}}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const P = ['#5850EC', '#0F9F9A', '#E4572E', '#C98F00'];
+    const PD = ['#8F89FF', '#3FD3C9', '#F06C4B', '#F2B135'];
+    const rgba = (hex, a) => { const n = parseInt(hex.slice(1), 16); return `rgba(${(n >> 16) & 255},${(n >> 8) & 255},${n & 255},${a})`; };
+    const L = { root: { x: 18, y: 96, w: 120, h: 40, t: 'Launch plan' }, mains: [{ x: 196, y: 26, w: 104, h: 32, t: 'Positioning' }, { x: 196, y: 78, w: 104, h: 32, t: 'Pricing' }, { x: 196, y: 130, w: 104, h: 32, t: 'Channels' }, { x: 196, y: 182, w: 104, h: 32, t: 'Timeline' }], subs: [{ x: 322, y: 12, w: 66, h: 24, t: 'Devs', p: 0 }, { x: 322, y: 48, w: 66, h: 24, t: 'Teams', p: 0 }, { x: 322, y: 90, w: 66, h: 24, t: 'Free', p: 1 }] };
+    const box = (b) => `left:${(b.x / 4).toFixed(2)}%;top:${b.y}px;width:${(b.w / 4).toFixed(2)}%;height:${b.h}px;`;
+    const defs = [
+      { name: 'Outline', best: 'Default · everyday maps', d: 'White card, 2 pt border in the branch colour. Crisp at any zoom and prints well.',
+        root: () => 'background:#17171C;color:#FFFFFF;border-radius:13px;font:700 13px/1 -apple-system,Geist,sans-serif;',
+        main: (c) => `background:#FFFFFF;border:2px solid ${c};border-radius:9px;color:#17171C;font:500 12px/1 -apple-system,Geist,sans-serif;`,
+        sub: (c) => 'background:rgba(23,23,28,.05);border-radius:7px;color:#2C2C33;font:400 11px/1 -apple-system,Geist,sans-serif;' },
+      { name: 'Soft', best: 'Brainstorms · notes', d: 'Tinted fills, no borders, generous radius. Calm and friendly; colour carries the grouping.',
+        root: () => `background:${rgba('#5850EC', .16)};color:#2F29A8;border-radius:14px;font:700 13px/1 -apple-system,Geist,sans-serif;`,
+        main: (c) => `background:${rgba(c, .14)};border-radius:12px;color:#17171C;font:600 12px/1 -apple-system,Geist,sans-serif;`,
+        sub: (c) => `background:${rgba(c, .07)};border-radius:10px;color:#2C2C33;font:400 11px/1 -apple-system,Geist,sans-serif;` },
+      { name: 'Solid', best: 'Slides · posters', d: 'Saturated filled cards with white type (ink on light hues). Maximum punch for Present mode.',
+        root: () => 'background:#17171C;color:#FFFFFF;border-radius:10px;font:800 13px/1 "Bricolage Grotesque",sans-serif;',
+        main: (c, i) => `background:${c};border-radius:8px;color:${i === 3 ? '#17171C' : '#FFFFFF'};font:600 12px/1 -apple-system,Geist,sans-serif;`,
+        sub: (c) => `background:${rgba(c, .14)};border-radius:6px;color:#17171C;font:500 11px/1 -apple-system,Geist,sans-serif;` },
+      { name: 'Underline', best: 'Classic mind maps · outlines', d: 'Text sits on its branch line, Xmind’s classic subtopic look. Lightest ink, densest maps.', under: true,
+        root: () => 'background:#FFFFFF;border:2px solid #17171C;border-radius:999px;color:#17171C;font:700 13px/1 -apple-system,Geist,sans-serif;',
+        main: (c) => `border-bottom:3px solid ${c};color:#17171C;font:600 12px/1 -apple-system,Geist,sans-serif;align-items:flex-end;padding-bottom:5px;`,
+        sub: (c) => `border-bottom:1.5px solid ${c};color:#2C2C33;font:400 11px/1 -apple-system,Geist,sans-serif;align-items:flex-end;padding-bottom:4px;` },
+      { name: 'Capsule', best: 'Timelines · tags', d: 'Full pill radius with a tinted fill and hairline ring. Reads as chips; great for short labels.',
+        root: () => 'background:#17171C;color:#FFFFFF;border-radius:999px;font:700 13px/1 -apple-system,Geist,sans-serif;',
+        main: (c) => `background:${rgba(c, .10)};border:1.5px solid ${rgba(c, .6)};border-radius:999px;color:#17171C;font:500 12px/1 -apple-system,Geist,sans-serif;`,
+        sub: (c) => `background:#FFFFFF;border:1px solid ${rgba(c, .5)};border-radius:999px;color:#2C2C33;font:400 11px/1 -apple-system,Geist,sans-serif;` },
+      { name: 'Sketch', best: 'Workshops · whiteboards', d: 'Hand-drawn wobble borders and a marker font. Signals “draft”, invites edits.', canvas: '#FBF8F1', font: 'Kalam',
+        root: () => 'background:#FFF4C2;border:2.5px solid #17171C;border-radius:255px 18px 225px 18px/18px 225px 18px 255px;color:#17171C;font:700 15px/1 Kalam,cursive;',
+        main: (c) => `background:#FFFFFF;border:2px solid ${c};border-radius:225px 12px 255px 14px/14px 255px 12px 225px;color:#17171C;font:700 13px/1 Kalam,cursive;`,
+        sub: () => 'color:#2C2C33;font:400 12.5px/1 Kalam,cursive;' },
+      { name: 'Brutal', best: 'Architecture · engineering', d: 'Thick ink borders, hard offset shadows in the branch colour, elbow lines. Confident and technical.', elbow: true, ink: true,
+        root: () => 'background:#FFE14D;border:2.5px solid #17171C;border-radius:6px;box-shadow:4px 4px 0 #17171C;color:#17171C;font:800 13px/1 Geist,sans-serif;',
+        main: (c) => `background:#FFFFFF;border:2px solid #17171C;border-radius:5px;box-shadow:3px 3px 0 ${c};color:#17171C;font:700 12px/1 Geist,sans-serif;`,
+        sub: () => 'background:#FFFFFF;border:1.5px solid #17171C;border-radius:4px;color:#17171C;font:500 11px/1 Geist,sans-serif;' },
+      { name: 'Glow', best: 'Dark themes · presenting', d: 'Hairline neon borders with a soft outer glow on dark canvases. Lines glow too.', canvas: '#0E0F14', dark: true,
+        root: () => 'background:#F2F2F5;color:#0E0F14;border-radius:13px;box-shadow:0 0 24px rgba(242,242,245,.35);font:700 13px/1 -apple-system,Geist,sans-serif;',
+        main: (c, i) => `background:#14151B;border:1.5px solid ${PD[i]};border-radius:10px;box-shadow:0 0 16px ${rgba(PD[i], .45)}, inset 0 0 10px ${rgba(PD[i], .15)};color:#F2F2F5;font:500 12px/1 -apple-system,Geist,sans-serif;`,
+        sub: (c, i) => `color:#C9C9D2;font:400 11px/1 -apple-system,Geist,sans-serif;` },
+      { name: 'Minimal', best: 'Reading · long text', d: 'No boxes at all: weight and colour alone, dotted hairline branches. The ideas, nothing else.', dots: true,
+        root: () => 'color:#17171C;font:800 15px/1 "Bricolage Grotesque",sans-serif;',
+        main: (c) => `color:${c};font:700 12.5px/1 -apple-system,Geist,sans-serif;justify-content:flex-start;padding-left:6px;`,
+        sub: () => 'color:#4A4A55;font:400 11px/1 -apple-system,Geist,sans-serif;justify-content:flex-start;padding-left:6px;' }
+    ];
+    const styles = defs.map((s, si) => {
+      const pal = s.dark ? PD : P;
+      const r = L.root;
+      const nodes = [{ t: r.t, css: box(r) + s.root() }];
+      const edges = [];
+      L.mains.forEach((m, i) => {
+        nodes.push({ t: m.t, css: box(m) + s.main(P[i], i) });
+        const sx = r.x + r.w; const sy = r.y + r.h / 2; const ex = m.x; const ey = s.under ? m.y + m.h : m.y + m.h / 2; const mx = (sx + ex) / 2;
+        edges.push({ d: s.elbow ? `M ${sx} ${sy} H ${mx} V ${ey} H ${ex}` : `M ${sx} ${sy} C ${mx} ${sy}, ${mx} ${ey}, ${ex} ${ey}`, c: s.ink ? '#17171C' : pal[i] });
+      });
+      L.subs.forEach((b) => {
+        const m = L.mains[b.p]; const c = P[b.p];
+        nodes.push({ t: b.t, css: box(b) + s.sub(c, b.p) });
+        const sx = s.under ? m.x + m.w : m.x + m.w; const sy = s.under ? m.y + m.h : m.y + m.h / 2; const ex = b.x; const ey = s.under ? b.y + b.h : b.y + b.h / 2; const mx = (sx + ex) / 2;
+        edges.push({ d: s.elbow ? `M ${sx} ${sy} H ${mx} V ${ey} H ${ex}` : `M ${sx} ${sy} C ${mx} ${sy}, ${mx} ${ey}, ${ex} ${ey}`, c: s.ink ? '#17171C' : pal[b.p] });
+      });
+      return { name: s.name, best: s.best, d: s.d, n: String(si + 1).padStart(2, '0'), nodes, edges, canvas: s.canvas || '#F7F7F5', lw: s.ink ? 2.2 : s.dots ? 1.4 : 2, dash: s.dots ? '1 4' : 'none', lineFx: s.dark ? 'drop-shadow(0 0 3px rgba(143,137,255,.7))' : 'none', tagBg: s.dark ? '#26272D' : '#FFFFFF', tagFg: s.dark ? '#F2F2F5' : '#4A4A55' };
+    });
+    return { styles };
+  }
+}
+</script>
+</body>
+</html>

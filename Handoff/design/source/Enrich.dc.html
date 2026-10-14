@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Enriching a topic</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C;white-space:nowrap}
+.card{border-radius:18px;background:#FFFFFF;border:1px solid #E2E2E6;display:flex;flex-direction:column;overflow:hidden;font-family:-apple-system,'SF Pro Text',Geist,sans-serif}
+.ch{padding:12px 16px;border-bottom:1px solid #EEEEF1;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700}
+.cb{padding:14px 16px;display:flex;flex-direction:column;gap:10px;flex:1}
+.note{font-size:12px;line-height:1.45;color:#4A4A55}
+.lbl{font-size:10.5px;font-weight:600;color:#6B6B76;letter-spacing:.04em}
+.mk{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font:700 11px/1 "Geist Mono",monospace;color:#FFFFFF}
+.chip{height:24px;padding:0 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;font-size:11.5px}
+.n{padding:7px 11px;border-radius:9px;background:#FFFFFF;border:2px solid #0F9F9A;font-size:13px;font-weight:500;display:inline-flex;align-items:center;gap:7px}
+.s{padding:5px 9px;border-radius:7px;background:rgba(23,23,28,.05);font-size:12px;display:inline-flex;align-items:center;gap:7px}
+.cv{border-radius:12px;background:#F7F7F5;background-image:radial-gradient(#D9D9DF 1px,transparent 1.3px);background-size:16px 16px;padding:12px;display:flex;flex-direction:column;gap:8px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; box-sizing: border-box; padding: 44px 56px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">EN · ENRICHING A TOPIC · ADDED AND ENHANCED FROM THE REVIEW</div>
+      <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Markers, stickers, labels, numbering, to-dos, links, audio</h1>
+    </div>
+    <div style="font-size: 13px; color: #4A4A55">Insert menu, palette or <span class="k">/</span> slash commands · everything stored in the .nexus package</div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 16px; flex: 1; min-height: 0">
+
+    <div class="card"><div class="ch">Markers<span class="k">⌃1–9 · ⇧⌘M</span></div><div class="cb">
+      <span class="lbl">PRIORITY</span><div style="display: flex; gap: 5px"><span class="mk" style="background: #C62F35">1</span><span class="mk" style="background: #C25E00">2</span><span class="mk" style="background: #1E6FB8">3</span><span class="mk" style="background: #2E7D4F">4</span><span class="mk" style="background: #7A4CC2">5</span><span class="mk" style="background: #4A4A55">6</span></div>
+      <span class="lbl">PROGRESS</span><div style="display: flex; gap: 5px"><span class="mk" style="background: conic-gradient(#0F9F9A 0 0%, #DCDCE2 0)"></span><span class="mk" style="background: conic-gradient(#0F9F9A 0 25%, #DCDCE2 0)"></span><span class="mk" style="background: conic-gradient(#0F9F9A 0 50%, #DCDCE2 0)"></span><span class="mk" style="background: conic-gradient(#0F9F9A 0 75%, #DCDCE2 0)"></span><span class="mk" style="background: #0F9F9A">✓</span></div>
+      <span class="lbl">FLAGS · STARS · SYMBOLS · PEOPLE</span><div style="display: flex; gap: 8px; font-size: 18px"><span style="color: #C62F35">⚑</span><span style="color: #2E7D4F">⚑</span><span style="color: #E0A100">★</span><span style="color: #9A9AA6">★</span><span>?</span><span>!</span><span>✓</span><span>✕</span><span>→</span></div>
+      <span class="lbl">CUSTOM · “TEAM ICONS”</span><div style="display: flex; gap: 6px"><span style="width: 24px; height: 24px; border-radius: 6px; background: #ECEBFE"></span><span style="width: 24px; height: 24px; border-radius: 6px; background: #DDF3F1"></span><span style="width: 24px; height: 24px; border-radius: 6px; border: 1.5px dashed #B9B9C2; box-sizing: border-box; display: flex; align-items: center; justify-content: center; color: #6B6B76">+</span></div>
+      <span class="note">Picking from the same group replaces; another group adds. <b>Legend</b> (View › Show Legend) lists used markers; double-click to rename them for this map. Custom groups accept PNG/SVG and live in the package.</span>
+    </div></div>
+
+    <div class="card"><div class="ch">Stickers<span class="k">/sticker</span></div><div class="cb">
+      <div style="display: flex; gap: 5px; flex-wrap: wrap"><span class="chip" style="background: #17171C; color: #FFFFFF">Tech</span><span class="chip" style="background: #EEEEF1">Business</span><span class="chip" style="background: #EEEEF1">Learning</span><span class="chip" style="background: #EEEEF1">Travel</span><span class="chip" style="background: #EEEEF1">Nature</span></div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+        <sc-for list="{{stickers}}" as="s" hint-placeholder-count="8"><span style="height: 52px; border-radius: 10px; background: #F7F7F5; display: flex; align-items: center; justify-content: center"><svg width="34" height="34" viewBox="0 0 34 34" aria-hidden="true"><path d="{{s.d}}" fill="{{s.f}}" stroke="#17171C" stroke-width="1.5" stroke-linejoin="round"></path></svg></span></sc-for>
+      </div>
+      <button style="height: 32px; border-radius: 9px; border: 1.5px dashed #0F9F9A; background: rgba(15,159,154,.06); color: #0B6E6A; font: 600 12.5px -apple-system, sans-serif">✦ Make a sticker for “Pricing”…</button>
+      <span class="note">An open-licensed starter set (about 300) ships with the app. Image Playground makes new ones on-device. Drag a sticker to the top, bottom, left or right of a topic; right-click › Reset Size.</span>
+    </div></div>
+
+    <div class="card"><div class="ch">Labels<span class="k">⇧⌘T</span></div><div class="cb">
+      <div style="padding: 8px 10px; border-radius: 10px; border: 2px solid #5850EC; display: flex; flex-wrap: wrap; gap: 5px; align-items: center"><span class="chip" style="background: #EEEEF1">Q4 ✕</span><span class="chip" style="background: #EEEEF1">Finance ✕</span><span style="font-size: 13px">leg<span style="display: inline-block; width: 1.5px; height: 14px; background: #5850EC; vertical-align: -2px"></span></span></div>
+      <div style="border-radius: 10px; border: 1px solid #E2E2E6; overflow: hidden"><div style="padding: 7px 10px; background: #F1F0FE; font-size: 12.5px">Legal <span style="color: #6B6B76">· used 3×</span></div><div style="padding: 7px 10px; font-size: 12.5px; border-top: 1px solid #F0F0F2">Legacy API <span style="color: #6B6B76">· 1×</span></div><div style="padding: 7px 10px; font-size: 12.5px; border-top: 1px solid #F0F0F2; color: #5850EC">Create “leg”</div></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12.5px"><span>Auto sort A–Z</span><span style="width: 30px; height: 18px; border-radius: 999px; background: #34C759; position: relative"><span style="position: absolute; right: 2px; top: 2px; width: 14px; height: 14px; border-radius: 50%; background: #FFFFFF"></span></span></div>
+      <span class="note">Comma separates labels. Existing labels autocomplete. Right-click a label › <b>Highlight related topics</b> fades everything else. Labels show as pills under the title and drive filters and saved views.</span>
+    </div></div>
+
+    <div class="card"><div class="ch">Numbering<span class="k">Format › Numbering</span></div><div class="cb">
+      <div class="cv">
+        <span class="n" style="border-color: #5850EC"><b style="font-family: 'Geist Mono', monospace; color: #5850EC">1</b>Research</span>
+        <span class="s" style="margin-left: 24px"><b style="font-family: 'Geist Mono', monospace">1.1</b>Interviews</span>
+        <span class="s" style="margin-left: 24px"><b style="font-family: 'Geist Mono', monospace">1.2</b>Survey</span>
+        <span class="n"><b style="font-family: 'Geist Mono', monospace; color: #0F9F9A">2</b>Design</span>
+        <span class="s" style="margin-left: 24px"><b style="font-family: 'Geist Mono', monospace">2.1</b>Prototype</span>
+      </div>
+      <div style="display: flex; gap: 5px; flex-wrap: wrap; font: 500 11px/1 'Geist Mono', monospace"><span class="chip" style="background: #EEEEF1">1 2 3</span><span class="chip" style="background: #17171C; color: #FFFFFF">1.1 tiered</span><span class="chip" style="background: #EEEEF1">I II</span><span class="chip" style="background: #EEEEF1">A B</span><span class="chip" style="background: #EEEEF1">a b</span><span class="chip" style="background: #EEEEF1">① ②</span><span class="chip" style="background: #EEEEF1">一 二</span></div>
+      <span class="note">Numbers sit before markers in the text colour, renumber live as you reorder, can't be selected while editing, and appear in Outline, Markdown and Present.</span>
+    </div></div>
+
+    <div class="card"><div class="ch">To-do progress<span class="k">⌃0</span></div><div class="cb">
+      <div class="cv">
+        <span class="n" style="border-color: #E0A100"><span style="width: 18px; height: 18px; border-radius: 50%; background: conic-gradient(#0F9F9A 0 66%, #DCDCE2 0); display: flex; align-items: center; justify-content: center"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FFFFFF"></span></span>Launch checklist<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">2/3</span></span>
+        <span class="s" style="margin-left: 24px"><span style="width: 14px; height: 14px; border-radius: 4px; background: #0F9F9A; color: #FFFFFF; font: 700 10px/14px sans-serif; text-align: center">✓</span><span style="text-decoration: line-through; opacity: .55">Press kit</span></span>
+        <span class="s" style="margin-left: 24px"><span style="width: 14px; height: 14px; border-radius: 4px; background: #0F9F9A; color: #FFFFFF; font: 700 10px/14px sans-serif; text-align: center">✓</span><span style="text-decoration: line-through; opacity: .55">Demo video</span></span>
+        <span class="s" style="margin-left: 24px"><span style="width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid #4A4A55; box-sizing: border-box"></span>Pricing page</span>
+      </div>
+      <span class="note">Parents show a progress ring summed from child to-dos; click the ring to complete the branch. Navigation › To-dos highlights open or done. Works on a multi-selection. Tasks, dates and Gantt stay post-v1.</span>
+    </div></div>
+
+    <div class="card"><div class="ch">Links &amp; backlinks<span class="k">⇧⌘K</span></div><div class="cb">
+      <div style="border-radius: 10px; border: 1px solid #E2E2E6; overflow: hidden; font-size: 12.5px">
+        <div style="padding: 7px 10px; display: flex; gap: 8px"><span style="color: #1E8BE0">↗</span>Web page…<span style="flex: 1"></span><span style="color: #6B6B76">⌘K</span></div>
+        <div style="padding: 7px 10px; display: flex; gap: 8px; border-top: 1px solid #F0F0F2; background: #F1F0FE"><span style="color: #9B51E0">⤳</span>Topic or canvas…<span style="flex: 1"></span><span style="color: #6B6B76">⌘J picker</span></div>
+        <div style="padding: 7px 10px; display: flex; gap: 8px; border-top: 1px solid #F0F0F2"><span>▤</span>Local file…</div>
+        <div style="padding: 7px 10px; display: flex; gap: 8px; border-top: 1px solid #F0F0F2"><span>▱</span>Local folder…</div>
+      </div>
+      <div style="padding: 10px; border-radius: 10px; background: #F7F7F5; display: flex; flex-direction: column; gap: 6px"><span class="lbl">LINKED FROM 2 TOPICS</span><span style="font-size: 12.5px">⤳ Channels <span style="color: #6B6B76">· Product map</span></span><span style="font-size: 12.5px">⤳ T-04 <span style="color: #6B6B76">· Threats</span></span></div>
+      <span class="note">Topic links are two-way: the target lists its backlinks in Data. Following one flies the camera; ⌘[ flies back.</span>
+    </div></div>
+
+    <div class="card"><div class="ch">Audio note<span class="k">/audio</span></div><div class="cb">
+      <div style="padding: 12px; border-radius: 12px; background: #17171C; color: #F2F2F5; display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 10px"><span style="width: 26px; height: 26px; border-radius: 50%; background: #F06C6F; display: flex; align-items: center; justify-content: center"><span style="width: 9px; height: 9px; border-radius: 2px; background: #FFFFFF"></span></span><span style="font: 600 13px/1 'Geist Mono', monospace">00:42</span><span style="flex: 1; height: 26px; display: flex; align-items: center; gap: 2px"><sc-for list="{{wave}}" as="w" hint-placeholder-count="30"><span style="width: 3px; height: {{w}}px; border-radius: 2px; background: #8FE7E0"></span></sc-for></span></div>
+        <span style="font-size: 12px; line-height: 1.45; color: #C9C9D2">“…so the free tier stays, but we cap AI actions per day and…”</span>
+      </div>
+      <span class="note">Recorded from the Mac mic and transcribed on-device into the note, so it's searchable. Shown as an indicator on the topic, not a fake subtopic. Right-click › Save audio as… or Turn transcript into branches.</span>
+    </div></div>
+
+    <div class="card"><div class="ch">Floating toolbars &amp; +</div><div class="cb">
+      <span class="lbl">ONE TOPIC</span>
+      <div style="display: flex; gap: 2px; padding: 4px; border-radius: 10px; background: #FFFFFF; border: 1px solid #E2E2E6; box-shadow: 0 8px 20px rgba(23,23,28,.10); font-size: 12px; align-self: flex-start"><span style="padding: 4px 6px; color: #0B6E6A">✦ Ideas</span><span style="padding: 4px 6px">⇢</span><span style="padding: 4px 6px">↗</span><span style="padding: 4px 6px">▣</span><span style="padding: 4px 6px">≡</span><span style="padding: 4px 6px">☐</span><span style="padding: 4px 6px">Aa</span></div>
+      <span class="lbl">SEVERAL TOPICS</span>
+      <div style="display: flex; gap: 2px; padding: 4px; border-radius: 10px; background: #FFFFFF; border: 1px solid #E2E2E6; box-shadow: 0 8px 20px rgba(23,23,28,.10); font-size: 12px; align-self: flex-start"><span style="padding: 4px 6px">☐ To-do</span><span style="padding: 4px 6px">▢ Boundary</span><span style="padding: 4px 6px">} Summary</span><span style="padding: 4px 6px">Aa</span></div>
+      <span class="lbl">WHILE EDITING TEXT</span>
+      <div style="display: flex; gap: 2px; padding: 4px; border-radius: 10px; background: #17171C; color: #FFFFFF; font-size: 12px; align-self: flex-start"><span style="padding: 4px 6px; font-weight: 700">B</span><span style="padding: 4px 6px; font-style: italic">I</span><span style="padding: 4px 6px; text-decoration: underline">U</span><span style="padding: 4px 6px; text-decoration: line-through">S</span><span style="padding: 4px 6px">A▾</span><span style="padding: 4px 6px">⌘K</span></div>
+      <div style="display: flex; align-items: center; gap: 8px; padding-top: 4px"><span class="n" style="border-color: #5850EC">Pricing</span><span style="width: 22px; height: 22px; border-radius: 50%; background: #5850EC; color: #FFFFFF; font: 600 15px/22px sans-serif; text-align: center">+</span><span class="note">+ child · + below for sibling</span></div>
+    </div></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const stickers = [
+      ['M5 22l12-16 12 16z M12 22v6h10v-6', '#FBE7B5'], ['M17 4a13 13 0 1 0 0.1 0z M12 15h.1 M22 15h.1 M11 21c3 4 9 4 12 0', '#FFE14D'], ['M6 10h22v16H6z M6 10l11 8 11-8', '#DDF3F1'], ['M17 4l3 8h8l-6 5 2 9-7-5-7 5 2-9-6-5h8z', '#ECEBFE'],
+      ['M8 28V12l9-7 9 7v16z M14 28v-8h6v8', '#FDECEC'], ['M6 24h22 M10 24V14 M17 24V8 M24 24V18', '#E3F0FC'], ['M17 30c-8-5-12-10-12-16a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 6-4 11-12 16z', '#F7C6D9'], ['M10 26l14-14 M14 8h12v12 M6 30h8', '#E6F5EC']
+    ].map(([d, f]) => ({ d, f }));
+    const wave = [6, 12, 18, 9, 22, 14, 8, 20, 24, 12, 6, 16, 22, 10, 18, 8, 14, 20, 12, 6, 16, 24, 10, 14, 8, 18, 12, 6, 10, 4];
+    return { stickers, wave };
+  }
+}
+</script>
+</body>
+</html>

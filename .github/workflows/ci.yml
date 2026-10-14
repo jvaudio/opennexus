@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-and-test:
+    # Needs a runner image with Xcode 27 and the macOS 27 SDK (Apple silicon).
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Select Xcode 27
+        run: |
+          XCODE=$(ls -d /Applications/Xcode_27*.app 2>/dev/null | sort -V | tail -1)
+          if [ -n "$XCODE" ]; then sudo xcode-select -s "$XCODE"; fi
+          xcodebuild -version
+
+      - name: Lint
+        run: swift format lint --strict -r Sources Tests App/OpenNexus
+
+      - name: Build packages
+        run: swift build
+
+      - name: Test packages
+        run: swift test
+
+      - name: Build app
+        run: |
+          xcodebuild -project App/OpenNexus.xcodeproj -scheme OpenNexus -configuration Debug \
+            -derivedDataPath .build/xcode CODE_SIGNING_ALLOWED=NO build

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Zones, floating topics and free layout</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C;white-space:nowrap}
+.m{position:absolute;height:36px;padding:0 13px;box-sizing:border-box;border-radius:10px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;font:500 14px/1 -apple-system,Geist,sans-serif;white-space:nowrap}
+.f{position:absolute;height:32px;padding:0 12px;box-sizing:border-box;border-radius:9px;background:#FFFFFF;border:1.5px solid #9B51E0;display:flex;align-items:center;font:500 13px/1 -apple-system,Geist,sans-serif;white-space:nowrap;box-shadow:0 4px 12px rgba(23,23,28,.08)}
+.zt{position:absolute;left:12px;top:10px;font:600 12px/1 -apple-system,sans-serif;color:#6B3FA0;display:flex;gap:6px;align-items:center}
+.ann{position:absolute;width:22px;height:22px;border-radius:50%;background:#17171C;color:#FFFFFF;font:600 11px/22px "Geist Mono",monospace;text-align:center;box-shadow:0 0 0 3px #F7F7F5}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; position: relative; overflow: hidden; background: #F7F7F5; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 22px 22px; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 52px; box-sizing: border-box; padding: 0 18px; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,.75); border-bottom: 1px solid rgba(23,23,28,.08)">
+    <div style="display: flex; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <span style="margin-left: 10px; font-size: 13px; font-weight: 600">Offsite brainstorm.nexus</span>
+    <span style="flex: 1"></span>
+    <span style="font: 500 12px/1 'Geist Mono', monospace; color: #6B6B76">ZN · ZONES ⌥⌘Z · FLEXIBLE FLOATING TOPICS ON · AUTO-LAYOUT TREE</span>
+  </div>
+
+  <svg width="1440" height="1000" viewBox="0 0 1440 1000" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round">
+    <path d="M250 300 C 290 300, 290 200, 330 200 M250 300 L 330 300 M250 300 C 290 300, 290 400, 330 400" stroke="#5850EC" stroke-width="3"></path>
+    <path d="M820 210 C 900 160, 980 170, 1010 230" stroke="#E0A100" stroke-width="2" stroke-dasharray="6 6"></path>
+    <path d="M330 480 C 300 520, 320 560, 360 580" stroke="#5850EC" stroke-width="2" stroke-dasharray="3 5"></path>
+    <path d="M690 600 V 940 M560 742 H 1000" stroke="#D6408B" stroke-width="1" stroke-dasharray="4 4"></path>
+  </svg>
+
+  <!-- auto-layout tree -->
+  <div style="position: absolute; left: 90px; top: 274px; width: 160px; height: 52px; border-radius: 16px; background: #17171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 700 18px/1 -apple-system, sans-serif">2027 offsite</div>
+  <div class="m" style="left: 330px; top: 182px; width: 110px; border: 2px solid #5850EC">Goals</div>
+  <div class="m" style="left: 330px; top: 282px; width: 110px; border: 2px solid #5850EC">Agenda</div>
+  <div class="m" style="left: 330px; top: 382px; width: 110px; border: 2px solid #5850EC; box-shadow: 0 0 0 6px rgba(88,80,236,.15), 0 0 24px rgba(88,80,236,.4)">Venues</div>
+  <div class="f" style="left: 340px; top: 470px; transform: rotate(-2deg); box-shadow: 0 14px 30px rgba(23,23,28,.22); border-color: #5850EC">Lisbon?</div>
+  <span style="position: absolute; left: 446px; top: 420px; padding: 3px 8px; border-radius: 6px; background: #5850EC; color: #FFFFFF; font: 600 11px/1.3 -apple-system, sans-serif">Drop to attach under Venues</span>
+
+  <!-- zone 1 -->
+  <div style="position: absolute; left: 560px; top: 130px; width: 260px; height: 220px; border-radius: 16px; border: 1.5px solid #9B51E0; background: rgba(155,81,224,.05); box-sizing: border-box; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC">
+    <span class="zt">▾ Parking lot <span style="font-weight: 400; color: #8A6CB5">· auto-size</span></span>
+    <span style="position: absolute; right: -5px; bottom: -5px; width: 10px; height: 10px; background: #FFFFFF; border: 1.5px solid #5850EC"></span>
+    <span style="position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; background: #FFFFFF; border: 1.5px solid #5850EC"></span>
+  </div>
+  <div class="f" style="left: 584px; top: 176px">Team dinner</div>
+  <div class="f" style="left: 690px; top: 220px">Swag budget</div>
+  <div class="f" style="left: 600px; top: 280px">Guest speaker</div>
+
+  <!-- zone 2 -->
+  <div style="position: absolute; left: 560px; top: 610px; width: 440px; height: 270px; border-radius: 16px; border: 1.5px dashed #9B51E0; background: rgba(155,81,224,.04); box-sizing: border-box"><span class="zt">▾ Research clippings</span></div>
+  <div class="f" style="left: 590px; top: 660px">Survey: 62% want remote</div>
+  <div class="f" style="left: 620px; top: 726px; border-color: #D6408B; box-shadow: 0 0 0 3px rgba(214,64,139,.2)">Q2 retro notes</div>
+  <span style="position: absolute; left: 700px; top: 700px; padding: 2px 6px; border-radius: 4px; background: #D6408B; color: #FFFFFF; font: 600 10px/1.3 'Geist Mono', monospace">24 pt</span>
+  <span style="position: absolute; left: 864px; top: 728px; padding: 2px 6px; border-radius: 4px; background: #D6408B; color: #FFFFFF; font: 600 10px/1.3 'Geist Mono', monospace">aligned centre</span>
+  <div class="f" style="left: 800px; top: 726px">Budget memo</div>
+  <div class="f" style="left: 590px; top: 800px">Last year’s map ↗</div>
+
+  <!-- zone 3 collapsed -->
+  <div style="position: absolute; left: 1010px; top: 222px; width: 180px; height: 38px; border-radius: 12px; border: 1.5px solid #9B51E0; background: rgba(155,81,224,.08); box-sizing: border-box"><span class="zt" style="top: 12px">▸ Logistics <span style="font-weight: 400; color: #8A6CB5">· 7 hidden</span></span></div>
+  <span style="position: absolute; left: 900px; top: 166px; padding: 2px 8px; border-radius: 999px; background: #F2B135; font: 600 11px/16px 'Geist Mono', monospace">feeds</span>
+
+  <!-- context menu -->
+  <div style="position: absolute; left: 836px; top: 300px; width: 230px; border-radius: 10px; background: rgba(255,255,255,.96); border: 1px solid #DCDCE2; box-shadow: 0 18px 44px rgba(23,23,28,.18); padding: 5px; font-size: 12.5px">
+    <sc-for list="{{menu}}" as="i" hint-placeholder-count="10">
+      <div style="display: flex; justify-content: space-between; padding: 5px 9px; border-radius: 6px; background: {{i.bg}}; color: {{i.fg}}; border-top: {{i.sep}}"><span>{{i.t}}</span><span style="font: 500 11px/1 'Geist Mono', monospace; opacity: .7">{{i.k}}</span></div>
+    </sc-for>
+  </div>
+
+  <!-- notes -->
+  <span class="ann" style="left: 548px; top: 118px">1</span>
+  <span class="ann" style="left: 320px; top: 462px">2</span>
+  <span class="ann" style="left: 676px; top: 590px">3</span>
+  <span class="ann" style="left: 998px; top: 210px">4</span>
+  <div style="position: absolute; right: 24px; bottom: 24px; width: 330px; padding: 16px; border-radius: 16px; background: rgba(255,255,255,.92); border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.45">
+    <div><b>1 Zone</b> · a frame for floating content only, never the main tree. Drag to move everything inside. Min 100 × 100 pt; ⇧ keeps ratio, ⌥ resizes from centre.</div>
+    <div><b>2 Attach</b> · drag a floating topic near a branch: halo plus a hint shows where it lands. Drag a branch topic out to float it.</div>
+    <div><b>3 Smart guides</b> · pink guides with live spacing labels while dragging; snap distance set in Settings › Editing.</div>
+    <div><b>4 Collapse</b> · ▸ folds a zone to its title, keeping relationships attached.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const M = [['Rename zone', 'Space'], ['Collapse', '⌘/'], ['Auto resize to content', '✓'], ['Resize to fit', ''], ['Bring to front', '⌥⌘]', true], ['Send to back', '⌥⌘['], ['Remove zone (keep content)', ''], ['Clear content…', ''], ['Export zone…', '⇧⌘E', true], ['Print zone…', '']];
+    const menu = M.map(([t, k, sep], i) => ({ t, k, sep: sep ? '1px solid #EEEEF1' : '0', bg: i === 2 ? '#5850EC' : 'transparent', fg: i === 2 ? '#FFFFFF' : '#17171C' }));
+    return { menu };
+  }
+}
+</script>
+</body>
+</html>

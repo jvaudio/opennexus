@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Edges and elements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C;white-space:nowrap}
+.card{display:flex;flex-direction:column;gap:10px;padding:16px;border-radius:18px;background:#FFFFFF;border:1px solid #E2E2E6}
+.art{height:150px;border-radius:12px;background:#F7F7F5;overflow:hidden}
+.ttl{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+.txt{font-size:12.5px;line-height:1.45;color:#4A4A55}
+svg text{font-family:-apple-system,Geist,sans-serif}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 56px 72px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">08 · EDGES &amp; ELEMENTS · EVERYTHING IS A NODE OR AN EDGE</div>
+      <h1 style="margin: 0; font: 700 40px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Xmind’s elements, generalised for technical diagrams</h1>
+    </div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+
+    <div class="card"><div class="ttl">Branch lines<span class="cap">AUTO</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none; stroke-linecap: round"><g stroke="#5850EC" stroke-width="2.5"><path d="M20 24 C 60 24, 60 14, 110 14"></path><path d="M20 58 L 110 48"></path><path d="M20 92 L 60 92 L 60 82 L 110 82"></path><path d="M20 126 L 52 126 Q 60 126 60 120 L 60 120 Q 60 116 66 116 L 110 116"></path></g><path d="M20 160 C 60 160, 60 150, 110 150" stroke="#5850EC" stroke-width="6" stroke-opacity=".25"></path><path d="M20 160 C 60 160, 60 150, 110 150" stroke="#5850EC" stroke-width="1.5"></path><g fill="#4A4A55" font-size="12"><text x="126" y="18">Curved · default</text><text x="126" y="52">Straight</text><text x="126" y="86">Elbow</text><text x="126" y="120">Rounded elbow</text><text x="126" y="154">Tapered · by depth</text></g></svg>
+      <div class="txt">Drawn by the layout. Thickness steps down with depth (3 · 2 · 1.6 pt).</div></div>
+
+    <div class="card"><div class="ttl">Relationship<span class="k">⇧⌘L</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none"><rect x="20" y="30" width="80" height="32" rx="8" fill="#FFFFFF" stroke="#0F9F9A" stroke-width="2"></rect><rect x="180" y="110" width="80" height="32" rx="8" fill="#FFFFFF" stroke="#E4572E" stroke-width="2"></rect><path d="M100 46 C 170 30, 210 60, 220 106" stroke="#E0A100" stroke-width="2" stroke-dasharray="6 6"></path><path d="M214 98 L 220 108 L 227 99" stroke="#E0A100" stroke-width="2"></path><circle cx="100" cy="46" r="3" fill="#E0A100"></circle><rect x="140" y="30" width="58" height="20" rx="10" fill="#F2B135"></rect><g font-size="11" fill="#17171C"><text x="150" y="44" font-family="Geist Mono, monospace" font-weight="600">drives</text><text x="38" y="51">Channels</text><text x="196" y="131">Timeline</text></g></svg>
+      <div class="txt">Free line between any two nodes. Shape, dash, start/end caps, label position. Drag a node’s edge handle with the mouse.</div></div>
+
+    <div class="card"><div class="ttl">Technical edges<span class="cap">TYPED</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none"><g stroke="#4A4A55" stroke-width="1.6"><path d="M20 30 L 236 30"></path><path d="M236 24 L 248 30 L 236 36 Z" fill="#4A4A55"></path><path d="M20 84 L 236 84" stroke-dasharray="2 0"></path><path d="M236 78 L 248 84 L 236 90 Z" fill="#4A4A55"></path><path d="M20 138 L 236 138" stroke-dasharray="6 5"></path><path d="M236 132 L 248 138 L 236 144" ></path></g><g font-size="11" fill="#17171C"><rect x="96" y="20" width="76" height="20" rx="4" fill="#DDF3F1"></rect><text x="104" y="34" font-family="Geist Mono, monospace">card data</text><rect x="96" y="74" width="76" height="20" rx="4" fill="#E9E8FD"></rect><text x="104" y="88" font-family="Geist Mono, monospace">gRPC :8443</text><rect x="96" y="128" width="76" height="20" rx="4" fill="#F1F1F4"></rect><text x="106" y="142" font-family="Geist Mono, monospace">200 OK</text></g><g font-size="10.5" fill="#6B6B76"><text x="20" y="58">Data flow (DFD)</text><text x="20" y="112">Call · protocol label</text><text x="20" y="164">Return message (sequence)</text></g></svg>
+      <div class="txt">The relationship becomes a typed edge. Labels default to protocol (HTTPS, gRPC, SQL) in architecture canvases.</div></div>
+
+    <div class="card"><div class="ttl">Boundary<span class="k">⇧⌘B</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none; stroke: #5850EC; stroke-width: 1.6"><rect x="12" y="14" width="76" height="40" rx="10"></rect><rect x="102" y="14" width="76" height="40"></rect><rect x="192" y="14" width="76" height="40" rx="20"></rect><path d="M14 104 q 8 -14 18 -6 q 6 -12 18 -4 q 10 -10 20 0 q 12 -2 10 12 q 8 10 -4 18 q -4 12 -18 6 q -10 8 -20 0 q -14 4 -16 -8 q -12 -6 -8 -18 z"></path><path d="M102 74 h76 v40 h-76 z" stroke-dasharray="2 4"></path><path d="M192 94 q 10 -20 38 -20 q 28 0 38 20 q -10 20 -38 20 q -28 0 -38 -20 z"></path><path d="M12 128 l 14 -0 l 8 -0 l 54 0 l 0 34 l -76 0 z" stroke-dasharray="0"></path><path d="M102 128 h76 v34 h-76 z" stroke-width="3" stroke-opacity=".5"></path><path d="M192 136 l 18 -8 l 40 0 l 18 8 l 0 18 l -18 8 l -40 0 l -18 -8 z"></path></svg>
+      <div class="txt">Nine shapes plus title. Wraps a branch or any selection; doubles as group, zone or network.</div></div>
+
+    <div class="card"><div class="ttl">Trust boundary · VPC · subnet<span class="cap">ZONES</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none"><rect x="12" y="14" width="256" height="146" rx="12" stroke="#1E6FB8" stroke-width="1.6"></rect><rect x="28" y="40" width="108" height="104" rx="8" stroke="#1E6FB8" stroke-dasharray="5 4" stroke-width="1.4" fill="rgba(30,111,184,.05)"></rect><rect x="148" y="40" width="104" height="104" rx="14" stroke="#D93A3F" stroke-dasharray="8 5" stroke-width="2"></rect><g font-family="Geist Mono, monospace" font-size="10" font-weight="600"><text x="22" y="30" fill="#1E6FB8">VPC · prod-us-east</text><text x="36" y="56" fill="#1E6FB8">SUBNET · private</text><text x="156" y="56" fill="#D93A3F">TRUST BOUNDARY</text></g><rect x="44" y="80" width="76" height="28" rx="6" fill="#FFFFFF" stroke="#4A4A55"></rect><rect x="162" y="80" width="76" height="28" rx="6" fill="#FFFFFF" stroke="#4A4A55"></rect><path d="M120 94 L 160 94" stroke="#4A4A55" stroke-width="1.6"></path></svg>
+      <div class="txt">Boundaries carry semantics in technical canvases: dashed for trust boundaries, nested for region › VPC › subnet. Trust level adds a pattern, never colour alone.</div></div>
+
+    <div class="card"><div class="ttl">Summary<span class="k">⇧⌘]</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none"><g fill="#FFFFFF" stroke="#0F9F9A" stroke-width="1.6"><rect x="30" y="24" width="96" height="28" rx="8"></rect><rect x="30" y="68" width="96" height="28" rx="8"></rect><rect x="30" y="112" width="96" height="28" rx="8"></rect></g><path d="M138 24 q 10 0 10 10 v 38 q 0 10 10 10 q -10 0 -10 10 v 38 q 0 10 -10 10" stroke="#4A4A55" stroke-width="1.8"></path><rect x="168" y="68" width="96" height="30" rx="9" fill="#FFFFFF" stroke="#4A4A55" stroke-width="2" stroke-dasharray="5 4"></rect><g font-size="12" fill="#17171C"><text x="46" y="42">Free tier</text><text x="46" y="86">Pro</text><text x="46" y="130">Enterprise</text><text x="182" y="87" font-weight="600">3 plans</text></g></svg>
+      <div class="txt">Brackets selected siblings and spawns its own topic, which can have children.</div></div>
+
+    <div class="card"><div class="ttl">Callout<span class="k">⇧⌘C</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none"><rect x="30" y="98" width="110" height="34" rx="9" fill="#FFFFFF" stroke="#E4572E" stroke-width="2"></rect><path d="M140 24 h112 a10 10 0 0 1 10 10 v34 a10 10 0 0 1 -10 10 h-74 l -20 18 l 4 -18 h-22 a10 10 0 0 1 -10 -10 v-34 a10 10 0 0 1 10 -10 z" fill="#FFF6DB" stroke="#E0A100" stroke-width="1.6"></path><g font-size="12" fill="#17171C"><text x="58" y="120">Risks</text><text x="144" y="46">Legal review due</text><text x="144" y="64" fill="#4A4A55">before beta · Nov 3</text></g></svg>
+      <div class="txt">Speech bubble bound to its node; the pointer stays attached as the layout reflows.</div></div>
+
+    <div class="card"><div class="ttl">Note<span class="k">⇧⌘N</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none"><rect x="14" y="66" width="86" height="32" rx="8" fill="#FFFFFF" stroke="#5850EC" stroke-width="2"></rect><rect x="126" y="10" width="146" height="150" rx="12" fill="#FFFFFF" stroke="#DCDCE2"></rect><g fill="#17171C"><text x="140" y="34" font-size="13" font-weight="700">Rollout notes</text><rect x="140" y="46" width="110" height="5" rx="2" fill="#D9D9DF"></rect><rect x="140" y="58" width="96" height="5" rx="2" fill="#D9D9DF"></rect><rect x="140" y="76" width="118" height="34" rx="5" fill="#17171C"></rect><text x="148" y="97" font-size="10" fill="#8FE7E0" font-family="Geist Mono, monospace">flags.beta = true</text><rect x="140" y="120" width="118" height="28" rx="4" fill="none" stroke="#D9D9DF"></rect><path d="M140 134 h118 M180 120 v28" stroke="#D9D9DF"></path></g><text x="32" y="87" font-size="12" fill="#17171C">Rollout</text><text x="86" y="78" font-size="11" fill="#5850EC">≡</text></svg>
+      <div class="txt">Rich document behind a node, in a side sheet: headings, lists, code, tables, images.</div></div>
+
+    <div class="card"><div class="ttl">Hyperlink · topic link<span class="k">⇧⌘K</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none"><rect x="20" y="30" width="110" height="34" rx="9" fill="#FFFFFF" stroke="#1E8BE0" stroke-width="2"></rect><rect x="20" y="104" width="110" height="34" rx="9" fill="#FFFFFF" stroke="#9B51E0" stroke-width="2"></rect><rect x="160" y="96" width="100" height="50" rx="10" fill="#EEF0FF" stroke="#5850EC" stroke-dasharray="4 4"></rect><path d="M130 121 C 145 121, 145 121, 158 121" stroke="#5850EC" stroke-width="1.6"></path><g font-size="12" fill="#17171C"><text x="36" y="52">Pricing page</text><text x="112" y="52" fill="#1E8BE0">↗</text><text x="36" y="126">See: Risks</text><text x="112" y="126" fill="#9B51E0">⤳</text><text x="172" y="118" font-size="11">camera flies</text><text x="172" y="134" font-size="11">to target</text></g></svg>
+      <div class="txt">Links to a URL, a file, another node or another canvas. Topic links fly the camera.</div></div>
+
+    <div class="card"><div class="ttl">Attachment · image<span class="k">⇧⌘I</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none"><rect x="20" y="58" width="120" height="40" rx="9" fill="#FFFFFF" stroke="#5AA02C" stroke-width="2"></rect><text x="36" y="83" font-size="12" fill="#17171C">Contract v3</text><rect x="112" y="68" width="18" height="20" rx="3" fill="#E9F5E1" stroke="#5AA02C"></rect><rect x="160" y="20" width="104" height="132" rx="10" fill="#FFFFFF" stroke="#DCDCE2"></rect><rect x="172" y="34" width="80" height="6" rx="3" fill="#D9D9DF"></rect><rect x="172" y="48" width="70" height="6" rx="3" fill="#D9D9DF"></rect><rect x="172" y="62" width="76" height="6" rx="3" fill="#D9D9DF"></rect><text x="172" y="140" font-size="10" fill="#6B6B76" font-family="Geist Mono, monospace">Quick Look · Space</text></svg>
+      <div class="txt">Drag any file onto a node. Focus the indicator and Space opens Quick Look.</div></div>
+
+    <div class="card"><div class="ttl">Equation · code block<span class="k">/math · /code</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none"><rect x="16" y="20" width="248" height="46" rx="9" fill="#FFFFFF" stroke="#D6408B" stroke-width="2"></rect><text x="76" y="50" font-size="17" fill="#17171C" font-family="New York, Georgia, serif" font-style="italic">E[X] = Σ xᵢ · p(xᵢ)</text><rect x="16" y="82" width="248" height="72" rx="9" fill="#17171C"></rect><g font-family="Geist Mono, monospace" font-size="11"><text x="30" y="104" fill="#8F89FF">func</text><text x="64" y="104" fill="#F2F2F5">retry(op) {</text><text x="44" y="122" fill="#3FD3C9">for</text><text x="70" y="122" fill="#F2F2F5">i in 0..&lt;3 { … }</text><text x="30" y="140" fill="#F2F2F5">}</text></g></svg>
+      <div class="txt">LaTeX renders in the node. Code blocks get syntax highlighting, for engineers.</div></div>
+
+    <div class="card"><div class="ttl">To-do · markers · labels<span class="k">⌃0 · ⌃1–9</span></div>
+      <svg class="art" viewBox="0 0 280 170" aria-hidden="true" style="fill: none"><rect x="20" y="24" width="150" height="34" rx="9" fill="#FFFFFF" stroke="#0F9F9A" stroke-width="2"></rect><rect x="34" y="34" width="14" height="14" rx="3" fill="#0F9F9A"></rect><path d="M37 41 l3 3 l6 -6" stroke="#FFFFFF" stroke-width="2"></path><text x="56" y="46" font-size="12" fill="#6B6B76" text-decoration="line-through">Draft pricing</text><rect x="20" y="74" width="150" height="34" rx="9" fill="#FFFFFF" stroke="#0F9F9A" stroke-width="2"></rect><circle cx="42" cy="91" r="9" fill="#C62F35"></circle><text x="38.5" y="95" font-size="11" fill="#FFFFFF" font-weight="700">1</text><text x="58" y="96" font-size="12" fill="#17171C">Legal review</text><rect x="20" y="124" width="58" height="20" rx="10" fill="#F1F1F4"></rect><text x="32" y="138" font-size="11" fill="#17171C">Q4</text><rect x="86" y="124" width="70" height="20" rx="10" fill="#F1F1F4"></rect><text x="96" y="138" font-size="11" fill="#17171C">Finance</text><g transform="translate(196 50)"><circle cx="30" cy="30" r="3" fill="#E0A100"></circle><circle cx="14" cy="16" r="2" fill="#5850EC"></circle><circle cx="48" cy="12" r="2.5" fill="#0F9F9A"></circle><circle cx="50" cy="44" r="2" fill="#D6408B"></circle><circle cx="10" cy="46" r="2.5" fill="#E4572E"></circle><text x="0" y="80" font-size="10.5" fill="#6B6B76">done sparkle</text></g></svg>
+      <div class="txt">Simple checkbox to-dos only in v1; a branch with every to-do done sparkles once.</div></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Mind map canvas, typing states</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.tb{height:28px;padding:0 10px;display:flex;align-items:center;gap:6px;border-radius:7px;border:1px solid rgba(23,23,28,.09);background:rgba(255,255,255,.7);font:500 12.5px/1 -apple-system,Geist,sans-serif;color:#17171C}
+.m{position:absolute;height:38px;padding:0 16px;box-sizing:border-box;border-radius:10px;background:#FFFFFF;display:flex;align-items:center;font:500 15px/1 -apple-system,Geist,sans-serif;color:#17171C;white-space:nowrap}
+.s{position:absolute;height:30px;padding:0 12px;box-sizing:border-box;border-radius:8px;background:rgba(23,23,28,.045);display:flex;align-items:center;font:400 13.5px/1 -apple-system,Geist,sans-serif;color:#2C2C33;white-space:nowrap}
+.ann{position:absolute;width:22px;height:22px;border-radius:50%;background:#17171C;color:#FFFFFF;font:600 11px/22px "Geist Mono",monospace;text-align:center;box-shadow:0 0 0 3px #F7F7F5}
+@keyframes caret{0%,49%{opacity:1}50%,100%{opacity:0}}
+.car{display:inline-block;width:1.5px;height:16px;background:#5850EC;margin-left:1px;animation:caret 1s steps(1) infinite}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #F7F7F5; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <!-- toolbar -->
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 52px; box-sizing: border-box; padding: 0 14px 0 18px; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,.72); backdrop-filter: blur(24px) saturate(1.6); -webkit-backdrop-filter: blur(24px) saturate(1.6); border-bottom: 1px solid rgba(23,23,28,.08); z-index: 5">
+    <div style="display: flex; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <button class="tb" aria-label="Toggle sidebar" style="margin-left: 8px; width: 30px; padding: 0; justify-content: center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="fill: none; stroke: #4A4A55; stroke-width: 1.4"><rect x="2" y="3" width="12" height="10" rx="2"></rect><path d="M6 3v10"></path></svg></button>
+    <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; font-weight: 600">Launch plan.nexus</span><span style="font-size: 11px; color: #5D5D68">iCloud Drive · edited</span></div>
+    <div style="flex: 1; display: flex; justify-content: center">
+      <div role="group" aria-label="View" style="display: flex; padding: 2px; border-radius: 9px; background: rgba(23,23,28,.06)">
+        <button style="height: 26px; padding: 0 12px; border: 0; border-radius: 7px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,.08); font: 500 12px/1 -apple-system, sans-serif; color: #17171C">Canvas</button>
+        <button style="height: 26px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; font: 500 12px/1 -apple-system, sans-serif; color: #4A4A55">Outline</button>
+        <button style="height: 26px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; font: 500 12px/1 -apple-system, sans-serif; color: #4A4A55">Split</button>
+      </div>
+    </div>
+    <button class="tb">Mind Map <span class="k">⌥⌘T</span></button>
+    <button class="tb">Classic</button>
+    <div style="height: 28px; padding: 0 10px; display: flex; align-items: center; gap: 7px; border-radius: 999px; background: rgba(15,159,154,.08); color: #0B6E6A; font: 500 12px/1 -apple-system, sans-serif"><span style="width: 7px; height: 7px; border-radius: 50%; background: #0F9F9A"></span>On-device · Apple</div>
+    <button class="tb">Share</button>
+    <button class="tb" aria-label="Inspector" style="width: 30px; padding: 0; justify-content: center"><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="fill: none; stroke: #4A4A55; stroke-width: 1.4"><rect x="2" y="3" width="12" height="10" rx="2"></rect><path d="M10 3v10"></path></svg></button>
+  </div>
+  <!-- canvas tabs -->
+  <div style="position: absolute; left: 0; right: 0; top: 52px; height: 34px; box-sizing: border-box; padding: 0 14px; display: flex; align-items: flex-end; gap: 4px; background: #EFEFF1; border-bottom: 1px solid #E2E2E6; z-index: 4">
+    <span style="height: 28px; padding: 0 14px; display: flex; align-items: center; gap: 8px; border-radius: 8px 8px 0 0; background: #F7F7F5; font-size: 12.5px; font-weight: 600; border: 1px solid #E2E2E6; border-bottom: 0"><span style="width: 8px; height: 8px; border-radius: 2px; background: #5850EC"></span>Product map</span>
+    <span style="height: 28px; padding: 0 14px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #4A4A55"><span style="width: 8px; height: 8px; border-radius: 2px; background: #9B51E0"></span>Rollout flow</span>
+    <span style="height: 28px; padding: 0 14px; display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #4A4A55"><span style="width: 8px; height: 8px; border-radius: 2px; background: #C62F35"></span>Threats</span>
+    <span style="height: 28px; padding: 0 10px; display: flex; align-items: center; font-size: 15px; color: #6B6B76">+</span>
+  </div>
+
+  <!-- canvas -->
+  <div style="position: absolute; left: 0; right: 0; top: 86px; bottom: 0; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 22px 22px">
+    <svg width="1440" height="814" viewBox="0 0 1440 814" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round">
+      <path d="M700 380 C 740 380, 740 230, 780 230" stroke="#5850EC" stroke-width="3"></path>
+      <path d="M700 380 C 750 380, 750 380, 800 380" stroke="#0F9F9A" stroke-width="3"></path>
+      <path d="M700 380 C 740 380, 740 540, 780 540" stroke="#E0A100" stroke-width="3"></path>
+      <path d="M540 380 C 500 380, 500 260, 460 260" stroke="#E4572E" stroke-width="3"></path>
+      <path d="M540 380 C 500 380, 500 520, 460 520" stroke="#D6408B" stroke-width="3"></path>
+      <path d="M917 230 C 937 230, 937 200, 960 200" stroke="#5850EC" stroke-width="2"></path>
+      <path d="M917 230 C 937 230, 937 262, 960 262" stroke="#5850EC" stroke-width="2"></path>
+      <path d="M906 380 C 926 380, 926 350, 950 350" stroke="#0F9F9A" stroke-width="2"></path>
+      <path d="M906 380 C 926 380, 926 412, 950 412" stroke="#0F9F9A" stroke-width="2"></path>
+      <path d="M902 540 C 922 540, 922 512, 944 512" stroke="#E0A100" stroke-width="2"></path>
+      <path d="M902 540 C 922 540, 922 572, 944 572" stroke="#E0A100" stroke-width="2"></path>
+      <path d="M361 520 C 341 520, 341 492, 318 492" stroke="#D6408B" stroke-width="2"></path>
+      <path d="M361 520 C 341 520, 341 552, 318 552" stroke="#D6408B" stroke-width="2"></path>
+    </svg>
+
+    <!-- root -->
+    <div style="position: absolute; left: 540px; top: 354px; width: 160px; height: 52px; border-radius: 16px; background: #17171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 700 20px/1 -apple-system, Geist, sans-serif">Launch plan</div>
+    <!-- right mains -->
+    <div class="m" style="left: 780px; top: 211px; width: 137px; justify-content: center; border: 2px solid #5850EC">Positioning</div>
+    <div class="m" style="left: 800px; top: 361px; width: 106px; justify-content: center; border: 2px solid #0F9F9A">Pricing</div>
+    <div class="m" style="left: 780px; top: 521px; width: 122px; justify-content: center; border: 2px solid #E0A100">Channels</div>
+    <!-- left mains -->
+    <div class="m" style="left: 389px; top: 241px; width: 71px; justify-content: center; border: 2px solid #E4572E">Risks<span style="position: absolute; left: -13px; top: 7px; min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #E4572E; color: #FFFFFF; font: 700 11px/22px 'Geist Mono', monospace; box-shadow: 0 0 0 2px #F7F7F5">+3</span></div>
+    <div class="m" style="left: 361px; top: 501px; width: 99px; justify-content: center; border: 2px solid #D6408B">Timeline</div>
+    <!-- subs -->
+    <div class="s" style="left: 960px; top: 185px; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #8F89FF">Developers</div>
+    <div class="s" style="left: 960px; top: 247px; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #8F89FF">Teams</div>
+    <div class="s" style="left: 950px; top: 335px; background: #FFFFFF; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC, 0 0 0 9px rgba(88,80,236,.18)">Free tie<span class="car"></span>r</div>
+    <div class="s" style="left: 950px; top: 397px">Pro</div>
+    <div class="s" style="left: 944px; top: 497px">Newsletter</div>
+    <div class="s" style="left: 944px; top: 557px; min-width: 60px; background: #FFFFFF; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC">/<span class="car"></span></div>
+    <div class="s" style="left: 222px; top: 537px; width: 96px; justify-content: center">GA · Jan</div>
+    <!-- drop target insertion line -->
+    <span style="position: absolute; left: 222px; top: 470px; width: 96px; height: 3px; border-radius: 2px; background: #5850EC; box-shadow: 0 0 10px rgba(88,80,236,.6)"></span>
+    <div class="s" style="left: 222px; top: 477px; width: 96px; justify-content: center">Beta · Nov</div>
+    <div class="s" style="left: 150px; top: 430px; background: #FFFFFF; transform: rotate(-2deg); box-shadow: 0 14px 30px rgba(23,23,28,.22); border: 1px solid #E2E2E6">Launch event</div>
+
+    <!-- slash menu -->
+    <div style="position: absolute; left: 944px; top: 596px; width: 230px; border-radius: 12px; background: rgba(255,255,255,.96); border: 1px solid #DCDCE2; box-shadow: 0 16px 40px rgba(23,23,28,.16); padding: 6px; display: flex; flex-direction: column; gap: 1px">
+      <sc-for list="{{slash}}" as="s" hint-placeholder-count="6">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 7px; background: {{s.bg}}; font-size: 13px"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: {{s.c}}; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="{{s.d}}"></path></svg><span style="flex: 1">{{s.n}}</span><span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">/{{s.k}}</span></div>
+      </sc-for>
+    </div>
+
+    <!-- floating toolbar beside multi-selection -->
+    <div style="position: absolute; left: 1090px; top: 206px; height: 40px; padding: 0 6px; display: flex; align-items: center; gap: 2px; border-radius: 12px; background: rgba(255,255,255,.75); backdrop-filter: blur(20px) saturate(1.6); -webkit-backdrop-filter: blur(20px) saturate(1.6); border: 1px solid rgba(23,23,28,.08); box-shadow: 0 10px 30px rgba(23,23,28,.14)">
+      <button aria-label="Fill colour" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; display: flex; align-items: center; justify-content: center"><span style="width: 14px; height: 14px; border-radius: 50%; background: #5850EC"></span></button>
+      <button aria-label="Shape" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; display: flex; align-items: center; justify-content: center"><span style="width: 14px; height: 10px; border-radius: 3px; border: 1.6px solid #17171C"></span></button>
+      <button aria-label="Bold" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; font: 700 14px/1 -apple-system, sans-serif; color: #17171C">B</button>
+      <button aria-label="Marker" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; font: 700 11px/1 'Geist Mono', monospace; color: #C62F35">1</button>
+      <button aria-label="Boundary" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; display: flex; align-items: center; justify-content: center"><span style="width: 16px; height: 12px; border-radius: 4px; border: 1.6px dashed #17171C"></span></button>
+      <span style="width: 1px; height: 20px; background: #E2E2E6; margin: 0 4px"></span>
+      <button aria-label="AI ideas" style="height: 30px; padding: 0 8px; border: 0; border-radius: 8px; background: rgba(15,159,154,.1); color: #0B6E6A; font: 600 12px/1 -apple-system, sans-serif">✦ Expand</button>
+      <button aria-label="More" style="width: 30px; height: 30px; border: 0; border-radius: 8px; background: transparent; font: 700 14px/1 sans-serif; color: #4A4A55">⋯</button>
+    </div>
+
+    <!-- annotations -->
+    <span class="ann" style="left: 1060px; top: 324px">1</span>
+    <span class="ann" style="left: 1066px; top: 178px">2</span>
+    <span class="ann" style="left: 368px; top: 230px">3</span>
+    <span class="ann" style="left: 122px; top: 420px">4</span>
+    <span class="ann" style="left: 1184px; top: 594px">5</span>
+    <div style="position: absolute; right: 24px; bottom: 24px; width: 300px; padding: 16px; border-radius: 16px; background: rgba(255,255,255,.88); border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 8px; font-size: 12.5px; line-height: 1.4; color: #2C2C33">
+      <div><b>1 Edit</b> · caret live in the same frame as Tab; Iris halo.</div>
+      <div><b>2 Multi-select</b> · ⇧arrows; floating toolbar after the pointer rests, never while typing.</div>
+      <div><b>3 Folded</b> · ⌘/ collapses into a count badge.</div>
+      <div><b>4 Drag &amp; drop</b> · lifted node; glowing line = insert before; halo = as child.</div>
+      <div><b>5 Slash menu</b> · / at the start of an empty node picks a type.</div>
+    </div>
+
+    <!-- HUD -->
+    <div style="position: absolute; left: 16px; bottom: 16px; display: flex; gap: 12px; align-items: center">
+      <span style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 13px; border-radius: 999px; background: #5850EC; color: #FFFFFF; font: 600 12px/1 'Geist Mono', monospace; letter-spacing: .06em"><span style="width: 2px; height: 12px; background: #FFFFFF"></span>EDIT</span>
+      <div style="display: flex; gap: 12px; align-items: center; height: 34px; padding: 0 14px; border-radius: 12px; background: rgba(255,255,255,.72); border: 1px solid rgba(23,23,28,.08); font-size: 12px; color: #5D5D68"><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">↩</span>commit</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇥</span>commit + child</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇧↩</span>line break</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const slash = [
+      ['Process', 'process', 'M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M8 12h8', '#9B51E0', true],
+      ['Database', 'db', 'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6', '#0F7F7A'],
+      ['Actor', 'actor', 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c1-4 4-6 8-6s7 2 8 6', '#1E6FB8'],
+      ['Decision', 'decision', 'M12 3l9 9-9 9-9-9z', '#E0A100'],
+      ['Note', 'note', 'M6 3h8l4 4v14H6z M14 3v4h4', '#4A4A55'],
+      ['Code block', 'code', 'M8 9l-4 3 4 3 M16 9l4 3-4 3', '#5850EC'],
+      ['Equation', 'math', 'M5 6h14 M8 6v12 M16 6c-2 4-2 8 0 12', '#D6408B']
+    ].map(([n, k, d, c, on]) => ({ n, k, d, c, bg: on ? 'rgba(88,80,236,.10)' : 'transparent' }));
+    return { slash };
+  }
+}
+</script>
+</body>
+</html>

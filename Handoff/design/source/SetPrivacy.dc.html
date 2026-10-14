@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings, Privacy and Data</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.nav{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;border-radius:8px;font-size:13px}
+.ic{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font:600 11px/1 -apple-system,sans-serif;flex-shrink:0}
+.sec{break-inside:avoid;margin-bottom:16px;display:flex;flex-direction:column;gap:7px}
+.st{font-size:12px;font-weight:600;color:#5D5D68;padding-left:4px}
+.grp{background:#FFFFFF;border-radius:12px;border:1px solid #E6E6EA;overflow:hidden}
+.row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:7px 14px;border-top:1px solid #F0F0F2;min-height:24px}
+.row:first-child{border-top:0}
+.lb{font-size:13px;color:#17171C}
+.sb{font-size:11.5px;line-height:1.35;color:#6B6B76}
+.pop{height:24px;padding:0 9px;border-radius:6px;border:1px solid #DCDCE2;background:#FFFFFF;font:500 12px/1 -apple-system,Geist,sans-serif;color:#17171C;white-space:nowrap}
+.seg{display:flex;padding:2px;border-radius:7px;background:#EDEDF1}
+.seg span{height:22px;padding:0 8px;display:flex;align-items:center;border-radius:5px;font-size:11.5px;white-space:nowrap}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:22px;padding:0 7px;box-sizing:border-box;border-radius:5px;background:#17171C;color:#FFFFFF;font:500 11.5px/1 "Geist Mono",monospace}
+.ft{font-size:11.5px;line-height:1.4;color:#6B6B76;padding:0 4px}
+.card{break-inside:avoid;margin-bottom:16px;padding:16px;border-radius:12px;background:#FFFFFF;border:1px solid #E6E6EA;display:flex;flex-direction:column;gap:10px}
+.mask{background:#17171C;color:#17171C;border-radius:3px;padding:0 2px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 28px; background: #E4E4E9; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <div style="height: 100%; display: flex; border-radius: 14px; overflow: hidden; background: #F6F6F8; box-shadow: 0 30px 80px rgba(23,23,28,.18)">
+    <div style="width: 236px; flex-shrink: 0; box-sizing: border-box; padding: 16px 10px; background: rgba(236,236,240,.95); border-right: 1px solid #DCDCE2; display: flex; flex-direction: column; gap: 2px">
+      <div style="display: flex; gap: 8px; padding: 2px 6px 14px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+      <label for="ss" style="position: absolute; left: -9999px">Search settings</label>
+      <input id="ss" placeholder="Search" style="height: 28px; box-sizing: border-box; border-radius: 7px; border: 1px solid #DCDCE2; background: #FFFFFF; padding: 0 10px; font: 13px -apple-system, sans-serif; margin-bottom: 10px">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="10">
+        <div class="nav" style="background: {{n.bg}}; color: {{n.fg}}; font-weight: {{n.fw}}"><span class="ic" style="background: {{n.c}}">{{n.g}}</span>{{n.t}}</div>
+      </sc-for>
+      <div style="flex: 1"></div>
+      <span style="font-size: 11px; color: #8A8A96; padding: 0 10px">⌘, opens Settings · ⌘F searches every pane</span>
+    </div>
+    <div style="flex: 1; min-width: 0; box-sizing: border-box; padding: 24px 30px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1><span style="font-size: 13px; color: #5D5D68">{{sub}}</span></div>
+      <div style="columns: 2; column-gap: 22px">
+        <div class="card" style="background: #17171C; border-color: #17171C; color: #F2F2F5">
+          <span class="st" style="padding: 0; color: #A6A6B0">NETWORK ACTIVITY · LAST 7 DAYS</span>
+          <div style="display: flex; align-items: baseline; gap: 10px"><span style="font: 700 34px/1 'Geist Mono', monospace">1</span><span style="font-size: 13px; color: #C9C9D2">request: update check</span></div>
+          <span style="font-size: 12px; line-height: 1.45; color: #B4B4BE">Documents, AI prompts and AI results never leave this Mac. This log lists every outbound request the app makes.</span>
+          <button class="pop" style="align-self: flex-start; background: #26272D; color: #F2F2F5; border-color: #3A3B43">Open log…</button>
+        </div>
+        <sc-for list="{{sections}}" as="s" hint-placeholder-count="4">
+          <div class="sec">
+            <span class="st">{{s.t}}</span>
+            <div class="grp">
+              <sc-for list="{{s.rows}}" as="r" hint-placeholder-count="4">
+                <div class="row">
+                  <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span class="lb">{{r.l}}</span><sc-if value="{{r.hasD}}" hint-placeholder-val="{{false}}"><span class="sb">{{r.d}}</span></sc-if></div>
+                  <sc-if value="{{r.isT}}" hint-placeholder-val="{{false}}"><button role="switch" aria-checked="{{r.on}}" aria-label="{{r.l}}" style="flex-shrink: 0; width: 34px; height: 20px; padding: 0; border: 0; border-radius: 999px; background: {{r.tbg}}; position: relative"><span style="position: absolute; top: 2px; left: {{r.kx}}px; width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,.2)"></span></button></sc-if>
+                  <sc-if value="{{r.isS}}" hint-placeholder-val="{{false}}"><button class="pop" aria-label="{{r.l}}">{{r.v}}  ▾</button></sc-if>
+                  <sc-if value="{{r.isG}}" hint-placeholder-val="{{false}}"><div class="seg" role="group" aria-label="{{r.l}}"><sc-for list="{{r.opts}}" as="o" hint-placeholder-count="3"><span style="background: {{o.bg}}; box-shadow: {{o.sh}}; font-weight: {{o.fw}}">{{o.t}}</span></sc-for></div></sc-if>
+                  <sc-if value="{{r.isR}}" hint-placeholder-val="{{false}}"><div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0"><span style="width: 120px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #5850EC {{r.pct}}%, #DCDCE2 {{r.pct}}%); position: relative"><span style="position: absolute; left: calc({{r.pct}}% - 8px); top: -6px; width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.3)"></span></span><span style="font: 500 11.5px/1 'Geist Mono', monospace; color: #4A4A55; min-width: 38px">{{r.v}}</span></div></sc-if>
+                  <sc-if value="{{r.isB}}" hint-placeholder-val="{{false}}"><button class="pop">{{r.v}}</button></sc-if>
+                  <sc-if value="{{r.isK}}" hint-placeholder-val="{{false}}"><span class="k">{{r.v}}</span></sc-if>
+                  <sc-if value="{{r.isI}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #5D5D68; text-align: right; white-space: nowrap">{{r.v}}</span></sc-if>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{s.hasF}}" hint-placeholder-val="{{false}}"><span class="ft">{{s.f}}</span></sc-if>
+          </div>
+        </sc-for>
+        <div class="card">
+          <span class="st" style="padding: 0">DATA MASKING PREVIEW</span>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px">
+            <span style="padding: 6px 10px; border-radius: 8px; background: #F7F7F5">Owner: <span class="mask">dana.ruiz@example.com</span></span>
+            <span style="padding: 6px 10px; border-radius: 8px; background: #F7F7F5">Stripe key <span style="font-family: 'Geist Mono', monospace">sk_live_••••••••••••</span></span>
+            <span style="padding: 6px 10px; border-radius: 8px; background: #F7F7F5">Call <span class="mask">+1 555 010 0199</span> if paged</span>
+          </div>
+          <span class="sb">Detected on-device with the Natural Language framework plus your patterns. Masking applies to the export copy; your document is unchanged.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ACTIVE = 'Privacy & Data';
+    const N = [['General', 'G', '#8E8E96'], ['Editing', 'E', '#1E8BE0'], ['Appearance', 'A', '#D6408B'], ['Files & Backup', 'F', '#E08A00'], ['AI', '✦', '#0F7F7A'], ['Shortcuts', '⌘', '#5850EC'], ['Export', '↗', '#C25E00'], ['Integrations', '⇄', '#7A4CC2'], ['Privacy & Data', '◐', '#17171C'], ['Accessibility', '◎', '#1E6FB8']];
+    const nav = N.map(([t, g, c]) => ({ t, g, c, bg: t === ACTIVE ? c : 'transparent', fg: t === ACTIVE ? '#FFFFFF' : '#17171C', fw: t === ACTIVE ? 600 : 400 }));
+    const base = (l, d) => ({ l, d: d || '', hasD: !!d, isT: false, isS: false, isG: false, isR: false, isB: false, isK: false, isI: false });
+    const T = (l, d, on) => Object.assign(base(l, d), { isT: true, on: on ? 'true' : 'false', tbg: on ? '#34C759' : '#DCDCE2', kx: on ? 16 : 2 });
+    const S = (l, d, v) => Object.assign(base(l, d), { isS: true, v });
+    const G = (l, d, opts, i) => Object.assign(base(l, d), { isG: true, opts: opts.map((t, j) => ({ t, bg: j === i ? '#FFFFFF' : 'transparent', sh: j === i ? '0 1px 2px rgba(0,0,0,.12)' : 'none', fw: j === i ? 600 : 400 })) });
+    const B = (l, d, v) => Object.assign(base(l, d), { isB: true, v });
+    const sec = (t, rows, f) => ({ t, rows, f: f || '', hasF: !!f });
+    const sections = [
+      sec('Diagnostics', [
+        T('Share anonymous usage statistics', 'Off by default. Never includes document content', false),
+        G('Crash reports', '', ['Ask', 'Send', 'Never'], 0),
+        T('Fetch link previews and favicons', 'Makes a web request per link', false)
+      ]),
+      sec('AI data', [
+        T('Let AI read notes and attachments', '', true),
+        G('Keep AI chats', '', ['In document', 'This Mac', 'Don’t keep'], 0),
+        T('Remove AI chats when exporting', '', true),
+        B('Clear all AI chats', '', 'Clear…')
+      ]),
+      sec('Data masking', [
+        T('Email addresses', '', true),
+        T('Phone numbers', '', true),
+        T('API keys, tokens and secrets', '', true),
+        T('Person names', '', false),
+        B('Custom patterns', 'Regex, e.g. ticket or account IDs', 'Edit…'),
+        S('Replace with', '', '••••')
+      ])
+    ];
+    return { nav, sections, title: 'Privacy & Data', sub: 'Local by default. Everything that could leave the Mac is listed here and is off unless you turn it on.' };
+  }
+}
+</script>
+</body>
+</html>

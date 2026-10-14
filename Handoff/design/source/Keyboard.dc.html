@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Keyboard model and key map</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:6px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 12px/1 "Geist Mono",ui-monospace,monospace;color:#17171C;white-space:nowrap}
+.tag{font:600 10px/1 "Geist Mono",monospace;letter-spacing:.06em;padding:3px 6px;border-radius:5px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1300px; box-sizing: border-box; padding: 56px 72px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">05 · THE KEYBOARD MODEL · NON-NEGOTIABLE</div>
+      <h1 style="margin: 0; font: 700 40px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Xmind’s keys, unchanged. Plus Connect, Convert and AI.</h1>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center; font-size: 13px; color: #4A4A55"><span class="tag" style="background: #E8E7FD; color: #3B34C4">XMIND</span>default kept <span class="tag" style="background: #FFF1D1; color: #7A5200">NEW</span>OpenNexus addition</div>
+  </div>
+
+  <div style="display: flex; gap: 28px">
+    <!-- left: states -->
+    <div style="width: 520px; flex-shrink: 0; display: flex; flex-direction: column; gap: 20px">
+      <div style="padding: 24px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 14px">
+        <div class="cap">THREE STATES · ESC ALWAYS LEADS HOME</div>
+        <div style="position: relative; width: 472px; height: 360px">
+          <svg width="472" height="360" viewBox="0 0 472 360" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round">
+            <defs><marker id="ka" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#4A4A55"></path></marker></defs>
+            <path d="M 150 92 C 220 50, 270 50, 322 92" stroke="#5850EC" stroke-width="2" marker-end="url(#ka)"></path>
+            <path d="M 322 128 C 270 168, 220 168, 150 128" stroke="#4A4A55" stroke-width="2" marker-end="url(#ka)"></path>
+            <path d="M 98 148 L 98 250" stroke="#B7791F" stroke-width="2" marker-end="url(#ka)"></path>
+            <path d="M 140 262 C 170 220, 170 180, 140 148" stroke="#4A4A55" stroke-width="2" marker-end="url(#ka)"></path>
+            <path d="M 178 286 C 260 300, 330 220, 372 150" stroke="#B7791F" stroke-width="2" stroke-dasharray="5 5" marker-end="url(#ka)"></path>
+            <path d="M 420 92 C 470 60, 470 150, 420 128" stroke="#5850EC" stroke-width="2" marker-end="url(#ka)"></path>
+          </svg>
+          <div style="position: absolute; left: 20px; top: 76px; width: 156px; height: 72px; box-sizing: border-box; border-radius: 14px; background: #17171C; color: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="font: 700 14px/1 'Geist Mono', monospace; letter-spacing: .08em">SELECT</span><span style="font-size: 12px; color: #C9C9D2">keys act on nodes</span></div>
+          <div style="position: absolute; left: 300px; top: 76px; width: 140px; height: 72px; box-sizing: border-box; border-radius: 14px; background: #5850EC; color: #FFFFFF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="font: 700 14px/1 'Geist Mono', monospace; letter-spacing: .08em">EDIT</span><span style="font-size: 12px; color: #E4E2FF">caret in a node</span></div>
+          <div style="position: absolute; left: 20px; top: 252px; width: 156px; height: 72px; box-sizing: border-box; border-radius: 14px; background: #F2B135; color: #17171C; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="font: 700 14px/1 'Geist Mono', monospace; letter-spacing: .08em">CONNECT</span><span style="font-size: 12px">hint chips on targets</span></div>
+          <div style="position: absolute; left: 186px; top: 30px; font-size: 12px; color: #3B34C4; width: 110px; text-align: center">Space · type · ⇥ · ↩</div>
+          <div style="position: absolute; left: 196px; top: 160px; font-size: 12px; color: #4A4A55; width: 90px; text-align: center">↩ or esc</div>
+          <div style="position: absolute; left: 106px; top: 190px; font-size: 12px; color: #7A5200">⇧⌘L</div>
+          <div style="position: absolute; left: 160px; top: 196px; font-size: 12px; color: #4A4A55">esc</div>
+          <div style="position: absolute; left: 260px; top: 266px; font-size: 12px; color: #7A5200; width: 150px">↩ draws edge, label in Edit</div>
+          <div style="position: absolute; left: 400px; top: 30px; font-size: 12px; color: #3B34C4; width: 72px; text-align: center">⇥ commit + child</div>
+        </div>
+      </div>
+
+      <div style="padding: 24px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 14px">
+        <div class="cap">CONNECT MODE · THE ONE NEW INTERACTION</div>
+        <sc-for list="{{connect}}" as="c" hint-placeholder-count="6">
+          <div style="display: flex; gap: 12px; align-items: flex-start"><span style="flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: #FFF1D1; color: #7A5200; font: 700 12px/22px 'Geist Mono', monospace; text-align: center">{{c.n}}</span><span style="font-size: 14px; line-height: 1.45; color: #2C2C33">{{c.t}}</span></div>
+        </sc-for>
+      </div>
+
+      <div style="padding: 24px; border-radius: 20px; background: #17171C; color: #F2F2F5; display: flex; flex-direction: column; gap: 12px">
+        <div class="cap" style="color: #A6A6B0">DISCOVERABILITY</div>
+        <div style="font-size: 14px; line-height: 1.5; color: #D9D9E0"><b style="color: #FFFFFF">Hold ⌘ for 1 s</b> and a glass cheat sheet of keys for the current selection fades in. Release to dismiss.</div>
+        <div style="font-size: 14px; line-height: 1.5; color: #D9D9E0"><b style="color: #FFFFFF">Every menu item and palette row</b> shows its shortcut, Hyper bindings with the <span class="k" style="background: #26272D; color: #F2F2F5; border-color: #3A3B43">✦</span> glyph.</div>
+        <div style="font-size: 14px; line-height: 1.5; color: #D9D9E0"><b style="color: #FFFFFF">Third time you mouse</b> to something that has a key, a quiet toast names it once. Tips can be turned off.</div>
+      </div>
+    </div>
+
+    <!-- right: tables -->
+    <div style="flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-content: start">
+      <sc-for list="{{groups}}" as="g" hint-placeholder-count="6">
+        <div style="padding: 18px 20px; border-radius: 18px; background: #FFFFFF; border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 2px">
+          <div class="cap" style="padding-bottom: 8px">{{g.t}}</div>
+          <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="6">
+            <div style="display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 6px 0; border-top: 1px solid #F0F0F2">
+              <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0">
+                <span style="font-size: 13px; font-weight: 500; display: flex; gap: 6px; align-items: center">{{r.a}}<span class="tag" style="background: {{r.tb}}; color: {{r.tf}}">{{r.tag}}</span></span>
+                <span style="font-size: 11.5px; color: #6B6B76; line-height: 1.35">{{r.n}}</span>
+              </div>
+              <span class="k">{{r.k}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const X = { tag: 'XMIND', tb: '#E8E7FD', tf: '#3B34C4' };
+    const W = { tag: 'NEW', tb: '#FFF1D1', tf: '#7A5200' };
+    const r = (a, k, n, t) => Object.assign({ a, k, n }, t);
+    const groups = [
+      { t: 'CREATE', rows: [
+        r('Child topic', '⇥', 'Select or Edit mode; child starts in Edit', X),
+        r('Sibling after', '↩', 'In Edit, first ↩ commits, next creates', X),
+        r('Sibling before', '⇧↩', 'In Edit, ⇧↩ is a line break', X),
+        r('Parent topic', '⌘↩', 'Inserts between selection and parent', X),
+        r('Floating topic', '⌥⌘↩', 'Or double-click empty canvas', X),
+        r('Duplicate branch', '⌘D', 'Copy lands after the original', W),
+        r('Slash menu', '/', '/db /process /actor /decision /note /code /math', W)
+      ] },
+      { t: 'EDIT TEXT', rows: [
+        r('Edit, keep text', 'Space', 'Caret at end', X),
+        r('Edit, replace text', 'type', 'Any printable key replaces', X),
+        r('Commit', '↩ / esc', 'Both return to Select on the same node', X),
+        r('Line break', '⇧↩', '', X),
+        r('Bold / italic / link', '⌘B ⌘I ⌘K', 'Rich text inside the node', X)
+      ] },
+      { t: 'NAVIGATE & SELECT', rows: [
+        r('Move selection', '← ↑ → ↓', 'Spatial: nearest node that way, any layout', X),
+        r('Extend selection', '⇧ + arrows', '', X),
+        r('Jump to root', '⌘Home', '', X),
+        r('Siblings / children', '⇧⌘A / ⌥⌘A', '', X),
+        r('Find & replace', '⌘F', 'Matches glow on canvas and list', X),
+        r('Command palette', '⌘K', 'Every action, with its key', W),
+        r('Quick jump', '⌘J', 'Fuzzy node search; ↩ flies there', W)
+      ] },
+      { t: 'RESTRUCTURE', rows: [
+        r('Reorder', '⌥⌘↑ / ↓', 'Animated swap', W),
+        r('Promote', '⇧⇥', 'Outdent one level', W),
+        r('Demote', '⌥⌘→', 'Under previous sibling', W),
+        r('Delete branch', '⌫', '', X),
+        r('Delete, keep children', '⌥⌫', 'Children move up a level', W),
+        r('Fold / all', '⌘/ · ⌥⌘/', 'Badge shows hidden count', X),
+        r('Branch structure', '⌥⌘1 … 9', 'Cycles structure of the branch', W)
+      ] },
+      { t: 'ADD ELEMENTS', rows: [
+        r('Relationship / edge', '⇧⌘L', 'Opens Connect mode', W),
+        r('Boundary · Summary', '⇧⌘B · ⇧⌘]', '', X),
+        r('Callout · Note', '⇧⌘C · ⇧⌘N', '', X),
+        r('Hyperlink · Image', '⇧⌘K · ⇧⌘I', '', X),
+        r('Label', '⇧⌘T', 'Resolves Xmind’s ⇧⌘L clash', W),
+        r('Priority · To-do', '⌃1–9 · ⌃0', '', W),
+        r('Copy / paste style', '⌥⌘C / V', '', X)
+      ] },
+      { t: 'VIEW & AI', rows: [
+        r('Zoom · Fit', '⌘= ⌘- ⌘0 · ⇧⌘0', '', X),
+        r('Focus branch', '⌘.', 'Esc climbs out', W),
+        r('ZEN · Outline · Inspector', '⌥⌘F · ⇧⌘O · ⌘I', '', X),
+        r('Present', '⇧⌘P', '', X),
+        r('Convert diagram type', '⌥⌘T', 'Live previews in the picker', W),
+        r('AI ghosts · prompt · panel', '⌥Space · ⇧⌘Space · ⇧⌘J', 'Accept ⌃↩, all ⌃⇧↩', W)
+      ] }
+    ];
+    const connect = [
+      { n: '1', t: 'With a node selected, press ⇧⌘L (or Hyper-C).' },
+      { n: '2', t: 'Everything else dims; hint chips A, S, D, F… pop in nearest-first. A search field opens at the selection.' },
+      { n: '3', t: 'Type hint letters, or part of a node’s text to filter. Arrows move the target highlight.' },
+      { n: '4', t: '↩ draws the edge source → target and opens its label in Edit mode.' },
+      { n: '5', t: 'No match? “Create new node” connects to something that doesn’t exist yet.' },
+      { n: '6', t: 'Esc at any point: nothing changed.' }
+    ];
+    return { groups, connect };
+  }
+}
+</script>
+</body>
+</html>

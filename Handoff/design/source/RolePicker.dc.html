@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Role picker, light</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:6px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 12px/1 "Geist Mono",monospace;color:#17171C}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #F7F7F5; background-image: radial-gradient(#DADAE0 1px, transparent 1.3px); background-size: 24px 24px; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C; display: flex; align-items: center; justify-content: center">
+  <div style="width: 1040px; box-sizing: border-box; padding: 40px 44px; border-radius: 28px; background: rgba(255,255,255,.78); backdrop-filter: blur(30px) saturate(1.6); -webkit-backdrop-filter: blur(30px) saturate(1.6); border: 1px solid rgba(23,23,28,.08); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 40px 100px rgba(23,23,28,.16); display: flex; flex-direction: column; gap: 28px">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <span style="font: 500 12px/1 'Geist Mono', monospace; letter-spacing: .12em; color: #6B6B76">STEP 2 OF 9 · PICK YOUR WORLD</span>
+        <h1 style="margin: 0; font: 800 36px/1.05 'Bricolage Grotesque', sans-serif; letter-spacing: -0.025em">What will you map first?</h1>
+        <span style="font-size: 15px; color: #4A4A55">This sets the tour’s example and your template shelf. You can change it any time in Settings.</span>
+      </div>
+      <div style="display: flex; gap: 6px; align-items: center; font-size: 12.5px; color: #4A4A55"><span class="k">1</span>–<span class="k">4</span> or <span class="k">←</span><span class="k">→</span> then <span class="k">↩</span></div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+      <sc-for list="{{roles}}" as="r" hint-placeholder-count="4">
+        <button style="text-align: left; padding: 20px; border-radius: 20px; border: 2px solid {{r.bd}}; background: {{r.bg}}; display: flex; flex-direction: column; gap: 14px; font-family: inherit; color: #17171C; box-shadow: {{r.sh}}; transform: {{r.tf}}">
+          <div style="display: flex; justify-content: space-between; align-items: center">
+            <span style="width: 44px; height: 44px; border-radius: 12px; background: {{r.tint}}; display: flex; align-items: center; justify-content: center"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: {{r.c}}; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round"><path d="{{r.icon}}"></path></svg></span>
+            <span class="k">{{r.key}}</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 18px; font-weight: 700">{{r.name}}</span><span style="font-size: 13px; color: #4A4A55; line-height: 1.4">{{r.desc}}</span></div>
+          <div style="height: 1px; background: #E8E8EC"></div>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #4A4A55">
+            <span><b style="color: #17171C">Tour example</b> · {{r.ex}}</span>
+            <span><b style="color: #17171C">Lesson 5 converts to</b> · {{r.conv}}</span>
+            <span><b style="color: #17171C">Shelf</b> · {{r.shelf}}</span>
+          </div>
+        </button>
+      </sc-for>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <div style="display: flex; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #5850EC"></span><span style="width: 22px; height: 8px; border-radius: 4px; background: #5850EC"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #D4D4DB"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #D4D4DB"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #D4D4DB"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #D4D4DB"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #D4D4DB"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #D4D4DB"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #D4D4DB"></span></div>
+      <div style="display: flex; gap: 10px">
+        <button style="height: 40px; padding: 0 16px; border-radius: 12px; border: 1px solid #DCDCE2; background: #FFFFFF; font: 500 14px/1 -apple-system, Geist, sans-serif; color: #17171C">Skip tour</button>
+        <button style="height: 40px; padding: 0 18px; border-radius: 12px; border: 0; background: #17171C; color: #FFFFFF; font: 600 14px/1 -apple-system, Geist, sans-serif">Continue as Engineer</button>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const R = [
+      ['Engineer', 'Systems, APIs, incidents and sprints', 'Checkout service', 'Flowchart', 'C4, API flow, retro', '#5850EC', '#ECEBFE', 'M8 9l-4 3 4 3 M16 9l4 3-4 3 M13.5 6l-3 12', true],
+      ['Architect', 'Platforms, migrations and decisions', 'Cloud migration', 'Architecture', 'Reference arch, ADR, capability map', '#1E6FB8', '#E3F0FC', 'M3 21h18 M5 21V9l7-5 7 5v12 M9 21v-6h6v6', false],
+      ['Security', 'Threats, data and access', 'Payment flow', 'Data Flow + STRIDE', 'Threat model, attack tree, IR runbook', '#C62F35', '#FDECEC', 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M9 12l2 2 4-4', false],
+      ['Planner · Student', 'Projects, notes and ideas', 'Weekend trip', 'Timeline', 'Roadmap, SWOT, book notes', '#0F7F7A', '#DDF3F1', 'M4 5h16v15H4z M4 9h16 M9 3v4 M15 3v4 M8 13h3 M8 16h6', false]
+    ];
+    const roles = R.map(([name, desc, ex, conv, shelf, c, tint, icon, on], i) => ({ name, desc, ex, conv, shelf, c, tint, icon, key: String(i + 1), bd: on ? '#5850EC' : 'transparent', bg: on ? '#FFFFFF' : 'rgba(255,255,255,.6)', sh: on ? '0 0 0 4px rgba(88,80,236,.15), 0 16px 40px rgba(23,23,28,.10)' : 'none', tf: on ? 'translateY(-3px)' : 'none' }));
+    return { roles };
+  }
+}
+</script>
+</body>
+</html>

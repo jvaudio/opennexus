@@ -1,0 +1,116 @@
+import Foundation
+
+/// Read-only tree queries. The file stores only `children`, so parents are derived.
+extension Canvas {
+    /// Maps every attached node to its parent.
+    public func parentMap() -> [NodeID: NodeID] {
+        var map: [NodeID: NodeID] = [:]
+        map.reserveCapacity(nodes.count)
+        for (id, node) in nodes {
+            for child in node.children { map[child] = id }
+        }
+        return map
+    }
+
+    public func parent(of id: NodeID) -> NodeID? {
+        nodes.first { $0.value.children.contains(id) }?.key
+    }
+
+    /// 0 for the root and floating topics, 1 for main topics, and so on.
+    public func depth(of id: NodeID, parents: [NodeID: NodeID]? = nil) -> Int {
+        let parents = parents ?? parentMap()
+        var d = 0
+        var cur = id
+        while let p = parents[cur] {
+            d += 1
+            cur = p
+        }
+        return d
+    }
+
+    /// The top of the tree the node belongs to (the root or a floating topic).
+    public func treeTop(of id: NodeID, parents: [NodeID: NodeID]) -> NodeID {
+        var cur = id
+        while let p = parents[cur] { cur = p }
+        return cur
+    }
+
+    /// Depth-first, pre-order list of a subtree.
+    public func subtree(_ id: NodeID, includeFolded: Bool = true) -> [NodeID] {
+        var out: [NodeID] = []
+        var stack = [id]
+        while let cur = stack.popLast() {
+            guard let node = nodes[cur] else { continue }
+            out.append(cur)
+            if includeFolded || !node.folded || cur == id {
+                stack.append(contentsOf: node.children.reversed())
+            }
+        }
+        return out
+    }
+
+    /// Every node visible on the canvas: the root tree and floating trees, minus folded descendants.
+    public func visibleNodes() -> [NodeID] {
+        var out: [NodeID] = []
+        for top in [root] + floating {
+            var stack = [top]
+            while let cur = stack.popLast() {
+                guard let node = nodes[cur] else { continue }
+                out.append(cur)
+                if !node.folded { stack.append(contentsOf: node.children.reversed()) }
+            }
+        }
+        return out
+    }
+
+    /// Count of hidden descendants under a folded node (the fold badge).
+    public func hiddenCount(under id: NodeID) -> Int {
+        guard let node = nodes[id], node.folded else { return 0 }
+        return subtree(id).count - 1
+    }
+
+    /// The main topic (depth 1) this node descends from, used for branch colour.
+    public func mainBranch(of id: NodeID, parents: [NodeID: NodeID]) -> NodeID? {
+        var cur = id
+        while let p = parents[cur] {
+            if p == root { return cur }
+            cur = p
+        }
+        return nil
+    }
+
+    /// Checks structural invariants. Returns a list of problems (empty when valid).
+    public func validate() -> [String] {
+        var problems: [String] = []
+        if nodes[root] == nil { problems.append("root \(root) missing") }
+        var seen: [NodeID: NodeID] = [:]
+        for (id, node) in nodes {
+            for c in node.children {
+                if nodes[c] == nil { problems.append("\(id) has missing child \(c)") }
+                if let other = seen[c] { problems.append("\(c) has two parents: \(other) and \(id)") }
+                seen[c] = id
+            }
+        }
+        if seen[root] != nil { problems.append("root \(root) has a parent") }
+        for f in floating {
+            if nodes[f] == nil { problems.append("floating \(f) missing") }
+            if seen[f] != nil { problems.append("floating \(f) has a parent") }
+        }
+        // Every node must be reachable from the root or a floating topic.
+        var reachable = Set<NodeID>()
+        for top in [root] + floating {
+            var stack = [top]
+            while let cur = stack.popLast() {
+                guard reachable.insert(cur).inserted, let n = nodes[cur] else { continue }
+                stack.append(contentsOf: n.children)
+            }
+        }
+        for id in nodes.keys where !reachable.contains(id) {
+            problems.append("\(id) is unreachable")
+        }
+        for r in relationships where nodes[r.from] == nil || nodes[r.to] == nil {
+            problems.append("relationship \(r.id) points at a missing node")
+        }
+        return problems.sorted()
+    }
+}

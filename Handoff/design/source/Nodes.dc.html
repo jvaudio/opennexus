@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Node component</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.nb{width:22px;height:22px;border-radius:50%;background:#5850EC;color:#FFFFFF;font:600 11px/22px "Geist Mono",monospace;text-align:center;flex-shrink:0}
+.st{height:150px;border-radius:14px;background:#F7F7F5;background-image:radial-gradient(#DADAE0 1px,transparent 1.3px);background-size:18px 18px;display:flex;align-items:center;justify-content:center;position:relative}
+.n{height:38px;padding:0 16px;box-sizing:border-box;border-radius:10px;background:#FFFFFF;border:2px solid #0F9F9A;display:flex;align-items:center;font:500 15px/1 -apple-system,Geist,sans-serif;color:#17171C}
+@keyframes caret{0%,49%{opacity:1}50%,100%{opacity:0}}
+.car{display:inline-block;width:1.5px;height:17px;background:#5850EC;margin-left:1px;animation:caret 1s steps(1) infinite}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 56px 72px; background: #FFFFFF; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 26px">
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <div class="cap">07 · ONE NODE, EVERY SLOT OPTIONAL</div>
+    <h1 style="margin: 0; font: 700 40px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Node anatomy, roles and states</h1>
+  </div>
+
+  <div style="display: flex; gap: 28px">
+    <!-- anatomy -->
+    <div style="flex: 1.2; border-radius: 20px; background: #F7F7F5; background-image: radial-gradient(#DADAE0 1px, transparent 1.3px); background-size: 20px 20px; position: relative; height: 420px">
+      <div style="position: absolute; left: 190px; top: 96px; width: 340px; box-sizing: border-box; border-radius: 14px; background: #FFFFFF; border: 2px solid #5850EC; box-shadow: 0 1px 2px rgba(23,23,28,.06); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+        <span style="position: absolute; left: 50%; top: -22px; transform: translateX(-50%); padding: 2px 8px; border-radius: 5px; background: #ECEBFE; font: 600 10px/13px 'Geist Mono', monospace; letter-spacing: .08em; color: #3B34C4">SERVICE</span>
+        <div style="height: 92px; border-radius: 8px; background: linear-gradient(135deg, #E9E8FD, #DDF3F1); display: flex; align-items: center; justify-content: center; font: 500 12px/1 'Geist Mono', monospace; color: #4A4A55">image · resizable</div>
+        <div style="display: flex; align-items: center; gap: 8px">
+          <span style="width: 18px; height: 18px; border-radius: 50%; background: #C62F35; color: #FFFFFF; font: 700 11px/18px 'Geist Mono', monospace; text-align: center">1</span>
+          <span style="width: 15px; height: 15px; border-radius: 4px; border: 1.5px solid #4A4A55; box-sizing: border-box"></span>
+          <span style="font: 600 17px/1.25 -apple-system, Geist, sans-serif">Payments service</span>
+        </div>
+        <div style="display: flex; gap: 6px"><span style="padding: 3px 8px; border-radius: 999px; background: #F1F1F4; font-size: 11.5px">PCI</span><span style="padding: 3px 8px; border-radius: 999px; background: #F1F1F4; font-size: 11.5px">Team Atlas</span></div>
+        <div style="display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; padding: 8px 10px; border-radius: 8px; background: #F7F7F5; font: 400 11.5px/1.4 'Geist Mono', monospace; color: #4A4A55"><span>protocol</span><b style="color: #17171C">gRPC</b><span>port</span><b style="color: #17171C">8443</b></div>
+        <div style="display: flex; gap: 10px; color: #6B6B76; font-size: 13px"><span title="Note">≡</span><span title="Link">↗</span><span title="Attachment">⎘</span><span title="AI-created" style="color: #0F9F9A">✦</span></div>
+        <span style="position: absolute; right: -13px; top: calc(50% - 11px); min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #5850EC; color: #FFFFFF; font: 700 11px/22px 'Geist Mono', monospace; box-shadow: 0 0 0 2px #F7F7F5">+6</span>
+      </div>
+      <div style="position: absolute; left: 24px; top: 24px; display: flex; flex-direction: column; gap: 12px; width: 150px">
+        <div style="display: flex; gap: 8px; align-items: center"><span class="nb">1</span><span style="font-size: 12.5px">Shape</span></div>
+        <div style="display: flex; gap: 8px; align-items: center"><span class="nb">2</span><span style="font-size: 12.5px">Title · rich text, drag edge to set wrap width</span></div>
+        <div style="display: flex; gap: 8px; align-items: center"><span class="nb">3</span><span style="font-size: 12.5px">Leading markers</span></div>
+        <div style="display: flex; gap: 8px; align-items: center"><span class="nb">4</span><span style="font-size: 12.5px">Image</span></div>
+        <div style="display: flex; gap: 8px; align-items: center"><span class="nb">5</span><span style="font-size: 12.5px">Labels</span></div>
+      </div>
+      <div style="position: absolute; right: 24px; top: 24px; display: flex; flex-direction: column; gap: 12px; width: 150px">
+        <div style="display: flex; gap: 8px; align-items: center"><span class="nb">6</span><span style="font-size: 12.5px">Indicators: note, link, file, AI</span></div>
+        <div style="display: flex; gap: 8px; align-items: center"><span class="nb">7</span><span style="font-size: 12.5px">Fold badge · hidden count</span></div>
+        <div style="display: flex; gap: 8px; align-items: center"><span class="nb">8</span><span style="font-size: 12.5px">Type badge · technical nodes</span></div>
+        <div style="display: flex; gap: 8px; align-items: center"><span class="nb">9</span><span style="font-size: 12.5px">Pinned metadata fields</span></div>
+      </div>
+    </div>
+
+    <!-- roles -->
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 14px">
+      <div class="cap">ROLES · DEFAULT STYLE IN EVERY THEME</div>
+      <div style="height: 390px; border-radius: 20px; background: #F7F7F5; background-image: radial-gradient(#DADAE0 1px, transparent 1.3px); background-size: 20px 20px; position: relative">
+        <svg width="100%" height="390" viewBox="0 0 520 390" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round"><path d="M180 120 C 220 120, 220 80, 250 80" stroke="#5850EC" stroke-width="3"></path><path d="M180 120 C 220 120, 220 170, 250 170" stroke="#E4572E" stroke-width="3"></path><path d="M370 170 C 390 170, 390 150, 410 150" stroke="#E4572E" stroke-width="2"></path><path d="M370 170 C 390 170, 390 196, 410 196" stroke="#E4572E" stroke-width="2"></path><path d="M478 140 L 488 140 L 488 206 L 478 206 M488 173 L 500 173" stroke="#4A4A55" stroke-width="1.6"></path></svg>
+        <div style="position: absolute; left: 40px; top: 94px; width: 140px; height: 52px; border-radius: 16px; background: #17171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 700 18px/1 -apple-system, Geist, sans-serif">Central</div>
+        <div style="position: absolute; left: 250px; top: 61px; width: 120px; height: 38px; box-sizing: border-box; border-radius: 10px; background: #FFFFFF; border: 2px solid #5850EC; display: flex; align-items: center; justify-content: center; font: 500 15px/1 -apple-system, Geist, sans-serif">Main</div>
+        <div style="position: absolute; left: 250px; top: 151px; width: 120px; height: 38px; box-sizing: border-box; border-radius: 10px; background: #FFFFFF; border: 2px solid #E4572E; display: flex; align-items: center; justify-content: center; font: 500 15px/1 -apple-system, Geist, sans-serif">Main</div>
+        <div style="position: absolute; left: 410px; top: 136px; width: 68px; height: 28px; border-radius: 8px; background: rgba(23,23,28,.045); display: flex; align-items: center; justify-content: center; font: 400 13px/1 -apple-system, Geist, sans-serif">Subtopic</div>
+        <div style="position: absolute; left: 410px; top: 182px; width: 68px; height: 28px; border-radius: 8px; background: rgba(23,23,28,.045); display: flex; align-items: center; justify-content: center; font: 400 13px/1 -apple-system, Geist, sans-serif">Subtopic</div>
+        <div style="position: absolute; left: 404px; top: 228px; width: 96px; height: 34px; box-sizing: border-box; border-radius: 10px; background: #FFFFFF; border: 2px dashed #9A9AA6; display: flex; align-items: center; justify-content: center; font: 600 13px/1 -apple-system, Geist, sans-serif">Summary</div>
+        <div style="position: absolute; left: 70px; top: 270px; width: 150px; height: 40px; box-sizing: border-box; border-radius: 12px; background: #FFFFFF; box-shadow: 0 6px 18px rgba(23,23,28,.12); border: 1.5px solid #C9C9D2; display: flex; align-items: center; justify-content: center; font: 500 14px/1 -apple-system, Geist, sans-serif">Floating topic</div>
+        <div style="position: absolute; left: 24px; bottom: 20px; right: 24px; display: flex; gap: 18px; font-size: 12px; color: #4A4A55; flex-wrap: wrap"><span><b>Central</b> filled, 20 pt</span><span><b>Main</b> outlined in branch colour</span><span><b>Subtopic</b> quiet tint</span><span><b>Floating</b> lifted, unattached</span><span><b>Summary</b> dashed, owns children</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 14px">
+    <div class="cap">STATES</div>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px">
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st"><div class="n">Pricing</div></div><span style="font-size: 12.5px; font-weight: 600">Default</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st"><div class="n" style="box-shadow: 0 4px 14px rgba(23,23,28,.12); transform: translateY(-1px)">Pricing</div></div><span style="font-size: 12.5px; font-weight: 600">Hover · lift 1 px</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st"><div class="n" style="box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC, 0 8px 24px rgba(88,80,236,.25)">Pricing</div></div><span style="font-size: 12.5px; font-weight: 600">Selected · Iris ring</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st" style="flex-direction: column; gap: 10px"><div class="n" style="box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #8F89FF">Free tier</div><div class="n" style="box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #8F89FF">Pro</div><span style="position: absolute; right: 10px; top: 10px; padding: 2px 7px; border-radius: 999px; background: #5850EC; color: #FFFFFF; font: 600 10.5px/15px 'Geist Mono', monospace">2</span></div><span style="font-size: 12.5px; font-weight: 600">Multi-selected · count chip</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st"><div class="n" style="box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC, 0 0 0 9px rgba(88,80,236,.18)">Pricin<span class="car"></span></div></div><span style="font-size: 12.5px; font-weight: 600">Editing · caret, soft halo</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st"><div class="n" style="opacity: .35; border-style: dashed">Pricing</div><div class="n" style="position: absolute; left: 66px; top: 44px; transform: rotate(-2deg); box-shadow: 0 14px 30px rgba(23,23,28,.22)">Pricing</div></div><span style="font-size: 12.5px; font-weight: 600">Drag source · ghost stays</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st"><div class="n" style="box-shadow: 0 0 0 6px rgba(88,80,236,.18), 0 0 24px rgba(88,80,236,.45)">Channels</div></div><span style="font-size: 12.5px; font-weight: 600">Drop target · as child (halo)</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st" style="flex-direction: column; gap: 6px"><div class="n">Channels</div><span style="width: 120px; height: 3px; border-radius: 2px; background: #5850EC; box-shadow: 0 0 10px rgba(88,80,236,.6)"></span><div class="n">Timeline</div></div><span style="font-size: 12.5px; font-weight: 600">Drop target · before / after line</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st"><div class="n"><span style="background: #FFE58F; border-radius: 3px; padding: 0 2px">Pric</span>ing</div></div><span style="font-size: 12.5px; font-weight: 600">Search match · highlight</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st"><div class="n" style="border: 1.5px dashed #0F9F9A; background: rgba(15,159,154,.08); color: #0B6E6A; opacity: .8">Usage limits</div></div><span style="font-size: 12.5px; font-weight: 600">AI-suggested · ghost</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st"><div class="n" style="border-color: #D93A3F; box-shadow: 0 0 0 4px rgba(217,58,63,.15)">Orders DB<span style="margin-left: 8px; width: 18px; height: 18px; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%); background: #D93A3F; color: #FFFFFF; font: 700 11px/18px sans-serif; text-align: center">!</span></div></div><span style="font-size: 12.5px; font-weight: 600">Error · rule broken + shake</span></div>
+      <div style="display: flex; flex-direction: column; gap: 8px"><div class="st"><div class="n">Positioning<span style="position: absolute"></span></div><span style="position: absolute; left: calc(50% + 46px); top: calc(50% - 11px); min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #0F9F9A; color: #FFFFFF; font: 700 11px/22px 'Geist Mono', monospace; box-shadow: 0 0 0 2px #F7F7F5">+4</span></div><span style="font-size: 12.5px; font-weight: 600">Folded · badge pulses once</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

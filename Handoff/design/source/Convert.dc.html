@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Convert diagram type</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 48px 64px; background: #ECECEF; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 22px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">F3 · CONVERT · ⌥⌘T</div>
+      <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">One action, animated, reversible</h1>
+    </div>
+    <div style="display: flex; gap: 8px; align-items: center; font-size: 13px; color: #4A4A55"><span class="k">⌘Z</span>returns to the previous type in one step</div>
+  </div>
+
+  <div style="display: flex; gap: 20px">
+    <!-- picker sheet -->
+    <div style="flex: 1; padding: 22px; border-radius: 22px; background: rgba(255,255,255,.82); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid #DCDCE2; box-shadow: 0 24px 60px rgba(23,23,28,.14); display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span style="font-size: 17px; font-weight: 700">Convert “Checkout redesign” to…</span>
+        <label for="ts" style="position: absolute; left: -9999px">Filter types</label>
+        <input id="ts" placeholder="Filter types" style="width: 200px; height: 28px; box-sizing: border-box; border-radius: 7px; border: 1px solid #DCDCE2; padding: 0 10px; font: 13px -apple-system, sans-serif; background: #FFFFFF">
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+        <sc-for list="{{types}}" as="t" hint-placeholder-count="8">
+          <button style="display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 14px; border: 2px solid {{t.bd}}; background: {{t.bg}}; text-align: left; font-family: inherit; color: #17171C">
+            <svg width="100%" height="92" viewBox="0 0 160 92" aria-hidden="true" style="background: #F7F7F5; border-radius: 9px; fill: none; stroke: {{t.c}}; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round"><path d="{{t.icon}}"></path></svg>
+            <span style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 13px; font-weight: 600">{{t.name}}</span><span class="k">{{t.key}}</span></span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="font-size: 12.5px; color: #4A4A55; line-height: 1.5">Previews are rendered from <b>this</b> canvas, not a stock thumbnail. Arrow keys move; ↩ converts; Esc closes. Hierarchy types convert losslessly; technical types ask for node types next.</div>
+    </div>
+
+    <!-- type confirmation -->
+    <div style="width: 400px; flex-shrink: 0; padding: 20px; border-radius: 22px; background: #FFFFFF; border: 1px solid #DCDCE2; box-shadow: 0 24px 60px rgba(23,23,28,.10); display: flex; flex-direction: column; gap: 14px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 15px; font-weight: 700">Confirm node types</span>
+        <span style="font-size: 12.5px; color: #4A4A55; line-height: 1.45">Data Flow needs to know what each first-level branch is. Suggestions came from the on-device model.</span>
+      </div>
+      <sc-for list="{{confirm}}" as="c" hint-placeholder-count="5">
+        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; background: {{c.bg}}">
+          <span style="flex: 1; font-size: 13px; font-weight: 500">{{c.n}}</span>
+          <span style="color: #0F9F9A; font-size: 12px">✦</span>
+          <label for="ct{{c.i}}" style="position: absolute; left: -9999px">Type for {{c.n}}</label>
+          <select id="ct{{c.i}}" style="height: 28px; border-radius: 7px; border: 1px solid #DCDCE2; background: #FFFFFF; font: 12.5px -apple-system, sans-serif; padding: 0 6px; color: #17171C"><option>{{c.t}}</option><option>Process</option><option>Data store</option><option>External entity</option></select>
+        </div>
+      </sc-for>
+      <div style="flex: 1"></div>
+      <div style="display: flex; gap: 8px; justify-content: flex-end">
+        <button style="height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid #DCDCE2; background: #FFFFFF; font: 500 13px -apple-system, sans-serif; color: #17171C">Back</button>
+        <button style="height: 30px; padding: 0 14px; border-radius: 8px; border: 0; background: #5850EC; font: 600 13px -apple-system, sans-serif; color: #FFFFFF">Convert · ↩</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- morph filmstrip -->
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+    <sc-for list="{{film}}" as="f" hint-placeholder-count="3">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <svg width="100%" height="168" viewBox="0 0 420 168" aria-hidden="true" style="background: #FFFFFF; border-radius: 14px; border: 1px solid #DCDCE2; fill: none; stroke-linecap: round; stroke-linejoin: round"><g stroke-width="1.6"><path d="{{f.lines}}" stroke="#9A9AA6" stroke-dasharray="{{f.dash}}"></path><path d="{{f.trails}}" stroke="#5850EC" stroke-opacity=".35" stroke-dasharray="2 4"></path><path d="{{f.shapes}}" stroke="#17171C" fill="#F7F7F5"></path></g></svg>
+        <div style="display: flex; justify-content: space-between; font-size: 12.5px"><span style="font-weight: 600">{{f.t}}</span><span style="font-family: 'Geist Mono', monospace; color: #6B6B76">{{f.ms}}</span></div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const T = [
+      ['Mind Map', 'M80 46 L120 22 M80 46 L124 46 M80 46 L120 70 M80 46 L40 26 M80 46 L36 66 M68 46 a12 8 0 1 0 24 0 a12 8 0 1 0 -24 0 M120 16 h22 v12 h-22 z M124 40 h22 v12 h-22 z M120 64 h22 v12 h-22 z M18 20 h22 v12 h-22 z M14 60 h22 v12 h-22 z', false],
+      ['Logic Chart', 'M10 40 h26 v12 h-26 z M36 46 h10 M46 20 v52 M46 20 h14 M46 46 h14 M46 72 h14 M60 14 h30 v12 h-30 z M60 40 h30 v12 h-30 z M60 66 h30 v12 h-30 z M90 20 h10 M100 20 h26', false],
+      ['Org Chart', 'M64 8 h32 v14 h-32 z M80 22 v10 M30 32 h100 M30 32 v10 M80 32 v10 M130 32 v10 M14 42 h32 v14 h-32 z M64 42 h32 v14 h-32 z M114 42 h32 v14 h-32 z M30 56 v8 h0 M22 64 h16 v10 h-16 z', false],
+      ['Timeline', 'M8 30 h144 M18 24 h26 v12 h-26 z M66 24 h26 v12 h-26 z M114 24 h26 v12 h-26 z M24 36 v28 h10 M24 50 h10 M72 36 v16 h10 M120 36 v30 h10', false],
+      ['Flowchart', 'M64 6 h32 a7 7 0 0 1 0 14 h-32 a7 7 0 0 1 0 -14 z M80 20 v8 M80 28 l16 12 l-16 12 l-16 -12 z M64 40 h-30 v18 M96 40 h30 v18 M18 58 h32 v14 h-32 z M110 58 h32 v14 h-32 z', true],
+      ['Data Flow', 'M8 36 h26 v22 h-26 z M34 47 h18 M68 47 m-16 0 a16 16 0 1 0 32 0 a16 16 0 1 0 -32 0 M84 47 h18 M104 30 h36 M104 46 h36 M104 30 v16 M104 60 h36 M104 76 h36 M104 60 v16 M84 52 l20 16', false],
+      ['Architecture', 'M10 16 h28 v18 h-28 z M38 25 h18 M56 10 h44 v70 h-44 z M64 18 h28 v14 h-28 z M64 40 h28 v14 h-28 z M100 47 h16 M116 38 h30 a4 4 0 0 1 0 18 h-30 a4 4 0 0 1 0 -18 z M64 62 h28 v12 h-28 z', false],
+      ['Sequence', 'M24 8 h28 v12 h-28 z M74 8 h28 v12 h-28 z M124 8 h28 v12 h-28 z M38 20 v64 M88 20 v64 M138 20 v64 M38 34 h50 M88 46 h50 M138 58 h-50 M88 70 h-50', false]
+    ];
+    const types = T.map(([name, icon, on], i) => ({ name, icon, key: String(i + 1), bd: on ? '#5850EC' : 'transparent', bg: on ? '#F1F0FE' : '#FFFFFF', c: on ? '#5850EC' : '#4A4A55' }));
+    const confirm = [['Customer', 'External entity'], ['Cart service', 'Process'], ['Payment provider', 'External entity'], ['Orders DB', 'Data store'], ['Fraud check', 'Process']].map(([n, t], i) => ({ n, t, i, bg: i % 2 ? '#FFFFFF' : '#F7F7F5' }));
+    const film = [
+      { t: '0 ms · mind map', ms: 'selection kept', shapes: 'M180 72 h60 v24 h-60 z M290 30 h56 v20 h-56 z M290 74 h56 v20 h-56 z M290 118 h56 v20 h-56 z M74 44 h56 v20 h-56 z M74 104 h56 v20 h-56 z', lines: 'M240 84 C 265 84, 265 40, 290 40 M240 84 L 290 84 M240 84 C 265 84, 265 128, 290 128 M180 84 C 155 84, 155 54, 130 54 M180 84 C 155 84, 155 114, 130 114', trails: '', dash: 'none' },
+      { t: '300 ms · nodes in flight', ms: 'edges fade, glide curve', shapes: 'M184 22 h56 v22 h-56 z M250 66 l26 14 l-26 14 l-26 -14 z M120 66 h56 v20 h-56 z M300 112 h56 v20 h-56 z M110 120 h56 v20 h-56 z M330 64 h56 v20 h-56 z', lines: 'M212 44 L 230 70', trails: 'M210 84 C 205 60, 210 40, 212 33 M318 40 C 330 50, 340 60, 358 74 M102 54 C 110 60, 130 70, 148 76 M318 128 C 320 125, 325 122, 328 122 M102 114 C 110 118, 120 126, 138 130', dash: '3 5' },
+      { t: '620 ms · flowchart', ms: 'badges fade in', shapes: 'M184 10 h56 a10 10 0 0 1 0 20 h-56 a10 10 0 0 1 0 -20 z M212 48 l30 16 l-30 16 l-30 -16 z M100 100 h64 v24 h-64 z M260 100 h64 v24 h-64 z M100 140 h64 v20 h-64 z', lines: 'M212 30 L 212 48 M182 64 L 132 64 L 132 100 M242 64 L 292 64 L 292 100 M132 124 L 132 140', trails: '', dash: 'none' }
+    ];
+    return { types, confirm, film };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>ZEN, Focus and filter views</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.fr{position:relative;height:600px;border-radius:18px;overflow:hidden}
+.m{position:absolute;height:34px;padding:0 12px;box-sizing:border-box;border-radius:9px;display:flex;align-items:center;justify-content:center;font:500 13.5px/1 -apple-system,Geist,sans-serif;white-space:nowrap}
+.s{position:absolute;height:26px;padding:0 9px;box-sizing:border-box;border-radius:7px;display:flex;align-items:center;font:400 12px/1 -apple-system,Geist,sans-serif;white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:999px;font-size:12px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 48px 56px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 22px">
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <div class="cap">VIEWS · EACH ONE KEY AWAY · SELECTION SURVIVES EVERY SWITCH</div>
+    <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">ZEN, Focus and Filter</h1>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+
+    <!-- ZEN -->
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600">ZEN<span class="k">⌥⌘F</span></div>
+      <div class="fr" style="background: #121317; background-image: radial-gradient(#202228 1px, transparent 1.3px); background-size: 20px 20px">
+        <svg width="100%" height="600" viewBox="0 0 410 600" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round"><path d="M200 300 C 240 300, 240 220, 270 220 M200 300 L 270 300 M200 300 C 240 300, 240 380, 270 380 M140 300 C 110 300, 110 250, 80 250" stroke="#8F89FF" stroke-width="2.5" opacity=".9"></path></svg>
+        <div class="m" style="left: 120px; top: 280px; width: 100px; height: 40px; background: #F2F2F5; color: #121317; font-weight: 700">Novel</div>
+        <div class="m" style="left: 270px; top: 203px; width: 90px; background: #1C1D22; color: #F2F2F5; border: 1.5px solid #8F89FF">Plot</div>
+        <div class="m" style="left: 270px; top: 283px; width: 110px; background: #1C1D22; color: #F2F2F5; border: 1.5px solid #8F89FF; box-shadow: 0 0 0 2px #121317, 0 0 0 4px #8F89FF">Charac<span style="display: inline-block; width: 1.5px; height: 15px; background: #8F89FF; margin-left: 1px"></span></div>
+        <div class="m" style="left: 270px; top: 363px; width: 90px; background: #1C1D22; color: #F2F2F5; border: 1.5px solid #8F89FF">Setting</div>
+        <div class="m" style="left: 10px; top: 233px; width: 70px; background: #1C1D22; color: #F2F2F5; border: 1.5px solid #8F89FF">Tone</div>
+        <span style="position: absolute; right: 16px; bottom: 14px; font: 500 11px/1 'Geist Mono', monospace; color: #4A4B55">5 topics · 9 words</span>
+      </div>
+      <div style="font-size: 12.5px; line-height: 1.5; color: #4A4A55">Full screen, every panel and toolbar gone. Only a faint count remains. Esc exits; all keys still work.</div>
+    </div>
+
+    <!-- FOCUS -->
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600">Focus · drill-down<span class="k">⌘.</span></div>
+      <div class="fr" style="background: #F7F7F5; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 20px 20px">
+        <div style="position: absolute; inset: 0; filter: blur(4px); opacity: .3">
+          <div class="m" style="left: 20px; top: 100px; width: 110px; background: #17171C; color: #FFFFFF">Launch plan</div>
+          <div class="m" style="left: 20px; top: 480px; width: 90px; background: #FFFFFF; border: 2px solid #E4572E">Risks</div>
+          <div class="m" style="left: 280px; top: 520px; width: 100px; background: #FFFFFF; border: 2px solid #E0A100">Channels</div>
+        </div>
+        <div style="position: absolute; left: 14px; right: 14px; top: 14px; height: 36px; padding: 0 12px; display: flex; align-items: center; gap: 8px; border-radius: 10px; background: rgba(255,255,255,.8); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(23,23,28,.08); font-size: 12.5px">
+          <span style="color: #6B6B76">Launch plan</span><span style="color: #9A9AA6">›</span><span style="font-weight: 600">Pricing</span><span style="flex: 1"></span><span class="k">esc</span><span style="font-size: 11.5px; color: #6B6B76">climbs out</span>
+        </div>
+        <svg width="100%" height="600" viewBox="0 0 410 600" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round"><path d="M180 300 C 220 300, 220 200, 250 200 M180 300 C 220 300, 220 270, 250 270 M180 300 C 220 300, 220 340, 250 340 M180 300 C 220 300, 220 410, 250 410" stroke="#0F9F9A" stroke-width="2.5"></path></svg>
+        <div class="m" style="left: 70px; top: 278px; width: 110px; height: 44px; background: #17171C; color: #FFFFFF; font-weight: 700; font-size: 16px">Pricing</div>
+        <div class="m" style="left: 250px; top: 183px; width: 100px; background: #FFFFFF; border: 2px solid #0F9F9A">Free tier</div>
+        <div class="m" style="left: 250px; top: 253px; width: 70px; background: #FFFFFF; border: 2px solid #0F9F9A">Pro</div>
+        <div class="m" style="left: 250px; top: 323px; width: 120px; background: #FFFFFF; border: 2px solid #0F9F9A">Team plan</div>
+        <div class="m" style="left: 250px; top: 393px; width: 140px; background: #FFFFFF; border: 2px solid #0F9F9A">Annual discount</div>
+      </div>
+      <div style="font-size: 12.5px; line-height: 1.5; color: #4A4A55">The camera flies to the branch, which becomes the whole map; the rest blurs and dims. Breadcrumb shows the way back.</div>
+    </div>
+
+    <!-- FILTER -->
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 600">Filter bar<span class="k">⇧⌘F</span></div>
+      <div class="fr" style="background: #F7F7F5; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 20px 20px">
+        <div style="position: absolute; left: 14px; right: 14px; top: 14px; padding: 10px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; border-radius: 12px; background: rgba(255,255,255,.85); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(23,23,28,.08)">
+          <span class="chip" style="background: #FDECEC; color: #8F1D22"><span style="width: 10px; height: 9px; background: #C62F35; clip-path: polygon(50% 0, 100% 100%, 0 100%)"></span>type: Threat</span>
+          <span class="chip" style="background: #FDECEC; color: #8F1D22">risk: High</span>
+          <span class="chip" style="background: #EEEEF1; color: #17171C">status ≠ Mitigated</span>
+          <span class="chip" style="border: 1px dashed #B9B9C2; color: #6B6B76">+ marker, label, text…</span>
+          <span style="flex: 1"></span>
+          <span style="font-size: 11.5px; color: #4A4A55">Dim · <b>Hide</b></span>
+        </div>
+        <svg width="100%" height="600" viewBox="0 0 410 600" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round"><path d="M200 330 L 120 230 M200 330 L 300 230 M200 330 L 120 440 M200 330 L 300 440" stroke="#9A9AA6" stroke-width="1.6" opacity=".35"></path></svg>
+        <div class="m" style="left: 140px; top: 312px; width: 120px; background: #ECEBFE; border: 2px solid #5850EC; border-radius: 999px; opacity: .3">Authorize</div>
+        <div class="m" style="left: 40px; top: 212px; width: 160px; background: #FDECEC; border: 2px solid #C62F35; box-shadow: 0 8px 20px rgba(198,47,53,.18)">Spoofed callback</div>
+        <div class="m" style="left: 230px; top: 212px; width: 140px; background: #FDECEC; border: 2px solid #C62F35; opacity: .3">Tampering</div>
+        <div class="m" style="left: 40px; top: 422px; width: 160px; background: #FDECEC; border: 2px solid #C62F35; box-shadow: 0 8px 20px rgba(198,47,53,.18)">Card data in logs</div>
+        <div class="m" style="left: 230px; top: 422px; width: 130px; background: #E6F5EC; border: 2px solid #2E7D4F; opacity: .3">Mutual TLS</div>
+        <div style="position: absolute; left: 14px; right: 14px; bottom: 14px; padding: 10px 12px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E2E2E6; display: flex; justify-content: space-between; align-items: center; font-size: 12.5px"><span>2 of 9 match</span><span style="color: #5850EC; font-weight: 600">Save as “Open threats · High”</span></div>
+      </div>
+      <div style="font-size: 12.5px; line-height: 1.5; color: #4A4A55">Non-matching nodes dim (or hide). Saved filters appear in the sidebar and can drive Present mode.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

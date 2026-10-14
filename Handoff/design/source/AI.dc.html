@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Local AI in the canvas</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C;white-space:nowrap}
+.tb{height:28px;padding:0 10px;display:flex;align-items:center;gap:6px;border-radius:7px;border:1px solid rgba(23,23,28,.09);background:rgba(255,255,255,.7);font:500 12.5px/1 -apple-system,Geist,sans-serif;color:#17171C}
+.m{position:absolute;height:38px;padding:0 14px;box-sizing:border-box;border-radius:10px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;font:500 15px/1 -apple-system,Geist,sans-serif;white-space:nowrap}
+.g{position:absolute;height:30px;padding:0 12px;box-sizing:border-box;border-radius:9px;border:1.5px dashed #0F9F9A;background:rgba(15,159,154,.07);color:#0B6E6A;display:flex;align-items:center;font:500 13.5px/1 -apple-system,Geist,sans-serif;white-space:nowrap;animation:shim 1.8s ease-in-out infinite}
+@keyframes shim{0%,100%{opacity:.5}50%{opacity:.9}}
+.chipn{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;border-radius:999px;background:#F1F0FE;color:#3B34C4;font-size:12.5px;font-weight:500}
+.act{display:inline-flex;align-items:center;height:26px;padding:0 10px;border-radius:999px;background:#FFFFFF;border:1px solid #E2E2E6;font-size:12px;color:#17171C}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #F7F7F5; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 52px; box-sizing: border-box; padding: 0 14px 0 18px; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,.72); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(23,23,28,.08); z-index: 5">
+    <div style="display: flex; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; margin-left: 10px"><span style="font-size: 13px; font-weight: 600">Growth strategy.nexus</span><span style="font-size: 11px; color: #5D5D68">Mind Map</span></div>
+    <div style="flex: 1"></div>
+    <button class="tb">Mind Map</button><button class="tb">Classic</button>
+    <div style="height: 28px; padding: 0 10px; display: flex; align-items: center; gap: 7px; border-radius: 999px; background: rgba(15,159,154,.1); color: #0B6E6A; font: 600 12px/1 -apple-system, sans-serif; box-shadow: 0 0 0 3px rgba(15,159,154,.12)"><span style="width: 7px; height: 7px; border-radius: 50%; background: #0F9F9A"></span>Apple on-device · working</div>
+  </div>
+
+  <!-- canvas -->
+  <div style="position: absolute; left: 0; width: 1040px; top: 52px; bottom: 0; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 22px 22px">
+    <svg width="1040" height="848" viewBox="0 0 1040 848" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round">
+      <path d="M300 400 C 340 400, 340 220, 380 220" stroke="#5850EC" stroke-width="3"></path>
+      <path d="M300 400 C 340 400, 340 560, 380 560" stroke="#0F9F9A" stroke-width="3"></path>
+      <path d="M140 400 C 110 400, 110 300, 80 300" stroke="#E4572E" stroke-width="3"></path>
+      <path d="M519 220 C 545 220, 545 150, 570 150" stroke="#5850EC" stroke-width="2"></path>
+      <path d="M519 220 C 545 220, 545 200, 570 200" stroke="#5850EC" stroke-width="2"></path>
+      <path d="M519 220 C 545 220, 545 245, 570 245" stroke="#0F9F9A" stroke-width="1.5" stroke-dasharray="4 5"></path>
+      <path d="M519 220 C 545 220, 545 290, 570 290" stroke="#0F9F9A" stroke-width="1.5" stroke-dasharray="4 5"></path>
+      <path d="M519 220 C 545 220, 545 335, 570 335" stroke="#0F9F9A" stroke-width="1.5" stroke-dasharray="4 5"></path>
+    </svg>
+    <div style="position: absolute; left: 140px; top: 374px; width: 160px; height: 52px; border-radius: 16px; background: #17171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 700 19px/1 -apple-system, sans-serif">Growth 2027</div>
+    <div class="m" style="left: 380px; top: 201px; width: 139px; border: 2px solid #5850EC; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC, 0 8px 24px rgba(88,80,236,.25)">Onboarding</div>
+    <div class="m" style="left: 380px; top: 541px; width: 122px; border: 2px solid #0F9F9A">Checkout</div>
+    <div class="m" style="left: 6px; top: 281px; width: 74px; border: 2px solid #E4572E">Churn</div>
+    <div style="position: absolute; left: 570px; top: 136px; height: 28px; padding: 0 10px; border-radius: 8px; background: rgba(23,23,28,.045); display: flex; align-items: center; font-size: 13.5px">Welcome email</div>
+    <div style="position: absolute; left: 570px; top: 186px; height: 28px; padding: 0 10px; border-radius: 8px; background: rgba(23,23,28,.045); display: flex; align-items: center; font-size: 13.5px">Sample project<span style="margin-left: 6px; color: #0F9F9A; font-size: 12px">✦</span></div>
+    <div class="g" style="left: 570px; top: 230px; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #0F9F9A">Guided first task</div>
+    <span class="k" style="position: absolute; left: 720px; top: 235px; background: #0F9F9A; color: #FFFFFF; border-color: #0F9F9A">⌃↩</span>
+    <div class="g" style="left: 570px; top: 275px; animation-delay: .2s">Empty-state hints</div>
+    <div class="g" style="left: 570px; top: 320px; animation-delay: .4s">Activation metric</div>
+    <div style="position: absolute; left: 570px; top: 362px; font-size: 12px; color: #0B6E6A; display: flex; gap: 8px; align-items: center"><span class="k">⌃⇧↩</span>accept all · <span class="k">↑↓</span>browse · <span class="k">esc</span>dismiss · typing ignores ghosts</div>
+
+    <!-- inline prompt bar -->
+    <div style="position: absolute; left: 380px; top: 600px; width: 470px; border-radius: 16px; background: rgba(255,255,255,.78); backdrop-filter: blur(26px) saturate(1.7); -webkit-backdrop-filter: blur(26px) saturate(1.7); border: 1px solid rgba(15,159,154,.35); box-shadow: 0 0 0 4px rgba(15,159,154,.08), 0 20px 50px rgba(23,23,28,.15); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; align-items: center; gap: 10px"><span style="color: #0F9F9A; font-size: 15px">✦</span><span style="flex: 1; font-size: 14.5px">Turn this branch into a DFD<span style="display: inline-block; width: 1.5px; height: 16px; background: #0F9F9A; vertical-align: -3px; margin-left: 1px"></span></span><span class="k">↩</span></div>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap"><span class="act">Expand into a sprint plan</span><span class="act">Find gaps</span><span class="act">Rewrite shorter</span><span class="act">Summarize</span></div>
+      <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: #6B6B76"><span>⇧⌘Space · anchored to “Checkout”</span><span>Results arrive as ghosts, never applied silently</span></div>
+    </div>
+
+    <div style="position: absolute; left: 16px; bottom: 16px; display: flex; gap: 12px; align-items: center; height: 34px; padding: 0 14px; border-radius: 12px; background: rgba(255,255,255,.75); border: 1px solid rgba(23,23,28,.08); font-size: 12px; color: #5D5D68"><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⌥Space</span>ghost ideas</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇧⌘Space</span>prompt bar</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇧⌘J</span>AI panel</span></div>
+  </div>
+
+  <!-- AI panel -->
+  <div style="position: absolute; right: 0; width: 400px; top: 52px; bottom: 0; box-sizing: border-box; background: #FFFFFF; border-left: 1px solid #E2E2E6; display: flex; flex-direction: column">
+    <div style="padding: 14px 16px; border-bottom: 1px solid #EEEEF1; display: flex; justify-content: space-between; align-items: center"><span style="font-size: 14px; font-weight: 700">Ask about this document</span><span class="k">⇧⌘J</span></div>
+    <div style="flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+      <div style="align-self: flex-end; max-width: 300px; padding: 10px 12px; border-radius: 14px 14px 4px 14px; background: #F1F0FE; font-size: 13.5px; line-height: 1.45">Where is <span class="chipn">Churn</span> thin compared to <span class="chipn">Onboarding</span>?</div>
+      <div style="display: flex; flex-direction: column; gap: 10px; font-size: 13.5px; line-height: 1.55; color: #2C2C33">
+        <span><span class="chipn" style="background: #FCEEE9; color: #A33A1A">Churn</span> has no children and no measures. Onboarding has five, including an activation metric. I’d add a cohort metric and two win-back ideas.</span>
+        <div style="border: 1px solid #E2E2E6; border-radius: 12px; overflow: hidden">
+          <div style="padding: 8px 12px; background: #F8F8FA; font-size: 11.5px; font-weight: 600; color: #5D5D68; display: flex; justify-content: space-between"><span>PROPOSED CHANGE</span><span>+3 · ~1</span></div>
+          <div style="padding: 8px 12px; display: flex; flex-direction: column; gap: 5px; font: 500 12.5px/1.4 'Geist Mono', monospace">
+            <span style="color: #1E6B41">+ Churn › Week-4 cohort retention</span>
+            <span style="color: #1E6B41">+ Churn › Win-back email</span>
+            <span style="color: #1E6B41">+ Churn › Pause instead of cancel</span>
+            <span style="color: #7A5200">~ “Churn” → “Retention &amp; churn”</span>
+          </div>
+          <div style="padding: 8px 12px; border-top: 1px solid #EEEEF1; display: flex; gap: 8px; justify-content: flex-end">
+            <button style="height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid #DCDCE2; background: #FFFFFF; font: 500 12.5px -apple-system, sans-serif; color: #17171C">Preview on canvas</button>
+            <button style="height: 28px; padding: 0 12px; border-radius: 7px; border: 0; background: #0F7F7A; font: 600 12.5px -apple-system, sans-serif; color: #FFFFFF">Apply · one undo</button>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 11px; font-weight: 600; color: #6B6B76">ACTIONS · ALSO IN ⌘K</span>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px">
+          <sc-for list="{{actions}}" as="a" hint-placeholder-count="12"><span class="act">{{a}}</span></sc-for>
+        </div>
+      </div>
+    </div>
+    <div style="padding: 12px 16px; border-top: 1px solid #EEEEF1; display: flex; flex-direction: column; gap: 8px">
+      <div style="height: 36px; border-radius: 10px; border: 1px solid #DCDCE2; padding: 0 12px; display: flex; align-items: center; font-size: 13px; color: #9A9AA6">Ask, or type @ to reference a node…</div>
+      <div style="display: flex; justify-content: space-between; font-size: 11.5px; color: #6B6B76"><span style="display: flex; gap: 6px; align-items: center"><span style="width: 6px; height: 6px; border-radius: 50%; background: #0F9F9A"></span>Apple on-device model</span><span>Nothing leaves this Mac</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { actions: ['Generate map', 'Expand branch', 'Rewrite', 'Summarize', 'Reorganize', 'Find gaps', 'Import to map', 'Describe to diagram', 'Threat suggestions', 'Explain', 'Write it up', 'Diagram as code'] };
+  }
+}
+</script>
+</body>
+</html>

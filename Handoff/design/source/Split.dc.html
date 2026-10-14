@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Outline and Split views</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;family=Newsreader:opsz,wght@6..72,400;6..72,600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.tb{height:28px;padding:0 10px;display:flex;align-items:center;gap:6px;border-radius:7px;border:1px solid rgba(23,23,28,.09);background:rgba(255,255,255,.7);font:500 12.5px/1 -apple-system,Geist,sans-serif;color:#17171C}
+.m{position:absolute;height:38px;padding:0 14px;box-sizing:border-box;border-radius:10px;background:#FFFFFF;display:flex;align-items:center;justify-content:center;font:500 15px/1 -apple-system,Geist,sans-serif;white-space:nowrap}
+.s{position:absolute;height:28px;padding:0 10px;box-sizing:border-box;border-radius:8px;background:rgba(23,23,28,.045);display:flex;align-items:center;font:400 13px/1 -apple-system,Geist,sans-serif;white-space:nowrap}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #F7F7F5; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 52px; box-sizing: border-box; padding: 0 14px 0 18px; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,.72); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(23,23,28,.08); z-index: 5">
+    <div style="display: flex; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; margin-left: 10px"><span style="font-size: 13px; font-weight: 600">Launch plan.nexus</span><span style="font-size: 11px; color: #5D5D68">Split view</span></div>
+    <div style="flex: 1; display: flex; justify-content: center">
+      <div role="group" aria-label="View" style="display: flex; padding: 2px; border-radius: 9px; background: rgba(23,23,28,.06)">
+        <button style="height: 26px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; font: 500 12px/1 -apple-system, sans-serif; color: #4A4A55">Canvas ⌘1</button>
+        <button style="height: 26px; padding: 0 12px; border: 0; border-radius: 7px; background: transparent; font: 500 12px/1 -apple-system, sans-serif; color: #4A4A55">Outline ⌘2</button>
+        <button style="height: 26px; padding: 0 12px; border: 0; border-radius: 7px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,.08); font: 500 12px/1 -apple-system, sans-serif; color: #17171C">Split ⌘3</button>
+      </div>
+    </div>
+    <button class="tb">Mind Map</button><button class="tb">Classic</button>
+  </div>
+
+  <!-- outline -->
+  <div style="position: absolute; left: 0; top: 52px; bottom: 0; width: 560px; box-sizing: border-box; padding: 34px 40px; background: #FFFFFF; border-right: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 4px; font-size: 15px">
+    <div style="font: 600 30px/1.2 'New York', Newsreader, Georgia, serif; margin-bottom: 14px">Launch plan</div>
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+      <div style="display: flex; align-items: flex-start; gap: 10px; padding: 5px 8px 5px {{r.pad}}px; border-radius: 8px; background: {{r.bg}}; box-shadow: {{r.ring}}">
+        <span style="flex-shrink: 0; margin-top: 7px; width: {{r.dot}}px; height: {{r.dot}}px; border-radius: 50%; background: {{r.c}}"></span>
+        <div style="display: flex; flex-direction: column; gap: 3px"><span style="font-weight: {{r.fw}}; color: {{r.fg}}">{{r.t}}</span><span style="font-size: 13px; color: #6B6B76; line-height: 1.45">{{r.note}}</span></div>
+      </div>
+    </sc-for>
+    <div style="flex: 1"></div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: #5D5D68"><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">↩</span>sibling</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇥</span>indent</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇧⇥</span>outdent</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⌥⌘↑↓</span>reorder</span><span>Notes edit inline</span></div>
+  </div>
+
+  <!-- canvas -->
+  <div style="position: absolute; left: 560px; right: 0; top: 52px; bottom: 0; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 22px 22px">
+    <svg width="880" height="848" viewBox="0 0 880 848" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round">
+      <path d="M380 400 C 420 400, 420 230, 460 230" stroke="#5850EC" stroke-width="3"></path>
+      <path d="M380 400 C 420 400, 420 400, 460 400" stroke="#0F9F9A" stroke-width="3"></path>
+      <path d="M380 400 C 420 400, 420 570, 460 570" stroke="#E0A100" stroke-width="3"></path>
+      <path d="M220 400 C 180 400, 180 300, 140 300" stroke="#E4572E" stroke-width="3"></path>
+      <path d="M220 400 C 180 400, 180 500, 140 500" stroke="#D6408B" stroke-width="3"></path>
+      <path d="M597 230 C 617 230, 617 205, 640 205 M597 230 C 617 230, 617 255, 640 255" stroke="#5850EC" stroke-width="2"></path>
+      <path d="M566 400 C 590 400, 590 362, 612 362 M566 400 C 590 400, 590 400, 612 400 M566 400 C 590 400, 590 438, 612 438" stroke="#0F9F9A" stroke-width="2"></path>
+      <path d="M582 570 C 602 570, 602 545, 624 545 M582 570 C 602 570, 602 595, 624 595" stroke="#E0A100" stroke-width="2"></path>
+      <path d="M582 580 C 600 690, 260 700, 120 520" stroke="#E0A100" stroke-width="2" stroke-dasharray="6 6"></path>
+    </svg>
+    <div style="position: absolute; left: 220px; top: 374px; width: 160px; height: 52px; border-radius: 16px; background: #17171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 700 20px/1 -apple-system, sans-serif">Launch plan</div>
+    <div class="m" style="left: 460px; top: 211px; width: 137px; border: 2px solid #5850EC">Positioning</div>
+    <div class="m" style="left: 460px; top: 381px; width: 106px; border: 2px solid #0F9F9A; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC, 0 8px 24px rgba(88,80,236,.25)">Pricing</div>
+    <div class="m" style="left: 460px; top: 551px; width: 122px; border: 2px solid #E0A100">Channels</div>
+    <div class="m" style="left: 69px; top: 281px; width: 71px; border: 2px solid #E4572E">Risks</div>
+    <div class="m" style="left: 41px; top: 481px; width: 99px; border: 2px solid #D6408B">Timeline</div>
+    <div class="s" style="left: 640px; top: 191px">Developers</div><div class="s" style="left: 640px; top: 241px">Teams</div>
+    <div class="s" style="left: 612px; top: 348px">Free tier</div><div class="s" style="left: 612px; top: 386px">Pro</div><div class="s" style="left: 612px; top: 424px">Annual discount</div>
+    <div class="s" style="left: 624px; top: 531px">Newsletter</div><div class="s" style="left: 624px; top: 581px">Product Hunt</div>
+    <span style="position: absolute; left: 330px; top: 676px; padding: 2px 9px; border-radius: 999px; background: #F2B135; font: 600 12px/16px 'Geist Mono', monospace">drives</span>
+    <div style="position: absolute; left: 24px; top: 24px; display: flex; gap: 8px; align-items: center; padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,.85); border: 1px solid #E2E2E6; font-size: 12.5px; color: #4A4A55"><span style="width: 8px; height: 8px; border-radius: 50%; background: #5850EC"></span>Live-linked: selecting or typing in either pane updates both</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const R = [
+      ['Positioning', 0, '#5850EC', ''], ['Developers', 1, '#5850EC', ''], ['Teams', 1, '#5850EC', ''],
+      ['Pricing', 0, '#0F9F9A', 'Note · keep the free tier generous; we compete with a metered incumbent.', true],
+      ['Free tier', 1, '#0F9F9A', ''], ['Pro', 1, '#0F9F9A', ''], ['Annual discount', 1, '#0F9F9A', ''],
+      ['Channels', 0, '#E0A100', '→ links to Timeline (“drives”)'], ['Newsletter', 1, '#E0A100', ''], ['Product Hunt', 1, '#E0A100', ''],
+      ['Risks', 0, '#E4572E', '3 hidden children · folded'], ['Timeline', 0, '#D6408B', '']
+    ];
+    const rows = R.map(([t, d, c, note, sel]) => ({ t, note, c, pad: 8 + d * 26, dot: d ? 6 : 9, fw: d ? 400 : 600, fg: d ? '#2C2C33' : '#17171C', bg: sel ? '#F1F0FE' : 'transparent', ring: sel ? 'inset 0 0 0 1.5px #5850EC' : 'none' }));
+    return { rows };
+  }
+}
+</script>
+</body>
+</html>

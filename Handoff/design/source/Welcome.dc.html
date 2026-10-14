@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Welcome sheet, dark</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#A9A6FF}a:hover{color:#D4D2FF}
+@keyframes build{0%{opacity:0;transform:scale(.4)}6%{opacity:1;transform:scale(1)}88%{opacity:1;transform:scale(1)}96%,100%{opacity:0;transform:scale(.9)}}
+@keyframes line{0%{stroke-dashoffset:1;opacity:1}6%{stroke-dashoffset:0}88%{opacity:1}96%,100%{stroke-dashoffset:0;opacity:0}}
+.bn{animation:build 14s cubic-bezier(.2,.9,.3,1.15) infinite both;transform-origin:left center}
+.bl{stroke-dasharray:1;animation:line 14s cubic-bezier(.2,.8,.2,1) infinite both}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:24px;height:24px;padding:0 7px;box-sizing:border-box;border-radius:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-bottom-width:2px;font:500 12px/1 "Geist Mono",monospace;color:#F2F2F5}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #121317; background-image: radial-gradient(#25272E 1px, transparent 1.3px); background-size: 24px 24px; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #F2F2F5">
+  <!-- self-building map -->
+  <div style="position: absolute; inset: 0; opacity: .55; filter: blur(.5px)">
+    <svg width="1440" height="900" viewBox="0 0 1440 900" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round">
+      <sc-for list="{{lines}}" as="l" hint-placeholder-count="12">
+        <path class="bl" pathLength="1" d="{{l.d}}" stroke="{{l.c}}" stroke-width="{{l.w}}" style="animation-delay: {{l.delay}}"></path>
+      </sc-for>
+    </svg>
+    <sc-for list="{{nodes}}" as="n" hint-placeholder-count="13">
+      <div class="bn" style="position: absolute; left: {{n.l}}px; top: {{n.t}}px; height: {{n.h}}px; padding: 0 {{n.p}}px; box-sizing: border-box; border-radius: {{n.r}}px; background: {{n.bg}}; color: {{n.fg}}; border: {{n.b}}; display: flex; align-items: center; font-size: {{n.fs}}px; font-weight: {{n.fw}}; white-space: nowrap; animation-delay: {{n.delay}}">{{n.t2}}</div>
+    </sc-for>
+  </div>
+  <div style="position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 55%, rgba(18,19,23,.2), rgba(18,19,23,.85) 70%)"></div>
+
+  <!-- welcome sheet -->
+  <div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 640px; box-sizing: border-box; padding: 44px 48px 36px; border-radius: 28px; background: rgba(30,31,37,.62); backdrop-filter: blur(36px) saturate(1.7); -webkit-backdrop-filter: blur(36px) saturate(1.7); border: 1px solid rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.14), 0 40px 120px rgba(0,0,0,.55); display: flex; flex-direction: column; align-items: center; gap: 22px; text-align: center">
+    <div style="width: 84px; height: 84px; border-radius: 20px; background: linear-gradient(160deg, #2A2B33, #121317); box-shadow: inset 0 1px 0 rgba(255,255,255,.18), 0 10px 30px rgba(0,0,0,.5); display: flex; align-items: center; justify-content: center">
+      <svg width="56" height="56" viewBox="0 0 44 44" aria-hidden="true"><path d="M12 32 L22 12 L32 32" fill="none" stroke="#8F89FF" stroke-width="2.6" stroke-linecap="round"/><path d="M12 32 L32 32" fill="none" stroke="#3FD3C9" stroke-width="2.6" stroke-linecap="round"/><circle cx="22" cy="12" r="5" fill="#F5F5F7"/><circle cx="12" cy="32" r="4.2" fill="#8F89FF"/><circle cx="32" cy="32" r="4.2" fill="#3FD3C9"/></svg>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font: 500 13px/1 'Geist Mono', monospace; letter-spacing: .12em; color: #A6A6B0">WELCOME TO OPENNEXUS</span>
+      <h1 style="margin: 0; font: 800 46px/1.05 'Bricolage Grotesque', sans-serif; letter-spacing: -0.03em">Think at the speed<br>of your keyboard.</h1>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; width: 100%; padding-top: 6px">
+      <button style="height: 48px; border-radius: 14px; border: 0; background: #F2F2F5; color: #121317; font: 600 16px/1 -apple-system, Geist, sans-serif; display: flex; align-items: center; justify-content: center; gap: 10px">Start the 4-minute tour <span class="k" style="background: rgba(0,0,0,.08); color: #121317; border-color: rgba(0,0,0,.15)">↩</span></button>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <button style="height: 44px; border-radius: 14px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: #F2F2F5; font: 500 14px/1 -apple-system, Geist, sans-serif">Skip to a blank map</button>
+        <button style="height: 44px; border-radius: 14px; border: 1px solid rgba(255,255,255,.16); background: rgba(255,255,255,.06); color: #F2F2F5; font: 500 14px/1 -apple-system, Geist, sans-serif">Import from Xmind…</button>
+      </div>
+    </div>
+    <div style="display: flex; gap: 18px; font-size: 12.5px; color: #A6A6B0; padding-top: 4px">
+      <span>Runs entirely on this Mac</span><span>·</span><span>Plain .nexus files</span><span>·</span><span>Open source</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const cx = 720; const cy = 450;
+    const pal = ['#8F89FF', '#F06C4B', '#3FD3C9', '#F2B135', '#E25CA0'];
+    const mains = [
+      { t: 'Research', x: 920, y: 300, c: 0, kids: ['Interviews', 'Competitors'] },
+      { t: 'Design', x: 940, y: 450, c: 1, kids: ['Prototype', 'Motion'] },
+      { t: 'Build', x: 920, y: 600, c: 2, kids: ['Canvas engine'] },
+      { t: 'Launch', x: 500, y: 340, c: 3, kids: ['Beta'] },
+      { t: 'Learn', x: 500, y: 560, c: 4, kids: [] }
+    ];
+    const nodes = [{ t2: 'New product', l: cx - 90, t: cy - 26, h: 52, p: 24, r: 16, bg: '#F2F2F5', fg: '#121317', b: '0', fs: 20, fw: 700, delay: '0s' }];
+    const lines = [];
+    let k = 1;
+    mains.forEach((m, i) => {
+      const right = m.x > cx; const d0 = (0.6 + i * 0.7) + 's';
+      const sx = right ? cx + 90 : cx - 90; const ex = right ? m.x : m.x + 110; const mx = (sx + ex) / 2;
+      lines.push({ d: `M ${sx} ${cy} C ${mx} ${cy}, ${mx} ${m.y}, ${ex} ${m.y}`, c: pal[m.c], w: 3, delay: d0 });
+      nodes.push({ t2: m.t, l: right ? m.x : m.x, t: m.y - 19, h: 38, p: 16, r: 10, bg: '#1C1D22', fg: '#F2F2F5', b: `2px solid ${pal[m.c]}`, fs: 15, fw: 500, delay: d0 });
+      m.kids.forEach((kid, j) => {
+        const ky = m.y + (j - (m.kids.length - 1) / 2) * 44; const kd = (4.4 + k * 0.45) + 's'; k += 1;
+        const psx = right ? m.x + 110 : m.x; const kx = right ? m.x + 150 : m.x - 150;
+        const kex = right ? kx : kx + 110;
+        lines.push({ d: `M ${psx} ${m.y} C ${(psx + kex) / 2} ${m.y}, ${(psx + kex) / 2} ${ky}, ${kex} ${ky}`, c: pal[m.c], w: 2, delay: kd });
+        nodes.push({ t2: kid, l: kx, t: ky - 15, h: 30, p: 12, r: 8, bg: 'rgba(255,255,255,.06)', fg: '#D9D9E0', b: '0', fs: 13.5, fw: 400, delay: kd });
+      });
+    });
+    return { nodes, lines };
+  }
+}
+</script>
+</body>
+</html>

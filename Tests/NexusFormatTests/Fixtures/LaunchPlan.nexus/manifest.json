@@ -1,0 +1,10 @@
+{
+  "app": "1.0",
+  "canvases": [
+    "c1",
+    "c2"
+  ],
+  "encrypted": false,
+  "format": "opennexus",
+  "schemaVersion": 1
+}

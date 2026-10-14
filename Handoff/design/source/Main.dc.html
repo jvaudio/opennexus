@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>OpenNexus overview</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#A9A6FF}a:hover{color:#D4D2FF}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;padding:0 7px;box-sizing:border-box;border-radius:7px;background:#26272D;border:1px solid #3A3B43;border-bottom-width:3px;font:500 13px/1 "Geist Mono",ui-monospace,monospace;color:#F2F2F5}
+@keyframes pulse{0%,100%{opacity:.55}50%{opacity:1}}
+@keyframes draw{from{stroke-dashoffset:400}to{stroke-dashoffset:0}}
+.drawn path{stroke-dasharray:400;animation:draw 1.6s cubic-bezier(.2,.8,.2,1) both}
+.ghost{animation:pulse 2.4s ease-in-out infinite}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; background: #121317; color: #F2F2F5; font-family: Geist, -apple-system, system-ui, sans-serif; position: relative; overflow: hidden">
+  <div style="position: absolute; inset: 0; background-image: radial-gradient(#2A2C33 1px, transparent 1.2px); background-size: 24px 24px; opacity: .7"></div>
+
+  <div style="position: absolute; left: 80px; top: 72px; width: 560px; display: flex; flex-direction: column; gap: 28px">
+    <div style="display: flex; align-items: center; gap: 14px">
+      <svg width="44" height="44" viewBox="0 0 44 44" aria-hidden="true"><rect width="44" height="44" rx="11" fill="#1E1F25" stroke="#34353D"/><path d="M14 30 L22 14 L30 30" fill="none" stroke="#7B74FF" stroke-width="2.4" stroke-linecap="round"/><path d="M14 30 L30 30" fill="none" stroke="#3FD3C9" stroke-width="2.4" stroke-linecap="round"/><circle cx="22" cy="14" r="4.2" fill="#F2F2F5"/><circle cx="14" cy="30" r="3.6" fill="#7B74FF"/><circle cx="30" cy="30" r="3.6" fill="#3FD3C9"/></svg>
+      <div style="font: 500 14px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #9C9CA8">OPENNEXUS · V1 DESIGN · OCT 13, 2026</div>
+    </div>
+    <h1 style="margin: 0; font: 800 104px/0.92 'Bricolage Grotesque', Geist, sans-serif; letter-spacing: -0.035em">Open<span style="color: #8F89FF">Nexus</span></h1>
+    <p style="margin: 0; font: 500 30px/1.25 'Bricolage Grotesque', sans-serif; color: #E4E4EA; letter-spacing: -0.01em">Think at the speed of your keyboard.</p>
+    <p style="margin: 0; font-size: 17px; line-height: 1.55; color: #B4B4BE; text-wrap: pretty">A native macOS 27 app for mind maps and technical diagrams. Xmind’s key flow, extended to flowcharts, DFDs, architecture and threat models, with on-device AI that suggests rather than interrupts.</p>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 6px">
+      <div style="font: 500 12px/1 'Geist Mono', monospace; letter-spacing: .1em; color: #8A8A96">WHAT THE PROTOTYPE MUST PROVE</div>
+      <div style="display: flex; gap: 12px; align-items: flex-start"><span style="font: 500 13px/22px 'Geist Mono', monospace; color: #8F89FF">01</span><span style="font-size: 15px; line-height: 22px; color: #E4E4EA">A 20-topic mind map in under two minutes, mouse untouched</span></div>
+      <div style="display: flex; gap: 12px; align-items: flex-start"><span style="font: 500 13px/22px 'Geist Mono', monospace; color: #8F89FF">02</span><span style="font-size: 15px; line-height: 22px; color: #E4E4EA">The same keys (Tab, Return, arrows, Space) build every diagram type</span></div>
+      <div style="display: flex; gap: 12px; align-items: flex-start"><span style="font: 500 13px/22px 'Geist Mono', monospace; color: #8F89FF">03</span><span style="font-size: 15px; line-height: 22px; color: #E4E4EA">Converting a map to another type is one animated, reversible action</span></div>
+      <div style="display: flex; gap: 12px; align-items: flex-start"><span style="font: 500 13px/22px 'Geist Mono', monospace; color: #8F89FF">04</span><span style="font-size: 15px; line-height: 22px; color: #E4E4EA">Local AI is a quiet collaborator inside the canvas</span></div>
+      <div style="display: flex; gap: 12px; align-items: flex-start"><span style="font: 500 13px/22px 'Geist Mono', monospace; color: #8F89FF">05</span><span style="font-size: 15px; line-height: 22px; color: #E4E4EA">The first five minutes teach the keyboard by doing</span></div>
+    </div>
+  </div>
+
+  <!-- hero map -->
+  <div style="position: absolute; left: 700px; top: 96px; width: 680px; height: 520px">
+    <svg class="drawn" width="680" height="520" viewBox="0 0 680 520" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round">
+      <path d="M340 260 C 420 260, 420 120, 500 120" stroke="#8F89FF" stroke-width="3"/>
+      <path d="M340 260 C 430 260, 430 260, 520 260" stroke="#3FD3C9" stroke-width="3"/>
+      <path d="M340 260 C 420 260, 420 400, 500 400" stroke="#F2B135" stroke-width="3"/>
+      <path d="M340 260 C 260 260, 260 150, 180 150" stroke="#F06C4B" stroke-width="3"/>
+      <path d="M340 260 C 260 260, 260 370, 180 370" stroke="#E25CA0" stroke-width="3"/>
+      <path d="M592 120 C 612 120, 612 84, 632 84" stroke="#8F89FF" stroke-width="1.6"/>
+      <path d="M592 120 C 612 120, 612 156, 632 156" stroke="#8F89FF" stroke-width="1.6"/>
+      <path d="M180 370 C 160 370, 160 330, 140 330" stroke="#E25CA0" stroke-width="1.6"/>
+      <path d="M180 370 C 160 370, 160 410, 140 410" stroke="#E25CA0" stroke-width="1.6"/>
+      <path d="M520 400 C 560 470, 300 500, 200 420" stroke="#F2B135" stroke-width="1.6" stroke-dasharray="5 6"/>
+    </svg>
+    <div style="position: absolute; left: 262px; top: 232px; width: 156px; height: 56px; box-sizing: border-box; border-radius: 16px; background: #F2F2F5; color: #121317; display: flex; align-items: center; justify-content: center; font: 700 19px/1 'Bricolage Grotesque', sans-serif; box-shadow: 0 0 0 4px rgba(143,137,255,.35), 0 12px 40px rgba(0,0,0,.5)">Launch plan</div>
+    <div style="position: absolute; left: 456px; top: 100px; width: 136px; height: 40px; box-sizing: border-box; border-radius: 11px; background: #1C1D22; border: 1.5px solid #8F89FF; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500">Positioning</div>
+    <div style="position: absolute; left: 520px; top: 240px; width: 120px; height: 40px; box-sizing: border-box; border-radius: 11px; background: #1C1D22; border: 1.5px solid #3FD3C9; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500">Pricing</div>
+    <div style="position: absolute; left: 456px; top: 380px; width: 120px; height: 40px; box-sizing: border-box; border-radius: 11px; background: #1C1D22; border: 1.5px solid #F2B135; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500">Channels</div>
+    <div style="position: absolute; left: 60px; top: 130px; width: 120px; height: 40px; box-sizing: border-box; border-radius: 11px; background: #1C1D22; border: 1.5px solid #F06C4B; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500">Risks</div>
+    <div style="position: absolute; left: 60px; top: 350px; width: 120px; height: 40px; box-sizing: border-box; border-radius: 11px; background: #1C1D22; border: 1.5px solid #E25CA0; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 500">Timeline</div>
+    <div style="position: absolute; left: 600px; top: 70px; font-size: 13px; color: #C9C9D2">Developers</div>
+    <div style="position: absolute; left: 600px; top: 146px; font-size: 13px; color: #C9C9D2">Teams</div>
+    <div style="position: absolute; left: 32px; top: 320px; font-size: 13px; color: #C9C9D2; width: 100px; text-align: right">Beta · Nov</div>
+    <div style="position: absolute; left: 32px; top: 400px; font-size: 13px; color: #C9C9D2; width: 100px; text-align: right">GA · Jan</div>
+    <div class="ghost" style="position: absolute; left: 604px; top: 236px; width: 72px; height: 32px; box-sizing: border-box; border-radius: 10px; border: 1.5px dashed #3FD3C9; color: #8FE7E0; display: flex; align-items: center; justify-content: center; font-size: 13px">Free tier</div>
+    <div style="position: absolute; left: 304px; top: 466px; padding: 4px 10px; border-radius: 999px; background: #F2B135; color: #121317; font: 600 12px/1.2 'Geist Mono', monospace">drives</div>
+  </div>
+
+  <!-- signal legend -->
+  <div style="position: absolute; left: 700px; top: 640px; width: 680px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; background: #1A1B20; border: 1px solid #2B2C33">
+      <div style="display: flex; gap: 8px; align-items: center"><span style="width: 10px; height: 10px; border-radius: 3px; background: #8F89FF"></span><span style="font: 600 13px/1 'Geist Mono', monospace; letter-spacing: .06em">IRIS</span></div>
+      <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE">Select &amp; Edit. Selection ring, caret, focus.</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; background: #1A1B20; border: 1px solid #2B2C33">
+      <div style="display: flex; gap: 8px; align-items: center"><span style="width: 10px; height: 10px; border-radius: 3px; background: #F2B135"></span><span style="font: 600 13px/1 'Geist Mono', monospace; letter-spacing: .06em">AMBER</span></div>
+      <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE">Connect mode. Hint chips, edge being drawn.</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 14px; background: #1A1B20; border: 1px solid #2B2C33">
+      <div style="display: flex; gap: 8px; align-items: center"><span style="width: 10px; height: 10px; border-radius: 3px; background: #3FD3C9"></span><span style="font: 600 13px/1 'Geist Mono', monospace; letter-spacing: .06em">AURORA</span></div>
+      <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE">Local AI. Ghost nodes, sparkle, model chip.</div>
+    </div>
+  </div>
+
+  <!-- principles strip -->
+  <div style="position: absolute; left: 80px; right: 80px; bottom: 56px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px 32px; padding-top: 24px; border-top: 1px solid #2B2C33">
+    <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE"><b style="color: #F2F2F5">Keyboard first.</b> Every action has a key path.</div>
+    <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE"><b style="color: #F2F2F5">Zero latency.</b> Caret live at 0 ms; layout follows.</div>
+    <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE"><b style="color: #F2F2F5">Structure is automatic.</b> Nobody aligns boxes.</div>
+    <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE"><b style="color: #F2F2F5">Beautiful by default.</b> Zero choices, slide-ready.</div>
+    <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE"><b style="color: #F2F2F5">One model, many views.</b> Map, outline, DFD: one graph.</div>
+    <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE"><b style="color: #F2F2F5">Motion explains change.</b> Never decoration.</div>
+    <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE"><b style="color: #F2F2F5">Calm chrome.</b> Glass floats; canvas stays opaque.</div>
+    <div style="font-size: 13px; line-height: 1.45; color: #B4B4BE"><b style="color: #F2F2F5">Local and owned.</b> Plain files, on-device AI.</div>
+  </div>
+
+  <div style="position: absolute; left: 80px; top: 712px; display: flex; gap: 8px; align-items: center; font-size: 13px; color: #9C9CA8">
+    <span>Start with the live prototype below:</span><span class="k">Tab</span><span class="k">↩</span><span class="k">⇧⌘L</span><span class="k">⌥⌘T</span><span class="k">⌥Space</span>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

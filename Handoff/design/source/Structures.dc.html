@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Same map, other structures</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.fr{display:flex;flex-direction:column;gap:10px}
+.art{width:100%;height:400px;border-radius:16px;background:#F7F7F5;border:1px solid #E2E2E6}
+.hd{display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:600}
+.nt{font-size:12px;line-height:1.4;color:#4A4A55}
+svg text{font-family:-apple-system,Geist,sans-serif}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 56px 72px; background: #FFFFFF; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">S4 · STRUCTURES · ONE GRAPH, MANY LAYOUTS</div>
+      <h1 style="margin: 0; font: 700 40px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">The same “Launch plan” in every Xmind structure</h1>
+    </div>
+    <div style="font-size: 13px; color: #4A4A55; display: flex; gap: 6px; align-items: center"><span class="k">⌥⌘1 … 9</span>cycles the selected branch’s structure · 450–600 ms morph</div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px">
+
+    <div class="fr"><div class="hd">Logic Chart<span class="k">⌥⌘2</span></div>
+      <svg class="art" viewBox="0 0 312 400" aria-hidden="true" style="fill: none; stroke-linecap: round">
+        <g stroke-width="2"><path d="M96 200 C 112 200, 112 70, 128 70" stroke="#5850EC"></path><path d="M96 200 C 112 200, 112 160, 128 160" stroke="#0F9F9A"></path><path d="M96 200 C 112 200, 112 250, 128 250" stroke="#E0A100"></path><path d="M96 200 C 112 200, 112 330, 128 330" stroke="#D6408B"></path></g>
+        <g stroke-width="1.4"><path d="M210 70 C 220 70, 220 54, 230 54 M210 70 C 220 70, 220 86, 230 86" stroke="#5850EC"></path><path d="M210 160 C 220 160, 220 144, 230 144 M210 160 C 220 160, 220 176, 230 176" stroke="#0F9F9A"></path><path d="M210 250 C 220 250, 220 234, 230 234 M210 250 C 220 250, 220 266, 230 266" stroke="#E0A100"></path><path d="M210 330 C 220 330, 220 314, 230 314 M210 330 C 220 330, 220 346, 230 346" stroke="#D6408B"></path></g>
+        <rect x="10" y="184" width="86" height="32" rx="10" fill="#17171C"></rect><text x="22" y="205" font-size="12" font-weight="700" fill="#FFFFFF">Launch plan</text>
+        <g fill="#FFFFFF" stroke-width="1.6"><rect x="128" y="58" width="82" height="24" rx="7" stroke="#5850EC"></rect><rect x="128" y="148" width="82" height="24" rx="7" stroke="#0F9F9A"></rect><rect x="128" y="238" width="82" height="24" rx="7" stroke="#E0A100"></rect><rect x="128" y="318" width="82" height="24" rx="7" stroke="#D6408B"></rect></g>
+        <g font-size="11" fill="#17171C"><text x="138" y="74">Positioning</text><text x="138" y="164">Pricing</text><text x="138" y="254">Channels</text><text x="138" y="334">Timeline</text></g>
+        <g font-size="10" fill="#4A4A55"><text x="234" y="58">Developers</text><text x="234" y="90">Teams</text><text x="234" y="148">Free tier</text><text x="234" y="180">Pro</text><text x="234" y="238">Newsletter</text><text x="234" y="270">Product Hunt</text><text x="234" y="318">Beta · Nov</text><text x="234" y="350">GA · Jan</text></g>
+      </svg>
+      <div class="nt">Tab grows right; Return adds below. Arguments and breakdowns.</div></div>
+
+    <div class="fr"><div class="hd">Org Chart<span class="k">⌥⌘3</span></div>
+      <svg class="art" viewBox="0 0 312 400" aria-hidden="true" style="fill: none; stroke-linecap: round">
+        <path d="M156 66 V 90 M42 90 H 270 M42 90 V 110 M118 90 V 110 M194 90 V 110 M270 90 V 110" stroke="#9A9AA6" stroke-width="1.6"></path>
+        <path d="M18 134 V 196 H 26 M18 166 H 26 M94 134 V 196 H 102 M94 166 H 102 M170 134 V 196 H 178 M170 166 H 178 M246 134 V 196 H 254 M246 166 H 254" stroke="#C9C9D2" stroke-width="1.4"></path>
+        <rect x="106" y="34" width="100" height="32" rx="10" fill="#17171C"></rect><text x="122" y="55" font-size="12" font-weight="700" fill="#FFFFFF">Launch plan</text>
+        <g fill="#FFFFFF" stroke-width="1.6"><rect x="10" y="110" width="66" height="24" rx="7" stroke="#5850EC"></rect><rect x="86" y="110" width="66" height="24" rx="7" stroke="#0F9F9A"></rect><rect x="162" y="110" width="66" height="24" rx="7" stroke="#E0A100"></rect><rect x="238" y="110" width="66" height="24" rx="7" stroke="#D6408B"></rect></g>
+        <g font-size="9.5" fill="#17171C"><text x="16" y="126">Positioning</text><text x="100" y="126">Pricing</text><text x="168" y="126">Channels</text><text x="246" y="126">Timeline</text></g>
+        <g font-size="9" fill="#4A4A55"><text x="28" y="169">Devs</text><text x="28" y="199">Teams</text><text x="104" y="169">Free</text><text x="104" y="199">Pro</text><text x="180" y="169">News</text><text x="180" y="199">PH</text><text x="256" y="169">Beta</text><text x="256" y="199">GA</text></g>
+        <rect x="20" y="250" width="272" height="120" rx="12" fill="#FFFFFF" stroke="#E2E2E6"></rect><text x="36" y="276" font-size="11" font-weight="600" fill="#17171C">Org chart in technical canvases</text><text x="36" y="298" font-size="10.5" fill="#4A4A55">Tab adds a report below,</text><text x="36" y="316" font-size="10.5" fill="#4A4A55">Return a peer beside.</text><text x="36" y="342" font-size="10.5" fill="#4A4A55">Leaves stack in columns past 6.</text>
+      </svg>
+      <div class="nt">Top-down tree. Teams and reporting lines.</div></div>
+
+    <div class="fr"><div class="hd">Timeline<span class="k">⌥⌘4</span></div>
+      <svg class="art" viewBox="0 0 312 400" aria-hidden="true" style="fill: none; stroke-linecap: round">
+        <path d="M74 90 H 300" stroke="#17171C" stroke-width="2.5"></path>
+        <rect x="8" y="74" width="66" height="32" rx="10" fill="#17171C"></rect><text x="14" y="94" font-size="10.5" font-weight="700" fill="#FFFFFF">Launch</text>
+        <g fill="#FFFFFF" stroke-width="1.8"><rect x="86" y="78" width="62" height="24" rx="12" stroke="#5850EC"></rect><rect x="160" y="78" width="62" height="24" rx="12" stroke="#0F9F9A"></rect><rect x="234" y="78" width="66" height="24" rx="12" stroke="#E0A100"></rect></g>
+        <g font-size="10" fill="#17171C" font-weight="600"><text x="100" y="94">Sep</text><text x="176" y="94">Oct</text><text x="250" y="94">Nov</text></g>
+        <path d="M92 102 V 176 H 100 M92 146 H 100 M166 102 V 146 H 174 M240 102 V 206 H 248 M240 146 H 248 M240 176 H 248" stroke="#C9C9D2" stroke-width="1.4"></path>
+        <g font-size="9.5" fill="#4A4A55"><text x="102" y="150">Research</text><text x="102" y="180">Pricing</text><text x="176" y="150">Beta</text><text x="250" y="150">Press</text><text x="250" y="180">GA</text><text x="250" y="210">Retro</text></g>
+        <rect x="20" y="260" width="272" height="110" rx="12" fill="#FFFFFF" stroke="#E2E2E6"></rect><text x="36" y="286" font-size="11" font-weight="600" fill="#17171C">Horizontal or vertical axis</text><text x="36" y="308" font-size="10.5" fill="#4A4A55">Return adds the next event</text><text x="36" y="326" font-size="10.5" fill="#4A4A55">on the axis; Tab adds detail</text><text x="36" y="344" font-size="10.5" fill="#4A4A55">under it. Roadmaps, history.</text>
+      </svg>
+      <div class="nt">Events ride the axis; details hang beneath.</div></div>
+
+    <div class="fr"><div class="hd">Fishbone<span class="k">⌥⌘5</span></div>
+      <svg class="art" viewBox="0 0 312 400" aria-hidden="true" style="fill: none; stroke-linecap: round">
+        <path d="M14 200 H 226" stroke="#17171C" stroke-width="3"></path>
+        <path d="M226 186 L 238 200 L 226 214" stroke="#17171C" stroke-width="3"></path>
+        <rect x="236" y="180" width="70" height="40" rx="10" fill="#17171C"></rect><text x="244" y="198" font-size="10" font-weight="700" fill="#FFFFFF">Late</text><text x="244" y="211" font-size="10" font-weight="700" fill="#FFFFFF">launch</text>
+        <g stroke-width="2"><path d="M110 200 L 70 90" stroke="#5850EC"></path><path d="M200 200 L 160 90" stroke="#0F9F9A"></path><path d="M110 200 L 70 310" stroke="#E0A100"></path><path d="M200 200 L 160 310" stroke="#D6408B"></path></g>
+        <g stroke-width="1.3" stroke="#9A9AA6"><path d="M92 150 H 50 M84 128 H 44 M182 150 H 140 M174 128 H 130 M92 250 H 50 M182 250 H 140 M174 272 H 130"></path></g>
+        <g font-size="10.5" font-weight="600" fill="#17171C"><text x="44" y="82">People</text><text x="136" y="82">Process</text><text x="40" y="330">Tools</text><text x="136" y="330">Vendors</text></g>
+        <g font-size="9" fill="#4A4A55"><text x="16" y="146">Hiring</text><text x="12" y="124">PTO</text><text x="104" y="146">Reviews</text><text x="98" y="124">Scope</text><text x="12" y="246">CI flake</text><text x="104" y="246">SLA</text><text x="92" y="268">Contract</text></g>
+      </svg>
+      <div class="nt">Return adds the next bone; Tab adds a cause on it. Root-cause analysis.</div></div>
+
+    <div class="fr"><div class="hd">Matrix<span class="k">⌥⌘6</span></div>
+      <svg class="art" viewBox="0 0 312 400" aria-hidden="true" style="fill: none">
+        <rect x="16" y="16" width="280" height="40" rx="10" fill="#17171C"></rect><text x="112" y="41" font-size="12" font-weight="700" fill="#FFFFFF">Launch SWOT</text>
+        <g stroke="#E2E2E6" fill="#FFFFFF"><rect x="16" y="68" width="136" height="146" rx="10"></rect><rect x="160" y="68" width="136" height="146" rx="10"></rect><rect x="16" y="222" width="136" height="146" rx="10"></rect><rect x="160" y="222" width="136" height="146" rx="10"></rect></g>
+        <g font-size="11" font-weight="700"><text x="28" y="90" fill="#2F7D4F">Strengths</text><text x="172" y="90" fill="#C25E00">Weaknesses</text><text x="28" y="244" fill="#1E6FB8">Opportunities</text><text x="172" y="244" fill="#C62F35">Threats</text></g>
+        <g fill="#F1F1F4"><rect x="28" y="102" width="110" height="20" rx="6"></rect><rect x="28" y="128" width="96" height="20" rx="6"></rect><rect x="172" y="102" width="100" height="20" rx="6"></rect><rect x="28" y="256" width="104" height="20" rx="6"></rect><rect x="28" y="282" width="80" height="20" rx="6"></rect><rect x="172" y="256" width="110" height="20" rx="6"></rect><rect x="172" y="282" width="92" height="20" rx="6"></rect></g>
+        <g font-size="9.5" fill="#2C2C33"><text x="36" y="116">Keyboard flow</text><text x="36" y="142">Local AI</text><text x="180" y="116">New brand</text><text x="36" y="270">Xmind switchers</text><text x="36" y="296">Engineers</text><text x="180" y="270">Incumbent price</text><text x="180" y="296">Cloud AI</text></g>
+      </svg>
+      <div class="nt">Return moves to the next cell; Tab adds an item inside. SWOT, 2×2.</div></div>
+
+    <div class="fr"><div class="hd">Brace Map<span class="k">⌥⌘7</span></div>
+      <svg class="art" viewBox="0 0 312 400" aria-hidden="true" style="fill: none; stroke-linecap: round">
+        <rect x="10" y="184" width="76" height="32" rx="10" fill="#17171C"></rect><text x="16" y="205" font-size="11" font-weight="700" fill="#FFFFFF">Launch plan</text>
+        <path d="M104 60 q -10 0 -10 12 v 110 q 0 18 -10 18 q 10 0 10 18 v 110 q 0 12 10 12" stroke="#17171C" stroke-width="2"></path>
+        <g fill="#FFFFFF" stroke-width="1.6"><rect x="112" y="60" width="78" height="24" rx="7" stroke="#5850EC"></rect><rect x="112" y="150" width="78" height="24" rx="7" stroke="#0F9F9A"></rect><rect x="112" y="240" width="78" height="24" rx="7" stroke="#E0A100"></rect><rect x="112" y="316" width="78" height="24" rx="7" stroke="#D6408B"></rect></g>
+        <g font-size="10.5" fill="#17171C"><text x="120" y="76">Positioning</text><text x="120" y="166">Pricing</text><text x="120" y="256">Channels</text><text x="120" y="332">Timeline</text></g>
+        <path d="M206 48 q -6 0 -6 8 v 10 q 0 6 -6 6 q 6 0 6 6 v 10 q 0 8 6 8 M206 138 q -6 0 -6 8 v 10 q 0 6 -6 6 q 6 0 6 6 v 10 q 0 8 6 8" stroke="#9A9AA6" stroke-width="1.4"></path>
+        <g font-size="9.5" fill="#4A4A55"><text x="212" y="58">Developers</text><text x="212" y="90">Teams</text><text x="212" y="148">Free tier</text><text x="212" y="180">Pro</text></g>
+      </svg>
+      <div class="nt">Part–whole: children grouped by a curly brace.</div></div>
+
+    <div class="fr"><div class="hd">Tree Table<span class="k">⌥⌘8</span></div>
+      <svg class="art" viewBox="0 0 312 400" aria-hidden="true" style="fill: none">
+        <rect x="14" y="20" width="284" height="34" rx="8" fill="#17171C"></rect><text x="118" y="42" font-size="12" font-weight="700" fill="#FFFFFF">Launch plan</text>
+        <g stroke="#E2E2E6" fill="#FFFFFF"><rect x="14" y="60" width="96" height="74"></rect><rect x="110" y="60" width="188" height="37"></rect><rect x="110" y="97" width="188" height="37"></rect><rect x="14" y="134" width="96" height="74"></rect><rect x="110" y="134" width="188" height="37"></rect><rect x="110" y="171" width="188" height="37"></rect><rect x="14" y="208" width="96" height="74"></rect><rect x="110" y="208" width="188" height="37"></rect><rect x="110" y="245" width="188" height="37"></rect><rect x="14" y="282" width="96" height="74"></rect><rect x="110" y="282" width="188" height="37"></rect><rect x="110" y="319" width="188" height="37"></rect></g>
+        <g fill="#5850EC"><rect x="14" y="60" width="4" height="74"></rect></g><g fill="#0F9F9A"><rect x="14" y="134" width="4" height="74"></rect></g><g fill="#E0A100"><rect x="14" y="208" width="4" height="74"></rect></g><g fill="#D6408B"><rect x="14" y="282" width="4" height="74"></rect></g>
+        <g font-size="10.5" font-weight="600" fill="#17171C"><text x="26" y="101">Positioning</text><text x="26" y="175">Pricing</text><text x="26" y="249">Channels</text><text x="26" y="323">Timeline</text></g>
+        <g font-size="10" fill="#4A4A55"><text x="122" y="83">Developers</text><text x="122" y="120">Teams</text><text x="122" y="157">Free tier</text><text x="122" y="194">Pro</text><text x="122" y="231">Newsletter</text><text x="122" y="268">Product Hunt</text><text x="122" y="305">Beta · Nov</text><text x="122" y="342">GA · Jan</text></g>
+      </svg>
+      <div class="nt">Nested cells: Tab adds a column, Return a row below.</div></div>
+
+    <div class="fr"><div class="hd">Mixed structure<span class="cap">PER BRANCH</span></div>
+      <svg class="art" viewBox="0 0 312 400" aria-hidden="true" style="fill: none; stroke-linecap: round">
+        <g stroke-width="2"><path d="M150 120 C 175 120, 175 70, 200 70" stroke="#5850EC"></path><path d="M150 120 C 175 120, 175 170, 200 170" stroke="#0F9F9A"></path><path d="M62 120 C 40 120, 40 70, 20 70" stroke="#E4572E"></path></g>
+        <rect x="62" y="104" width="88" height="32" rx="10" fill="#17171C"></rect><text x="72" y="125" font-size="11" font-weight="700" fill="#FFFFFF">Launch plan</text>
+        <g fill="#FFFFFF" stroke-width="1.6"><rect x="200" y="58" width="80" height="24" rx="7" stroke="#5850EC"></rect><rect x="200" y="158" width="80" height="24" rx="7" stroke="#0F9F9A"></rect></g>
+        <g font-size="10.5" fill="#17171C"><text x="208" y="74">Positioning</text><text x="208" y="174">Pricing</text><text x="16" y="62">Risks</text></g>
+        <path d="M106 136 V 220" stroke="#E0A100" stroke-width="2"></path>
+        <rect x="70" y="220" width="72" height="24" rx="7" fill="#FFFFFF" stroke="#E0A100" stroke-width="1.6"></rect><text x="80" y="236" font-size="10.5" fill="#17171C">Root cause</text>
+        <path d="M30 330 H 250" stroke="#E0A100" stroke-width="2.4"></path><path d="M80 330 L 60 270 M150 330 L 130 270 M80 330 L 60 380 M150 330 L 130 380" stroke="#E0A100" stroke-width="1.6"></path><path d="M106 244 V 330" stroke="#E0A100" stroke-width="1.6" stroke-dasharray="3 4"></path>
+        <rect x="250" y="316" width="50" height="28" rx="7" fill="#E0A100"></rect><text x="258" y="334" font-size="9.5" font-weight="700" fill="#17171C">Churn</text>
+        <text x="16" y="296" font-size="9.5" fill="#4A4A55">this branch is a fishbone</text>
+      </svg>
+      <div class="nt">Any branch can switch structure while the rest stays a mind map.</div></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

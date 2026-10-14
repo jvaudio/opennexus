@@ -1,0 +1,95 @@
+{
+  "$comment": "OpenNexus 'Luminous Graphite' tokens, transcribed from artboards 02 System, 03 Themes, 04 Motion and NS Node styles. Source of truth is the artboards; if this file and an artboard disagree, the artboard wins and this file should be fixed.",
+  "signal": {
+    "iris":   { "role": "Select / Edit mode, primary accent", "light": "#5850EC", "dark": "#8F89FF" },
+    "amber":  { "role": "Connect mode (ink text only, never white text)", "light": "#F2B135", "dark": "#F2B135" },
+    "aurora": { "role": "AI (ghosts, AI chip, AI panel)", "light": "#0F9F9A", "dark": "#3FD3C9" }
+  },
+  "neutral": {
+    "light": { "canvas": "#F7F7F5", "surface": "#FFFFFF", "line": "#E2E2E6", "ink3": "#6B6B76", "ink2": "#4A4A55", "ink": "#17171C" },
+    "dark":  { "canvas": "#121317", "surface": "#1C1D22", "line": "#2B2C33", "ink3": "#8A8A96", "ink2": "#B4B4BE", "ink": "#F2F2F5" }
+  },
+  "branchPalette": {
+    "$comment": "Classic theme, 8 colours, assigned to main branches in order. Smart Color (⇧⌘R) reshuffles.",
+    "iris": "#5850EC", "coral": "#E4572E", "teal": "#0F9F9A", "gold": "#E0A100",
+    "rose": "#D6408B", "sky": "#1E8BE0", "lime": "#5AA02C", "violet": "#9B51E0"
+  },
+  "semantic": {
+    "$comment": "Never colour alone: every semantic state carries a glyph or pattern.",
+    "success": "check glyph", "warning": "triangle glyph", "critical": "octagon glyph",
+    "trustHigh": "solid outline", "trustMedium": "dashed + hatch", "trustLow": "dotted + dense"
+  },
+  "type": {
+    "chrome": { "family": "SF Pro", "sizes": [13, 11, 10], "dynamicType": true },
+    "node": { "family": "SF Pro (Classic theme)", "root": 22, "main": 16, "sub": 14, "minAt100": 12 },
+    "nodeSerif": { "family": "New York (Paper theme)" },
+    "mono": { "family": "SF Mono", "use": "code, keys, metadata, ports, edge labels" },
+    "designFonts": {
+      "$comment": "Fonts used in the design artboards only. Ship the app with system fonts (SF Pro / SF Mono / New York) except the Sketch node style, which needs a handwriting font (Kalam, OFL) or an equivalent bundled OFL font.",
+      "display": "Bricolage Grotesque", "ui": "Geist", "mono": "Geist Mono", "sketch": "Kalam"
+    }
+  },
+  "radius": { "node": 10, "root": 16, "panel": 14, "sheet": 20, "pill": 999 },
+  "spacing": { "grid": 4, "layout": { "siblingGap": 14, "levelGap": 56, "branchGap": 28 } },
+  "elevation": {
+    "0": "resting",
+    "1": "hover",
+    "2": "drag lift: y +6, blur 24",
+    "3": "glass HUD (Liquid Glass)"
+  },
+  "materials": {
+    "glass": "Toolbar, palette, floating toolbar, HUDs, prompt bar. Never behind node text.",
+    "opaque": "Canvas and nodes. Reduce Transparency swaps all glass for opaque surface."
+  },
+  "motion": {
+    "rules": [
+      "Text input is live at 0 ms; layout animates after, never before, the user can type.",
+      "New input retargets in-flight springs; never queue animations.",
+      "Reduce Motion: replace movement with a 150 ms cross-fade."
+    ],
+    "curves": {
+      "snap":   { "type": "spring", "response": 0.28, "dampingFraction": 0.80, "use": "create, delete, chips" },
+      "settle": { "type": "spring", "response": 0.36, "dampingFraction": 0.68, "use": "reorder, reparent lift" },
+      "glide":  { "type": "cubicBezier", "points": [0.65, 0, 0.35, 1], "use": "camera, morphs, convert" },
+      "exit":   { "type": "cubicBezier", "points": [0.4, 0, 1, 1], "use": "dismiss, shrink away" }
+    },
+    "moments": {
+      "createNode":        { "ms": 180, "curve": "snap" },
+      "deleteNode":        { "ms": 160, "curve": "exit→snap" },
+      "reorderReparent":   { "ms": 250, "curve": "settle" },
+      "foldUnfold":        { "ms": 220, "curve": "glide" },
+      "autoLayoutReflow":  { "ms": 300, "curve": "snap" },
+      "structureChange":   { "ms": "450–600", "curve": "glide" },
+      "diagramConversion": { "ms": 600, "curve": "glide" },
+      "connectMode":       { "ms": 300, "curve": "snap · glide", "hintStaggerMs": 40 },
+      "focusDrillDown":    { "ms": 400, "curve": "glide", "blurPx": 8, "dimTo": 0.3 },
+      "presentationStep":  { "ms": 500, "curve": "glide" },
+      "aiSuggestion":      { "msEach": 250, "curve": "snap", "ghostOpacity": 0.5 },
+      "nodeStyleCycle":    { "ms": 300, "curve": "glide" }
+    }
+  },
+  "canvasStatePill": {
+    "$comment": "Always visible bottom-left. Shape + colour + word.",
+    "select":  { "glyph": "square", "color": "iris" },
+    "edit":    { "glyph": "bar (caret)", "color": "iris" },
+    "connect": { "glyph": "dash (edge)", "color": "amber" }
+  },
+  "themes": {
+    "required": ["Classic", "Graphite", "Blueprint", "High Contrast"],
+    "launchSet": ["Classic", "Paper", "Graphite", "Midnight Neon", "Blueprint", "Whiteboard", "Pastel", "High Contrast", "Mono Print", "Solarized", "Skeleton", "Skeleton Dark"],
+    "contrast": "All themes WCAG AA for node text; High Contrast AAA.",
+    "file": ".nexustheme (export/import from the theme builder)"
+  },
+  "nodeStyles": {
+    "$comment": "Independent of theme (colours) and structure (layout). Exact CSS per role is in design/source/NodeStyles.dc.html (defs array) and Prototype.dc.html (styleLook()). Cycle with ⌥⌘S, 300 ms morph.",
+    "outline":   "White card, 2 pt border in branch colour; ink root. Default.",
+    "soft":      "Tinted fills (14% main, 7% sub), no borders, generous radius.",
+    "solid":     "Saturated branch-colour fill, white type (ink on light hues).",
+    "underline": "Text sits on its branch line (3 pt main, 1.5 pt sub); pill-outlined root.",
+    "capsule":   "Full pill radius, 10% tint + 60% hairline ring.",
+    "sketch":    "Wobble borders (asymmetric radii), handwriting font, warm paper canvas.",
+    "brutal":    "2–2.5 pt ink borders, hard offset shadow in branch colour, elbow lines, yellow root.",
+    "glow":      "Dark canvas, hairline neon border + outer glow, glowing lines.",
+    "minimal":   "No boxes; weight and colour only; dotted hairline branches."
+  }
+}

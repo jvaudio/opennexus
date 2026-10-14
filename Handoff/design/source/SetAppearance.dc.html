@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Settings, Appearance</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.nav{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;border-radius:8px;font-size:13px}
+.ic{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font:600 11px/1 -apple-system,sans-serif;flex-shrink:0}
+.sec{break-inside:avoid;margin-bottom:16px;display:flex;flex-direction:column;gap:7px}
+.st{font-size:12px;font-weight:600;color:#5D5D68;padding-left:4px}
+.grp{background:#FFFFFF;border-radius:12px;border:1px solid #E6E6EA;overflow:hidden}
+.row{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:7px 14px;border-top:1px solid #F0F0F2;min-height:24px}
+.row:first-child{border-top:0}
+.lb{font-size:13px;color:#17171C}
+.sb{font-size:11.5px;line-height:1.35;color:#6B6B76}
+.pop{height:24px;padding:0 9px;border-radius:6px;border:1px solid #DCDCE2;background:#FFFFFF;font:500 12px/1 -apple-system,Geist,sans-serif;color:#17171C;white-space:nowrap}
+.seg{display:flex;padding:2px;border-radius:7px;background:#EDEDF1}
+.seg span{height:22px;padding:0 8px;display:flex;align-items:center;border-radius:5px;font-size:11.5px;white-space:nowrap}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:22px;padding:0 7px;box-sizing:border-box;border-radius:5px;background:#17171C;color:#FFFFFF;font:500 11.5px/1 "Geist Mono",monospace}
+.ft{font-size:11.5px;line-height:1.4;color:#6B6B76;padding:0 4px}
+.card{break-inside:avoid;margin-bottom:16px;padding:16px;border-radius:12px;background:#FFFFFF;border:1px solid #E6E6EA;display:flex;flex-direction:column;gap:10px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 28px; background: #E4E4E9; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <div style="height: 100%; display: flex; border-radius: 14px; overflow: hidden; background: #F6F6F8; box-shadow: 0 30px 80px rgba(23,23,28,.18)">
+    <div style="width: 236px; flex-shrink: 0; box-sizing: border-box; padding: 16px 10px; background: rgba(236,236,240,.95); border-right: 1px solid #DCDCE2; display: flex; flex-direction: column; gap: 2px">
+      <div style="display: flex; gap: 8px; padding: 2px 6px 14px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+      <label for="ss" style="position: absolute; left: -9999px">Search settings</label>
+      <input id="ss" placeholder="Search" style="height: 28px; box-sizing: border-box; border-radius: 7px; border: 1px solid #DCDCE2; background: #FFFFFF; padding: 0 10px; font: 13px -apple-system, sans-serif; margin-bottom: 10px">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="10">
+        <div class="nav" style="background: {{n.bg}}; color: {{n.fg}}; font-weight: {{n.fw}}"><span class="ic" style="background: {{n.c}}">{{n.g}}</span>{{n.t}}</div>
+      </sc-for>
+      <div style="flex: 1"></div>
+      <span style="font-size: 11px; color: #8A8A96; padding: 0 10px">⌘, opens Settings · ⌘F searches every pane</span>
+    </div>
+    <div style="flex: 1; min-width: 0; box-sizing: border-box; padding: 24px 30px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-direction: column; gap: 4px"><h1 style="margin: 0; font-size: 22px; font-weight: 700">{{title}}</h1><span style="font-size: 13px; color: #5D5D68">{{sub}}</span></div>
+      <div style="columns: 2; column-gap: 22px">
+        <div class="card">
+          <span class="st" style="padding: 0">DEFAULT LOOK FOR NEW DOCUMENTS</span>
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{themes}}" as="t" hint-placeholder-count="8">
+              <div style="display: flex; flex-direction: column; gap: 5px"><div style="height: 44px; border-radius: 8px; background: {{t.bg}}; box-shadow: {{t.ring}}; display: flex; align-items: center; justify-content: center; gap: 3px"><span style="width: 10px; height: 10px; border-radius: 3px; background: {{t.a}}"></span><span style="width: 10px; height: 10px; border-radius: 3px; background: {{t.b}}"></span><span style="width: 10px; height: 10px; border-radius: 3px; background: {{t.c}}"></span></div><span style="font-size: 11px; text-align: center">{{t.n}}</span></div>
+            </sc-for>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center"><span class="lb">Node style</span><button class="pop">Soft ▾</button></div>
+          <div style="height: 92px; border-radius: 10px; background: #F7F7F5; position: relative">
+            <svg width="100%" height="92" viewBox="0 0 400 92" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round"><path d="M175 46 C 200 46, 200 22, 225 22 M175 46 L 225 46 M175 46 C 200 46, 200 70, 225 70" stroke="#5850EC" stroke-width="2"></path><path d="M75 46 C 50 46, 50 30, 30 30" stroke="#E4572E" stroke-width="2"></path></svg>
+            <div style="position: absolute; left: 19%; top: 32px; width: 25%; height: 28px; border-radius: 10px; background: #17171C; color: #FFFFFF; font: 700 12px/28px -apple-system, sans-serif; text-align: center">Launch</div>
+            <div style="position: absolute; left: 56%; top: 10px; width: 20%; height: 24px; border-radius: 8px; background: rgba(88,80,236,.14); font: 500 11px/24px -apple-system, sans-serif; text-align: center">Pricing</div>
+            <div style="position: absolute; left: 56%; top: 34px; width: 20%; height: 24px; border-radius: 8px; background: rgba(15,159,154,.14); font: 500 11px/24px -apple-system, sans-serif; text-align: center">Channels</div>
+            <div style="position: absolute; left: 56%; top: 58px; width: 20%; height: 24px; border-radius: 8px; background: rgba(224,161,0,.18); font: 500 11px/24px -apple-system, sans-serif; text-align: center">Risks</div>
+          </div>
+          <span class="sb">Live preview of theme + node style + colour theme. Documents keep their own look once created.</span>
+        </div>
+        <sc-for list="{{sections}}" as="s" hint-placeholder-count="4">
+          <div class="sec">
+            <span class="st">{{s.t}}</span>
+            <div class="grp">
+              <sc-for list="{{s.rows}}" as="r" hint-placeholder-count="4">
+                <div class="row">
+                  <div style="display: flex; flex-direction: column; gap: 2px; min-width: 0"><span class="lb">{{r.l}}</span><sc-if value="{{r.hasD}}" hint-placeholder-val="{{false}}"><span class="sb">{{r.d}}</span></sc-if></div>
+                  <sc-if value="{{r.isT}}" hint-placeholder-val="{{false}}"><button role="switch" aria-checked="{{r.on}}" aria-label="{{r.l}}" style="flex-shrink: 0; width: 34px; height: 20px; padding: 0; border: 0; border-radius: 999px; background: {{r.tbg}}; position: relative"><span style="position: absolute; top: 2px; left: {{r.kx}}px; width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 2px rgba(0,0,0,.2)"></span></button></sc-if>
+                  <sc-if value="{{r.isS}}" hint-placeholder-val="{{false}}"><button class="pop" aria-label="{{r.l}}">{{r.v}}  ▾</button></sc-if>
+                  <sc-if value="{{r.isG}}" hint-placeholder-val="{{false}}"><div class="seg" role="group" aria-label="{{r.l}}"><sc-for list="{{r.opts}}" as="o" hint-placeholder-count="3"><span style="background: {{o.bg}}; box-shadow: {{o.sh}}; font-weight: {{o.fw}}">{{o.t}}</span></sc-for></div></sc-if>
+                  <sc-if value="{{r.isR}}" hint-placeholder-val="{{false}}"><div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0"><span style="width: 120px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #5850EC {{r.pct}}%, #DCDCE2 {{r.pct}}%); position: relative"><span style="position: absolute; left: calc({{r.pct}}% - 8px); top: -6px; width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,.3)"></span></span><span style="font: 500 11.5px/1 'Geist Mono', monospace; color: #4A4A55; min-width: 38px">{{r.v}}</span></div></sc-if>
+                  <sc-if value="{{r.isB}}" hint-placeholder-val="{{false}}"><button class="pop">{{r.v}}</button></sc-if>
+                  <sc-if value="{{r.isK}}" hint-placeholder-val="{{false}}"><span class="k">{{r.v}}</span></sc-if>
+                  <sc-if value="{{r.isI}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; color: #5D5D68; text-align: right; white-space: nowrap">{{r.v}}</span></sc-if>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{s.hasF}}" hint-placeholder-val="{{false}}"><span class="ft">{{s.f}}</span></sc-if>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ACTIVE = 'Appearance';
+    const N = [['General', 'G', '#8E8E96'], ['Editing', 'E', '#1E8BE0'], ['Appearance', 'A', '#D6408B'], ['Files & Backup', 'F', '#E08A00'], ['AI', '✦', '#0F7F7A'], ['Shortcuts', '⌘', '#5850EC'], ['Export', '↗', '#C25E00'], ['Integrations', '⇄', '#7A4CC2'], ['Privacy & Data', '◐', '#17171C'], ['Accessibility', '◎', '#1E6FB8']];
+    const nav = N.map(([t, g, c]) => ({ t, g, c, bg: t === ACTIVE ? c : 'transparent', fg: t === ACTIVE ? '#FFFFFF' : '#17171C', fw: t === ACTIVE ? 600 : 400 }));
+    const base = (l, d) => ({ l, d: d || '', hasD: !!d, isT: false, isS: false, isG: false, isR: false, isB: false, isK: false, isI: false });
+    const T = (l, d, on) => Object.assign(base(l, d), { isT: true, on: on ? 'true' : 'false', tbg: on ? '#34C759' : '#DCDCE2', kx: on ? 16 : 2 });
+    const S = (l, d, v) => Object.assign(base(l, d), { isS: true, v });
+    const G = (l, d, opts, i) => Object.assign(base(l, d), { isG: true, opts: opts.map((t, j) => ({ t, bg: j === i ? '#FFFFFF' : 'transparent', sh: j === i ? '0 1px 2px rgba(0,0,0,.12)' : 'none', fw: j === i ? 600 : 400 })) });
+    const sec = (t, rows, f) => ({ t, rows, f: f || '', hasF: !!f });
+    const themes = [['Classic', '#F7F7F5', '#5850EC', '#0F9F9A', '#E4572E', true], ['Paper', '#F4EFE4', '#8C5A3C', '#3D6B5A', '#B0413E'], ['Graphite', '#121317', '#8F89FF', '#3FD3C9', '#F2B135'], ['Blueprint', '#0D3560', '#9CC8F5', '#FFFFFF', '#FFD27A'], ['Pastel', '#FBF7F4', '#F4A6A6', '#A6D9C8', '#B9B4F0'], ['Neon', '#0A0820', '#FF4FD8', '#3DF5FF', '#B6FF3D'], ['Solarized', '#FDF6E3', '#268BD2', '#2AA198', '#CB4B16'], ['High Contrast', '#FFFFFF', '#000000', '#000000', '#0040FF']].map(([n, bg, a, b, c, on]) => ({ n, bg, a, b, c, ring: on ? '0 0 0 2px #F6F6F8, 0 0 0 4px #5850EC' : 'inset 0 0 0 1px #DCDCE2' }));
+    const sections = [
+      sec('Theme', [
+        T('Follow system light / dark', 'Themes with paired variants switch automatically', true),
+        S('Colour theme', 'Rainbow, multi-colour, mono or gradient', 'Rainbow · Classic'),
+        S('Diagram font', '', 'SF Pro'),
+        S('CJK font', 'Used only for Chinese, Japanese and Korean text', 'PingFang SC')
+      ]),
+      sec('Canvas', [
+        G('Background', '', ['Plain', 'Dots', 'Lines'], 1),
+        G('Minimap', '', ['While panning', 'Always', 'Never'], 0),
+        S('Minimum text at 100%', '', '12 pt'),
+        T('Adapt text colour to background', '', true)
+      ]),
+      sec('Motion & effects', [
+        G('Animations', 'Reduce Motion in macOS overrides this', ['Full', 'Reduced', 'Off'], 0),
+        T('Glow trail on new edges', '', true),
+        T('Done sparkle', 'When every to-do in a branch is checked', true),
+        T('Depth parallax when zoomed out', '', false),
+        T('Flow dots in Present mode', '', true)
+      ]),
+      sec('ZEN & chrome', [
+        G('ZEN appearance', '', ['Light', 'Dark', 'Ultra light', 'Ultra dark'], 1),
+        T('“Today” focus timer in ZEN', '', true),
+        T('Topic & word count in ZEN', '', true),
+        T('Liquid Glass chrome', 'Off uses opaque bars; Reduce Transparency forces off', true),
+        G('Toolbar', '', ['Icons + text', 'Icons'], 0)
+      ])
+    ];
+    return { nav, sections, themes, title: 'Appearance', sub: 'Defaults for new documents and the app’s chrome. Change a single document from Format › Map.' };
+  }
+}
+</script>
+</body>
+</html>

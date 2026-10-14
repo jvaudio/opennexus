@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>AI settings and Apple Intelligence off</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.side{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;border-radius:8px;font-size:13px}
+.ic{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font:600 11px/1 -apple-system,sans-serif}
+.card{padding:12px 16px;border-radius:14px;background:#FFFFFF;display:flex;gap:14px;align-items:flex-start}
+.radio{width:18px;height:18px;border-radius:50%;box-sizing:border-box;flex-shrink:0;margin-top:2px}
+.row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-top:1px solid #F0F0F2;font-size:13px}
+.tg{width:34px;height:20px;border-radius:999px;position:relative;display:inline-block;flex-shrink:0}
+.tg span{position:absolute;top:2px;width:16px;height:16px;border-radius:50%;background:#FFFFFF}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 40px; background: #E4E4E9; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C; display: flex; gap: 32px">
+  <!-- settings window -->
+  <div style="width: 860px; flex-shrink: 0; border-radius: 16px; overflow: hidden; background: #F6F6F8; box-shadow: 0 30px 80px rgba(23,23,28,.2); display: flex">
+    <div style="width: 200px; flex-shrink: 0; box-sizing: border-box; padding: 16px 10px; background: rgba(238,238,242,.95); border-right: 1px solid #DCDCE2; display: flex; flex-direction: column; gap: 4px">
+      <div style="display: flex; gap: 8px; padding: 2px 6px 18px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+      <div class="side"><span class="ic" style="background: #8E8E96">G</span>General</div>
+      <div class="side"><span class="ic" style="background: #1E8BE0">E</span>Editing</div>
+      <div class="side"><span class="ic" style="background: #D6408B">A</span>Appearance</div>
+      <div class="side"><span class="ic" style="background: #E08A00">F</span>Files &amp; Backup</div>
+      <div class="side" style="background: #0F7F7A; color: #FFFFFF; font-weight: 600"><span class="ic" style="background: rgba(255,255,255,.25)">✦</span>AI</div>
+      <div class="side"><span class="ic" style="background: #5850EC">⌘</span>Shortcuts</div>
+      <div class="side"><span class="ic" style="background: #C25E00">↗</span>Export</div>
+      <div class="side"><span class="ic" style="background: #7A4CC2">⇄</span>Integrations</div>
+      <div class="side"><span class="ic" style="background: #17171C">◐</span>Privacy &amp; Data</div>
+      <div class="side"><span class="ic" style="background: #1E6FB8">◎</span>Accessibility</div>
+    </div>
+    <div style="flex: 1; padding: 26px 30px; display: flex; flex-direction: column; gap: 16px">
+      <h1 style="margin: 0; font-size: 22px; font-weight: 700">AI</h1>
+      <div style="font-size: 13px; color: #4A4A55; line-height: 1.5">Every model runs on this Mac. OpenNexus v1 offers no cloud models, including Private Cloud Compute.</div>
+      <span style="font-size: 12px; font-weight: 600; color: #6B6B76">MODEL</span>
+      <div class="card" style="box-shadow: 0 0 0 2px #0F7F7A">
+        <span class="radio" style="border: 5px solid #0F7F7A"></span>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px"><span style="font-size: 14px; font-weight: 600">Apple on-device model <span style="font-size: 11px; font-weight: 500; padding: 2px 6px; border-radius: 5px; background: #DDF3F1; color: #0B6E6A; margin-left: 4px">Default</span></span><span style="font-size: 12.5px; color: #4A4A55; line-height: 1.45">Foundation Models framework. Text and images, tool calling for diagram actions. No download.</span></div>
+        <span style="font: 500 11.5px/1 'Geist Mono', monospace; color: #2E7D4F">● ready</span>
+      </div>
+      <div class="card" style="border: 1px solid #E2E2E6">
+        <span class="radio" style="border: 1.5px solid #B9B9C2"></span>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 14px; font-weight: 600">Local model via MLX / Core AI</span><span style="font-size: 12.5px; color: #4A4A55">Bring an open-weights model. Stored in ~/Library/Application Support/OpenNexus/Models.</span>
+          <div style="display: flex; gap: 8px"><span style="height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid #DCDCE2; display: flex; align-items: center; font-size: 12.5px">Choose model folder…</span><span style="height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid #DCDCE2; display: flex; align-items: center; font-size: 12.5px; color: #6B6B76">[MODEL NAME] · [SIZE]</span></div></div>
+      </div>
+      <div class="card" style="border: 1px solid #E2E2E6">
+        <span class="radio" style="border: 1.5px solid #B9B9C2"></span>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px"><span style="font-size: 14px; font-weight: 600">Local server on this Mac</span><span style="font-size: 12.5px; color: #4A4A55">An OpenAI-compatible endpoint on localhost, such as Ollama or LM Studio.</span>
+          <div style="display: flex; gap: 8px; align-items: center"><span style="height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid #DCDCE2; display: flex; align-items: center; font: 12.5px 'Geist Mono', monospace">http://localhost:11434</span><span style="font-size: 12px; color: #5850EC">Test connection</span></div></div>
+      </div>
+      <div style="display: flex; flex-direction: column; padding: 0 16px; border-radius: 14px; background: #FFFFFF">
+        <div class="row" style="border-top: 0"><span>Suggest ideas after a pause when creating nodes</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+        <div class="row"><span>AI panel depth</span><span style="display: flex; padding: 2px; border-radius: 7px; background: #EDEDF1; font-size: 11.5px"><span style="padding: 3px 8px">Quick</span><span style="padding: 3px 8px; border-radius: 5px; background: #FFFFFF; font-weight: 600">Balanced</span><span style="padding: 3px 8px">Deep</span></span></div>
+        <div class="row"><span>Start AI chats in Discussion mode (never edits the map)</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+        <div class="row"><span>Image Playground for stickers · Translation for maps</span><span style="font-size: 12px; color: #2E7D4F">● on-device</span></div>
+        <div class="row"><span>Mark AI-created nodes with ✦ until edited</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+        <div class="row"><span>Show model status chip in the toolbar</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+        <div class="row"><span>Ghost suggestions</span><span style="display: flex; gap: 6px"><span class="k">⌥Space</span><span class="k" style="background: #17171C; color: #FFFFFF; border-color: #17171C">✦ Space</span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Apple Intelligence off -->
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 14px">
+    <span style="font: 500 12px/1 'Geist Mono', monospace; letter-spacing: .1em; color: #4A4A55">STATE · APPLE INTELLIGENCE TURNED OFF</span>
+    <div style="flex: 1; position: relative; border-radius: 16px; overflow: hidden; background: #F7F7F5; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 20px 20px; box-shadow: 0 30px 80px rgba(23,23,28,.14)">
+      <div style="position: absolute; left: 0; right: 0; top: 0; height: 44px; padding: 0 14px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; background: rgba(255,255,255,.75); border-bottom: 1px solid rgba(23,23,28,.07)">
+        <span style="height: 26px; padding: 0 10px; display: flex; align-items: center; gap: 7px; border-radius: 999px; background: #EEEEF1; color: #4A4A55; font: 500 12px/1 -apple-system, sans-serif"><span style="width: 7px; height: 7px; border-radius: 50%; border: 1.5px solid #9A9AA6; box-sizing: border-box"></span>AI off</span>
+      </div>
+      <div style="position: absolute; left: 60px; top: 180px; width: 150px; height: 48px; border-radius: 14px; background: #17171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 700 17px/1 -apple-system, sans-serif">Q3 offsite</div>
+      <div style="position: absolute; left: 260px; top: 186px; width: 110px; height: 36px; box-sizing: border-box; border-radius: 10px; background: #FFFFFF; border: 2px solid #5850EC; display: flex; align-items: center; justify-content: center; font: 500 14px/1 -apple-system, sans-serif; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC">Agenda</div>
+      <svg width="60" height="20" viewBox="0 0 60 20" aria-hidden="true" style="position: absolute; left: 205px; top: 194px; fill: none"><path d="M5 10 H 55" stroke="#5850EC" stroke-width="3" stroke-linecap="round"></path></svg>
+      <div style="position: absolute; left: 230px; top: 236px; width: 300px; padding: 14px 16px; border-radius: 14px; background: rgba(255,255,255,.95); border: 1px solid #DCDCE2; box-shadow: 0 16px 40px rgba(23,23,28,.16); display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 13.5px; line-height: 1.45"><b>Apple Intelligence is off,</b> so ghost ideas can’t run.</span>
+        <div style="display: flex; gap: 8px">
+          <button style="height: 28px; padding: 0 10px; border-radius: 7px; border: 0; background: #17171C; color: #FFFFFF; font: 600 12.5px -apple-system, sans-serif">Open System Settings</button>
+          <button style="height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid #DCDCE2; background: #FFFFFF; color: #17171C; font: 500 12.5px -apple-system, sans-serif">Use a local model</button>
+        </div>
+      </div>
+      <div style="position: absolute; left: 24px; right: 24px; bottom: 24px; padding: 14px 16px; border-radius: 12px; background: rgba(255,255,255,.9); border: 1px solid #E2E2E6; font-size: 12.5px; line-height: 1.5; color: #2C2C33">Entry points never disappear silently: pressing <span class="k">⌥Space</span>, the prompt bar or an AI palette command shows this one-line explanation in place. No “unsupported hardware” state exists; OpenNexus only installs on Macs that run Apple’s on-device model.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

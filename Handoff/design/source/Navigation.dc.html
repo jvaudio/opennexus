@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Navigation panel and counts</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C;white-space:nowrap}
+.fld{height:30px;box-sizing:border-box;border-radius:8px;border:1px solid #DCDCE2;background:#FFFFFF;padding:0 10px;display:flex;align-items:center;gap:8px;font-size:13px;color:#17171C}
+.chip{height:24px;padding:0 9px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;font-size:11.5px}
+.m{position:absolute;height:36px;padding:0 13px;box-sizing:border-box;border-radius:10px;background:#FFFFFF;display:flex;align-items:center;font:500 14px/1 -apple-system,Geist,sans-serif;white-space:nowrap}
+.mini{border-radius:14px;background:#FFFFFF;border:1px solid #DCDCE2;box-shadow:0 12px 30px rgba(23,23,28,.08);overflow:hidden;display:flex;flex-direction:column}
+.mh{padding:10px 12px;border-bottom:1px solid #EEEEF1;display:flex;justify-content:space-between;align-items:center;font-size:12.5px;font-weight:700}
+.mr{padding:8px 12px;border-top:1px solid #F3F3F5;display:flex;flex-direction:column;gap:3px;font-size:12.5px}
+mark{background:#FFE58F;color:inherit;border-radius:3px;padding:0 1px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; position: relative; overflow: hidden; background: #F7F7F5; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 52px; box-sizing: border-box; padding: 0 18px; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,.75); border-bottom: 1px solid rgba(23,23,28,.08)">
+    <div style="display: flex; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <span style="margin-left: 10px; font-size: 13px; font-weight: 600">Launch plan.nexus</span>
+    <span style="flex: 1"></span>
+    <span style="font: 500 12px/1 'Geist Mono', monospace; color: #6B6B76">NAV · NAVIGATION PANEL ⌘F · ⌃⌘1–5 SWITCH TABS</span>
+  </div>
+
+  <!-- navigation panel -->
+  <div style="position: absolute; left: 0; top: 52px; bottom: 0; width: 340px; box-sizing: border-box; background: #FFFFFF; border-right: 1px solid #E2E2E6; display: flex; flex-direction: column">
+    <div role="tablist" aria-label="Navigation" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); padding: 8px; gap: 4px; border-bottom: 1px solid #EEEEF1">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+        <button role="tab" aria-selected="{{t.on}}" style="height: 44px; border: 0; border-radius: 8px; background: {{t.bg}}; color: {{t.fg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font: 500 10.5px/1 -apple-system, sans-serif"><span style="font-size: 15px">{{t.i}}</span>{{t.n}}</button>
+      </sc-for>
+    </div>
+    <div style="padding: 14px; display: flex; flex-direction: column; gap: 10px; border-bottom: 1px solid #EEEEF1">
+      <label for="nf" style="position: absolute; left: -9999px">Find</label>
+      <div class="fld"><span style="color: #6B6B76">⌕</span><input id="nf" value="pric" style="all: unset; flex: 1; font-size: 13px"><span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">3 of 7</span></div>
+      <label for="nr" style="position: absolute; left: -9999px">Replace with</label>
+      <div class="fld"><span style="color: #6B6B76">⇄</span><input id="nr" value="Pricing &amp; plans" style="all: unset; flex: 1; font-size: 13px"></div>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap">
+        <span class="chip" style="background: #17171C; color: #FFFFFF">Aa Match case</span>
+        <span class="chip" style="background: #EEEEF1">Whole words</span>
+        <span class="chip" style="background: #EEEEF1">.* Regex</span>
+      </div>
+      <div style="display: flex; padding: 2px; border-radius: 8px; background: #EDEDF1; font-size: 11.5px">
+        <span style="flex: 1; text-align: center; padding: 5px 0; border-radius: 6px; background: #FFFFFF; font-weight: 600">This canvas</span><span style="flex: 1; text-align: center; padding: 5px 0">All canvases</span><span style="flex: 1; text-align: center; padding: 5px 0">+ Notes</span><span style="flex: 1; text-align: center; padding: 5px 0">+ Labels</span>
+      </div>
+      <div style="display: flex; gap: 8px"><button style="flex: 1; height: 30px; border-radius: 8px; border: 1px solid #DCDCE2; background: #FFFFFF; font: 500 12.5px -apple-system, sans-serif; color: #17171C">Replace ⌥↩</button><button style="flex: 1; height: 30px; border-radius: 8px; border: 0; background: #5850EC; color: #FFFFFF; font: 600 12.5px -apple-system, sans-serif">Replace all ⌥⌘↩</button></div>
+    </div>
+    <div style="flex: 1; overflow: hidden; display: flex; flex-direction: column">
+      <sc-for list="{{results}}" as="r" hint-placeholder-count="7">
+        <div style="padding: 9px 14px; border-bottom: 1px solid #F3F3F5; display: flex; gap: 10px; align-items: flex-start; background: {{r.bg}}">
+          <span style="margin-top: 4px; width: 8px; height: 8px; border-radius: 2px; background: {{r.c}}; flex-shrink: 0"></span>
+          <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0"><span style="font-size: 13px">{{r.pre}}<mark>{{r.m}}</mark>{{r.post}}</span><span style="font-size: 11.5px; color: #6B6B76">{{r.path}}</span></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="padding: 10px 14px; border-top: 1px solid #EEEEF1; font-size: 11.5px; color: #6B6B76">↩ next · ⇧↩ previous · matches glow on canvas · esc closes</div>
+  </div>
+
+  <!-- canvas -->
+  <div style="position: absolute; left: 340px; right: 380px; top: 52px; bottom: 0; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 22px 22px">
+    <svg width="720" height="948" viewBox="0 0 720 948" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round"><path d="M250 420 C 290 420, 290 300, 330 300 M250 420 L 330 420 M250 420 C 290 420, 290 540, 330 540" stroke-width="3" stroke="#5850EC"></path><path d="M440 420 C 460 420, 460 390, 480 390 M440 420 C 460 420, 460 450, 480 450" stroke-width="2" stroke="#0F9F9A"></path></svg>
+    <div style="position: absolute; left: 90px; top: 394px; width: 160px; height: 52px; border-radius: 16px; background: #17171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 700 19px/1 -apple-system, sans-serif">Launch plan</div>
+    <div class="m" style="left: 330px; top: 282px; border: 2px solid #5850EC; opacity: .45">Positioning</div>
+    <div class="m" style="left: 330px; top: 402px; width: 110px; border: 2px solid #0F9F9A; box-shadow: 0 0 0 4px rgba(255,229,143,.9), 0 0 24px rgba(242,177,53,.6)"><mark>Pric</mark>ing</div>
+    <div class="m" style="left: 330px; top: 522px; border: 2px solid #E0A100; opacity: .45">Channels</div>
+    <div class="m" style="left: 480px; top: 372px; height: 30px; font-size: 13px; background: rgba(23,23,28,.045); box-shadow: 0 0 0 3px rgba(255,229,143,.9)">Free tier · <mark>pric</mark>e 0</div>
+    <div class="m" style="left: 480px; top: 432px; height: 30px; font-size: 13px; background: rgba(23,23,28,.045); opacity: .45">Pro</div>
+
+    <!-- status bar -->
+    <div style="position: absolute; right: 16px; bottom: 16px; display: flex; flex-direction: column; align-items: flex-end; gap: 8px">
+      <div style="width: 230px; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,.95); border: 1px solid #DCDCE2; box-shadow: 0 16px 40px rgba(23,23,28,.14); display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 12.5px">
+        <span style="grid-column: span 2; font-size: 11px; font-weight: 600; color: #6B6B76">THIS CANVAS · SELECTION</span>
+        <span>Topics</span><span style="font-family: 'Geist Mono', monospace">48 · 6</span>
+        <span>Words</span><span style="font-family: 'Geist Mono', monospace">213 · 19</span>
+        <span>Characters</span><span style="font-family: 'Geist Mono', monospace">1,284 · 112</span>
+        <span>Notes</span><span style="font-family: 'Geist Mono', monospace">7</span>
+        <span>AI-created</span><span style="font-family: 'Geist Mono', monospace">5</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 2px; height: 30px; padding: 0 4px; border-radius: 10px; background: rgba(255,255,255,.85); border: 1px solid #DCDCE2; font: 500 12px/1 -apple-system, sans-serif">
+        <button aria-label="Zoom out" style="width: 26px; height: 24px; border: 0; background: transparent; font-size: 14px">−</button>
+        <span style="padding: 0 6px; font-family: 'Geist Mono', monospace">100%</span>
+        <button aria-label="Zoom in" style="width: 26px; height: 24px; border: 0; background: transparent; font-size: 14px">+</button>
+        <span style="width: 1px; height: 16px; background: #DCDCE2"></span>
+        <span style="padding: 0 8px; color: #3B34C4; font-weight: 600">48 topics</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- other tabs -->
+  <div style="position: absolute; right: 16px; top: 68px; width: 348px; display: flex; flex-direction: column; gap: 12px">
+    <div class="mini">
+      <div class="mh">Notes · View all notes<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">⌃⌘3</span></div>
+      <div class="mr"><span style="font-weight: 600">Pricing</span><span style="color: #4A4A55">Keep the free tier generous; we compete with a metered incumbent…</span></div>
+      <div class="mr"><span style="font-weight: 600">Risks › Legal</span><span style="color: #4A4A55">Review due before beta. Owner: legal.</span></div>
+      <div class="mr"><span style="font-weight: 600">Rollout</span><span style="color: #4A4A55">flags.beta = true for 10% cohort…</span></div>
+    </div>
+    <div class="mini">
+      <div class="mh">Markers &amp; Labels<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">⌃⌘4</span></div>
+      <div class="mr" style="flex-direction: row; flex-wrap: wrap; gap: 6px">
+        <span class="chip" style="background: #FDECEC; color: #8F1D22"><span style="width: 14px; height: 14px; border-radius: 50%; background: #C62F35; color: #FFFFFF; font: 700 9px/14px sans-serif; text-align: center">1</span>Priority 1 · 3</span>
+        <span class="chip" style="background: #FFF4E0; color: #8A5300">◔ Half done · 4</span>
+        <span class="chip" style="background: #E6F5EC; color: #1E6B41">⚑ Green flag · 2</span>
+        <span class="chip" style="background: #EEEEF1">Q4 · 6</span>
+        <span class="chip" style="background: #17171C; color: #FFFFFF">Finance · 2</span>
+        <span class="chip" style="background: #EEEEF1">Legal · 1</span>
+      </div>
+      <div class="mr" style="color: #6B6B76; font-size: 11.5px">Click to highlight related topics; the rest fade to 30%. ⇧-click combines.</div>
+    </div>
+    <div class="mini">
+      <div class="mh">To-dos<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">⌃⌘5</span></div>
+      <div class="mr" style="flex-direction: row; gap: 6px"><span class="chip" style="background: #17171C; color: #FFFFFF">Open · 5</span><span class="chip" style="background: #EEEEF1">Done · 9</span><span class="chip" style="background: #EEEEF1">All · 14</span></div>
+      <div class="mr" style="flex-direction: row; align-items: center; gap: 8px"><span style="width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid #4A4A55; box-sizing: border-box"></span>Draft pricing FAQ<span style="flex: 1"></span><span style="font-size: 11px; color: #6B6B76">Pricing</span></div>
+      <div class="mr" style="flex-direction: row; align-items: center; gap: 8px"><span style="width: 14px; height: 14px; border-radius: 4px; border: 1.5px solid #4A4A55; box-sizing: border-box"></span>Book launch venue<span style="flex: 1"></span><span style="font-size: 11px; color: #6B6B76">Channels</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const tabs = [['⌕', 'Search', true], ['☰', 'Outline'], ['≡', 'Notes'], ['◆', 'Tags'], ['☐', 'To-dos']].map(([i, n, on]) => ({ i, n, on: on ? 'true' : 'false', bg: on ? '#5850EC' : 'transparent', fg: on ? '#FFFFFF' : '#4A4A55' }));
+    const R = [
+      ['', 'Pric', 'ing', 'Product map · main topic', '#0F9F9A'],
+      ['Free tier · ', 'pric', 'e 0', 'Product map › Pricing', '#0F9F9A'],
+      ['', 'Pric', 'ing page A/B test', 'Inbox', '#7A4CC2', true],
+      ['Annual ', 'pric', 'e lock', 'Product map › Pricing', '#0F9F9A'],
+      ['Competitor ', 'pric', 'ing', 'Product map › Risks', '#E4572E'],
+      ['Note: “…metered ', 'pric', 'ing…”', 'Pricing › note', '#9A9AA6'],
+      ['', 'Pric', 'e ceiling', 'Threats › T-04', '#C62F35']
+    ];
+    const results = R.map(([pre, m, post, path, c, on]) => ({ pre, m, post, path, c, bg: on ? '#F1F0FE' : '#FFFFFF' }));
+    return { tabs, results };
+  }
+}
+</script>
+</body>
+</html>

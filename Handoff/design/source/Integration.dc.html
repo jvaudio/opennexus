@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>macOS integration and file format</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.tile{position:relative;height:330px;border-radius:18px;overflow:hidden}
+.ttl{font-size:14px;font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.sub{font-size:12.5px;line-height:1.45;color:#4A4A55}
+.mono{font:500 12px/1.65 "Geist Mono",monospace}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1040px; box-sizing: border-box; padding: 48px 56px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 22px">
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <div class="cap">MACOS 27 · FEELS APPLE-MADE · FILES THAT OUTLIVE THE APP</div>
+    <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Quick Capture, widgets, Quick Look, Shortcuts, and the .nexus package</h1>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px">
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="tile" style="background: linear-gradient(135deg, #8EA7D6, #C7B6E0 55%, #F0C9B3)">
+        <div style="position: absolute; left: 30px; right: 30px; top: 80px; border-radius: 18px; background: rgba(255,255,255,.62); backdrop-filter: blur(30px) saturate(1.8); -webkit-backdrop-filter: blur(30px) saturate(1.8); border: 1px solid rgba(255,255,255,.7); box-shadow: 0 24px 60px rgba(23,23,28,.25); padding: 14px 16px; display: flex; flex-direction: column; gap: 10px">
+          <div style="display: flex; align-items: center; gap: 10px"><svg width="20" height="20" viewBox="0 0 44 44" aria-hidden="true"><path d="M12 32 L22 12 L32 32 Z" fill="none" stroke="#5850EC" stroke-width="3" stroke-linejoin="round"/><circle cx="22" cy="12" r="5" fill="#17171C"/></svg><span style="font-size: 16px; flex: 1">Try a pricing page A/B test<span style="display: inline-block; width: 1.5px; height: 17px; background: #5850EC; vertical-align: -3px"></span></span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #3D3D48"><span>→ Inbox map · Product ideas</span><span>↩ save · ⇥ choose map</span></div>
+        </div>
+        <span style="position: absolute; left: 30px; top: 30px; display: flex; gap: 6px; align-items: center; font-size: 12px; color: #17171C"><span class="k" style="background: #17171C; color: #FFFFFF; border-color: #17171C">✦ N</span>from any app</span>
+      </div>
+      <div class="ttl">Quick Capture</div><div class="sub">A small glass panel jots an idea into an inbox map without switching apps. Services menu and Share extension send selected text the same way.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="tile" style="background: linear-gradient(160deg, #3B4A6B, #1C2233)">
+        <div style="position: absolute; left: 24px; top: 24px; width: 160px; height: 160px; border-radius: 26px; background: rgba(30,31,36,.7); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; color: #F2F2F5">
+          <span style="font-size: 11px; font-weight: 600; color: #A6A6B0">INBOX</span>
+          <span style="font-size: 13px; line-height: 1.3">A/B pricing page</span><span style="font-size: 13px; line-height: 1.3">Webhook retries</span><span style="font-size: 13px; line-height: 1.3; color: #A6A6B0">+5 more</span>
+        </div>
+        <div style="position: absolute; left: 200px; top: 24px; right: 24px; height: 160px; border-radius: 26px; background: rgba(245,245,247,.82); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 11px; font-weight: 600; color: #5D5D68">RECENT MAPS</span>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; flex: 1">
+            <div style="border-radius: 10px; background: #FFFFFF; display: flex; align-items: flex-end; padding: 6px; font-size: 11px">Checkout DFD</div>
+            <div style="border-radius: 10px; background: #FFFFFF; display: flex; align-items: flex-end; padding: 6px; font-size: 11px">Q1 roadmap</div>
+          </div>
+        </div>
+        <div style="position: absolute; left: 24px; right: 24px; bottom: 24px; height: 106px; border-radius: 18px; background: rgba(245,245,247,.86); padding: 12px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px">
+          <span style="font-size: 11px; font-weight: 600; color: #5D5D68">SPOTLIGHT · “card tokens”</span>
+          <div style="display: flex; gap: 10px; align-items: center"><span style="width: 28px; height: 34px; border-radius: 4px; background: #FFFFFF; border: 1px solid #DCDCE2; display: flex; align-items: center; justify-content: center"><svg width="16" height="16" viewBox="0 0 44 44" aria-hidden="true"><path d="M12 32 L22 12 L32 32 Z" fill="none" stroke="#5850EC" stroke-width="3.5" stroke-linejoin="round"/></svg></span><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px">D2 Card tokens</span><span style="font-size: 11px; color: #5D5D68">Checkout redesign.nexus › Level 1</span></div></div>
+        </div>
+      </div>
+      <div class="ttl">Widgets &amp; Spotlight</div><div class="sub">Recent maps and the inbox map on the desktop. Spotlight indexes node text and opens straight to the node.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="tile" style="background: #E9E9EE">
+        <div style="position: absolute; left: 24px; right: 24px; top: 24px; bottom: 24px; border-radius: 14px; background: #FFFFFF; box-shadow: 0 20px 50px rgba(23,23,28,.18); overflow: hidden; display: flex; flex-direction: column">
+          <div style="height: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; background: #F6F6F8; border-bottom: 1px solid #E2E2E6; font-size: 12px"><span style="font-weight: 600">Launch plan.nexus</span><span style="color: #5850EC">Open with OpenNexus</span></div>
+          <div style="flex: 1; background: #F7F7F5; position: relative">
+            <svg width="100%" height="100%" viewBox="0 0 360 220" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round"><path d="M210 110 C 235 110, 235 60, 260 60 M210 110 L 260 110 M210 110 C 235 110, 235 160, 260 160 M150 110 C 125 110, 125 80, 100 80 M150 110 C 125 110, 125 140, 100 140" stroke="#5850EC" stroke-width="2.4"></path><rect x="150" y="96" width="60" height="28" rx="9" fill="#17171C"></rect><g fill="#FFFFFF" stroke-width="1.6"><rect x="260" y="50" width="60" height="20" rx="6" stroke="#5850EC"></rect><rect x="260" y="100" width="60" height="20" rx="6" stroke="#0F9F9A"></rect><rect x="260" y="150" width="60" height="20" rx="6" stroke="#E0A100"></rect><rect x="40" y="70" width="60" height="20" rx="6" stroke="#E4572E"></rect><rect x="40" y="130" width="60" height="20" rx="6" stroke="#D6408B"></rect></g></svg>
+          </div>
+        </div>
+      </div>
+      <div class="ttl">Quick Look <span class="k">Space</span></div><div class="sub">Finder thumbnails and a full preview from the package’s rendered snapshot; no app launch.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="tile" style="background: #FFFFFF; border: 1px solid #E2E2E6; padding: 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+        <span style="font-size: 12px; font-weight: 600; color: #6B6B76">SHORTCUTS · APP INTENTS · SIRI</span>
+        <sc-for list="{{intents}}" as="i" hint-placeholder-count="5">
+          <div style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; background: {{i.bg}}; color: #FFFFFF">
+            <svg width="18" height="18" viewBox="0 0 44 44" aria-hidden="true"><path d="M12 32 L22 12 L32 32 Z" fill="none" stroke="#FFFFFF" stroke-width="3.5" stroke-linejoin="round"/></svg>
+            <span style="font-size: 13.5px; font-weight: 600">{{i.t}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div class="ttl">Shortcuts</div><div class="sub">Every intent is also exposed to Siri. Handoff and iCloud Drive sync with no proprietary cloud.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="tile" style="background: #17171C; padding: 18px 20px; box-sizing: border-box; color: #E4E4EA; display: flex; flex-direction: column; gap: 4px">
+        <span style="font: 600 11px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #8A8A96; padding-bottom: 8px">LAUNCH PLAN.NEXUS/ · FOLDER BUNDLE</span>
+        <div class="mono"><span style="color: #8F89FF">manifest.json</span>  <span style="color: #6B6B76">schema 1.0 · app 1.0</span></div>
+        <div class="mono"><span style="color: #8F89FF">canvases/</span></div>
+        <div class="mono">  product-map.json</div>
+        <div class="mono">  rollout-flow.json</div>
+        <div class="mono">  threats.json</div>
+        <div class="mono"><span style="color: #8F89FF">assets/</span>  <span style="color: #6B6B76">images, attachments</span></div>
+        <div class="mono"><span style="color: #8F89FF">preview.png</span>  <span style="color: #6B6B76">Quick Look</span></div>
+        <div style="margin-top: 10px; padding: 10px 12px; border-radius: 10px; background: #1E1F25; font: 500 11.5px/1.55 'Geist Mono', monospace; color: #C9C9D2">{ "id": "n_7f2", "type": "service",<br>&#160;&#160;"title": "Payments", "parent": "n_1a0",<br>&#160;&#160;"fields": { "protocol": "gRPC" } }</div>
+      </div>
+      <div class="ttl">Native format</div><div class="sub">Human-readable JSON per canvas, stable key order so Git diffs are clean, published schema. Autosave and File › Revert To built in.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="tile" style="background: #FFFFFF; border: 1px solid #E2E2E6; padding: 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px">
+        <span style="font-size: 12px; font-weight: 600; color: #6B6B76">IMPORT REPORT · Strategy 2026.xmind</span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+          <div style="padding: 10px; border-radius: 10px; background: #E6F5EC; display: flex; flex-direction: column; gap: 4px"><span style="font: 700 20px/1 'Geist Mono', monospace; color: #1E6B41">4</span><span style="font-size: 11.5px">sheets → canvases</span></div>
+          <div style="padding: 10px; border-radius: 10px; background: #E6F5EC; display: flex; flex-direction: column; gap: 4px"><span style="font: 700 20px/1 'Geist Mono', monospace; color: #1E6B41">312</span><span style="font-size: 11.5px">topics, markers, notes</span></div>
+          <div style="padding: 10px; border-radius: 10px; background: #FFF4E0; display: flex; flex-direction: column; gap: 4px"><span style="font: 700 20px/1 'Geist Mono', monospace; color: #8A5300">2</span><span style="font-size: 11.5px">not converted</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px"><span>· Audio note on “Kickoff” (kept as attachment)</span><span>· Gantt task dates (not in v1)</span></div>
+        <div style="flex: 1"></div>
+        <div style="font-size: 12px; color: #4A4A55">Also imports MindNode, Word (.docx), TextBundle, OPML, Markdown, Mermaid, PlantUML subset, draw.io, FreeMind, MindManager and EdrawMind (best effort), indented text, and images or PDFs via AI.</div>
+      </div>
+      <div class="ttl">Import</div><div class="sub">.xmind is the migration path. Pasting Markdown or indented text onto the canvas creates a branch directly.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1040}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const intents = [['Create mind map from clipboard', '#5850EC'], ['Add idea to inbox map', '#0F7F7A'], ['Export canvas as PNG', '#C25E00'], ['Convert map to Mermaid', '#1E6FB8'], ['Open Quick Capture', '#6B3FA0']].map(([t, bg]) => ({ t, bg }));
+    return { intents };
+  }
+}
+</script>
+</body>
+</html>

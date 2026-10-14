@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Format panel, topic style</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C;white-space:nowrap}
+.pn{background:#FFFFFF;border:1px solid #DCDCE2;border-radius:16px;box-shadow:0 16px 40px rgba(23,23,28,.07);display:flex;flex-direction:column;overflow:hidden;font-family:-apple-system,'SF Pro Text',Geist,sans-serif}
+.tabs{display:flex;gap:2px;padding:8px 10px 0;border-bottom:1px solid #EEEEF1}
+.tab{padding:7px 10px;font-size:12px;color:#5D5D68}
+.on{font-weight:600;color:#17171C;box-shadow:inset 0 -2px 0 #5850EC}
+.sec{padding:12px 14px;border-bottom:1px solid #F0F0F2;display:flex;flex-direction:column;gap:9px}
+.lbl{font-size:11px;font-weight:600;color:#6B6B76;display:flex;justify-content:space-between;align-items:center}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px}
+.fld{height:26px;box-sizing:border-box;border-radius:6px;border:1px solid #DCDCE2;background:#FFFFFF;padding:0 8px;display:flex;align-items:center;gap:6px;font-size:12px;color:#17171C;white-space:nowrap}
+.seg{display:flex;border:1px solid #DCDCE2;border-radius:7px;overflow:hidden}
+.seg span{flex:1;height:26px;display:flex;align-items:center;justify-content:center;font-size:11.5px;border-left:1px solid #DCDCE2;white-space:nowrap;padding:0 4px}
+.seg span:first-child{border-left:0}
+.sel{background:#F1F0FE;color:#3B34C4;font-weight:600}
+.sw{width:20px;height:20px;border-radius:6px;flex-shrink:0}
+.tg{width:30px;height:18px;border-radius:999px;position:relative;display:inline-block;flex-shrink:0}
+.tg span{position:absolute;top:2px;width:14px;height:14px;border-radius:50%;background:#FFFFFF}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 44px 56px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">FMT-1 · FORMAT PANEL v2 · ⌘I · STYLE TAB · TOPIC SELECTED</div>
+      <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Everything Xmind’s Style panel does, in one scroll</h1>
+    </div>
+    <div style="font-size: 13px; color: #4A4A55; max-width: 470px; line-height: 1.5">One panel, shown here in three slices. Tabs: <b>Style</b> (selection) · <b>Map</b> (whole canvas, FMT-3) · <b>Data</b>. Sections collapse and remember their state. Every control is reachable with ⇥ and has a palette command.</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 16px; flex: 1; min-height: 0">
+    <!-- preview + quick styles + actions -->
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div style="height: 220px; border-radius: 16px; background: #F7F7F5; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 18px 18px; border: 1px solid #DCDCE2; position: relative">
+        <svg width="100%" height="220" viewBox="0 0 310 220" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; inset: 0; fill: none"><path d="M40 110 C 70 110, 70 110, 96 110" stroke="#0F9F9A" stroke-width="3" stroke-linecap="round"></path><path d="M230 110 C 250 110, 250 80, 270 80 M230 110 C 250 110, 250 140, 270 140" stroke="#0F9F9A" stroke-width="2" stroke-linecap="round"></path></svg>
+        <span style="position: absolute; left: 4px; top: 96px; width: 36px; height: 28px; border-radius: 8px; background: #17171C"></span>
+        <div style="position: absolute; left: 31%; top: 86px; width: 43%; height: 48px; box-sizing: border-box; clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%); background: #0F9F9A; display: flex; align-items: center; justify-content: center; gap: 6px; color: #FFFFFF; font: 700 14px/1 -apple-system, sans-serif"><span style="font: 700 11px/1 'Geist Mono', monospace; opacity: .85">2.1</span>PRICING</div>
+        <div style="position: absolute; left: 31%; top: 80px; width: 43%; height: 60px; border: 2px solid #5850EC; border-radius: 10px; box-sizing: border-box"></div>
+        <span style="position: absolute; left: 87%; top: 70px; width: 10%; height: 18px; border-radius: 5px; background: rgba(15,159,154,.15)"></span>
+        <span style="position: absolute; left: 87%; top: 130px; width: 10%; height: 18px; border-radius: 5px; background: rgba(15,159,154,.15)"></span>
+        <span style="position: absolute; left: 12px; bottom: 10px; font: 500 10.5px/1 'Geist Mono', monospace; color: #6B6B76">Hexagon · teal fill · UPPER · tiered 2.1</span>
+      </div>
+      <div class="pn" style="padding: 14px; gap: 10px">
+        <span class="lbl">QUICK STYLE <span style="font-weight: 400">⌃⌥1–8</span></span>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{quick}}" as="q" hint-placeholder-count="8">
+            <button style="height: 34px; border-radius: 8px; border: 1px solid #E2E2E6; background: #FAFAFB; display: flex; align-items: center; gap: 8px; padding: 0 8px; font-family: inherit; color: #17171C; font-size: 12px"><span style="padding: 3px 7px; border-radius: 5px; {{q.css}}">{{q.s}}</span>{{q.n}}</button>
+          </sc-for>
+        </div>
+        <span style="font-size: 11.5px; color: #6B6B76">Xmind’s four (Very Important, Important, Cross Out, Default) plus four for technical work.</span>
+      </div>
+      <div class="pn" style="padding: 8px">
+        <span class="lbl" style="padding: 6px 8px">STYLE ACTIONS</span>
+        <sc-for list="{{actions}}" as="a" hint-placeholder-count="7">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 7px 8px; border-radius: 7px; background: {{a.bg}}; color: {{a.fg}}; font-size: 12.5px"><span>{{a.t}}</span><span style="font: 500 11px/1 'Geist Mono', monospace; opacity: .8">{{a.k}}</span></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- slice 1: structure, shape, fill, border -->
+    <div class="pn">
+      <div class="tabs"><span class="tab on">Style</span><span class="tab">Map</span><span class="tab">Data</span></div>
+      <div class="sec"><span class="lbl">STRUCTURE · THIS BRANCH</span><div class="row"><span class="fld" style="flex: 1">Logic Chart → right ▾</span><span class="k">⌥⌘2</span></div></div>
+      <div class="sec"><span class="lbl">SHAPE <span style="font-weight: 400">32</span></span>
+        <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px">
+          <sc-for list="{{shapes}}" as="s" hint-placeholder-count="32">
+            <button aria-label="{{s.n}}" title="{{s.n}}" style="height: 28px; padding: 0; border-radius: 6px; border: 1.5px solid {{s.bd}}; background: {{s.bg}}; display: flex; align-items: center; justify-content: center"><svg width="22" height="15" viewBox="0 0 24 16" aria-hidden="true" style="fill: none; stroke: {{s.c}}; stroke-width: 1.4; stroke-linejoin: round"><path d="{{s.d}}"></path></svg></button>
+          </sc-for>
+        </div>
+      </div>
+      <div class="sec"><span class="lbl">FILL</span>
+        <div class="seg"><span>None</span><span class="sel">Solid</span><span>Tint</span><span>Gradient</span></div>
+        <div style="display: flex; gap: 6px; align-items: center"><span class="sw" style="background: #0F9F9A; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3.5px #17171C"></span><span class="sw" style="background: #5850EC"></span><span class="sw" style="background: #E4572E"></span><span class="sw" style="background: #C98F00"></span><span class="sw" style="background: #17171C"></span><span class="sw" style="background: #FFFFFF; box-shadow: inset 0 0 0 1px #DCDCE2"></span><span class="fld" style="margin-left: auto">Branch ▾</span></div>
+      </div>
+      <div class="sec"><span class="lbl">BORDER</span>
+        <div style="display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 6px"><span class="fld">— Solid ▾</span><span class="fld">2 pt</span><span class="fld"><span class="sw" style="width: 12px; height: 12px; border-radius: 3px; background: #5850EC"></span>▾</span></div>
+        <div class="seg"><span class="sel">——</span><span>- - -</span><span>· · ·</span><span>≈ hand</span><span>═ double</span></div>
+        <div class="row"><span>Corner radius</span><span class="fld">10 pt</span></div>
+        <div class="row"><span>Shadow</span><div class="seg" style="width: 160px"><span class="sel">None</span><span>Soft</span><span>Hard</span></div></div>
+      </div>
+    </div>
+
+    <!-- slice 2: text, numbering, size -->
+    <div class="pn">
+      <div class="tabs"><span class="tab on">Style</span><span class="tab">Map</span><span class="tab">Data</span></div>
+      <div class="sec"><span class="lbl">TEXT · APPLIES TO SELECTED CHARACTERS WHILE EDITING</span>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 6px"><span class="fld">SF Pro ▾</span><span class="fld">15 pt ▾</span></div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px"><span class="fld">Bold ▾</span><span class="fld"><span class="sw" style="width: 12px; height: 12px; border-radius: 3px; background: #FFFFFF; box-shadow: inset 0 0 0 1px #DCDCE2"></span>Auto contrast</span></div>
+        <div class="seg"><span style="font-weight: 700" class="sel">B</span><span style="font-style: italic">I</span><span style="text-decoration: underline">U</span><span style="text-decoration: line-through">S</span><span style="font-family: 'Geist Mono', monospace">&lt;/&gt;</span></div>
+        <div class="row"><span>Case</span><div class="seg" style="width: 180px"><span>Aa</span><span class="sel">AA</span><span>aa</span><span>Title</span></div></div>
+        <div class="row"><span>Align</span><div class="seg" style="width: 120px"><span>⟸</span><span class="sel">≡</span><span>⟹</span></div></div>
+        <div class="row"><span>Line spacing</span><span class="fld">1.25 ▾</span></div>
+      </div>
+      <div class="sec"><span class="lbl">NUMBERING</span>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px">
+          <sc-for list="{{nums}}" as="n" hint-placeholder-count="8">
+            <span style="height: 28px; border-radius: 6px; border: 1.5px solid {{n.bd}}; background: {{n.bg}}; display: flex; align-items: center; justify-content: center; font: 500 11.5px/1 'Geist Mono', monospace">{{n.t}}</span>
+          </sc-for>
+        </div>
+        <div class="row"><span>Tiered (2.1, 2.2…)</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+        <div class="row"><span>Apply to siblings</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+        <div class="row"><span>Restart from this topic</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+      </div>
+      <div class="sec"><span class="lbl">SIZE</span>
+        <div class="row"><span>Width</span><div style="display: flex; gap: 6px"><span class="fld">240 pt</span><span class="fld" style="background: #F1F0FE; color: #3B34C4; border-color: #C9C5FA">Fit</span></div></div>
+        <div class="row"><span>Image position</span><div class="seg" style="width: 160px"><span class="sel">Top</span><span>Left</span><span>Right</span><span>Bottom</span></div></div>
+      </div>
+    </div>
+
+    <!-- slice 3: branch + markers -->
+    <div class="pn">
+      <div class="tabs"><span class="tab on">Style</span><span class="tab">Map</span><span class="tab">Data</span></div>
+      <div class="sec"><span class="lbl">BRANCH LINE</span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px">
+          <sc-for list="{{lines}}" as="l" hint-placeholder-count="6">
+            <span style="height: 40px; border-radius: 7px; border: 1.5px solid {{l.bd}}; background: {{l.bg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px"><svg width="44" height="18" viewBox="0 0 44 18" aria-hidden="true" style="fill: none; stroke: #17171C; stroke-width: {{l.w}}; stroke-linecap: round"><path d="{{l.d}}"></path></svg><span style="font-size: 10px; color: #4A4A55">{{l.n}}</span></span>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px"><span class="fld"><span class="sw" style="width: 12px; height: 12px; border-radius: 3px; background: #0F9F9A"></span>Follow branch</span><span class="fld">3 pt ▾</span></div>
+        <div class="row"><span>End cap</span><div class="seg" style="width: 170px"><span class="sel">None</span><span>Arrow</span><span>Dot</span><span>Bar</span></div></div>
+        <div class="row"><span>Taper thick → thin</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+        <div class="row"><span>Children’s lines inherit</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+      </div>
+      <div class="sec"><span class="lbl">SPACING · THIS BRANCH</span>
+        <div class="row"><span>Sibling gap</span><span style="width: 120px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #5850EC 40%, #DCDCE2 40%)"></span></div>
+        <div class="row"><span>Level gap</span><span style="width: 120px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #5850EC 55%, #DCDCE2 55%)"></span></div>
+      </div>
+      <div class="sec" style="border-bottom: 0"><span class="lbl">UPDATE STYLE</span>
+        <div style="border-radius: 10px; border: 1px solid #DCDCE2; overflow: hidden; box-shadow: 0 10px 24px rgba(23,23,28,.10)">
+          <div style="padding: 8px 10px; font-size: 12.5px; background: #5850EC; color: #FFFFFF">Apply to siblings</div>
+          <div style="padding: 8px 10px; font-size: 12.5px; border-top: 1px solid #F0F0F2">Apply to all level-2 topics</div>
+          <div style="padding: 8px 10px; font-size: 12.5px; border-top: 1px solid #F0F0F2">Apply to all subtopics of this branch</div>
+          <div style="padding: 8px 10px; font-size: 12.5px; border-top: 1px solid #F0F0F2">Save as Quick Style…</div>
+          <div style="padding: 8px 10px; font-size: 12.5px; border-top: 1px solid #F0F0F2">Save into this theme</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const SH = [
+      ['Rounded', 'M4 1h16a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H4a3 3 0 0 1-3-3V4a3 3 0 0 1 3-3z'], ['Rectangle', 'M1 1h22v14H1z'], ['Pill', 'M8 1h8a7 7 0 0 1 0 14H8A7 7 0 0 1 8 1z'], ['Ellipse', 'M12 1a11 7 0 1 0 0 14a11 7 0 1 0 0-14z'],
+      ['Circle', 'M12 1a7 7 0 1 0 0 14a7 7 0 1 0 0-14z'], ['Diamond', 'M12 1l11 7-11 7L1 8z'], ['Parallelogram', 'M6 1h17l-5 14H1z'], ['Trapezoid', 'M5 1h14l4 14H1z'],
+      ['Hexagon', 'M6 1h12l5 7-5 7H6L1 8z'], ['Octagon', 'M7 1h10l6 4v6l-6 4H7l-6-4V5z'], ['Triangle', 'M12 1l11 14H1z'], ['Cloud', 'M7 15a4 4 0 0 1-1-7.9A5 5 0 0 1 15.5 5 4 4 0 0 1 18 15z'],
+      ['Document', 'M1 1h22v11c-7-4-15 4-22 0z'], ['Cylinder', 'M1 4c0-4 22-4 22 0v8c0 4-22 4-22 0z M1 4c0 4 22 4 22 0'], ['Underline', 'M1 14h22'], ['Text only', 'M6 6h12 M6 10h8'],
+      ['Squircle', 'M12 1c9 0 11 2 11 7s-2 7-11 7S1 13 1 8s2-7 11-7z'], ['Cut corner', 'M5 1h18v10l-4 4H1V5z'], ['Double', 'M1 1h22v14H1z M3 3h18v10H3z'], ['Tag', 'M1 1h16l6 7-6 7H1z'],
+      ['Chevron', 'M1 1h17l5 7-5 7H1l5-7z'], ['Arrow', 'M1 5h14V1l8 7-8 7v-4H1z'], ['Star', 'M12 1l3 4.5 5 .5-3.7 3.4 1 5-5.3-2.6L6.7 14.4l1-5L4 6l5-.5z'], ['Shield', 'M12 1l10 3v4c0 4-4 6.5-10 7.5C6 14.5 2 12 2 8V4z'],
+      ['Folder', 'M1 3h8l2 2h12v10H1z'], ['Sticky note', 'M1 1h22v10l-4 4H1z M19 15v-4h4'], ['Speech', 'M3 1h18a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2H9l-4 3v-3H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2z'], ['Brackets', 'M5 1H2v14h3 M19 1h3v14h-3'],
+      ['Flag', 'M2 15V1h16l-3 4 3 4H2'], ['Card', 'M1 1h20v12H1z M3 15h20V3'], ['Ring pill', 'M8 1h8a7 7 0 0 1 0 14H8A7 7 0 0 1 8 1z M8 4h8a4 4 0 0 1 0 8H8a4 4 0 0 1 0-8z'], ['Hand-drawn', 'M2 2c6-1 14 1 20 0 1 4-1 8 0 12-6 1-14-1-20 0-1-4 1-8 0-12z']
+    ];
+    const shapes = SH.map(([n, d]) => ({ n, d, bd: n === 'Hexagon' ? '#5850EC' : '#EEEEF1', bg: n === 'Hexagon' ? '#F1F0FE' : '#FFFFFF', c: n === 'Hexagon' ? '#5850EC' : '#17171C' }));
+    const quick = [
+      ['Very important', '!!', 'background:#C62F35;color:#FFFFFF;font-weight:700'], ['Important', '!', 'background:#FBE7B5;color:#7A5200;font-weight:700'],
+      ['Cross out', 'abc', 'background:#EEEEF1;color:#6B6B76;text-decoration:line-through'], ['Default', 'Aa', 'background:#FFFFFF;border:1px solid #DCDCE2'],
+      ['Decision', '◇', 'background:#FBE7B5;color:#17171C'], ['Done', '✓', 'background:#2E7D4F;color:#FFFFFF'],
+      ['Risk', '⚠', 'background:#FFFFFF;border:1.5px dashed #C62F35;color:#C62F35'], ['Question', '?', 'background:#E3F0FC;color:#1E6FB8;font-weight:700']
+    ].map(([n, s, css]) => ({ n, s, css }));
+    const actions = [['Copy style', '⌥⌘C'], ['Paste style', '⌥⌘V'], ['Reset style', '⌥⌘R'], ['Update style ▸', '', true], ['Save as Quick Style…', ''], ['Select topics with this style', '']].map(([t, k, on]) => ({ t, k, bg: on ? '#5850EC' : 'transparent', fg: on ? '#FFFFFF' : '#17171C' }));
+    const nums = ['None', '1 2 3', '1.1 1.2', 'I II', 'A B C', 'a b c', '① ②', '一 二'].map((t, i) => ({ t, bd: i === 2 ? '#5850EC' : '#EEEEF1', bg: i === 2 ? '#F1F0FE' : '#FFFFFF' }));
+    const lines = [['Curved', 'M2 16 C 22 16, 22 2, 42 2', 2], ['Straight', 'M2 16 L 42 2', 2], ['Elbow', 'M2 16 H 22 V 2 H 42', 2], ['Rounded', 'M2 16 H 16 Q 22 16 22 10 V 8 Q 22 2 28 2 H 42', 2], ['Tapered', 'M2 16 C 22 16, 22 2, 42 2', 4], ['Zigzag', 'M2 16 L 12 6 L 22 14 L 32 4 L 42 2', 1.6]].map(([n, d, w], i) => ({ n, d, w, bd: i === 0 ? '#5850EC' : '#EEEEF1', bg: i === 0 ? '#F1F0FE' : '#FFFFFF' }));
+    return { shapes, quick, actions, nums, lines };
+  }
+}
+</script>
+</body>
+</html>

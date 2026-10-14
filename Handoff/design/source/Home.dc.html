@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Home window</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.side{display:flex;align-items:center;gap:10px;height:30px;padding:0 10px;border-radius:8px;font-size:13px}
+.sec{font-size:11px;font-weight:600;color:#6B6B76;padding:14px 10px 6px}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #F6F6F8; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C; display: flex">
+  <!-- sidebar -->
+  <div style="width: 232px; flex-shrink: 0; box-sizing: border-box; padding: 16px 12px; background: rgba(238,238,242,.92); border-right: 1px solid #DCDCE2; display: flex; flex-direction: column">
+    <div style="display: flex; gap: 8px; padding: 2px 6px 12px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <div class="side" style="background: rgba(88,80,236,.12); color: #3B34C4; font-weight: 600">Home</div>
+    <div class="side">Recents</div>
+    <div class="side">Templates</div>
+    <div class="side" style="justify-content: space-between">Inbox map<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">7</span></div>
+    <div class="sec">LOCATIONS</div>
+    <div class="side">iCloud Drive › Maps</div>
+    <div class="side">~/code/platform-docs</div>
+    <div class="sec">SAVED FILTERS</div>
+    <div class="side">Open threats · High</div>
+    <div class="side">AI-created, unreviewed</div>
+    <div style="flex: 1"></div>
+    <div class="side" style="gap: 8px; font-size: 12px; color: #4A4A55"><span style="width: 7px; height: 7px; border-radius: 50%; background: #0F9F9A"></span>On-device AI ready</div>
+  </div>
+
+  <!-- main -->
+  <div style="flex: 1; box-sizing: border-box; padding: 26px 34px; display: flex; flex-direction: column; gap: 24px; overflow: hidden">
+    <div style="display: flex; justify-content: space-between; align-items: center">
+      <h1 style="margin: 0; font-size: 26px; font-weight: 700; letter-spacing: -0.01em">Good afternoon</h1>
+      <div style="display: flex; gap: 8px; align-items: center">
+        <label for="hs" style="position: absolute; left: -9999px">Search maps</label>
+        <input id="hs" placeholder="Search maps and nodes" style="width: 260px; height: 30px; box-sizing: border-box; border-radius: 8px; border: 1px solid #DCDCE2; background: #FFFFFF; padding: 0 10px; font: 13px -apple-system, sans-serif">
+        <button style="height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid #DCDCE2; background: #FFFFFF; font: 500 13px -apple-system, sans-serif; color: #17171C">Import…</button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 15px; font-weight: 700">New</span><span style="font-size: 12px; color: #6B6B76; display: flex; gap: 6px; align-items: center"><span class="k">⌘N</span>blank mind map · <span class="k">⇧⌘N</span>choose type</span></div>
+      <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 12px">
+        <sc-for list="{{newTypes}}" as="t" hint-placeholder-count="8">
+          <button style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 8px; border-radius: 14px; border: {{t.bd}}; background: #FFFFFF; font-family: inherit; color: #17171C; box-shadow: 0 1px 2px rgba(23,23,28,.05)">
+            <svg width="76" height="52" viewBox="0 0 88 60" aria-hidden="true" style="fill: none; stroke: {{t.c}}; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="{{t.icon}}"></path></svg>
+            <span style="font-size: 12.5px; font-weight: 600">{{t.name}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <span style="font-size: 15px; font-weight: 700">Recents</span>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+        <sc-for list="{{recents}}" as="r" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <div style="height: 150px; border-radius: 14px; background: {{r.bg}}; border: 1px solid #DCDCE2; display: flex; align-items: center; justify-content: center; overflow: hidden">
+              <svg width="200" height="120" viewBox="0 0 88 60" aria-hidden="true" style="fill: none; stroke: {{r.c}}; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round"><path d="{{r.icon}}"></path></svg>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font-size: 13px; font-weight: 600">{{r.name}}</span><span style="font-size: 11.5px; color: #6B6B76">{{r.when}}</span></div>
+            <span style="font-size: 11.5px; color: #6B6B76">{{r.meta}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; gap: 10px; align-items: center">
+        <span style="font-size: 15px; font-weight: 700">Templates for engineers</span>
+        <div style="display: flex; gap: 6px">
+          <span style="padding: 4px 10px; border-radius: 999px; background: #17171C; color: #FFFFFF; font-size: 12px">Engineering</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: #E8E8EC; font-size: 12px">Architecture</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: #E8E8EC; font-size: 12px">Security</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: #E8E8EC; font-size: 12px">Planning</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: #E8E8EC; font-size: 12px">Learning</span>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px">
+        <sc-for list="{{templates}}" as="t" hint-placeholder-count="5">
+          <div style="padding: 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 6px">
+            <span style="font: 600 10px/1 'Geist Mono', monospace; letter-spacing: .08em; color: {{t.c}}">{{t.kind}}</span>
+            <span style="font-size: 13px; font-weight: 600">{{t.name}}</span>
+            <span style="font-size: 11.5px; color: #6B6B76; line-height: 1.4">{{t.d}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <!-- empty-state inset -->
+  <div style="position: absolute; right: 24px; bottom: 24px; width: 330px; border-radius: 16px; background: #FFFFFF; border: 1px solid #DCDCE2; box-shadow: 0 24px 60px rgba(23,23,28,.18); overflow: hidden">
+    <div style="padding: 10px 14px; border-bottom: 1px solid #EEEEF1; font: 600 10.5px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #6B6B76">EMPTY STATE · FIRST LAUNCH AFTER TOUR</div>
+    <div style="padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+      <div style="width: 150px; height: 70px; border-radius: 12px; background: #F7F7F5; display: flex; align-items: center; justify-content: center"><span style="padding: 8px 14px; border-radius: 10px; background: #17171C; color: #FFFFFF; font-size: 12px; font-weight: 600">My first map</span></div>
+      <span style="font-size: 13px; color: #4A4A55; line-height: 1.45">Your tutorial map is here. Press <span class="k">⌘N</span> to start fresh or drop an .xmind file anywhere.</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const I = {
+      mind: 'M44 30 L66 16 M44 30 L68 30 M44 30 L66 44 M44 30 L22 18 M44 30 L20 42 M38 30 a6 6 0 1 0 12 0 a6 6 0 1 0 -12 0',
+      flow: 'M34 4 h20 a5 5 0 0 1 0 10 h-20 a5 5 0 0 1 0 -10 z M44 14 v6 M44 20 l10 8 l-10 8 l-10 -8 z M34 28 h-16 v12 M54 28 h16 v12 M10 40 h16 v12 h-16 z M62 40 h16 v12 h-16 z',
+      dfd: 'M4 22 h16 v16 h-16 z M20 30 h12 M44 30 m-11 0 a11 11 0 1 0 22 0 a11 11 0 1 0 -22 0 M55 30 h10 M66 22 h18 M66 38 h18 M66 22 v16',
+      arch: 'M6 10 h18 v12 h-18 z M24 16 h10 M34 4 h28 v52 h-28 z M40 10 h16 v10 h-16 z M40 26 h16 v10 h-16 z M62 31 h10 M72 24 h12 v14 h-12 z M40 42 h16 v8 h-16 z',
+      threat: 'M44 6 L60 34 H28 Z M44 16 v8 M44 28 h.01 M10 44 h20 v10 h-20 z M58 44 h20 v10 h-20 z M30 49 h28',
+      seq: 'M10 4 h16 v8 h-16 z M36 4 h16 v8 h-16 z M62 4 h16 v8 h-16 z M18 12 v44 M44 12 v44 M70 12 v44 M18 22 h26 M44 30 h26 M70 38 h-26 M44 46 h-26',
+      white: 'M8 8 h22 v18 h-22 z M38 14 h22 v18 h-22 z M18 36 h22 v18 h-22 z M30 17 h8 M49 32 C 49 44, 44 46, 40 46 M62 40 c 6 -6 12 4 18 -2',
+      timeline: 'M6 22 h76 M16 16 h12 v12 h-12 z M40 16 h12 v12 h-12 z M64 16 h12 v12 h-12 z M22 28 v18 h8 M46 28 v10 h8 M46 38 v8 h8'
+    };
+    const newTypes = [['Mind Map', 'mind', true], ['Flowchart', 'flow'], ['Data Flow', 'dfd'], ['Architecture', 'arch'], ['Threat Model', 'threat'], ['Sequence', 'seq'], ['Whiteboard', 'white'], ['More…', 'timeline']].map(([name, k, on]) => ({ name, icon: I[k], c: on ? '#5850EC' : '#4A4A55', bd: on ? '2px solid #5850EC' : '1px solid #E2E2E6' }));
+    const recents = [
+      { name: 'Checkout redesign', when: '12 min ago', meta: 'Data Flow · 3 canvases', icon: I.dfd, c: '#9B51E0', bg: '#FBF9FF' },
+      { name: 'Q1 platform roadmap', when: 'Yesterday', meta: 'Timeline · 48 topics', icon: I.timeline, c: '#E0A100', bg: '#FFFBF0' },
+      { name: 'Payments threat model', when: 'Mon', meta: 'Threat Model · 9 open threats', icon: I.threat, c: '#C62F35', bg: '#FFF8F8' },
+      { name: 'Reading: Thinking in Systems', when: 'Oct 2', meta: 'Mind Map · 64 topics', icon: I.mind, c: '#0F9F9A', bg: '#F5FBFB' }
+    ];
+    const templates = [
+      { kind: 'C4 · L1–L2', name: 'System context', d: 'People, systems and containers', c: '#1E6FB8' },
+      { kind: 'FLOW', name: 'API request flow', d: 'Client → gateway → services', c: '#5850EC' },
+      { kind: 'TIMELINE', name: 'Incident timeline', d: 'Detect, mitigate, resolve', c: '#C62F35' },
+      { kind: 'MATRIX', name: 'Sprint retro', d: 'Went well · to improve · actions', c: '#0F7F7A' },
+      { kind: 'SEQUENCE', name: 'OAuth handshake', d: 'Lifelines with return messages', c: '#9B51E0' }
+    ];
+    return { newTypes, recents, templates };
+  }
+}
+</script>
+</body>
+</html>

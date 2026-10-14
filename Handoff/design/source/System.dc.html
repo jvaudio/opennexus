@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Visual system and tokens</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;family=Newsreader:opsz,wght@6..72,500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.sw{display:flex;flex-direction:column;gap:6px}
+.chip{height:56px;border-radius:12px}
+.nm{font:600 13px/1.2 Geist,sans-serif;color:#17171C}
+.hx{font:400 12px/1.2 "Geist Mono",monospace;color:#5D5D68}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 56px 72px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 30px">
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <div class="cap">02 · VISUAL SYSTEM · “LUMINOUS GRAPHITE”</div>
+    <h1 style="margin: 0; font: 700 40px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Opaque canvas, glass that floats, three signal colours</h1>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 28px">
+    <!-- colour -->
+    <div style="display: flex; flex-direction: column; gap: 20px; padding: 28px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E2E2E6">
+      <div class="cap">SIGNAL · ONE PER CANVAS STATE</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px">
+        <div class="sw"><div class="chip" style="background: #5850EC"></div><span class="nm">Iris · Select / Edit</span><span class="hx">#5850EC · dark #8F89FF</span></div>
+        <div class="sw"><div class="chip" style="background: #F2B135"></div><span class="nm">Amber · Connect</span><span class="hx">#F2B135 · ink text only</span></div>
+        <div class="sw"><div class="chip" style="background: #0F9F9A"></div><span class="nm">Aurora · AI</span><span class="hx">#0F9F9A · dark #3FD3C9</span></div>
+      </div>
+      <div class="cap">NEUTRALS · LIGHT / DARK DESIGNED TOGETHER</div>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px">
+        <div class="sw"><div class="chip" style="background: #F7F7F5; border: 1px solid #E2E2E6; box-sizing: border-box"></div><span class="nm">Canvas</span><span class="hx">F7F7F5</span></div>
+        <div class="sw"><div class="chip" style="background: #FFFFFF; border: 1px solid #E2E2E6; box-sizing: border-box"></div><span class="nm">Surface</span><span class="hx">FFFFFF</span></div>
+        <div class="sw"><div class="chip" style="background: #E2E2E6"></div><span class="nm">Line</span><span class="hx">E2E2E6</span></div>
+        <div class="sw"><div class="chip" style="background: #6B6B76"></div><span class="nm">Ink 3</span><span class="hx">6B6B76</span></div>
+        <div class="sw"><div class="chip" style="background: #4A4A55"></div><span class="nm">Ink 2</span><span class="hx">4A4A55</span></div>
+        <div class="sw"><div class="chip" style="background: #17171C"></div><span class="nm">Ink</span><span class="hx">17171C</span></div>
+        <div class="sw"><div class="chip" style="background: #121317"></div><span class="nm">Canvas</span><span class="hx">121317</span></div>
+        <div class="sw"><div class="chip" style="background: #1C1D22"></div><span class="nm">Surface</span><span class="hx">1C1D22</span></div>
+        <div class="sw"><div class="chip" style="background: #2B2C33"></div><span class="nm">Line</span><span class="hx">2B2C33</span></div>
+        <div class="sw"><div class="chip" style="background: #8A8A96"></div><span class="nm">Ink 3</span><span class="hx">8A8A96</span></div>
+        <div class="sw"><div class="chip" style="background: #B4B4BE"></div><span class="nm">Ink 2</span><span class="hx">B4B4BE</span></div>
+        <div class="sw"><div class="chip" style="background: #F2F2F5; border: 1px solid #E2E2E6; box-sizing: border-box"></div><span class="nm">Ink</span><span class="hx">F2F2F5</span></div>
+      </div>
+      <div class="cap">CLASSIC BRANCH PALETTE · 8 · SMART COLOR ⇧⌘R RESHUFFLES</div>
+      <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 8px">
+        <div class="sw"><div class="chip" style="height: 36px; background: #5850EC"></div><span class="hx">Iris</span></div>
+        <div class="sw"><div class="chip" style="height: 36px; background: #E4572E"></div><span class="hx">Coral</span></div>
+        <div class="sw"><div class="chip" style="height: 36px; background: #0F9F9A"></div><span class="hx">Teal</span></div>
+        <div class="sw"><div class="chip" style="height: 36px; background: #E0A100"></div><span class="hx">Gold</span></div>
+        <div class="sw"><div class="chip" style="height: 36px; background: #D6408B"></div><span class="hx">Rose</span></div>
+        <div class="sw"><div class="chip" style="height: 36px; background: #1E8BE0"></div><span class="hx">Sky</span></div>
+        <div class="sw"><div class="chip" style="height: 36px; background: #5AA02C"></div><span class="hx">Lime</span></div>
+        <div class="sw"><div class="chip" style="height: 36px; background: #9B51E0"></div><span class="hx">Violet</span></div>
+      </div>
+      <div class="cap">SEMANTIC · NEVER COLOUR ALONE</div>
+      <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px">
+        <div class="sw"><div class="chip" style="height: 40px; background: #2F9E62"></div><span class="nm">Success</span><span class="hx">check glyph</span></div>
+        <div class="sw"><div class="chip" style="height: 40px; background: #E08A00"></div><span class="nm">Warning</span><span class="hx">triangle glyph</span></div>
+        <div class="sw"><div class="chip" style="height: 40px; background: #D93A3F"></div><span class="nm">Critical</span><span class="hx">octagon glyph</span></div>
+        <div class="sw"><div class="chip" style="height: 40px; background: #DCEFE3; border: 2px solid #2F9E62; box-sizing: border-box"></div><span class="nm">Trust high</span><span class="hx">solid outline</span></div>
+        <div class="sw"><div class="chip" style="height: 40px; background: repeating-linear-gradient(45deg, #FFF3DA 0 6px, #FBE3B0 6px 8px); border: 2px dashed #E08A00; box-sizing: border-box"></div><span class="nm">Trust medium</span><span class="hx">dashed + hatch</span></div>
+        <div class="sw"><div class="chip" style="height: 40px; background: repeating-linear-gradient(45deg, #FCE4E4 0 3px, #F4B9BA 3px 5px); border: 2px dotted #D93A3F; box-sizing: border-box"></div><span class="nm">Trust low</span><span class="hx">dotted + dense</span></div>
+      </div>
+    </div>
+
+    <!-- type + materials -->
+    <div style="display: flex; flex-direction: column; gap: 20px">
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 28px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E2E2E6">
+        <div class="cap">TYPE</div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #EEEEF1; padding-bottom: 10px"><span style="font: 600 22px/1.2 -apple-system, 'SF Pro Display', Geist, sans-serif">SF Pro · UI chrome</span><span class="hx">13 / 11 / 10 pt, Dynamic Type</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #EEEEF1; padding-bottom: 10px"><span style="font: 600 22px/1.2 -apple-system, 'SF Pro Rounded', Geist, sans-serif">Node · SF Pro (Classic)</span><span class="hx">root 22 · main 16 · sub 14</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid #EEEEF1; padding-bottom: 10px"><span style="font: 500 22px/1.2 'New York', Newsreader, Georgia, serif">Node · New York (Paper)</span><span class="hx">min 12 pt at 100%</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font: 500 19px/1.2 'SF Mono', 'Geist Mono', monospace">SF Mono · code, keys</span><span class="hx">metadata, ports, edges</span></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 28px; border-radius: 20px; background: linear-gradient(135deg, #D9D7F7, #CBEDEA 60%, #F4E3BC); border: 1px solid #E2E2E6; position: relative">
+        <div class="cap" style="color: #3D3D48">MATERIALS</div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+          <div style="padding: 16px; border-radius: 16px; background: rgba(255,255,255,.55); backdrop-filter: blur(20px) saturate(1.6); -webkit-backdrop-filter: blur(20px) saturate(1.6); box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 8px 24px rgba(23,23,28,.12); display: flex; flex-direction: column; gap: 6px">
+            <span class="nm">Liquid Glass (refined)</span>
+            <span style="font-size: 12px; line-height: 1.45; color: #3D3D48">Toolbar, palette, floating toolbar, HUDs, prompt bar. Never behind node text.</span>
+          </div>
+          <div style="padding: 16px; border-radius: 16px; background: #FFFFFF; box-shadow: 0 1px 2px rgba(23,23,28,.08); display: flex; flex-direction: column; gap: 6px">
+            <span class="nm">Opaque · canvas &amp; nodes</span>
+            <span style="font-size: 12px; line-height: 1.45; color: #3D3D48">Crisp, content-first. Reduce Transparency swaps glass for this.</span>
+          </div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 28px; border-radius: 20px; background: #FFFFFF; border: 1px solid #E2E2E6">
+        <div class="cap">CANVAS STATE PILL · ALWAYS VISIBLE, BOTTOM-LEFT</div>
+        <div style="display: flex; gap: 12px; align-items: center">
+          <span style="display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: #17171C; color: #FFFFFF; font: 600 12px/1 'Geist Mono', monospace; letter-spacing: .06em"><span style="width: 8px; height: 8px; border-radius: 2px; background: #FFFFFF"></span>SELECT</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: #5850EC; color: #FFFFFF; font: 600 12px/1 'Geist Mono', monospace; letter-spacing: .06em"><span style="width: 2px; height: 12px; background: #FFFFFF"></span>EDIT</span>
+          <span style="display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; background: #F2B135; color: #17171C; font: 600 12px/1 'Geist Mono', monospace; letter-spacing: .06em"><span style="width: 14px; height: 2px; background: #17171C"></span>CONNECT</span>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 1.5; color: #4A4A55">Shape + colour + word: square = node selected, bar = caret, dash = edge. The selected node’s ring takes the same colour, so the state reads at a glance even with the pill hidden in ZEN.</p>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+    <div style="padding: 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 8px"><span class="cap">RADII</span><span style="font-size: 13px; line-height: 1.5; color: #4A4A55">Node 10 · Root 16 · Panel 14 · Sheet 20 · Pill 999</span></div>
+    <div style="padding: 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 8px"><span class="cap">SPACING</span><span style="font-size: 13px; line-height: 1.5; color: #4A4A55">4-pt grid in chrome. Layout gaps: sibling 14, level 56, branch 28.</span></div>
+    <div style="padding: 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 8px"><span class="cap">ELEVATION</span><span style="font-size: 13px; line-height: 1.5; color: #4A4A55">0 resting · 1 hover · 2 drag lift (y+6, blur 24) · 3 glass HUD</span></div>
+    <div style="padding: 20px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 8px"><span class="cap">CONTRAST</span><span style="font-size: 13px; line-height: 1.5; color: #4A4A55">All themes AA for node text; High Contrast AAA. Amber never carries white text.</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

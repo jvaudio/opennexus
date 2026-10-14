@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Theme sheet and theme builder</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;family=Newsreader:opsz,wght@6..72,500&amp;family=Kalam:wght@400;700&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.lbl{font:500 12px/1.2 -apple-system,Geist,sans-serif;color:#4A4A55}
+.fld{height:30px;box-sizing:border-box;border-radius:8px;border:1px solid #DCDCE2;background:#FFFFFF;padding:0 10px;display:flex;align-items:center;font:400 13px/1 -apple-system,Geist,sans-serif;color:#17171C}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 56px 72px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 28px">
+  <div style="display: flex; flex-direction: column; gap: 10px">
+    <div class="cap">03 · THEMES</div>
+    <h1 style="margin: 0; font: 700 40px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">One map, four themes, and the builder for your own</h1>
+  </div>
+
+  <div style="display: flex; gap: 28px">
+    <div style="flex: 1; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px">
+      <sc-for list="{{themes}}" as="t" hint-placeholder-count="4">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="height: 300px; border-radius: 16px; overflow: hidden; position: relative; background: {{t.canvas}}; background-image: {{t.grid}}; background-size: {{t.gridSize}}; border: 1px solid #DCDCE2">
+            <svg width="100%" height="100%" viewBox="0 0 440 300" preserveAspectRatio="xMidYMid meet" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round">
+              <sc-for list="{{t.edges}}" as="e" hint-placeholder-count="5">
+                <path d="{{e.d}}" stroke="{{e.c}}" stroke-width="{{t.lw}}"></path>
+              </sc-for>
+              <path d="M 350 260 C 300 300, 150 300, 110 210" stroke="{{t.rel}}" stroke-width="1.5" stroke-dasharray="5 5"></path>
+            </svg>
+            <sc-for list="{{t.nodes}}" as="n" hint-placeholder-count="6">
+              <div style="box-sizing: border-box; {{n.style}}">{{n.text}}</div>
+            </sc-for>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-weight: 600; font-size: 15px">{{t.name}}</span><span class="cap">{{t.note}}</span></div>
+        </div>
+      </sc-for>
+    </div>
+
+    <!-- theme builder -->
+    <div style="width: 380px; flex-shrink: 0; border-radius: 18px; background: #FFFFFF; border: 1px solid #DCDCE2; box-shadow: 0 20px 50px rgba(23,23,28,.10); display: flex; flex-direction: column; overflow: hidden">
+      <div style="padding: 16px 18px; border-bottom: 1px solid #EEEEF1; display: flex; justify-content: space-between; align-items: center">
+        <span style="font: 600 15px/1 -apple-system, Geist, sans-serif">New Theme</span>
+        <span style="font: 500 11px/1 'Geist Mono', monospace; padding: 5px 8px; border-radius: 6px; background: #E6F5EC; color: #1E6B41">AA · 7.4 : 1</span>
+      </div>
+      <div style="padding: 18px; display: flex; flex-direction: column; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 6px"><label class="lbl" for="tn">Name</label><input id="tn" class="fld" value="Studio Dusk"></div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px"><label class="lbl" for="tb">Start from</label><select id="tb" class="fld"><option>Graphite</option><option>Classic</option><option>Blueprint</option></select></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><label class="lbl" for="tf">Diagram font</label><select id="tf" class="fld"><option>New York</option><option>SF Pro</option><option>SF Mono</option></select></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span class="lbl">Branch palette</span>
+          <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px">
+            <button aria-label="Branch colour 1" style="height: 30px; border-radius: 8px; border: 2px solid #17171C; background: #E07A5F"></button>
+            <button aria-label="Branch colour 2" style="height: 30px; border-radius: 8px; border: 0; background: #F2CC8F"></button>
+            <button aria-label="Branch colour 3" style="height: 30px; border-radius: 8px; border: 0; background: #81B29A"></button>
+            <button aria-label="Branch colour 4" style="height: 30px; border-radius: 8px; border: 0; background: #7FA7D9"></button>
+            <button aria-label="Branch colour 5" style="height: 30px; border-radius: 8px; border: 0; background: #B794D6"></button>
+            <button aria-label="Branch colour 6" style="height: 30px; border-radius: 8px; border: 0; background: #E5989B"></button>
+            <button aria-label="Branch colour 7" style="height: 30px; border-radius: 8px; border: 0; background: #A3C9A8"></button>
+            <button aria-label="Branch colour 8" style="height: 30px; border-radius: 8px; border: 0; background: #D4A373"></button>
+          </div>
+          <button style="align-self: flex-start; height: 28px; padding: 0 10px; border-radius: 7px; border: 1px solid #DCDCE2; background: #F7F7F5; font: 500 12px/1 -apple-system, Geist, sans-serif; color: #17171C">Generate from one accent…</button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">Canvas</span><div class="fld" style="gap: 8px"><span style="width: 16px; height: 16px; border-radius: 4px; background: #1F1B24"></span>#1F1B24 · Dots</div></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">Root</span><div class="fld" style="gap: 8px"><span style="width: 16px; height: 16px; border-radius: 4px; background: #F2CC8F"></span>Filled · Pill</div></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <span class="lbl">Branch line</span>
+          <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); border: 1px solid #DCDCE2; border-radius: 8px; overflow: hidden">
+            <button style="height: 30px; border: 0; background: #17171C; color: #FFFFFF; font: 500 11px/1 -apple-system, Geist, sans-serif">Curved</button>
+            <button style="height: 30px; border: 0; border-left: 1px solid #DCDCE2; background: #FFFFFF; font: 500 11px/1 -apple-system, Geist, sans-serif; color: #17171C">Straight</button>
+            <button style="height: 30px; border: 0; border-left: 1px solid #DCDCE2; background: #FFFFFF; font: 500 11px/1 -apple-system, Geist, sans-serif; color: #17171C">Elbow</button>
+            <button style="height: 30px; border: 0; border-left: 1px solid #DCDCE2; background: #FFFFFF; font: 500 11px/1 -apple-system, Geist, sans-serif; color: #17171C">Rounded</button>
+            <button style="height: 30px; border: 0; border-left: 1px solid #DCDCE2; background: #FFFFFF; font: 500 11px/1 -apple-system, Geist, sans-serif; color: #17171C">Tapered</button>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 10px; background: #F7F7F5">
+          <span class="lbl" style="font-weight: 600">Per diagram type</span>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #4A4A55"><span>Mind maps</span><span>Colour by branch</span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #4A4A55"><span>DFD · Architecture</span><span>Colour by node type</span></div>
+          <div style="display: flex; justify-content: space-between; font-size: 12px; color: #4A4A55"><span>Threat model</span><span>Colour by risk</span></div>
+        </div>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button style="height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid #DCDCE2; background: #FFFFFF; font: 500 13px/1 -apple-system, Geist, sans-serif; color: #17171C">Export .nexustheme</button>
+          <button style="height: 32px; padding: 0 14px; border-radius: 8px; border: 0; background: #5850EC; color: #FFFFFF; font: 600 13px/1 -apple-system, Geist, sans-serif">Save Theme</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 12px">
+    <div class="cap">LAUNCH SET · 12 · LIGHT AND DARK VARIANTS DESIGNED TOGETHER</div>
+    <div style="display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 10px">
+      <sc-for list="{{all}}" as="a" hint-placeholder-count="12">
+        <div style="display: flex; flex-direction: column; gap: 6px">
+          <div style="height: 64px; border-radius: 10px; background: {{a.bg}}; border: 1px solid #DCDCE2; display: flex; align-items: center; justify-content: center; gap: 4px">
+            <span style="width: 12px; height: 12px; border-radius: 4px; background: {{a.c1}}"></span><span style="width: 12px; height: 12px; border-radius: 4px; background: {{a.c2}}"></span><span style="width: 12px; height: 12px; border-radius: 4px; background: {{a.c3}}"></span>
+          </div>
+          <span style="font-size: 12px; font-weight: 500; text-align: center">{{a.name}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const layout = {
+      root: { x: 220, y: 150, w: 120, h: 44, text: 'Launch plan' },
+      mains: [
+        { x: 350, y: 70, w: 100, h: 32, text: 'Positioning', side: 1 },
+        { x: 360, y: 150, w: 80, h: 32, text: 'Pricing', side: 1 },
+        { x: 350, y: 230, w: 90, h: 32, text: 'Channels', side: 1 },
+        { x: 92, y: 95, w: 70, h: 32, text: 'Risks', side: -1 },
+        { x: 92, y: 205, w: 86, h: 32, text: 'Timeline', side: -1 }
+      ]
+    };
+    const defs = [
+      { name: 'Classic', note: 'DEFAULT · LIGHT', canvas: '#F7F7F5', grid: 'radial-gradient(#DADAE0 1px, transparent 1.2px)', gridSize: '16px 16px', lw: 2,
+        rootBg: '#17171C', rootFg: '#FFFFFF', rootBorder: 'none', mainBg: '#FFFFFF', mainFg: '#17171C', font: '-apple-system, Geist, sans-serif', radius: 9, rootRadius: 14, rel: '#E0A100',
+        pal: ['#5850EC', '#0F9F9A', '#E0A100', '#E4572E', '#D6408B'] },
+      { name: 'Graphite', note: 'DARK', canvas: '#121317', grid: 'radial-gradient(#2A2C33 1px, transparent 1.2px)', gridSize: '16px 16px', lw: 2,
+        rootBg: '#F2F2F5', rootFg: '#121317', rootBorder: 'none', mainBg: '#1C1D22', mainFg: '#F2F2F5', font: '-apple-system, Geist, sans-serif', radius: 9, rootRadius: 14, rel: '#F2B135',
+        pal: ['#8F89FF', '#3FD3C9', '#F2B135', '#F06C4B', '#E25CA0'] },
+      { name: 'Blueprint', note: 'TECHNICAL', canvas: '#0D3560', grid: 'linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px)', gridSize: '20px 20px', lw: 1.5,
+        rootBg: 'transparent', rootFg: '#FFFFFF', rootBorder: '2px solid #FFFFFF', mainBg: '#0D3560', mainFg: '#E6F1FF', font: '"Geist Mono", "SF Mono", monospace', radius: 2, rootRadius: 2, rel: '#FFD27A',
+        pal: ['#9CC8F5', '#9CC8F5', '#9CC8F5', '#9CC8F5', '#9CC8F5'] },
+      { name: 'High Contrast', note: 'WCAG AAA', canvas: '#FFFFFF', grid: 'none', gridSize: 'auto', lw: 3,
+        rootBg: '#000000', rootFg: '#FFFFFF', rootBorder: 'none', mainBg: '#FFFFFF', mainFg: '#000000', font: '-apple-system, Geist, sans-serif', radius: 6, rootRadius: 8, rel: '#000000',
+        pal: ['#000000', '#000000', '#000000', '#000000', '#000000'] }
+    ];
+    const themes = defs.map((d) => {
+      const r = layout.root;
+      const nodes = [{ text: r.text, style: `position:absolute;left:${(r.x - r.w / 2) / 4.4}%;top:${(r.y - r.h / 2) / 3}%;width:${r.w / 4.4}%;height:${r.h}px;box-sizing:border-box;border-radius:${d.rootRadius}px;background:${d.rootBg};color:${d.rootFg};border:${d.rootBorder};display:flex;align-items:center;justify-content:center;font:700 15px/1 ${d.font}` }];
+      const edges = [];
+      layout.mains.forEach((m, i) => {
+        const c = d.pal[i];
+        const bw = d.name === 'High Contrast' ? 2.5 : 1.5;
+        nodes.push({ text: m.text, style: `position:absolute;left:${(m.x - m.w / 2) / 4.4}%;top:${(m.y - m.h / 2) / 3}%;width:${m.w / 4.4}%;height:${m.h}px;box-sizing:border-box;border-radius:${d.radius}px;background:${d.mainBg};color:${d.mainFg};border:${bw}px solid ${c};display:flex;align-items:center;justify-content:center;font:${d.name === 'High Contrast' ? 700 : 500} 12px/1 ${d.font}` });
+        const sx = r.x + m.side * (r.w / 2), ex = m.x - m.side * (m.w / 2), mx = (sx + ex) / 2;
+        const dpath = d.name === 'Blueprint'
+          ? `M ${sx} ${r.y} L ${mx} ${r.y} L ${mx} ${m.y} L ${ex} ${m.y}`
+          : `M ${sx} ${r.y} C ${mx} ${r.y}, ${mx} ${m.y}, ${ex} ${m.y}`;
+        edges.push({ d: dpath, c });
+      });
+      return { ...d, nodes, edges };
+    });
+    const all = [
+      { name: 'Classic', bg: '#F7F7F5', c1: '#5850EC', c2: '#0F9F9A', c3: '#E4572E' },
+      { name: 'Paper', bg: '#F4EFE4', c1: '#8C5A3C', c2: '#3D6B5A', c3: '#B0413E' },
+      { name: 'Graphite', bg: '#121317', c1: '#8F89FF', c2: '#3FD3C9', c3: '#F2B135' },
+      { name: 'Midnight Neon', bg: '#0A0820', c1: '#FF4FD8', c2: '#3DF5FF', c3: '#B6FF3D' },
+      { name: 'Blueprint', bg: '#0D3560', c1: '#9CC8F5', c2: '#FFFFFF', c3: '#FFD27A' },
+      { name: 'Whiteboard', bg: '#FFFFFF', c1: '#2B59C3', c2: '#D7263D', c3: '#1B998B' },
+      { name: 'Pastel', bg: '#FBF7F4', c1: '#F4A6A6', c2: '#A6D9C8', c3: '#B9B4F0' },
+      { name: 'High Contrast', bg: '#FFFFFF', c1: '#000000', c2: '#000000', c3: '#0040FF' },
+      { name: 'Mono Print', bg: '#FFFFFF', c1: '#333333', c2: '#777777', c3: '#AAAAAA' },
+      { name: 'Solarized', bg: '#FDF6E3', c1: '#268BD2', c2: '#2AA198', c3: '#CB4B16' },
+      { name: 'Skeleton', bg: '#F7F7F5', c1: '#C8C8CF', c2: '#C8C8CF', c3: '#C8C8CF' },
+      { name: 'Skeleton Dark', bg: '#17181C', c1: '#4A4B55', c2: '#4A4B55', c3: '#4A4B55' }
+    ];
+    return { themes, all };
+  }
+}
+</script>
+</body>
+</html>

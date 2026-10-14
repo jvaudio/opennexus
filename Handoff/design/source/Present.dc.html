@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Present mode stepping a DFD</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#A9A6FF}a:hover{color:#D4D2FF}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#26272D;border:1px solid #3A3B43;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#F2F2F5}
+@keyframes flow{from{offset-distance:0%}to{offset-distance:100%}}
+.dot{position:absolute;left:0;top:0;width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border-radius:50%;background:#3FD3C9;box-shadow:0 0 10px #3FD3C9;animation:flow 1.6s linear infinite}
+.ent{position:absolute;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:4px;background:#16324A;border:2px solid #4DA9F0;box-shadow:5px 5px 0 #4DA9F0;font:600 20px/1.2 -apple-system,Geist,sans-serif;color:#F2F2F5}
+.pr{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border-radius:999px;background:#26244A;border:2px solid #8F89FF;font:500 19px/1.2 -apple-system,Geist,sans-serif;color:#F2F2F5}
+.ds{position:absolute;box-sizing:border-box;display:flex;align-items:center;gap:12px;background:#11302F;border-top:2px solid #3FD3C9;border-bottom:2px solid #3FD3C9;border-left:12px solid #3FD3C9;padding:0 16px;font:500 19px/1 -apple-system,Geist,sans-serif;color:#F2F2F5}
+.th{width:150px;height:84px;border-radius:8px;background:#121317;position:relative;overflow:hidden;flex-shrink:0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #0B0C0F; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #F2F2F5">
+  <!-- slide -->
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 620px; background: #121317; background-image: radial-gradient(#1E2026 1px, transparent 1.3px); background-size: 26px 26px">
+    <div style="position: absolute; left: 60px; top: 40px; display: flex; flex-direction: column; gap: 8px">
+      <span style="font: 500 13px/1 'Geist Mono', monospace; letter-spacing: .1em; color: #8A8A96">CHECKOUT · DATA FLOW · STEP 3 OF 5</span>
+      <span style="font: 700 34px/1.1 'Bricolage Grotesque', sans-serif">Payment request reaches the PCI zone</span>
+    </div>
+    <div style="position: absolute; left: 640px; top: 150px; width: 520px; height: 400px; border: 2px dashed #F06C6F; border-radius: 18px; box-sizing: border-box"><span style="position: absolute; left: 16px; top: -12px; padding: 2px 8px; background: #121317; font: 600 12px/18px 'Geist Mono', monospace; color: #FF9C9E; letter-spacing: .06em">PCI ZONE</span></div>
+    <svg width="1440" height="620" viewBox="0 0 1440 620" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round">
+      <path d="M260 300 H 420" stroke="#4A4B55" stroke-width="2"></path>
+      <path d="M600 300 H 740" stroke="#3FD3C9" stroke-width="3" style="filter: drop-shadow(0 0 6px rgba(63,211,201,.6))"></path>
+      <path d="M920 300 H 1220" stroke="#4A4B55" stroke-width="2"></path>
+      <path d="M830 346 V 450" stroke="#4A4B55" stroke-width="2"></path>
+    </svg>
+    <span class="dot" style="offset-path: path('M600 300 H 740')"></span>
+    <span class="dot" style="offset-path: path('M600 300 H 740'); animation-delay: -.53s"></span>
+    <span class="dot" style="offset-path: path('M600 300 H 740'); animation-delay: -1.06s"></span>
+    <div class="ent" style="left: 70px; top: 266px; width: 190px; height: 68px; opacity: .35">Customer</div>
+    <div class="pr" style="left: 420px; top: 252px; width: 180px; height: 96px; opacity: .55"><span style="font: 600 13px/1 'Geist Mono', monospace; color: #B9B5FF">1.0</span>Place order</div>
+    <div class="pr" style="left: 740px; top: 248px; width: 180px; height: 104px; box-shadow: 0 0 0 3px #121317, 0 0 0 6px #3FD3C9, 0 0 40px rgba(63,211,201,.35)"><span style="font: 600 13px/1 'Geist Mono', monospace; color: #B9B5FF">2.0</span>Authorize<br>payment</div>
+    <div class="ent" style="left: 1220px; top: 266px; width: 190px; height: 68px; opacity: .35">Payment provider</div>
+    <div class="ds" style="left: 740px; top: 450px; width: 200px; height: 54px; opacity: .35"><span style="font: 600 13px/1 'Geist Mono', monospace; color: #8FE7E0">D2</span>Card tokens</div>
+    <span style="position: absolute; left: 618px; top: 266px; padding: 3px 9px; border-radius: 6px; background: #121317; border: 1px solid #3FD3C9; font: 500 13px/18px 'Geist Mono', monospace; color: #8FE7E0">payment request</span>
+    <div style="position: absolute; right: 60px; bottom: 30px; display: flex; gap: 6px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #4A4B55"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #4A4B55"></span><span style="width: 22px; height: 8px; border-radius: 4px; background: #3FD3C9"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #4A4B55"></span><span style="width: 8px; height: 8px; border-radius: 50%; background: #4A4B55"></span></div>
+  </div>
+
+  <!-- presenter strip -->
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 280px; box-sizing: border-box; padding: 18px 24px; background: #17181C; border-top: 1px solid #2B2C33; display: flex; gap: 22px">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; min-width: 0">
+      <div style="display: flex; justify-content: space-between; align-items: center">
+        <span style="font: 600 12px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #A6A6B0">SLIDES · AUTO-GENERATED · DRAG TO REORDER</span>
+        <div style="display: flex; gap: 6px; align-items: center; font-size: 12px; color: #A6A6B0">Transition
+          <span style="padding: 4px 10px; border-radius: 6px; background: #3FD3C9; color: #121317; font-weight: 600">Glide</span><span style="padding: 4px 10px; border-radius: 6px; background: #26272D">Zoom</span><span style="padding: 4px 10px; border-radius: 6px; background: #26272D">Cut</span>
+          <span style="padding: 4px 10px; border-radius: 6px; background: #26272D; margin-left: 10px">Step through flow ✓</span>
+          <span style="padding: 4px 10px; border-radius: 6px; background: #26272D">16:9 ▾</span>
+          <span style="padding: 4px 10px; border-radius: 6px; background: #26272D">Dark ▾</span>
+          <span style="padding: 4px 10px; border-radius: 6px; background: #26272D">? keys</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 12px">
+        <sc-for list="{{slides}}" as="s" hint-placeholder-count="6">
+          <div style="display: flex; flex-direction: column; gap: 6px">
+            <div class="th" style="box-shadow: {{s.ring}}; opacity: {{s.op}}">
+              <span style="position: absolute; left: {{s.x}}px; top: 30px; width: 40px; height: 22px; border-radius: 999px; border: 1.5px solid #8F89FF"></span>
+              <span style="position: absolute; left: 12px; top: 34px; width: 22px; height: 14px; border: 1.5px solid #4DA9F0; border-radius: 2px"></span>
+              <span style="position: absolute; left: 34px; top: 41px; width: 80px; height: 1.5px; background: {{s.edge}}"></span>
+              <span style="position: absolute; left: 8px; bottom: 6px; font: 500 9.5px/1 'Geist Mono', monospace; color: #8A8A96">{{s.n}}</span>
+            </div>
+            <span style="font-size: 12px; color: {{s.fg}}; width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{s.t}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 14px; align-items: center; font-size: 12px; color: #A6A6B0"><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">→</span>next step</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">S</span>skip</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">M</span>merge with next</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">H</span>hide topic from slides</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">esc</span>end</span><span style="flex: 1"></span><span>Export: PDF · PowerPoint · Keynote · Video</span></div>
+    </div>
+    <div style="width: 360px; flex-shrink: 0; border-radius: 14px; background: #1E1F25; border: 1px solid #2B2C33; padding: 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px">
+      <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font: 600 11px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #A6A6B0">PRESENTER VIEW · DISPLAY 2</span><span style="font: 600 20px/1 'Geist Mono', monospace; color: #3FD3C9">06:42</span></div>
+      <div style="display: flex; gap: 10px"><div class="th" style="width: 120px; height: 68px; box-shadow: 0 0 0 1px #3A3B43"><span style="position: absolute; left: 40px; top: 22px; width: 36px; height: 20px; border-radius: 999px; border: 1.5px solid #8F89FF"></span><span style="position: absolute; left: 82px; top: 31px; width: 30px; height: 1.5px; background: #3FD3C9"></span></div><div style="display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: #C9C9D2"><span style="color: #8A8A96">Next</span><span>Provider returns auth result</span></div></div>
+      <div style="flex: 1; padding: 10px 12px; border-radius: 10px; background: #17181C; font-size: 12.5px; line-height: 1.5; color: #D9D9E0">Call out that the request crosses the PCI boundary here; mTLS mitigates T-01.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const T = ['Title · Checkout data flow', 'Customer places order', 'Payment request → PCI zone', 'Provider returns result', 'Token stored in D2', 'Fulfilment'];
+    const slides = T.map((t, i) => ({ t, n: String(i + 1).padStart(2, '0'), x: 30 + i * 14, ring: i === 2 ? '0 0 0 2px #3FD3C9' : '0 0 0 1px #2B2C33', op: i === 4 ? 0.4 : 1, edge: i === 2 ? '#3FD3C9' : '#4A4B55', fg: i === 2 ? '#FFFFFF' : i === 4 ? '#6B6B76' : '#C9C9D2' }));
+    slides[4].t = 'Token stored in D2 · skipped';
+    return { slides };
+  }
+}
+</script>
+</body>
+</html>

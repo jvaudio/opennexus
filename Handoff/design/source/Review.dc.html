@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Xmind user guide review</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.chip{display:inline-flex;align-items:center;justify-content:center;height:20px;padding:0 7px;border-radius:5px;font:600 10px/1 "Geist Mono",monospace;letter-spacing:.05em;flex-shrink:0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 2400px; box-sizing: border-box; padding: 56px 64px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 26px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 40px">
+    <div style="display: flex; flex-direction: column; gap: 12px; max-width: 820px">
+      <div class="cap">REVIEW · XMIND USER GUIDE · 12 SECTIONS · 89 ARTICLES · READ OCT 14, 2026</div>
+      <h1 style="margin: 0; font: 700 44px/1.05 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Every Xmind feature, and what OpenNexus does with it</h1>
+      <p style="margin: 0; font-size: 15px; line-height: 1.55; color: #4A4A55">Each item is judged against the brief’s goals: keyboard first, local and owned, beautiful by default, one model across diagram types. Collaboration, accounts and Gantt stay out of v1 as decided. Where Xmind is cloud-metered, OpenNexus answers with an on-device equivalent.</p>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; flex-shrink: 0">
+      <sc-for list="{{totals}}" as="t" hint-placeholder-count="4">
+        <div style="width: 150px; padding: 14px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E2E2E6; display: flex; flex-direction: column; gap: 6px">
+          <span style="font: 700 30px/1 'Geist Mono', monospace; color: {{t.c}}">{{t.n}}</span>
+          <span style="display: flex; gap: 6px; align-items: center; font-size: 12.5px"><span class="chip" style="background: {{t.bg}}; color: {{t.c}}">{{t.k}}</span>{{t.d}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="columns: 3; column-gap: 18px">
+    <sc-for list="{{groups}}" as="g" hint-placeholder-count="12">
+      <div style="break-inside: avoid; margin-bottom: 18px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E2E2E6; overflow: hidden">
+        <div style="padding: 12px 16px; background: #17171C; color: #FFFFFF; display: flex; justify-content: space-between; align-items: center"><span style="font-size: 14px; font-weight: 700">{{g.t}}</span><span style="font: 500 11px/1 'Geist Mono', monospace; color: #A6A6B0">{{g.n}} articles</span></div>
+        <sc-for list="{{g.rows}}" as="r" hint-placeholder-count="6">
+          <div style="padding: 9px 16px; border-top: 1px solid #F0F0F2; display: flex; flex-direction: column; gap: 4px">
+            <div style="display: flex; gap: 8px; align-items: center"><span class="chip" style="background: {{r.bg}}; color: {{r.c}}">{{r.k}}</span><span style="font-size: 13px; font-weight: 600">{{r.f}}</span></div>
+            <span style="font-size: 12px; line-height: 1.45; color: #4A4A55">{{r.w}}</span>
+            <span style="font: 500 10.5px/1.3 'Geist Mono', monospace; color: #6B6B76">{{r.a}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const K = {
+      P: { k: 'PARITY', bg: '#E8E7FD', c: '#3B34C4' },
+      E: { k: 'ENHANCE', bg: '#FFF1D1', c: '#7A5200' },
+      A: { k: 'ADD', bg: '#DDF3F1', c: '#0B6E6A' },
+      S: { k: 'SKIP', bg: '#EEEEF1', c: '#5D5D68' }
+    };
+    const G = [
+      ['Getting started', 5, [
+        ['E', 'Settings', 'Xmind has 5 tabs. We ship 10 panes: General, Editing, Appearance, Files & Backup, AI, Shortcuts, Export, Integrations, Privacy, Accessibility.', '→ Settings row (SET-1…10)'],
+        ['P', 'Custom shortcuts, Reset All', 'Already exceeded: conflict detection, scopes, Hyper key, profiles. Add an “Xmind” profile alias for ⌘R, ⌘⌫, ⌘;.', '→ 06 Shortcuts'],
+        ['S', 'Account, sign-in, subscription', 'No accounts. The app is free and open source; nothing to sign in to.', '—'],
+        ['P', 'Glossary', 'Our in-app Help uses the same terms, plus Zone, Edge, Node type.', '→ Help menu']
+      ]],
+      ['Xmind basics', 15, [
+        ['P', 'New blank / template / library', 'Home window covers blank and templates. Library becomes the community gallery (install from file or URL).', '→ S2'],
+        ['A', 'Use last skeleton & colour theme', 'Setting so new maps inherit your last look.', '→ SET-2 Editing'],
+        ['E', 'Sheets', 'Canvas tab menu gains New From Topic, Duplicate, Save Canvas As…, Copy/Paste canvas.', '→ FT File tools'],
+        ['P', '9 structures, mixed per branch', 'All present plus 10 technical types.', '→ S4'],
+        ['E', 'Topic width, Fit, Delete single topic', 'Width field + Fit in Format panel; ⌘⌫ alias in Xmind profile.', '→ FMT-1'],
+        ['A', 'Text: strikethrough, capitalization', 'Added to Text section with rich text on partial selections.', '→ FMT-1'],
+        ['E', 'Colored branch, Show Branch Only', 'Colored Branch toggle in Map tab; ⌘; aliases Focus (⌘.).', '→ FMT-3, Views'],
+        ['E', 'Relationship handles & styles', '4 line shapes, 11 end caps, “line colour follows topic”, draggable endpoints and control points.', '→ FMT-2'],
+        ['E', 'Boundary, Summary, Callout', '9 boundary shapes, 3 callout shapes, full summary line styling.', '→ FMT-2'],
+        ['E', 'Labels', 'Comma entry, quick-pick of existing labels, Auto Sort, Highlight Related.', '→ EN Enrich'],
+        ['P', 'Local image', 'Top/bottom/left/right placement, Reset Size.', '→ 07 Nodes'],
+        ['E', 'Smart Guideline', '“Always show alignment guides” setting; snapping distance control.', '→ SET-2, ZN'],
+        ['E', 'Floating topic', 'Flexible Floating Topics option; drag-to-attach highlight.', '→ ZN Zones']
+      ]],
+      ['Enriching a topic', 17, [
+        ['A', 'Markers + legend + custom groups', 'Grouped marker library, editable legend, custom PNG/SVG marker groups saved locally.', '→ EN Enrich'],
+        ['A', 'Stickers & illustrations', 'Bundled open-licensed sticker set plus on-device Image Playground generation.', '→ EN, AI+'],
+        ['P', 'Note', '⇧⌘N matches Xmind. View All Notes added to Navigation panel.', '→ NAV'],
+        ['A', 'Audio note', 'Record from the Mac mic, with on-device transcript stored in the note.', '→ EN Enrich'],
+        ['E', 'Links: web, topic, file, folder', 'Topic links become two-way backlinks; file and folder links work on macOS.', '→ EN Enrich'],
+        ['E', 'To-Do', 'Parent progress ring; click the ring to complete all; highlight done/undone.', '→ EN Enrich'],
+        ['S', 'Task, Gantt, Export Task, calendars', 'Deferred to post-v1 per brief decision.', '—'],
+        ['A', 'Numbering', '7 formats, tiered numbers, apply to siblings, restart here.', '→ EN Enrich, FMT-1'],
+        ['P', 'Attachment, Equation', 'Already in v1 (Quick Look, LaTeX).', '→ 08 Elements'],
+        ['E', 'Floating toolbar', 'Setting: Always / Click again / Never; text toolbar while editing.', '→ SET-2, EN'],
+        ['A', 'Add Topic “+” buttons', 'Mouse-friendly + for child and sibling, hidden while typing.', '→ EN, SET-2']
+      ]],
+      ['Styling mind maps', 4, [
+        ['E', 'Style panel (31 shapes)', 'Format panel v2: 32 topic shapes, fill, border style/width, text, numbering, branch.', '→ FMT-1'],
+        ['A', 'Quick Style', 'Xmind’s 4 presets plus Decision, Done, Risk, Question.', '→ FMT-1'],
+        ['P', 'Copy / Paste / Reset Style', '⌥⌘C / ⌥⌘V already; Reset added.', '→ FMT-1'],
+        ['A', 'Update Style', 'Apply to same level, all level-x topics, or all subtopics.', '→ FMT-1']
+      ]],
+      ['Applying global format', 8, [
+        ['A', 'Skeleton', 'Curated skeleton gallery (24) pairing structure with a node style.', '→ FMT-3'],
+        ['A', 'Node styles', '9 node styles (Outline, Soft, Solid, Underline, Capsule, Sketch, Brutal, Glow, Minimal); live in the prototype.', '→ NS Node styles, P0'],
+        ['E', 'Colour theme + custom', 'Rainbow, multi-colour, monochrome and gradient types; 6-colour custom editor; My Colours.', '→ FMT-3'],
+        ['E', 'Background, global font, CJK font', 'Map tab controls; text colour auto-adapts to background.', '→ FMT-3'],
+        ['E', 'Branch line width', 'Thin / Regular / Bold / Tapered.', '→ FMT-3'],
+        ['A', 'Map Style toggles', 'Auto Balance, Compact, Justify Topic Alignment.', '→ FMT-3'],
+        ['A', 'Advanced layout', 'Branch Free-Positioning, Flexible Floating Topics, Topic Overlap.', '→ FMT-3, ZN'],
+        ['P', 'Custom themes', 'Theme builder exists; add Edit/Rename/Duplicate/Delete and import/export.', '→ 03 Themes, FMT-3']
+      ]],
+      ['Browsing & viewing', 6, [
+        ['P', 'Fold / unfold', '⌘/ and ⌥⌘/ match.', '→ P0'],
+        ['E', 'Find & Replace', 'Whole Words, Match Case, Regex, scope (canvas / document / notes).', '→ NAV'],
+        ['P', 'Topic filtering', 'Filter bar already covers markers, labels, types and text.', '→ Views'],
+        ['A', 'View All Notes', 'Navigation panel tab, searchable, click to fly to topic.', '→ NAV'],
+        ['A', 'Zoom control & topic count', 'Status chip bottom-right: zoom %, topics, words, characters.', '→ NAV']
+      ]],
+      ['Working with files', 9, [
+        ['E', 'Import', 'Add MindNode, Word (.docx), TextBundle, EdrawMind (best effort).', '→ Integration, FT'],
+        ['E', 'Export', 'PNG frames (6), aspect ratio, padding, split by main branch, export branch. Never a watermark.', '→ S14, CX'],
+        ['E', 'Save (Xmind: manual only)', 'We autosave and keep versions; Save As kept.', '→ SET-4'],
+        ['A', 'Merge files', 'Into current map, or as canvases with a generated Map of Content.', '→ FT File tools'],
+        ['A', 'Set password', 'AES-256 encrypted package, optional hint, key in Keychain.', '→ FT File tools'],
+        ['E', 'File cache', 'Becomes Recovery: crash snapshots + version browser.', '→ FT, SET-4'],
+        ['A', 'Print', 'Content, page size, layout, scale, background, tile at actual size, print branch.', '→ FT File tools'],
+        ['S', 'Xmind Gallery, social share', 'No cloud; use the macOS share sheet instead.', '—'],
+        ['P', 'Markdown to map', 'Paste or import; heading and indent mapping documented.', '→ Integration']
+      ]],
+      ['Sharing, team, SSO', 5, [
+        ['S', 'Co-editing, comments, teams, spaces, SSO', 'Out of v1 scope. Files sync through iCloud Drive or Git.', '—']
+      ]],
+      ['Xmind AI', 21, [
+        ['E', 'AI chat panel', 'Add Discussion Mode (never edits), several chats per document, Quick / Balanced / Deep, one-step undo.', '→ AI+'],
+        ['P', 'Create with AI, Grow Ideas', 'Ghost suggestions + prompt bar; Auto and On-Demand.', '→ S13'],
+        ['A', 'Work Breakdown, AI To-Dos', 'Palette and right-click actions; produce to-do branches.', '→ AI+'],
+        ['A', 'Translate map', 'Apple Translation framework, on-device, saved as a new canvas.', '→ AI+'],
+        ['A', 'Data masking', 'Masks names, emails, keys and numbers before export or share.', '→ AI+, SET-9'],
+        ['A', 'Remove image background', 'Vision framework subject lift, on-device.', '→ AI+'],
+        ['A', 'Make image', 'Image Playground stickers for a topic, on-device.', '→ AI+'],
+        ['A', 'Record to map', 'Mac mic → on-device transcription → map; transcript in note.', '→ AI+'],
+        ['P', 'Image to map, Reorganize, Refine, Explain', 'Already in S13 actions.', '→ S13'],
+        ['A', 'MCP server & CLI', 'Opt-in local MCP server and open-source `nexus` CLI for agents; files never leave the Mac.', '→ SET-8 Integrations'],
+        ['E', 'Brainstorming hub', 'New “Brainstorm” document type: rapid capture, then Organize.', '→ AI+'],
+        ['S', 'Thinking (reasoning stream), ChatGPT app, cloud credits', 'On-device models don’t stream reasoning; we show the plan of changes as a diff instead.', '—'],
+        ['P', 'Pitch video', 'Present → Export as video.', '→ F6']
+      ]],
+      ['Advanced features', 9, [
+        ['P', 'Pitch mode', 'Enhance with aspect ratios, slide themes, per-topic show/hide, ? key list.', '→ F6'],
+        ['P', 'Outliner', 'Outline + Split views.', '→ S12'],
+        ['E', 'ZEN mode', 'Appearances Light / Dark / Ultra Light / Ultra Dark; “Today” focus timer.', '→ SET-3'],
+        ['E', 'Quick Entry', 'Quick Capture adds “multi-line → new map” mode.', '→ Integration'],
+        ['A', 'Map Shot', 'Capture overlay: 1:1 or custom ratio, frame, shadow, copy & save.', '→ CX Capture'],
+        ['A', 'Zone', 'Container for floating content, auto-resize, collapse, z-order.', '→ ZN Zones'],
+        ['S', 'Gantt, non-working days', 'Deferred with Tasks.', '—'],
+        ['E', 'Web clipper', 'Safari Share extension sends a page summary to a map.', '→ AI+']
+      ]],
+      ['Questions you may ask', 3, [
+        ['S', 'Purchase activation', 'Free app; nothing to activate.', '—'],
+        ['E', 'Retrieve files / transfer', 'Recovery snapshots + plain files via iCloud, AirDrop, Git.', '→ FT']
+      ]]
+    ];
+    const totals = { P: 0, E: 0, A: 0, S: 0 };
+    const groups = G.map(([t, n, rows]) => ({ t, n, rows: rows.map(([k, f, w, a]) => { totals[k] += 1; return Object.assign({ f, w, a }, K[k]); }) }));
+    const totalsList = [['A', 'new to OpenNexus'], ['E', 'improved'], ['P', 'already covered'], ['S', 'out of scope']].map(([k, d]) => Object.assign({ n: totals[k], d }, K[k]));
+    return { groups, totals: totalsList };
+  }
+}
+</script>
+</body>
+</html>

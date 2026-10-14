@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Motion spec</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.stage{position:relative;width:120px;height:40px;border-radius:8px;background:#F2F2F0;overflow:hidden}
+.dot{position:absolute;width:22px;height:14px;border-radius:4px;background:#5850EC;top:13px;left:10px}
+.par{position:absolute;width:10px;height:10px;border-radius:3px;background:#17171C;top:15px;left:6px}
+@keyframes grow{0%,15%{transform:scale(.3);opacity:0;left:10px}45%,100%{transform:scale(1);opacity:1;left:44px}}
+@keyframes shrink{0%,30%{transform:scale(1);opacity:1;left:44px}65%,100%{transform:scale(.2);opacity:0;left:10px}}
+@keyframes arc{0%,15%{left:10px;top:24px;box-shadow:none}40%{top:4px;box-shadow:0 6px 10px rgba(0,0,0,.25)}70%,100%{left:86px;top:13px;box-shadow:none}}
+@keyframes fold{0%,20%{width:22px;opacity:1}55%{width:4px;opacity:.6}70%,100%{width:14px;border-radius:7px;opacity:1}}
+@keyframes reflow{0%,20%{left:10px}60%,100%{left:70px}}
+@keyframes morph{0%,20%{left:10px;border-radius:4px;width:22px}65%,100%{left:80px;border-radius:50%;width:14px}}
+@keyframes badge{0%,40%{opacity:0;transform:translateY(4px)}75%,100%{opacity:1;transform:none}}
+@keyframes chip{0%,10%{transform:scale(0)}25%,100%{transform:scale(1)}}
+@keyframes fly{0%,15%{transform:scale(1);filter:none}60%,100%{transform:scale(1.8);filter:none}}
+@keyframes glide{0%,20%{left:10px}70%,100%{left:86px}}
+@keyframes shimmer{0%{opacity:.25}50%{opacity:.6}100%{opacity:.25}}
+@keyframes solid{0%,40%{opacity:.4;border-style:dashed}60%,100%{opacity:1}}
+@keyframes shake{0%,30%{transform:none}38%{transform:translateX(-4px)}46%{transform:translateX(4px)}54%{transform:translateX(-3px)}62%{transform:translateX(2px)}70%,100%{transform:none}}
+@keyframes fade{0%,30%{opacity:1}50%{opacity:0}70%,100%{opacity:1}}
+.a-grow{animation:grow 1.6s cubic-bezier(.2,.9,.3,1.15) infinite}
+.a-shrink{animation:shrink 1.6s cubic-bezier(.4,0,1,1) infinite}
+.a-arc{animation:arc 1.8s cubic-bezier(.34,1.56,.64,1) infinite}
+.a-fold{animation:fold 1.8s cubic-bezier(.2,.8,.2,1) infinite}
+.a-reflow{animation:reflow 1.8s cubic-bezier(.2,.9,.3,1.1) infinite}
+.a-morph{animation:morph 2.2s cubic-bezier(.65,0,.35,1) infinite}
+.a-chip{animation:chip 1.6s cubic-bezier(.34,1.56,.64,1) infinite}
+.a-fly{animation:fly 2s cubic-bezier(.65,0,.35,1) infinite}
+.a-glide{animation:glide 2.2s cubic-bezier(.65,0,.35,1) infinite}
+.a-shimmer{animation:shimmer 1.6s ease-in-out infinite;background:#0F9F9A}
+.a-shake{animation:shake 1.6s linear infinite;background:#D93A3F}
+.a-fade{animation:fade 1.6s linear infinite}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 56px 72px; background: #FFFFFF; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">04 · MOTION</div>
+      <h1 style="margin: 0; font: 700 40px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Springy, physical, never in front of the caret</h1>
+    </div>
+    <div style="display: flex; gap: 10px">
+      <div style="padding: 10px 14px; border-radius: 10px; background: #F5F5F2; font-size: 13px; line-height: 1.4"><b>Rule 1</b> · text input is live at 0 ms; layout animates after</div>
+      <div style="padding: 10px 14px; border-radius: 10px; background: #F5F5F2; font-size: 13px; line-height: 1.4"><b>Rule 2</b> · new input retargets in-flight springs, never queues</div>
+      <div style="padding: 10px 14px; border-radius: 10px; background: #F5F5F2; font-size: 13px; line-height: 1.4"><b>Reduce Motion</b> · 150 ms cross-fade</div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+    <sc-for list="{{curves}}" as="c" hint-placeholder-count="4">
+      <div style="display: flex; gap: 14px; align-items: center; padding: 14px; border-radius: 12px; border: 1px solid #E2E2E6">
+        <svg width="64" height="64" viewBox="-4 -16 72 88" aria-hidden="true" style="flex-shrink: 0; background: #F7F7F5; border-radius: 8px; fill: none"><path d="M 0 64 L 64 0" stroke="#DCDCE2" stroke-width="1"></path><path d="{{c.d}}" stroke="#5850EC" stroke-width="2.5" stroke-linecap="round"></path></svg>
+        <div style="display: flex; flex-direction: column; gap: 4px; min-width: 0">
+          <span style="font: 600 13px/1.2 'Geist Mono', monospace">{{c.name}}</span>
+          <span style="font: 400 11px/1.3 'Geist Mono', monospace; color: #5D5D68">{{c.val}}</span>
+          <span style="font-size: 12px; color: #4A4A55">{{c.use}}</span>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display: flex; flex-direction: column; border: 1px solid #E2E2E6; border-radius: 14px; overflow: hidden">
+    <div style="display: grid; grid-template-columns: 190px 1fr 96px 130px 230px 140px; gap: 16px; padding: 12px 18px; background: #F5F5F2; font: 500 11px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #5D5D68">
+      <span>MOMENT</span><span>ANIMATION</span><span>DURATION</span><span>CURVE</span><span>REDUCE MOTION</span><span>LIVE</span>
+    </div>
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="12">
+      <div style="display: grid; grid-template-columns: 190px 1fr 96px 130px 230px 140px; gap: 16px; padding: 10px 18px; border-top: 1px solid #EEEEF1; align-items: center">
+        <span style="font-weight: 600; font-size: 14px">{{r.m}}</span>
+        <span style="font-size: 13px; line-height: 1.4; color: #4A4A55">{{r.a}}</span>
+        <span style="font: 500 13px/1 'Geist Mono', monospace">{{r.d}}</span>
+        <span style="font: 400 12px/1.2 'Geist Mono', monospace; color: #4B44D8">{{r.c}}</span>
+        <span style="font-size: 12px; line-height: 1.4; color: #5D5D68">{{r.rm}}</span>
+        <div class="stage"><span class="par"></span><span class="dot {{r.cls}}"></span></div>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px">
+    <div style="padding: 14px; border-radius: 12px; background: #F5F5F2; font-size: 13px; line-height: 1.45"><b>Glow trail</b> · new edges leave a 300 ms soft glow in the branch colour.</div>
+    <div style="padding: 14px; border-radius: 12px; background: #F5F5F2; font-size: 13px; line-height: 1.45"><b>Depth parallax</b> · below 40% zoom, deep levels drift 2–4% slower than the root.</div>
+    <div style="padding: 14px; border-radius: 12px; background: #F5F5F2; font-size: 13px; line-height: 1.45"><b>Done sparkle</b> · last to-do in a branch checked: 6 particles, 500 ms, once.</div>
+    <div style="padding: 14px; border-radius: 12px; background: #F5F5F2; font-size: 13px; line-height: 1.45"><b>Flow dots</b> · Present mode only: dots travel DFD edges at 120 px/s.</div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const bez = (x1, y1, x2, y2) => `M 0 64 C ${x1 * 64} ${64 - y1 * 64}, ${x2 * 64} ${64 - y2 * 64}, 64 0`;
+    const curves = [
+      { name: 'snap', val: 'spring 0.28 / 0.80', use: 'Create, delete, chips', d: bez(0.2, 0.9, 0.3, 1.15) },
+      { name: 'settle', val: 'spring 0.36 / 0.68', use: 'Reorder, reparent lift', d: bez(0.34, 1.56, 0.64, 1) },
+      { name: 'glide', val: 'cubic(.65,0,.35,1)', use: 'Camera, morphs, convert', d: bez(0.65, 0, 0.35, 1) },
+      { name: 'exit', val: 'cubic(.4,0,1,1)', use: 'Dismiss, shrink away', d: bez(0.4, 0, 1, 1) }
+    ];
+    const rows = [
+      { m: 'Create node', a: 'Grows from the parent’s connector while the branch line draws to it; siblings ease aside', d: '180 ms', c: 'snap', rm: 'Appears in place, 150 ms fade', cls: 'a-grow' },
+      { m: 'Delete node', a: 'Shrinks into its parent; neighbours close the gap', d: '160 ms', c: 'exit → snap', rm: 'Fade out, gap closes instantly', cls: 'a-shrink' },
+      { m: 'Reorder / reparent', a: 'Lifts with shadow, travels a short arc, settles with slight overshoot', d: '250 ms', c: 'settle', rm: 'Cross-fade old → new slot', cls: 'a-arc' },
+      { m: 'Fold / unfold', a: 'Children collapse into the fold badge, which pulses once with the count', d: '220 ms', c: 'glide', rm: 'Children fade; badge appears', cls: 'a-fold' },
+      { m: 'Auto-layout reflow', a: 'All moved nodes spring to new positions together', d: '300 ms', c: 'snap', rm: 'Single cross-fade of the map', cls: 'a-reflow' },
+      { m: 'Structure change', a: 'Nodes morph shape and fly to new positions; lines redraw', d: '450–600 ms', c: 'glide', rm: 'Cross-fade layouts', cls: 'a-morph' },
+      { m: 'Diagram conversion', a: 'As above, then node-type badges fade in on arrival', d: '600 ms', c: 'glide', rm: 'Cross-fade, badges static', cls: 'a-morph' },
+      { m: 'Connect mode', a: 'Hint chips pop nearest-first in a 40 ms stagger; chosen edge draws source → target', d: '300 ms', c: 'snap · glide', rm: 'Chips appear at once; edge fades in', cls: 'a-chip' },
+      { m: 'Focus / drill-down', a: 'Camera flies to the branch; the rest blurs 8 px and dims to 30%', d: '400 ms', c: 'glide', rm: 'Cut with 150 ms fade', cls: 'a-fly' },
+      { m: 'Presentation step', a: 'Camera glides between branches; content builds in sequence', d: '500 ms', c: 'glide', rm: 'Cut transitions', cls: 'a-glide' },
+      { m: 'AI suggestions', a: 'Ghosts shimmer in at 50% opacity, staggered; accept solidifies', d: '250 ms each', c: 'snap', rm: 'Static 50% ghosts, no shimmer', cls: 'a-shimmer' },
+      { m: 'Rule broken', a: 'Gentle horizontal shake of the offending node plus a badge', d: '200 ms', c: 'linear, 3 cycles', rm: 'Badge only, no shake', cls: 'a-shake' }
+    ];
+    return { curves, rows };
+  }
+}
+</script>
+</body>
+</html>

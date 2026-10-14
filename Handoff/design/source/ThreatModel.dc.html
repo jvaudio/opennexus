@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Threat model</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.tb{height:28px;padding:0 10px;display:flex;align-items:center;gap:6px;border-radius:7px;border:1px solid rgba(23,23,28,.09);background:rgba(255,255,255,.7);font:500 12.5px/1 -apple-system,Geist,sans-serif;color:#17171C}
+.th{position:absolute;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:10px;background:#FDECEC;border:2px solid #C62F35;font:500 13px/1.2 -apple-system,Geist,sans-serif;color:#17171C}
+.mi{position:absolute;box-sizing:border-box;display:flex;align-items:center;gap:8px;padding:0 12px;border-radius:10px;background:#E6F5EC;border:2px solid #2E7D4F;font:500 13px/1.2 -apple-system,Geist,sans-serif;color:#17171C}
+.rk{font:600 10px/1 "Geist Mono",monospace;padding:3px 6px;border-radius:4px;letter-spacing:.04em}
+.tri{width:16px;height:14px;background:#C62F35;clip-path:polygon(50% 0,100% 100%,0 100%);flex-shrink:0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #F7F7F5; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 52px; box-sizing: border-box; padding: 0 14px 0 18px; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,.72); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(23,23,28,.08); z-index: 5">
+    <div style="display: flex; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; margin-left: 10px"><span style="font-size: 13px; font-weight: 600">Payments threat model.nexus</span><span style="font-size: 11px; color: #5D5D68">9 threats · 3 open High</span></div>
+    <div style="flex: 1"></div>
+    <button class="tb">Threat Model <span class="k">⌥⌘T</span></button>
+    <button class="tb">Colour by risk</button>
+    <button class="tb" style="background: rgba(15,159,154,.1); color: #0B6E6A; border-color: transparent">✦ Suggest STRIDE threats</button>
+    <button class="tb">Export…</button>
+  </div>
+
+  <!-- canvas -->
+  <div style="position: absolute; left: 0; width: 1080px; top: 52px; height: 588px; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 22px 22px">
+    <svg width="1080" height="588" viewBox="0 0 1080 588" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round; stroke-linejoin: round">
+      <defs><marker id="ta" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#4A4A55"></path></marker><marker id="tr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#C62F35"></path></marker></defs>
+      <path d="M520 220 H 676" stroke="#4A4A55" stroke-width="1.6" marker-end="url(#ta)"></path>
+      <path d="M430 258 V 346" stroke="#4A4A55" stroke-width="1.6" marker-end="url(#ta)"></path>
+      <path d="M760 110 V 186" stroke="#C62F35" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#tr)"></path>
+      <path d="M266 372 H 346" stroke="#C62F35" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#tr)"></path>
+      <path d="M266 130 C 320 130, 330 170, 352 190" stroke="#C62F35" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#tr)"></path>
+      <path d="M870 92 H 930" stroke="#2E7D4F" stroke-width="2"></path>
+      <path d="M512 372 H 600" stroke="#9B51E0" stroke-width="1.6" stroke-dasharray="2 4"></path>
+    </svg>
+    <div style="position: absolute; left: 330px; top: 50px; width: 520px; height: 380px; border: 2px dashed #C62F35; border-radius: 16px; box-sizing: border-box; background: repeating-linear-gradient(45deg, rgba(198,47,53,.03) 0 8px, transparent 8px 16px)"><span style="position: absolute; left: 14px; top: -11px; padding: 2px 8px; background: #F7F7F5; font: 600 11px/16px 'Geist Mono', monospace; letter-spacing: .06em; color: #C62F35">PCI ZONE · TRUST LOW→HIGH</span></div>
+    <div style="position: absolute; left: 340px; top: 182px; width: 180px; height: 76px; box-sizing: border-box; border-radius: 999px; background: #ECEBFE; border: 2px solid #5850EC; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font: 500 14px/1.2 -apple-system, sans-serif; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC, 0 8px 24px rgba(88,80,236,.22)"><span style="font: 600 10.5px/1 'Geist Mono', monospace; color: #3B34C4">2.0</span>Authorize payment</div>
+    <div style="position: absolute; left: 680px; top: 192px; width: 160px; height: 56px; box-sizing: border-box; border-radius: 3px; background: #E3F0FC; border: 2px solid #1E6FB8; box-shadow: 4px 4px 0 #1E6FB8; display: flex; align-items: center; justify-content: center; font: 600 14px/1 -apple-system, sans-serif">Payment provider</div>
+    <div style="position: absolute; left: 350px; top: 350px; width: 162px; height: 44px; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: #DDF3F1; border-top: 2px solid #0F7F7A; border-bottom: 2px solid #0F7F7A; border-left: 10px solid #0F7F7A; font: 500 14px/1 -apple-system, sans-serif"><span style="font: 600 11px/1 'Geist Mono', monospace; color: #0B6E6A">D2</span>Card tokens</div>
+    <div class="th" style="left: 650px; top: 70px; width: 220px; height: 40px"><span class="tri"></span>Spoofed provider callback<span class="rk" style="background: #C62F35; color: #FFFFFF">H</span></div>
+    <div class="th" style="left: 40px; top: 352px; width: 226px; height: 40px"><span class="tri"></span>Token table tampering<span class="rk" style="background: #E08A00; color: #17171C">M</span></div>
+    <div class="th" style="left: 60px; top: 110px; width: 206px; height: 40px"><span class="tri"></span>Card data in logs<span class="rk" style="background: #C62F35; color: #FFFFFF">H</span></div>
+    <div class="mi" style="left: 930px; top: 72px; width: 130px; height: 40px"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: #2E7D4F; stroke-width: 2; stroke-linecap: round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M8.5 12l2.5 2.5 4.5-5"></path></svg>Mutual TLS</div>
+    <div style="position: absolute; left: 600px; top: 352px; height: 40px; padding: 0 12px; box-sizing: border-box; border-radius: 10px; background: #F3EBFC; border: 2px solid #9B51E0; display: flex; align-items: center; gap: 8px; font: 500 13px/1 -apple-system, sans-serif"><svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: #9B51E0; stroke-width: 2; stroke-linejoin: round"><path d="M6 4h12l3 5-9 11L3 9z M3 9h18"></path></svg>Cardholder data<span style="font: 600 9.5px/1 'Geist Mono', monospace; color: #6B3FA0">ASSET</span></div>
+    <div style="position: absolute; left: 680px; top: 452px; padding: 10px 12px; border-radius: 12px; border: 1.5px dashed #0F9F9A; background: rgba(15,159,154,.07); display: flex; flex-direction: column; gap: 4px; opacity: .9">
+      <span style="font-size: 12px; font-weight: 600; color: #0B6E6A">✦ 3 more STRIDE threats suggested for 2.0</span>
+      <span style="font-size: 11.5px; color: #2C2C33; display: flex; gap: 6px; align-items: center">Repudiation · DoS · Elevation  <span class="k">⌃⇧↩</span>accept all</span>
+    </div>
+  </div>
+
+  <!-- inspector -->
+  <div style="position: absolute; right: 0; top: 52px; width: 360px; bottom: 0; box-sizing: border-box; background: #FFFFFF; border-left: 1px solid #E2E2E6; display: flex; flex-direction: column">
+    <div style="display: flex; padding: 10px 12px 0; gap: 4px; border-bottom: 1px solid #EEEEF1">
+      <span style="padding: 8px 10px; font-size: 12.5px; color: #4A4A55">Style</span><span style="padding: 8px 10px; font-size: 12.5px; color: #4A4A55">Branch</span><span style="padding: 8px 10px; font-size: 12.5px; color: #4A4A55">Canvas</span><span style="padding: 8px 10px; font-size: 12.5px; font-weight: 600; border-bottom: 2px solid #5850EC">Data</span><span style="padding: 8px 10px; font-size: 12.5px; font-weight: 600; color: #C62F35">STRIDE</span>
+    </div>
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 14px; overflow: hidden">
+      <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 11px; font-weight: 600; color: #6B6B76">PROCESS · 2.0</span><span style="font-size: 16px; font-weight: 700">Authorize payment</span></div>
+      <div style="display: flex; flex-direction: column; border: 1px solid #E8E8EC; border-radius: 12px; overflow: hidden">
+        <sc-for list="{{stride}}" as="s" hint-placeholder-count="6">
+          <div style="display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 9px 12px; border-top: 1px solid #F0F0F2; background: {{s.bg}}">
+            <span style="width: 24px; height: 24px; border-radius: 6px; background: #17171C; color: #FFFFFF; font: 700 12px/24px 'Geist Mono', monospace; text-align: center">{{s.l}}</span>
+            <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 12.5px; font-weight: 600">{{s.n}}</span><span style="font-size: 11.5px; color: #4A4A55">{{s.t}}</span></div>
+            <span class="rk" style="background: {{s.rb}}; color: {{s.rf}}">{{s.r}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: grid; grid-template-columns: auto 1fr; gap: 6px 12px; font-size: 12.5px"><span style="color: #6B6B76">Owner</span><span>Payments team</span><span style="color: #6B6B76">Data class.</span><span>PCI · Restricted</span><span style="color: #6B6B76">Protocol</span><span style="font-family: 'Geist Mono', monospace">HTTPS / mTLS</span></div>
+    </div>
+  </div>
+
+  <!-- threat table drawer -->
+  <div style="position: absolute; left: 0; width: 1080px; bottom: 0; height: 260px; box-sizing: border-box; background: #FFFFFF; border-top: 1px solid #E2E2E6; display: flex; flex-direction: column">
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 18px">
+      <span style="font-size: 13px; font-weight: 700">Threat table <span style="font-weight: 400; color: #6B6B76">· filter: Open</span></span>
+      <div style="display: flex; gap: 8px"><button class="tb">Export CSV</button><button class="tb">Copy as Markdown</button></div>
+    </div>
+    <div style="display: grid; grid-template-columns: 54px 170px 110px 1fr 60px 170px 80px; gap: 12px; padding: 8px 18px; background: #F8F8FA; font-size: 11px; font-weight: 600; color: #5D5D68"><span>ID</span><span>Element</span><span>STRIDE</span><span>Threat</span><span>Risk</span><span>Mitigation</span><span>Status</span></div>
+    <sc-for list="{{rows}}" as="r" hint-placeholder-count="4">
+      <div style="display: grid; grid-template-columns: 54px 170px 110px 1fr 60px 170px 80px; gap: 12px; padding: 9px 18px; border-top: 1px solid #F0F0F2; font-size: 12.5px; align-items: center">
+        <span style="font-family: 'Geist Mono', monospace; color: #4A4A55">{{r.id}}</span><span>{{r.el}}</span><span>{{r.s}}</span><span>{{r.t}}</span><span><span class="rk" style="background: {{r.rb}}; color: {{r.rf}}">{{r.r}}</span></span><span style="color: {{r.mc}}">{{r.m}}</span><span>{{r.st}}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const risk = (r) => r === 'High' ? { rb: '#C62F35', rf: '#FFFFFF' } : r === 'Med' ? { rb: '#E08A00', rf: '#17171C' } : r === 'Low' ? { rb: '#E6F5EC', rf: '#1E6B41' } : { rb: '#F1F1F4', rf: '#4A4A55' };
+    const stride = [
+      ['S', 'Spoofing', 'Forged provider callback', 'High'],
+      ['T', 'Tampering', 'Amount altered in transit', 'Med'],
+      ['R', 'Repudiation', '✦ Suggested · no signed audit log', 'Med'],
+      ['I', 'Info disclosure', 'Card data in debug logs', 'High'],
+      ['D', 'Denial of service', '✦ Suggested · retry storms', 'Low'],
+      ['E', 'Elevation', 'Not applicable', 'N/A']
+    ].map(([l, n, t, r], i) => Object.assign({ l, n, t, r, bg: i === 0 ? '#FFF8F8' : '#FFFFFF' }, risk(r)));
+    const rows = [
+      ['T-01', '2.0 Authorize payment', 'Spoofing', 'Forged provider callback', 'High', 'Mutual TLS', 'Mitigated'],
+      ['T-02', '2.0 Authorize payment', 'Info disclosure', 'Card data written to debug logs', 'High', '—', 'Open'],
+      ['T-03', 'D2 Card tokens', 'Tampering', 'Token table edited outside service', 'Med', 'Row-level signing', 'In review'],
+      ['T-04', 'Payment provider', 'Repudiation', 'Disputed charge without evidence', 'Med', '—', 'Open']
+    ].map(([id, el, s, t, r, m, st]) => Object.assign({ id, el, s, t, r, m, st, mc: m === '—' ? '#9A9AA6' : '#17171C' }, risk(r)));
+    return { stride, rows };
+  }
+}
+</script>
+</body>
+</html>

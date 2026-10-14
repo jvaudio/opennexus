@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>First-run tutorial and keycap coach</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.cap3{display:inline-flex;align-items:center;justify-content:center;min-width:46px;height:44px;padding:0 12px;box-sizing:border-box;border-radius:10px;background:linear-gradient(180deg,#FFFFFF,#EDEDF1);border:1px solid #CFCFD7;border-bottom:5px solid #B9B9C4;box-shadow:0 8px 18px rgba(23,23,28,.16);font:600 15px/1 "Geist Mono",monospace;color:#17171C}
+.fr{position:relative;height:230px;border-radius:14px;background:#F7F7F5;background-image:radial-gradient(#DADAE0 1px,transparent 1.3px);background-size:18px 18px;overflow:hidden;border:1px solid #E2E2E6}
+.n{position:absolute;height:30px;padding:0 11px;box-sizing:border-box;border-radius:8px;background:#FFFFFF;display:flex;align-items:center;font:500 12.5px/1 -apple-system,Geist,sans-serif;white-space:nowrap}
+.r{position:absolute;height:38px;padding:0 14px;border-radius:12px;background:#17171C;color:#FFFFFF;display:flex;align-items:center;font:700 14px/1 -apple-system,Geist,sans-serif;white-space:nowrap}
+.dots{position:absolute;left:0;right:0;bottom:10px;display:flex;justify-content:center;gap:5px}
+.dots span{width:6px;height:6px;border-radius:50%;background:#D4D4DB}
+.ttl{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;font-weight:600}
+.sub{font-size:12px;line-height:1.4;color:#4A4A55}
+@keyframes caret{0%,49%{opacity:1}50%,100%{opacity:0}}
+.car{display:inline-block;width:1.5px;height:15px;background:#5850EC;margin-left:1px;animation:caret 1s steps(1) infinite}
+@keyframes press{0%,40%{transform:none;border-bottom-width:5px}50%,70%{transform:translateY(3px);border-bottom-width:2px}80%,100%{transform:none;border-bottom-width:5px}}
+.prs{animation:press 2s ease-in-out infinite}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 48px 56px; background: #FFFFFF; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">F5 · FIRST RUN · ABOUT 4 MINUTES · EVERY STEP SKIPPABLE · REPLAY FROM HELP</div>
+      <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">The tour is a real canvas you build, not a slideshow</h1>
+    </div>
+    <div style="font-size: 13px; color: #4A4A55">Example topic follows the role picked in step 2 (Engineer shown)</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+    <!-- L1 -->
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="fr">
+        <div class="r" style="left: 70px; top: 90px; background: #FFFFFF; color: #17171C; border: 2px solid #17171C; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC">Checkout serv<span class="car"></span></div>
+        <span style="position: absolute; left: 76px; top: 140px; font-size: 11.5px; color: #6B6B76">Name your idea</span>
+        <span class="cap3 prs" style="position: absolute; left: 236px; top: 86px; min-width: 52px">↩</span>
+        <div class="dots"><span style="background: #5850EC; width: 16px; border-radius: 3px"></span><span></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="ttl">1 · Type<span class="cap">20 s</span></div><div class="sub">Root already in Edit mode with a blinking caret. Type, then ↩.</div>
+    </div>
+    <!-- L2 -->
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="fr">
+        <svg width="100%" height="230" viewBox="0 0 312 230" aria-hidden="true" style="position: absolute; inset: 0; fill: none"><path d="M128 110 C 150 110, 150 70, 170 70 M128 110 L 170 110 M128 110 C 150 110, 150 150, 170 150" stroke="#5850EC" stroke-width="2.5" stroke-linecap="round"></path></svg>
+        <div class="r" style="left: 18px; top: 91px">Checkout</div>
+        <div class="n" style="left: 170px; top: 55px; border: 2px solid #5850EC">Cart</div>
+        <div class="n" style="left: 170px; top: 95px; border: 2px solid #5850EC">Payment</div>
+        <div class="n" style="left: 170px; top: 135px; border: 2px solid #5850EC; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC">Receip<span class="car"></span></div>
+        <span class="cap3" style="position: absolute; left: 252px; top: 20px; background: linear-gradient(180deg, #E6F5EC, #CDEBD8); border-color: #8CCBA4; border-bottom-color: #5FAE7E; min-width: 46px">⇥ ✓</span>
+        <span class="cap3 prs" style="position: absolute; left: 248px; top: 128px">↩</span>
+        <div class="dots"><span style="background: #5850EC"></span><span style="background: #5850EC; width: 16px; border-radius: 3px"></span><span></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="ttl">2 · Tab and Return<span class="cap">40 s</span></div><div class="sub">⇥ child, ↩ sibling, then ⇧↩ and ⌘↩. Keycap ticks green; the sequence speeds up as you succeed.</div>
+    </div>
+    <!-- L3 -->
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="fr">
+        <div style="position: absolute; left: 150px; top: 76px; width: 130px; height: 70px; border-radius: 50%; background: radial-gradient(rgba(88,80,236,.18), transparent 70%)"></div>
+        <div class="r" style="left: 18px; top: 91px">Checkout</div>
+        <div class="n" style="left: 170px; top: 55px; border: 2px solid #5850EC">Cart</div>
+        <div class="n" style="left: 170px; top: 95px; border: 2px solid #5850EC; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC">Payment</div>
+        <div class="n" style="left: 170px; top: 135px; border: 2px solid #5850EC">Receipt</div>
+        <div style="position: absolute; left: 20px; top: 160px; display: flex; gap: 4px"><span class="cap3" style="min-width: 36px; height: 34px; font-size: 13px">↑</span><span class="cap3 prs" style="min-width: 36px; height: 34px; font-size: 13px">↓</span></div>
+        <div style="position: absolute; left: 112px; top: 166px; font-size: 11.5px; color: #4A4A55">then ⌥⌘↑↓ reorder · ⌘/ fold</div>
+        <div class="dots"><span style="background: #5850EC"></span><span style="background: #5850EC"></span><span style="background: #5850EC; width: 16px; border-radius: 3px"></span><span></span><span></span><span></span></div>
+      </div>
+      <div class="ttl">3 · Move around<span class="cap">30 s</span></div><div class="sub">A soft spotlight follows the selection. Reorder and fold in the same lesson.</div>
+    </div>
+    <!-- L4 -->
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="fr">
+        <div class="r" style="left: 18px; top: 91px; opacity: .55">Checkout</div>
+        <div class="n" style="left: 170px; top: 55px; border: 2px solid #F2B135; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #F2B135">Cart</div>
+        <div class="n" style="left: 170px; top: 95px; border: 2px solid #5850EC; opacity: .55">Payment<span style="position: absolute; left: -8px; top: -10px; padding: 0 5px; border-radius: 5px; background: #F2B135; font: 700 10px/16px 'Geist Mono', monospace; opacity: 1">A</span></div>
+        <div class="n" style="left: 170px; top: 135px; border: 2px solid #5850EC; opacity: .55">Receipt<span style="position: absolute; left: -8px; top: -10px; padding: 0 5px; border-radius: 5px; background: #FFE3A3; font: 700 10px/16px 'Geist Mono', monospace">S</span></div>
+        <span class="cap3 prs" style="position: absolute; left: 30px; top: 150px; background: linear-gradient(180deg, #FFF7E3, #FBE7B5); border-color: #E8C77B; border-bottom-color: #D0A44A">⇧⌘L</span>
+        <div class="dots"><span style="background: #5850EC"></span><span style="background: #5850EC"></span><span style="background: #5850EC"></span><span style="background: #5850EC; width: 16px; border-radius: 3px"></span><span></span><span></span></div>
+      </div>
+      <div class="ttl">4 · Connect<span class="cap">30 s</span></div><div class="sub">Hint chips pulse; pick a letter and name the edge.</div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px">
+    <!-- L5 -->
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="fr" style="background-color: #FBFAFF">
+        <svg width="100%" height="230" viewBox="0 0 312 230" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round"><path d="M156 52 V 74 M156 112 V 130 M126 150 H 70 V 168 M186 150 H 240 V 168" stroke="#4A4A55" stroke-width="1.5"></path><path d="M60 40 C 80 20, 120 20, 150 34 M260 90 C 250 120, 230 140, 210 150" stroke="#5850EC" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="2 4"></path></svg>
+        <div class="r" style="left: 106px; top: 18px; height: 34px; border-radius: 999px; font-size: 12.5px">Checkout</div>
+        <div class="n" style="left: 116px; top: 76px; width: 80px; justify-content: center; border: 1.5px solid #4A4A55">Cart</div>
+        <div style="position: absolute; left: 116px; top: 130px; width: 80px; height: 40px; background: #FBE7B5; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); display: flex; align-items: center; justify-content: center; font-size: 10.5px; font-weight: 600">Paid?</div>
+        <div class="n" style="left: 30px; top: 170px; border: 1.5px solid #4A4A55">Receipt</div>
+        <div class="n" style="left: 200px; top: 170px; border: 1.5px solid #4A4A55">Retry</div>
+        <span style="position: absolute; right: 12px; top: 12px; font: 600 10px/1 'Geist Mono', monospace; color: #5850EC">✦ THE WOW MOMENT</span>
+        <div class="dots"><span style="background: #5850EC"></span><span style="background: #5850EC"></span><span style="background: #5850EC"></span><span style="background: #5850EC"></span><span style="background: #5850EC; width: 16px; border-radius: 3px"></span><span></span></div>
+      </div>
+      <div class="ttl">5 · Transform<span class="cap">40 s</span></div><div class="sub">⌥⌘T. Your own map morphs into a flowchart (or DFD for Security) with the full 600 ms conversion.</div>
+    </div>
+    <!-- L6 -->
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <div class="fr">
+        <div class="r" style="left: 18px; top: 91px">Checkout</div>
+        <div style="position: absolute; left: 160px; top: 50px; display: flex; flex-direction: column; gap: 8px">
+          <span class="n" style="position: static; border: 1.5px dashed #0F9F9A; background: rgba(15,159,154,.07); color: #0B6E6A; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #0F9F9A">Guest checkout</span>
+          <span class="n" style="position: static; border: 1.5px dashed #0F9F9A; background: rgba(15,159,154,.07); color: #0B6E6A; opacity: .7">Saved cards</span>
+          <span class="n" style="position: static; border: 1.5px dashed #0F9F9A; background: rgba(15,159,154,.07); color: #0B6E6A; opacity: .7">Address lookup</span>
+        </div>
+        <span class="cap3 prs" style="position: absolute; left: 20px; top: 150px; background: linear-gradient(180deg, #E8F7F6, #CDEDEA); border-color: #8FD3CE; border-bottom-color: #4FB5AE">⌃↩</span>
+        <div class="dots"><span style="background: #5850EC"></span><span style="background: #5850EC"></span><span style="background: #5850EC"></span><span style="background: #5850EC"></span><span style="background: #5850EC"></span><span style="background: #5850EC; width: 16px; border-radius: 3px"></span></div>
+      </div>
+      <div class="ttl">6 · Ask AI<span class="cap">30 s</span></div><div class="sub">⌥Space on a branch; ghosts shimmer in; ⌃↩ accepts one.</div>
+    </div>
+    <!-- Finish -->
+    <div style="grid-column: span 2; display: flex; flex-direction: column; gap: 8px">
+      <div style="height: 230px; box-sizing: border-box; border-radius: 14px; background: #17171C; color: #F2F2F5; padding: 22px 24px; display: flex; flex-direction: column; gap: 14px">
+        <div style="display: flex; justify-content: space-between; align-items: baseline"><span style="font: 700 22px/1 'Bricolage Grotesque', sans-serif">You built your first map in 3:41</span><span style="font: 500 11px/1 'Geist Mono', monospace; color: #A6A6B0">FINISH</span></div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{learned}}" as="l" hint-placeholder-count="8">
+            <div style="display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: #D9D9E0"><span class="k" style="background: #26272D; color: #F2F2F5; border-color: #3A3B43">{{l.k}}</span>{{l.t}}</div>
+          </sc-for>
+        </div>
+        <div style="flex: 1"></div>
+        <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 13px; color: #B4B4BE">Hold <b style="color: #FFFFFF">⌘</b> any time to see these again. Your tutorial map stays as your first document.</span><button style="height: 32px; padding: 0 14px; border-radius: 9px; border: 0; background: #F2F2F5; color: #17171C; font: 600 13px -apple-system, sans-serif">Keep mapping ↩</button></div>
+      </div>
+      <div class="ttl">Finish<span class="cap">10 s</span></div><div class="sub">Summary card of the keys just learned.</div>
+    </div>
+  </div>
+
+  <!-- components -->
+  <div style="display: grid; grid-template-columns: 1.5fr 1fr 1fr; gap: 16px">
+    <div style="padding: 18px; border-radius: 16px; background: #F5F5F2; display: flex; flex-direction: column; gap: 14px">
+      <span class="cap">KEYCAP COACH · COMPONENT</span>
+      <div style="display: flex; gap: 22px; align-items: flex-end">
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span class="cap3">⇥</span><span style="font-size: 11.5px; color: #4A4A55">Prompt</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span class="cap3" style="transform: translateY(3px); border-bottom-width: 2px; box-shadow: 0 3px 6px rgba(23,23,28,.12)">⇥</span><span style="font-size: 11.5px; color: #4A4A55">Pressed</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span class="cap3" style="background: linear-gradient(180deg, #E6F5EC, #CDEBD8); border-color: #8CCBA4; border-bottom-color: #5FAE7E">⇥ ✓</span><span style="font-size: 11.5px; color: #4A4A55">Success</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span class="cap3" style="background: linear-gradient(180deg, #FFF7E3, #FBE7B5); border-color: #E8C77B; border-bottom-color: #D0A44A">↩</span><span style="font-size: 11.5px; color: #4A4A55">Wrong key</span></div>
+        <div style="display: flex; flex-direction: column; align-items: center; gap: 8px"><span class="cap3" style="min-width: 74px">⌥⌘T</span><span style="font-size: 11.5px; color: #4A4A55">Chord</span></div>
+      </div>
+      <div style="font-size: 12.5px; line-height: 1.5; color: #4A4A55">Floats 16 px beside the selection, never over the node being edited. Wrong key? It shows what that key did (with undo) and repeats the prompt.</div>
+    </div>
+    <div style="padding: 18px; border-radius: 16px; background: #F5F5F2; display: flex; flex-direction: column; gap: 12px">
+      <span class="cap">NO MODAL WALLS</span>
+      <div style="align-self: flex-start; display: flex; align-items: center; gap: 10px; height: 36px; padding: 0 14px; border-radius: 999px; background: rgba(255,255,255,.9); border: 1px solid #E2E2E6; box-shadow: 0 8px 20px rgba(23,23,28,.10); font-size: 12.5px"><span style="width: 8px; height: 8px; border-radius: 50%; background: #5850EC"></span>Tour paused · lesson 3 of 6<span style="color: #5850EC; font-weight: 600">Resume</span></div>
+      <div style="font-size: 12.5px; line-height: 1.5; color: #4A4A55">Click away at any point; the tour shrinks to a corner pill.</div>
+      <span class="cap" style="padding-top: 6px">PROGRESSIVE TIP</span>
+      <div style="display: flex; gap: 8px; align-items: center; padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,.95); border: 1px solid #E2E2E6; font-size: 12.5px">Faster: <span class="k">⇥</span> adds a child<span style="flex: 1"></span><span style="font-size: 11.5px; color: #6B6B76">Don’t show tips</span></div>
+    </div>
+    <div style="padding: 18px; border-radius: 16px; background: #F5F5F2; display: flex; flex-direction: column; gap: 10px">
+      <span class="cap">XMIND SWITCHERS · ON .XMIND IMPORT</span>
+      <span style="font-size: 15px; font-weight: 700">Your keys already work here.</span>
+      <div style="display: flex; flex-direction: column; gap: 6px; font-size: 12.5px; color: #2C2C33">
+        <span><b>Same:</b> ⇥ ↩ ⇧↩ ⌘↩, structures, markers, Pitch → Present</span>
+        <span><b>New:</b> ⇧⌘L Connect mode, typed diagrams, ⌥⌘T convert</span>
+        <span><b>New:</b> AI that runs on this Mac, no credits</span>
+      </div>
+      <span style="font-size: 12px; color: #6B6B76">Import report: 312 topics, 2 items not converted · View</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const learned = [['⇥', 'child'], ['↩', 'sibling'], ['⇧↩', 'before'], ['⌘↩', 'parent'], ['←↑→↓', 'move'], ['⌥⌘↑↓', 'reorder'], ['⇧⌘L', 'connect'], ['⌥⌘T', 'convert']].map(([k, t]) => ({ k, t }));
+    return { learned };
+  }
+}
+</script>
+</body>
+</html>

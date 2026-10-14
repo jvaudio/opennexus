@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Inspector tabs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.pn{background:#FFFFFF;border:1px solid #DCDCE2;border-radius:16px;box-shadow:0 16px 40px rgba(23,23,28,.08);display:flex;flex-direction:column;overflow:hidden;font-family:-apple-system,'SF Pro Text',Geist,sans-serif}
+.tabs{display:flex;gap:2px;padding:8px 8px 0;border-bottom:1px solid #EEEEF1}
+.tab{padding:7px 9px;font-size:12px;color:#5D5D68}
+.on{font-weight:600;color:#17171C;box-shadow:inset 0 -2px 0 #5850EC}
+.sec{padding:12px 14px;border-bottom:1px solid #F0F0F2;display:flex;flex-direction:column;gap:9px}
+.lbl{font-size:11px;font-weight:600;color:#6B6B76}
+.row{display:flex;justify-content:space-between;align-items:center;font-size:12.5px}
+.fld{height:26px;box-sizing:border-box;border-radius:6px;border:1px solid #DCDCE2;background:#FFFFFF;padding:0 8px;display:flex;align-items:center;font-size:12px;color:#17171C}
+.seg{display:flex;border:1px solid #DCDCE2;border-radius:7px;overflow:hidden}
+.seg span{flex:1;height:26px;display:flex;align-items:center;justify-content:center;font-size:11.5px;border-left:1px solid #DCDCE2}
+.seg span:first-child{border-left:0}
+.sw{width:22px;height:22px;border-radius:6px}
+.tg{width:32px;height:19px;border-radius:999px;position:relative;display:inline-block}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 48px 56px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 22px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">S10 · INSPECTOR · ⌘I · SLIDES IN ONLY WHEN ASKED</div>
+      <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Style, Branch, Canvas, Data</h1>
+    </div>
+    <div style="font-size: 13px; color: #4A4A55">Selection: <b>Payments service</b> · Main topic · Architecture canvas</div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; flex: 1; min-height: 0">
+
+    <!-- STYLE -->
+    <div class="pn">
+      <div class="tabs"><span class="tab on">Style</span><span class="tab">Branch</span><span class="tab">Canvas</span><span class="tab">Data</span></div>
+      <div class="sec"><span class="lbl">SHAPE</span>
+        <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{shapes}}" as="s" hint-placeholder-count="12">
+            <button aria-label="{{s.n}}" style="height: 34px; border-radius: 7px; border: 1.5px solid {{s.bd}}; background: {{s.bg}}; display: flex; align-items: center; justify-content: center; padding: 0"><svg width="22" height="16" viewBox="0 0 22 16" aria-hidden="true" style="fill: none; stroke: #17171C; stroke-width: 1.4"><path d="{{s.d}}"></path></svg></button>
+          </sc-for>
+        </div>
+      </div>
+      <div class="sec"><span class="lbl">FILL</span>
+        <div style="display: flex; gap: 6px"><span class="sw" style="background: #FFFFFF; box-shadow: inset 0 0 0 1px #DCDCE2, 0 0 0 2px #FFFFFF, 0 0 0 4px #5850EC"></span><span class="sw" style="background: #ECEBFE"></span><span class="sw" style="background: #DDF3F1"></span><span class="sw" style="background: #FBE7B5"></span><span class="sw" style="background: #FDECEC"></span><span class="sw" style="background: #17171C"></span><span class="sw" style="background: conic-gradient(#E4572E, #E0A100, #5AA02C, #1E8BE0, #9B51E0, #E4572E)"></span></div>
+      </div>
+      <div class="sec"><span class="lbl">BORDER</span>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px"><span class="fld">2 pt</span><span class="fld">Solid ▾</span><span class="fld" style="gap: 6px"><span style="width: 12px; height: 12px; border-radius: 3px; background: #5850EC"></span>Branch</span></div>
+      </div>
+      <div class="sec"><span class="lbl">TEXT</span>
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 6px"><span class="fld">SF Pro ▾</span><span class="fld">15 pt</span></div>
+        <div class="seg"><span style="font-weight: 700; background: #F1F0FE">B</span><span style="font-style: italic">I</span><span style="text-decoration: underline">U</span><span>≡</span><span style="background: #F1F0FE">≣</span><span>≡</span></div>
+        <div class="row"><span>Wrap width</span><span class="fld">240 pt · drag edge</span></div>
+      </div>
+      <div class="sec"><span class="lbl">STYLE</span>
+        <div class="row"><span>Copy style</span><span class="k">⌥⌘C</span></div>
+        <div class="row"><span>Paste style</span><span class="k">⌥⌘V</span></div>
+        <div class="row"><span>Reset to theme</span><span style="font-size: 12px; color: #5850EC">Reset</span></div>
+      </div>
+    </div>
+
+    <!-- BRANCH -->
+    <div class="pn">
+      <div class="tabs"><span class="tab">Style</span><span class="tab on">Branch</span><span class="tab">Canvas</span><span class="tab">Data</span></div>
+      <div class="sec"><span class="lbl">STRUCTURE · THIS BRANCH ONLY</span>
+        <div style="display: flex; flex-direction: column; border: 1px solid #DCDCE2; border-radius: 8px; overflow: hidden">
+          <sc-for list="{{structures}}" as="s" hint-placeholder-count="9">
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; font-size: 12.5px; background: {{s.bg}}; color: {{s.fg}}"><span>{{s.n}}</span><span style="font: 500 11px/1 'Geist Mono', monospace; opacity: .75">⌥⌘{{s.k}}</span></div>
+          </sc-for>
+        </div>
+      </div>
+      <div class="sec"><span class="lbl">LINE</span>
+        <div class="seg"><span style="background: #F1F0FE">Curved</span><span>Straight</span><span>Elbow</span><span>Round</span><span>Taper</span></div>
+        <div class="row"><span>Thickness by depth</span><span class="tg" style="background: #34C759"><span style="position: absolute; right: 2px; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #FFFFFF"></span></span></div>
+      </div>
+      <div class="sec"><span class="lbl">COLOUR</span>
+        <div class="row"><span>Branch colour</span><span style="display: flex; gap: 4px"><span class="sw" style="width: 18px; height: 18px; background: #5850EC; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3.5px #17171C"></span><span class="sw" style="width: 18px; height: 18px; background: #E4572E"></span><span class="sw" style="width: 18px; height: 18px; background: #0F9F9A"></span><span class="sw" style="width: 18px; height: 18px; background: #E0A100"></span></span></div>
+        <div class="row"><span>Smart color reshuffle</span><span class="k">⇧⌘R</span></div>
+      </div>
+    </div>
+
+    <!-- CANVAS -->
+    <div class="pn">
+      <div class="tabs"><span class="tab">Style</span><span class="tab">Branch</span><span class="tab on">Canvas</span><span class="tab">Data</span></div>
+      <div class="sec"><span class="lbl">THEME</span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+          <div style="height: 54px; border-radius: 8px; background: #F7F7F5; border: 2px solid #5850EC; display: flex; align-items: flex-end; padding: 5px; box-sizing: border-box; font-size: 10.5px">Classic</div>
+          <div style="height: 54px; border-radius: 8px; background: #121317; color: #F2F2F5; display: flex; align-items: flex-end; padding: 5px; box-sizing: border-box; font-size: 10.5px">Graphite</div>
+          <div style="height: 54px; border-radius: 8px; background: #0D3560; color: #FFFFFF; display: flex; align-items: flex-end; padding: 5px; box-sizing: border-box; font-size: 10.5px">Blueprint</div>
+        </div>
+        <div class="row"><span>Light / dark</span><div class="seg" style="width: 150px"><span>Light</span><span>Dark</span><span style="background: #F1F0FE">Auto</span></div></div>
+      </div>
+      <div class="sec"><span class="lbl">BACKGROUND</span>
+        <div class="seg"><span>Plain</span><span style="background: #F1F0FE">Dot grid</span><span>Line grid</span></div>
+      </div>
+      <div class="sec"><span class="lbl">LAYOUT</span>
+        <div class="row"><span>Auto-layout</span><span class="tg" style="background: #34C759"><span style="position: absolute; right: 2px; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #FFFFFF"></span></span></div>
+        <div class="row" style="color: #6B6B76"><span>Free layout (snap + guides)</span><span class="tg" style="background: #DCDCE2"><span style="position: absolute; left: 2px; top: 2px; width: 15px; height: 15px; border-radius: 50%; background: #FFFFFF"></span></span></div>
+        <div class="row"><span>Sibling spacing</span><span style="width: 120px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #5850EC 40%, #DCDCE2 40%)"></span></div>
+        <div class="row"><span>Level spacing</span><span style="width: 120px; height: 4px; border-radius: 2px; background: linear-gradient(90deg, #5850EC 55%, #DCDCE2 55%)"></span></div>
+      </div>
+      <div class="sec"><span class="lbl">DIAGRAM</span>
+        <div class="row"><span>Type</span><span class="fld">Architecture ▾</span></div>
+        <div class="row"><span>Colour nodes by</span><span class="fld">Node type ▾</span></div>
+        <div class="row"><span>Edge label default</span><span class="fld">Protocol ▾</span></div>
+      </div>
+    </div>
+
+    <!-- DATA -->
+    <div class="pn">
+      <div class="tabs"><span class="tab">Style</span><span class="tab">Branch</span><span class="tab">Canvas</span><span class="tab on">Data</span></div>
+      <div class="sec"><span class="lbl">METADATA · PIN TO SHOW ON NODE</span>
+        <sc-for list="{{meta}}" as="m" hint-placeholder-count="4">
+          <div style="display: grid; grid-template-columns: 96px 1fr 22px; gap: 6px; align-items: center"><span class="fld" style="color: #4A4A55">{{m.k}}</span><span class="fld" style="font-family: 'Geist Mono', monospace">{{m.v}}</span><span style="font-size: 13px; color: {{m.pc}}; text-align: center">{{m.pin}}</span></div>
+        </sc-for>
+        <span style="font-size: 12px; color: #5850EC">+ Add field</span>
+      </div>
+      <div class="sec"><span class="lbl">LINKS</span>
+        <div class="row"><span>↗ runbook.md</span><span style="font-size: 11.5px; color: #6B6B76">file</span></div>
+        <div class="row"><span>⤳ Threats › T-02</span><span style="font-size: 11.5px; color: #6B6B76">topic link</span></div>
+      </div>
+      <div class="sec"><span class="lbl">ATTACHMENTS</span>
+        <div class="row"><span>payments-sla.pdf</span><span style="font-size: 11.5px; color: #6B6B76">Quick Look · Space</span></div>
+      </div>
+      <div class="sec"><span class="lbl">PROVENANCE</span>
+        <div style="display: flex; gap: 8px; align-items: flex-start; padding: 8px 10px; border-radius: 8px; background: rgba(15,159,154,.07)"><span style="color: #0F9F9A">✦</span><span style="font-size: 12px; line-height: 1.45; color: #2C2C33">Created by Apple on-device model from “Describe to diagram”. Editing the title clears the sparkle.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const S = [['Rounded', 'M3 3h16a3 3 0 0 1 0 0v10H3z', true], ['Rect', 'M2 2h18v12H2z'], ['Pill', 'M7 2h8a6 6 0 0 1 0 12H7A6 6 0 0 1 7 2z'], ['Ellipse', 'M11 2a9 6 0 1 0 0 12 9 6 0 1 0 0-12z'], ['Diamond', 'M11 1l10 7-10 7L1 8z'], ['Parallelogram', 'M6 2h15l-5 12H1z'], ['Cylinder', 'M2 4c0-2 18-2 18 0v8c0 2-18 2-18 0z M2 4c0 2 18 2 18 0'], ['Document', 'M2 2h18v10c-6-3-12 3-18 0z'], ['Hexagon', 'M6 2h10l5 6-5 6H6L1 8z'], ['Cloud', 'M6 14a4 4 0 0 1-.5-8A5 5 0 0 1 15 5a4 4 0 0 1 2 9z'], ['Underline', 'M2 13h18'], ['Circle', 'M11 2a6 6 0 1 0 0 12 6 6 0 1 0 0-12z']];
+    const shapes = S.map(([n, d, on]) => ({ n, d: n === 'Rounded' ? 'M5 2h12a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3H5a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3z' : d, bd: on ? '#5850EC' : '#E2E2E6', bg: on ? '#F1F0FE' : '#FFFFFF' }));
+    const structures = ['Mind Map', 'Logic Chart', 'Brace Map', 'Org Chart', 'Tree Chart', 'Tree Table', 'Timeline', 'Fishbone', 'Matrix'].map((n, i) => ({ n, k: i + 1, bg: i === 1 ? '#5850EC' : i % 2 ? '#FAFAFB' : '#FFFFFF', fg: i === 1 ? '#FFFFFF' : '#17171C' }));
+    const meta = [['owner', 'Team Atlas', '●'], ['protocol', 'gRPC', '●'], ['port', '8443', '●'], ['data class', 'PCI · restricted', '○']].map(([k, v, pin]) => ({ k, v, pin, pc: pin === '●' ? '#5850EC' : '#B9B9C2' }));
+    return { shapes, structures, meta };
+  }
+}
+</script>
+</body>
+</html>

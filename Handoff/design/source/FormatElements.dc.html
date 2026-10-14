@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Format panel, elements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.pn{background:#FFFFFF;border:1px solid #DCDCE2;border-radius:16px;box-shadow:0 16px 40px rgba(23,23,28,.07);display:flex;flex-direction:column;overflow:hidden;font-family:-apple-system,'SF Pro Text',Geist,sans-serif}
+.hd{padding:12px 14px;border-bottom:1px solid #EEEEF1;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700}
+.pv{height:110px;background:#F7F7F5;background-image:radial-gradient(#D6D6DC 1px,transparent 1.3px);background-size:16px 16px;border-bottom:1px solid #EEEEF1;position:relative}
+.sec{padding:11px 14px;border-bottom:1px solid #F0F0F2;display:flex;flex-direction:column;gap:8px}
+.lbl{font-size:11px;font-weight:600;color:#6B6B76;display:flex;justify-content:space-between}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px}
+.fld{height:26px;box-sizing:border-box;border-radius:6px;border:1px solid #DCDCE2;background:#FFFFFF;padding:0 8px;display:flex;align-items:center;gap:6px;font-size:12px;color:#17171C;white-space:nowrap}
+.seg{display:flex;border:1px solid #DCDCE2;border-radius:7px;overflow:hidden}
+.seg span{flex:1;height:26px;display:flex;align-items:center;justify-content:center;font-size:11.5px;border-left:1px solid #DCDCE2;white-space:nowrap;padding:0 4px}
+.seg span:first-child{border-left:0}
+.sel{background:#F1F0FE;color:#3B34C4;font-weight:600}
+.tile{height:38px;border-radius:7px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px}
+.tg{width:30px;height:18px;border-radius:999px;position:relative;display:inline-block;flex-shrink:0}
+.tg span{position:absolute;top:2px;width:14px;height:14px;border-radius:50%;background:#FFFFFF}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 44px 56px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">FMT-2 · FORMAT PANEL · STYLE TAB · NON-TOPIC ELEMENTS</div>
+      <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Relationship, boundary, callout, summary and zone</h1>
+    </div>
+    <div style="font-size: 13px; color: #4A4A55; max-width: 470px; line-height: 1.5">The panel swaps sections to match the selection. A mixed selection shows only the controls all items share. Reset Style (⌥⌘R) works on every element.</div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; align-items: start">
+
+    <!-- relationship -->
+    <div class="pn">
+      <div class="hd">Relationship / edge<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">⇧⌘L</span></div>
+      <div class="pv">
+        <svg width="100%" height="110" viewBox="0 0 400 110" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; inset: 0; fill: none"><path d="M100 70 C 170 10, 240 10, 300 62" stroke="#E0A100" stroke-width="2.2" stroke-dasharray="7 5"></path><path d="M292 54 L 302 64 L 288 66" stroke="#E0A100" stroke-width="2.2" fill="none"></path><rect x="164" y="19" width="10" height="10" fill="#FFFFFF" stroke="#5850EC" stroke-width="1.5"></rect><rect x="226" y="19" width="10" height="10" fill="#FFFFFF" stroke="#5850EC" stroke-width="1.5"></rect><circle cx="100" cy="70" r="5" fill="#FFFFFF" stroke="#5850EC" stroke-width="1.5"></circle><circle cx="300" cy="62" r="5" fill="#FFFFFF" stroke="#5850EC" stroke-width="1.5"></circle></svg>
+        <span style="position: absolute; left: 4%; top: 64px; padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 2px solid #0F9F9A; font-size: 12px">Channels</span>
+        <span style="position: absolute; right: 4%; top: 56px; padding: 6px 10px; border-radius: 8px; background: #FFFFFF; border: 2px solid #E4572E; font-size: 12px">Timeline</span>
+        <span style="position: absolute; left: 44%; top: 26px; padding: 2px 8px; border-radius: 999px; background: #F2B135; font: 600 11px/16px 'Geist Mono', monospace">drives</span>
+      </div>
+      <div class="sec"><span class="lbl">LINE SHAPE</span>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px">
+          <sc-for list="{{relShapes}}" as="s" hint-placeholder-count="4"><span class="tile" style="border: 1.5px solid {{s.bd}}; background: {{s.bg}}"><svg width="40" height="16" viewBox="0 0 40 16" aria-hidden="true" style="fill: none; stroke: #17171C; stroke-width: 1.6"><path d="{{s.d}}"></path></svg><span style="font-size: 10px">{{s.n}}</span></span></sc-for>
+        </div>
+      </div>
+      <div class="sec"><span class="lbl">START / END CAPS <span style="font-weight: 400">11 each</span></span>
+        <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px">
+          <sc-for list="{{caps}}" as="c" hint-placeholder-count="11"><span class="tile" title="{{c.n}}" style="height: 30px; border: 1.5px solid {{c.bd}}; background: {{c.bg}}"><svg width="30" height="14" viewBox="0 0 30 14" aria-hidden="true" style="fill: none; stroke: #17171C; stroke-width: 1.5; stroke-linejoin: round"><path d="M2 7 H 20"></path><path d="{{c.d}}" fill="{{c.f}}"></path></svg></span></sc-for>
+          <span class="tile" style="height: 30px; border: 1.5px dashed #DCDCE2; font-size: 10px; color: #6B6B76">⇄ swap</span>
+        </div>
+      </div>
+      <div class="sec"><span class="lbl">STROKE</span>
+        <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px"><span class="fld">- - Dashed ▾</span><span class="fld">2 pt</span><span class="fld"><span style="width: 12px; height: 12px; border-radius: 3px; background: #E0A100"></span>▾</span></div>
+        <div class="row"><span>Colour follows source topic</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+        <div class="row"><span>Endpoints auto-slide to best edge</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+      </div>
+      <div class="sec" style="border-bottom: 0"><span class="lbl">LABEL</span>
+        <div class="row"><span>Position</span><div class="seg" style="width: 170px"><span>Start</span><span class="sel">Middle</span><span>End</span></div></div>
+        <div class="row"><span>Style</span><div class="seg" style="width: 170px"><span class="sel">Pill</span><span>Plain</span><span>Boxed</span></div></div>
+        <div class="row"><span>Technical type</span><span class="fld">Data flow ▾</span></div>
+      </div>
+    </div>
+
+    <!-- boundary + callout -->
+    <div style="display: flex; flex-direction: column; gap: 18px">
+      <div class="pn">
+        <div class="hd">Boundary<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">⇧⌘B</span></div>
+        <div class="sec"><span class="lbl">SHAPE <span style="font-weight: 400">9</span></span>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px">
+            <sc-for list="{{bShapes}}" as="s" hint-placeholder-count="9"><span class="tile" style="height: 46px; border: 1.5px solid {{s.bd}}; background: {{s.bg}}"><svg width="46" height="24" viewBox="0 0 46 24" aria-hidden="true" style="fill: rgba(88,80,236,.08); stroke: #5850EC; stroke-width: 1.4; stroke-dasharray: {{s.dash}}"><path d="{{s.d}}"></path></svg><span style="font-size: 10px">{{s.n}}</span></span></sc-for>
+          </div>
+        </div>
+        <div class="sec"><span class="lbl">MEANING · TECHNICAL CANVASES</span>
+          <div class="seg"><span>Group</span><span>Zone</span><span>VPC</span><span>Subnet</span><span class="sel">Trust</span></div>
+          <div class="row"><span>Trust level</span><div class="seg" style="width: 170px"><span>High</span><span class="sel">Medium</span><span>Low</span></div></div>
+        </div>
+        <div class="sec" style="border-bottom: 0"><span class="lbl">FILL · BORDER · TITLE</span>
+          <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px"><span class="fld">Tint 6%</span><span class="fld">- - 2 pt</span><span class="fld">Title: top-left</span></div>
+          <div class="row"><span>Hatch pattern by trust level</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+        </div>
+      </div>
+      <div class="pn">
+        <div class="hd">Callout<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">⇧⌘C</span></div>
+        <div class="sec" style="border-bottom: 0"><span class="lbl">SHAPE</span>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px">
+            <span class="tile" style="height: 46px; border: 1.5px solid #5850EC; background: #F1F0FE"><svg width="46" height="26" viewBox="0 0 46 26" aria-hidden="true" style="fill: #FFF6DB; stroke: #E0A100; stroke-width: 1.4"><path d="M6 2h34a4 4 0 0 1 4 4v8a4 4 0 0 1-4 4H18l-8 6 2-6H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z"></path></svg><span style="font-size: 10px">Rounded</span></span>
+            <span class="tile" style="height: 46px; border: 1.5px solid #EEEEF1"><svg width="46" height="26" viewBox="0 0 46 26" aria-hidden="true" style="fill: #FFF6DB; stroke: #E0A100; stroke-width: 1.4"><path d="M23 2c11 0 20 3.6 20 8s-9 8-20 8l-10 6 3-6.5C8 16 3 13.5 3 10c0-4.4 9-8 20-8z"></path></svg><span style="font-size: 10px">Ellipse</span></span>
+            <span class="tile" style="height: 46px; border: 1.5px solid #EEEEF1"><svg width="46" height="26" viewBox="0 0 46 26" aria-hidden="true" style="fill: #FFF6DB; stroke: #E0A100; stroke-width: 1.4"><path d="M2 2h42v16H20l-8 6v-6H2z"></path></svg><span style="font-size: 10px">Rectangle</span></span>
+          </div>
+          <div class="row"><span>Pointer side</span><div class="seg" style="width: 170px"><span class="sel">Auto</span><span>Top</span><span>Right</span><span>Below</span></div></div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px"><span class="fld"><span style="width: 12px; height: 12px; border-radius: 3px; background: #FFF6DB; box-shadow: inset 0 0 0 1px #E0A100"></span>Fill</span><span class="fld">Text: 12 pt ▾</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- summary + zone -->
+    <div style="display: flex; flex-direction: column; gap: 18px">
+      <div class="pn">
+        <div class="hd">Summary<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">⇧⌘]</span></div>
+        <div class="sec"><span class="lbl">BRACKET</span>
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px">
+            <span class="tile" style="height: 50px; border: 1.5px solid #5850EC; background: #F1F0FE"><svg width="20" height="34" viewBox="0 0 20 34" aria-hidden="true" style="fill: none; stroke: #17171C; stroke-width: 1.6"><path d="M4 2q6 0 6 6v5q0 4 6 4q-6 0-6 4v5q0 6-6 6"></path></svg></span>
+            <span class="tile" style="height: 50px; border: 1.5px solid #EEEEF1"><svg width="20" height="34" viewBox="0 0 20 34" aria-hidden="true" style="fill: none; stroke: #17171C; stroke-width: 1.6"><path d="M4 2h6v30H4 M10 17h6"></path></svg></span>
+            <span class="tile" style="height: 50px; border: 1.5px solid #EEEEF1"><svg width="20" height="34" viewBox="0 0 20 34" aria-hidden="true" style="fill: none; stroke: #17171C; stroke-width: 1.6"><path d="M4 2q8 0 8 15t-8 15 M12 17h5"></path></svg></span>
+            <span class="tile" style="height: 50px; border: 1.5px solid #EEEEF1"><svg width="20" height="34" viewBox="0 0 20 34" aria-hidden="true" style="fill: none; stroke: #17171C; stroke-width: 1.6"><path d="M10 2v30 M10 17h7"></path></svg></span>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px"><span class="fld">2 pt</span><span class="fld"><span style="width: 12px; height: 12px; border-radius: 3px; background: #4A4A55"></span>Ink ▾</span></div>
+        </div>
+        <div class="sec" style="border-bottom: 0"><span class="lbl">SUMMARY TOPIC</span>
+          <div class="row"><span>Topic style</span><span class="fld">Like main topics ▾</span></div>
+          <div class="row"><span>Its branch</span><span class="fld">Curved · 2 pt ▾</span></div>
+          <div class="row"><span>Range</span><span style="font-size: 12px; color: #6B6B76">drag the blue ends, or ⇧↑↓</span></div>
+        </div>
+      </div>
+      <div class="pn">
+        <div class="hd">Zone · NEW<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">⌥⌘Z</span></div>
+        <div class="pv" style="height: 96px">
+          <div style="position: absolute; left: 8%; top: 14px; width: 84%; height: 70px; border-radius: 12px; border: 1.5px solid #9B51E0; background: rgba(155,81,224,.05); box-sizing: border-box"><span style="position: absolute; left: 10px; top: 6px; font: 600 11px/1 -apple-system, sans-serif; color: #6B3FA0">▾ Parking lot</span><span style="position: absolute; left: 12px; top: 30px; padding: 5px 8px; border-radius: 7px; background: #FFFFFF; border: 1.5px solid #9B51E0; font-size: 11px">Idea A</span><span style="position: absolute; left: 90px; top: 34px; padding: 5px 8px; border-radius: 7px; background: #FFFFFF; border: 1.5px solid #9B51E0; font-size: 11px">Idea B</span></div>
+        </div>
+        <div class="sec" style="border-bottom: 0">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px"><span class="fld">W 420 pt</span><span class="fld">H 240 pt</span></div>
+          <div class="row"><span>Auto resize to content</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+          <div class="row"><span>Frame</span><div class="seg" style="width: 170px"><span class="sel">Rounded</span><span>Square</span><span>Dashed</span></div></div>
+          <div class="row"><span>Order</span><div class="seg" style="width: 170px"><span>Front</span><span>Fwd</span><span>Back</span><span>Rear</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const pick = (i, j) => ({ bd: i === j ? '#5850EC' : '#EEEEF1', bg: i === j ? '#F1F0FE' : '#FFFFFF' });
+    const relShapes = [['Curved', 'M2 14 C 14 0, 26 0, 38 14'], ['Straight', 'M2 14 L 38 2'], ['Elbow', 'M2 14 H 20 V 2 H 38'], ['Zigzag', 'M2 14 L 10 4 L 18 12 L 26 4 L 38 8']].map(([n, d], i) => Object.assign({ n, d }, pick(i, 0)));
+    const C = [['None', 'M20 7 h0', 'none'], ['Arrow', 'M18 3 L 26 7 L 18 11', 'none'], ['Filled arrow', 'M18 3 L 27 7 L 18 11 Z', '#17171C'], ['Triangle', 'M19 2 L 28 7 L 19 12 Z', 'none'], ['Diamond', 'M20 7 L 24 3 L 28 7 L 24 11 Z', 'none'], ['Filled diamond', 'M20 7 L 24 3 L 28 7 L 24 11 Z', '#17171C'], ['Dot', 'M24 7 m-3 0 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0', '#17171C'], ['Open dot', 'M24 7 m-3 0 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0', '#FFFFFF'], ['Bar', 'M22 2 V 12', 'none'], ['Crow’s foot', 'M20 7 L 28 2 M20 7 L 28 12 M20 7 H 28', 'none'], ['Square', 'M20 4 h6 v6 h-6 Z', '#17171C']];
+    const caps = C.map(([n, d, f], i) => Object.assign({ n, d, f }, pick(i, 2)));
+    const B = [['Rounded', 'M6 2h34a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z', 'none'], ['Rectangle', 'M2 2h42v20H2z', 'none'], ['Stadium', 'M12 2h22a10 10 0 0 1 0 20H12a10 10 0 0 1 0-20z', 'none'], ['Ellipse', 'M23 2c12 0 21 4.5 21 10s-9 10-21 10S2 17.5 2 12 11 2 23 2z', 'none'], ['Wave', 'M2 4c7-3 14 3 21 0s14 3 21 0v16c-7 3-14-3-21 0s-14-3-21 0z', 'none'], ['Scallop', 'M4 6q3-5 7-1q4-4 8 0q4-4 8 0q4-4 8 0q4-4 7 1v12q-3 5-7 1q-4 4-8 0q-4 4-8 0q-4 4-8 0q-4 4-7-1z', 'none'], ['Polygon', 'M8 2h30l6 10-6 10H8L2 12z', 'none'], ['Dashed', 'M6 2h34a4 4 0 0 1 4 4v12a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V6a4 4 0 0 1 4-4z', '4 3'], ['Corners', 'M2 8V2h6 M38 2h6v6 M44 16v6h-6 M8 22H2v-6', 'none']];
+    const bShapes = B.map(([n, d, dash], i) => Object.assign({ n, d, dash }, pick(i, 7)));
+    return { relShapes, caps, bShapes };
+  }
+}
+</script>
+</body>
+</html>

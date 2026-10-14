@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Connect mode flow</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;box-sizing:border-box;border-radius:6px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 12px/1 "Geist Mono",monospace;color:#17171C}
+@keyframes caret{0%,49%{opacity:1}50%,100%{opacity:0}}
+.car{display:inline-block;width:1.5px;height:14px;background:#17171C;vertical-align:-2px;margin-left:1px;animation:caret 1s steps(1) infinite}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 48px 64px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 22px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">F2 · CONNECT MODE · ARCHITECTURE CANVAS</div>
+      <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">An edge to anything, without leaving the keyboard</h1>
+    </div>
+    <div style="font-size: 13px; color: #4A4A55; max-width: 420px; line-height: 1.5">Hints are assigned nearest-first so the likeliest target is always one key. Typing that matches no hint filters by text instead.</div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; flex: 1">
+    <sc-for list="{{frames}}" as="f" hint-placeholder-count="4">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <div style="display: flex; align-items: center; gap: 10px">
+          <span style="width: 24px; height: 24px; border-radius: 50%; background: #17171C; color: #FFFFFF; font: 600 12px/24px 'Geist Mono', monospace; text-align: center">{{f.n}}</span>
+          <span style="font-size: 15px; font-weight: 600">{{f.title}}</span>
+          <span class="k">{{f.key}}</span>
+        </div>
+        <div style="position: relative; height: 330px; border-radius: 16px; background: #F7F7F5; background-image: radial-gradient(#D9D9DF 1px, transparent 1.3px); background-size: 20px 20px; border: 1px solid #DCDCE2; overflow: hidden">
+          <svg width="640" height="330" viewBox="0 0 640 330" aria-hidden="true" style="position: absolute; left: 0; top: 0; fill: none; stroke-linecap: round">
+            <defs><marker id="ca{{f.n}}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#6B6B76"></path></marker><marker id="cb{{f.n}}" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#E0A100"></path></marker></defs>
+            <sc-for list="{{f.edges}}" as="e" hint-placeholder-count="5">
+              <path d="{{e.d}}" stroke="#6B6B76" stroke-width="1.6" opacity="{{f.edgeOp}}" marker-end="url(#ca{{f.n}})"></path>
+            </sc-for>
+            <path d="{{f.newEdge}}" stroke="#E0A100" stroke-width="{{f.newW}}" stroke-dasharray="{{f.newDash}}" marker-end="url(#cb{{f.n}})" style="filter: drop-shadow(0 0 5px rgba(242,177,53,.6))"></path>
+          </svg>
+          <sc-for list="{{f.nodes}}" as="n" hint-placeholder-count="7">
+            <div style="position: absolute; left: {{n.l}}px; top: {{n.t}}px; width: 132px; height: 40px; box-sizing: border-box; border-radius: 10px; background: #FFFFFF; border: 1.5px solid #C9C9D2; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 500; opacity: {{n.op}}; box-shadow: {{n.ring}}">
+              <span style="font: 600 9px/12px 'Geist Mono', monospace; color: #6B6B76; letter-spacing: .04em">{{n.type}}</span>{{n.text}}
+              <sc-if value="{{n.hasHint}}" hint-placeholder-val="{{false}}"><span style="position: absolute; left: -10px; top: -12px; padding: 0 6px; height: 20px; border-radius: 6px; background: {{n.hintBg}}; font: 700 11px/20px 'Geist Mono', monospace; box-shadow: 0 3px 8px rgba(0,0,0,.18)">{{n.hint}}</span></sc-if>
+            </div>
+          </sc-for>
+          <sc-if value="{{f.field}}" hint-placeholder-val="{{false}}">
+            <div style="position: absolute; left: 160px; top: 212px; width: 240px; border-radius: 10px; background: #FFFFFF; box-shadow: 0 0 0 1.5px #F2B135, 0 12px 30px rgba(0,0,0,.15); overflow: hidden">
+              <div style="display: flex; gap: 8px; align-items: center; padding: 8px 10px; border-bottom: 1px solid #EEEEF1; font-size: 12.5px"><span style="color: #6B6B76">Connect to</span><b style="font-family: 'Geist Mono', monospace">{{f.q}}</b><span class="car"></span></div>
+              <sc-for list="{{f.rows}}" as="r" hint-placeholder-count="2">
+                <div style="display: flex; gap: 8px; align-items: center; padding: 6px 10px; font-size: 12.5px; background: {{r.bg}}"><span style="min-width: 20px; padding: 0 4px; box-sizing: border-box; border-radius: 5px; background: #F2B135; font: 700 11px/18px 'Geist Mono', monospace; text-align: center">{{r.h}}</span>{{r.t}}</div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{f.label}}" hint-placeholder-val="{{false}}">
+            <div style="position: absolute; left: 352px; top: 226px; padding: 4px 12px; border-radius: 999px; background: #F2B135; font: 600 12px/16px 'Geist Mono', monospace; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC">reads · SQL<span class="car"></span></div>
+          </sc-if>
+          <span style="position: absolute; left: 14px; bottom: 14px; display: inline-flex; align-items: center; gap: 7px; height: 26px; padding: 0 11px; border-radius: 999px; background: {{f.pillBg}}; color: {{f.pillFg}}; font: 600 11px/1 'Geist Mono', monospace; letter-spacing: .06em">{{f.pill}}</span>
+        </div>
+        <div style="font-size: 13px; line-height: 1.5; color: #4A4A55">{{f.note}}</div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const N = [
+      { id: 'web', text: 'Web app', type: 'CLIENT', x: 90, y: 60 },
+      { id: 'gw', text: 'Gateway', type: 'API', x: 290, y: 60 },
+      { id: 'ord', text: 'Orders', type: 'SVC', x: 500, y: 60 },
+      { id: 'auth', text: 'Auth', type: 'SVC', x: 290, y: 160 },
+      { id: 'q', text: 'Events', type: 'QUEUE', x: 520, y: 170 },
+      { id: 'redis', text: 'Sessions', type: 'CACHE', x: 90, y: 268 },
+      { id: 'pg', text: 'Postgres', type: 'DB', x: 450, y: 268 }
+    ];
+    const hints = { gw: 'A', pg: 'S', redis: 'D', web: 'F', ord: 'G', q: 'H' };
+    const at = (id) => N.find((n) => n.id === id);
+    const E = [['web', 'gw'], ['gw', 'ord'], ['gw', 'auth'], ['ord', 'q'], ['auth', 'redis']];
+    const edgePath = ([a, b]) => { const A = at(a); const B = at(b); if (Math.abs(A.y - B.y) < 10) return `M ${A.x + 66} ${A.y} L ${B.x - 68} ${B.y}`; if (Math.abs(A.x - B.x) < 10) return `M ${A.x} ${A.y + 20} L ${B.x} ${B.y - 22}`; const sx = A.x + (B.x > A.x ? 66 : -66); const ex = B.x; return `M ${sx} ${A.y} L ${ex} ${A.y} L ${ex} ${B.y - 22}`; };
+    const edges = E.map((e) => ({ d: edgePath(e) }));
+    const mk = (stage) => N.map((n) => {
+      let op = 1; let ring = 'none'; let hasHint = false; let hintBg = '#FFE3A3';
+      if (n.id === 'auth') ring = stage === 1 || stage === 4 ? '0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC' : '0 0 0 2px #F7F7F5, 0 0 0 4px #F2B135';
+      if (stage === 2 && n.id !== 'auth') { op = 0.6; hasHint = true; if (n.id === 'gw') { op = 1; hintBg = '#F2B135'; ring = '0 0 0 2px #F7F7F5, 0 0 0 4px #F2B135'; } }
+      if (stage === 3 && n.id !== 'auth') { op = n.id === 'pg' ? 1 : 0.28; hasHint = n.id === 'pg'; if (n.id === 'pg') { hintBg = '#F2B135'; ring = '0 0 0 2px #F7F7F5, 0 0 0 5px #F2B135, 0 10px 24px rgba(242,177,53,.35)'; } }
+      return { l: n.x - 66, t: n.y - 20, text: n.text, type: n.type, op, ring, hasHint, hint: hints[n.id] || '', hintBg };
+    });
+    const frames = [
+      { n: 1, title: 'Select the source', key: '⇧⌘L', nodes: mk(1), edges, edgeOp: 1, newEdge: 'M 0 0', newW: 0, newDash: 'none', field: false, label: false, pill: 'SELECT', pillBg: '#17171C', pillFg: '#FFFFFF', note: 'Auth service is selected. One chord enters Connect mode; no drag handle, no target hunting.' },
+      { n: 2, title: 'Hint chips pop in, nearest first', key: 'A S D F', nodes: mk(2), edges, edgeOp: 0.35, newEdge: 'M 290 180 L 290 80', newW: 2, newDash: '3 6', field: true, q: '', rows: [{ h: 'A', t: 'Gateway', bg: 'rgba(242,177,53,.18)' }, { h: 'S', t: 'Postgres', bg: 'transparent' }], label: false, pill: 'CONNECT', pillBg: '#F2B135', pillFg: '#17171C', note: 'Everything else dims. Chips stagger in 40 ms apart. The closest node is pre-highlighted, so ↩ alone connects to it.' },
+      { n: 3, title: 'Type to filter by text', key: 'pos', nodes: mk(3), edges, edgeOp: 0.25, newEdge: 'M 340 176 L 440 248', newW: 2, newDash: '3 6', field: true, q: 'pos', rows: [{ h: 'S', t: 'Postgres', bg: 'rgba(242,177,53,.18)' }], label: false, pill: 'CONNECT', pillBg: '#F2B135', pillFg: '#17171C', note: '“pos” matches no hint, so it filters node text. A dashed preview line shows exactly what ↩ will draw.' },
+      { n: 4, title: 'Return draws it, label opens', key: '↩', nodes: mk(4), edges, edgeOp: 1, newEdge: 'M 340 176 Q 420 190, 440 246', newW: 2.5, newDash: 'none', field: false, label: true, pill: 'EDIT', pillBg: '#5850EC', pillFg: '#FFFFFF', note: 'The edge draws on from source to target in 300 ms with a glow trail; its label is already in Edit mode. ↩ again commits; Esc anywhere leaves nothing behind.' }
+    ];
+    return { frames };
+  }
+}
+</script>
+</body>
+</html>

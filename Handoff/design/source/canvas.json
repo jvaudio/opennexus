@@ -1,0 +1,98 @@
+{
+  "v": 3,
+  "createdOnFiles": {"v": 1, "at": "2026-10-13T15:00:00Z"},
+  "title": "OpenNexus v1 Design",
+  "launch": {"view": "canvas"},
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {"x": 0, "y": 0, "w": 1440, "h": 900, "title": "00 · OpenNexus overview"},
+    "Brand.dc.html": {"x": 1520, "y": 0, "w": 1440, "h": 900, "title": "01 · Logo & app icon direction"},
+    "System.dc.html": {"x": 3040, "y": 0, "w": 1440, "h": 1100, "title": "02 · Visual system & tokens"},
+    "Themes.dc.html": {"x": 4560, "y": 0, "w": 1440, "h": 1100, "title": "03 · Theme sheet & theme builder"},
+    "Motion.dc.html": {"x": 6080, "y": 0, "w": 1440, "h": 1100, "title": "04 · Motion spec"},
+
+    "Prototype.dc.html": {"x": 0, "y": 1520, "w": 1440, "h": 900, "title": "P0 · Live keyboard prototype (F1–F4)", "is_interactive": true},
+    "Keyboard.dc.html": {"x": 1520, "y": 1520, "w": 1440, "h": 1300, "title": "05 · Keyboard model & key map"},
+    "Shortcuts.dc.html": {"x": 3040, "y": 1520, "w": 1440, "h": 900, "title": "06 · Settings › Shortcuts, Hyper key, conflicts"},
+    "ConnectFlow.dc.html": {"x": 4560, "y": 1520, "w": 1440, "h": 1100, "title": "F2 · Connect mode flow"},
+    "Convert.dc.html": {"x": 6080, "y": 1520, "w": 1440, "h": 900, "title": "F3 · Convert diagram type"},
+
+    "Nodes.dc.html": {"x": 0, "y": 3240, "w": 1440, "h": 1100, "title": "07 · Node component: anatomy, roles, states"},
+    "Elements.dc.html": {"x": 1520, "y": 3240, "w": 1440, "h": 1100, "title": "08 · Edges & elements"},
+    "Icons.dc.html": {"x": 3040, "y": 3240, "w": 1440, "h": 900, "title": "09 · Technical icon set (32)"},
+
+    "Welcome.dc.html": {"x": 0, "y": 4760, "w": 1440, "h": 900, "title": "S1 · Welcome sheet (dark)"},
+    "RolePicker.dc.html": {"x": 1520, "y": 4760, "w": 1440, "h": 900, "title": "S1 · Role picker (light)"},
+    "Home.dc.html": {"x": 3040, "y": 4760, "w": 1440, "h": 900, "title": "S2 · Home window & new-document picker"},
+    "Canvas.dc.html": {"x": 4560, "y": 4760, "w": 1440, "h": 900, "title": "S3 · Mind map canvas, typing states"},
+    "Structures.dc.html": {"x": 6080, "y": 4760, "w": 1440, "h": 1100, "title": "S4 · Same map, other structures"},
+
+    "Flowchart.dc.html": {"x": 0, "y": 6280, "w": 1440, "h": 900, "title": "S5 · Flowchart & swimlane"},
+    "DFD.dc.html": {"x": 1520, "y": 6280, "w": 1440, "h": 900, "title": "S6 · Data flow diagram"},
+    "ThreatModel.dc.html": {"x": 3040, "y": 6280, "w": 1440, "h": 900, "title": "S7 · Threat model"},
+    "Architecture.dc.html": {"x": 4560, "y": 6280, "w": 1440, "h": 900, "title": "S8 · Architecture diagram"},
+    "Sequence.dc.html": {"x": 6080, "y": 6280, "w": 1440, "h": 900, "title": "S9 · Sequence diagram"},
+
+    "Inspector.dc.html": {"x": 0, "y": 7600, "w": 1440, "h": 900, "title": "S10 · Inspector overview (detail in FMT-1…3)"},
+    "Palette.dc.html": {"x": 1520, "y": 7600, "w": 1440, "h": 900, "title": "S11 · Command palette & quick jump"},
+    "Split.dc.html": {"x": 3040, "y": 7600, "w": 1440, "h": 900, "title": "S12 · Outline & Split views"},
+    "Views.dc.html": {"x": 4560, "y": 7600, "w": 1440, "h": 900, "title": "Views · ZEN, Focus, filter bar"},
+    "AI.dc.html": {"x": 6080, "y": 7600, "w": 1440, "h": 900, "title": "S13 · Local AI in the canvas"},
+    "AISettings.dc.html": {"x": 7600, "y": 7600, "w": 1440, "h": 900, "title": "S13 · AI settings & Apple Intelligence off"},
+    "Export.dc.html": {"x": 9120, "y": 7600, "w": 1440, "h": 900, "title": "S14 · Export sheet"},
+
+    "Tutorial.dc.html": {"x": 0, "y": 8920, "w": 1440, "h": 1100, "title": "F5 · First-run tutorial & keycap coach"},
+    "Present.dc.html": {"x": 1520, "y": 8920, "w": 1440, "h": 900, "title": "F6 · Present mode stepping a DFD"},
+    "Integration.dc.html": {"x": 3040, "y": 8920, "w": 1440, "h": 1040, "title": "macOS 27 integration & import"},
+
+    "Review.dc.html": {"x": 0, "y": 10440, "w": 1440, "h": 2400, "title": "R · Xmind user guide review (89 articles)"},
+
+    "SetGeneral.dc.html": {"x": 0, "y": 13260, "w": 1440, "h": 900, "title": "SET-1 · General"},
+    "SetEditing.dc.html": {"x": 1520, "y": 13260, "w": 1440, "h": 900, "title": "SET-2 · Editing"},
+    "SetAppearance.dc.html": {"x": 3040, "y": 13260, "w": 1440, "h": 900, "title": "SET-3 · Appearance"},
+    "SetFiles.dc.html": {"x": 4560, "y": 13260, "w": 1440, "h": 900, "title": "SET-4 · Files & Backup"},
+    "SetExport.dc.html": {"x": 6080, "y": 13260, "w": 1440, "h": 900, "title": "SET-7 · Export defaults"},
+    "SetIntegrations.dc.html": {"x": 7600, "y": 13260, "w": 1440, "h": 900, "title": "SET-8 · Integrations (MCP, CLI, Quick Capture)"},
+    "SetPrivacy.dc.html": {"x": 9120, "y": 13260, "w": 1440, "h": 900, "title": "SET-9 · Privacy & Data"},
+    "SetAccessibility.dc.html": {"x": 10640, "y": 13260, "w": 1440, "h": 900, "title": "SET-10 · Accessibility"},
+
+    "NodeStyles.dc.html": {"x": 0, "y": 14580, "w": 1440, "h": 1100, "title": "NS · Node styles (9 presets)"},
+    "FormatTopic.dc.html": {"x": 1520, "y": 14580, "w": 1440, "h": 1100, "title": "FMT-1 · Format panel › Topic style"},
+    "FormatElements.dc.html": {"x": 3040, "y": 14580, "w": 1440, "h": 1100, "title": "FMT-2 · Format panel › Relationship, boundary, summary, callout, zone"},
+    "FormatMap.dc.html": {"x": 4560, "y": 14580, "w": 1440, "h": 1100, "title": "FMT-3 · Format panel › Map: skeleton, colour, layout"},
+
+    "Navigation.dc.html": {"x": 0, "y": 16100, "w": 1440, "h": 1000, "title": "NAV · Navigation panel, find & replace, counts"},
+    "Enrich.dc.html": {"x": 1520, "y": 16100, "w": 1440, "h": 1000, "title": "EN · Markers, stickers, labels, numbering, to-dos, links, audio"},
+    "Zones.dc.html": {"x": 3040, "y": 16100, "w": 1440, "h": 1000, "title": "ZN · Zones, floating topics, free layout"},
+    "FileTools.dc.html": {"x": 4560, "y": 16100, "w": 1440, "h": 1000, "title": "FT · Merge, password, recovery, print, canvas menu"},
+    "CaptureExport.dc.html": {"x": 6080, "y": 16100, "w": 1440, "h": 1000, "title": "CX · Map Shot & image export frames"},
+    "AIPlus.dc.html": {"x": 7600, "y": 16100, "w": 1440, "h": 1000, "title": "AI+ · New on-device AI actions"}
+  },
+  "order": [
+    "Main.dc.html", "Brand.dc.html", "System.dc.html", "Themes.dc.html", "Motion.dc.html",
+    "Prototype.dc.html", "Keyboard.dc.html", "Shortcuts.dc.html", "ConnectFlow.dc.html", "Convert.dc.html",
+    "Nodes.dc.html", "Elements.dc.html", "Icons.dc.html",
+    "Welcome.dc.html", "RolePicker.dc.html", "Home.dc.html", "Canvas.dc.html", "Structures.dc.html",
+    "Flowchart.dc.html", "DFD.dc.html", "ThreatModel.dc.html", "Architecture.dc.html", "Sequence.dc.html",
+    "Inspector.dc.html", "Palette.dc.html", "Split.dc.html", "Views.dc.html", "AI.dc.html", "AISettings.dc.html", "Export.dc.html",
+    "Tutorial.dc.html", "Present.dc.html", "Integration.dc.html",
+    "Review.dc.html",
+    "SetGeneral.dc.html", "SetEditing.dc.html", "SetAppearance.dc.html", "SetFiles.dc.html", "SetExport.dc.html", "SetIntegrations.dc.html", "SetPrivacy.dc.html", "SetAccessibility.dc.html",
+    "NodeStyles.dc.html", "FormatTopic.dc.html", "FormatElements.dc.html", "FormatMap.dc.html",
+    "Navigation.dc.html", "Enrich.dc.html", "Zones.dc.html", "FileTools.dc.html", "CaptureExport.dc.html", "AIPlus.dc.html"
+  ],
+  "notes": {
+    "rowA": {"x": 0, "y": -300, "text": "Foundations — brand, system, themes, motion", "kind": "title1", "maxW": 7520},
+    "rowB": {"x": 0, "y": 1220, "text": "The keyboard is the product — live prototype, key model, Connect, Convert", "kind": "title1", "maxW": 7520},
+    "rowC": {"x": 0, "y": 2940, "text": "Component library — one node, one edge, many variants", "kind": "title1", "maxW": 4480},
+    "rowD": {"x": 0, "y": 4460, "text": "Screens — first run, home, mind maps", "kind": "title1", "maxW": 7520},
+    "rowE": {"x": 0, "y": 5980, "text": "Screens — technical diagrams", "kind": "title1", "maxW": 7520},
+    "rowF": {"x": 0, "y": 7300, "text": "Screens — inspector, palette, views, AI, export", "kind": "title1", "maxW": 10560},
+    "rowG": {"x": 0, "y": 8620, "text": "Flows — tutorial, present, macOS", "kind": "title1", "maxW": 4480},
+    "rowH": {"x": 0, "y": 10140, "text": "Xmind user guide review — what we match, improve, add, skip", "kind": "title1", "maxW": 4480},
+    "rowI": {"x": 0, "y": 12960, "text": "Settings — every pane (AI is S13, Shortcuts is 06)", "kind": "title1", "maxW": 12080},
+    "rowJ": {"x": 0, "y": 14280, "text": "Styling — node styles and the Format panel", "kind": "title1", "maxW": 6000},
+    "rowK": {"x": 0, "y": 15800, "text": "New and enhanced features from the review", "kind": "title1", "maxW": 9040}
+  },
+  "designSystems": []
+}

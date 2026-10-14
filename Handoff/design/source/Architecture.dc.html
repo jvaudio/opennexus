@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Architecture diagram</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#FFD27A}a:hover{color:#FFE7B0}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#0A2B50;border:1px solid rgba(156,200,245,.3);border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#FFFFFF}
+.tb{height:28px;padding:0 10px;display:flex;align-items:center;gap:6px;border-radius:7px;border:1px solid rgba(156,200,245,.22);background:rgba(255,255,255,.05);font:500 12.5px/1 -apple-system,Geist,sans-serif;color:#FFFFFF}
+.nd{position:absolute;height:52px;box-sizing:border-box;padding:0 12px;display:flex;align-items:center;gap:10px;border:1.5px solid #FFFFFF;border-radius:4px;background:#0D3560;font:500 13px/1.2 "Geist Mono",monospace;color:#E6F1FF}
+.nd small{display:block;font-size:9.5px;letter-spacing:.06em;color:#9CC8F5}
+.zn{position:absolute;box-sizing:border-box;border-radius:6px}
+.zl{position:absolute;left:12px;top:-9px;padding:0 6px;background:#0D3560;font:600 10.5px/16px "Geist Mono",monospace;letter-spacing:.06em}
+.pl{position:absolute;padding:1px 6px;border-radius:4px;background:#0D3560;border:1px solid rgba(156,200,245,.4);font:600 10.5px/15px "Geist Mono",monospace;color:#9CC8F5}
+.ico{fill:none;stroke:#9CC8F5;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #0D3560; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #FFFFFF">
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 52px; box-sizing: border-box; padding: 0 14px 0 18px; display: flex; align-items: center; gap: 12px; background: rgba(10,40,75,.8); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(156,200,245,.18); z-index: 5">
+    <div style="display: flex; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; margin-left: 10px"><span style="font-size: 13px; font-weight: 600">Platform reference.nexus</span><span style="font-size: 11px; color: #A9C8EA">Architecture · auto-layout</span></div>
+    <div style="flex: 1"></div>
+    <button class="tb">Architecture <span class="k">⌥⌘T</span></button>
+    <button class="tb">Blueprint</button>
+    <button class="tb">Line grid</button>
+    <div style="height: 28px; padding: 0 10px; display: flex; align-items: center; gap: 7px; border-radius: 999px; background: rgba(127,240,230,.1); color: #BDF7F1; font: 500 12px/1 -apple-system, sans-serif"><span style="width: 7px; height: 7px; border-radius: 50%; background: #7FF0E6"></span>On-device · Apple</div>
+  </div>
+
+  <!-- icon library -->
+  <div style="position: absolute; left: 0; top: 52px; bottom: 0; width: 280px; box-sizing: border-box; padding: 14px; background: rgba(8,34,64,.92); border-right: 1px solid rgba(156,200,245,.18); display: flex; flex-direction: column; gap: 12px">
+    <div style="display: flex; justify-content: space-between; align-items: center"><span style="font-size: 13px; font-weight: 700">Icon library</span><span class="k">⇧⌘Y</span></div>
+    <label for="ils" style="position: absolute; left: -9999px">Search icons</label>
+    <input id="ils" value="data" style="height: 30px; box-sizing: border-box; border-radius: 8px; border: 1px solid rgba(156,200,245,.3); background: rgba(255,255,255,.05); padding: 0 10px; font: 13px -apple-system, sans-serif; color: #FFFFFF">
+    <sc-for list="{{lib}}" as="g" hint-placeholder-count="3">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font: 600 10.5px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #A9C8EA">{{g.t}}</span>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{g.items}}" as="i" hint-placeholder-count="4">
+            <button style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 2px 8px; border-radius: 8px; border: 1px solid {{i.bd}}; background: {{i.bg}}; color: #E6F1FF; font: 500 10px/1.1 -apple-system, sans-serif">
+              <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="{{i.d}}"></path></svg>{{i.n}}
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </sc-for>
+    <div style="flex: 1"></div>
+    <div style="font-size: 11.5px; line-height: 1.45; color: #A9C8EA">Drag onto the canvas, or <span class="k">↩</span> to insert as a child of the selection. Icon packs install from file or URL.</div>
+  </div>
+
+  <div style="position: absolute; left: 280px; right: 0; top: 52px; bottom: 0; background-image: linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px); background-size: 24px 24px">
+    <div class="zn" style="left: 220px; top: 30px; width: 760px; height: 770px; border: 1.5px solid #9CC8F5"><span class="zl" style="color: #9CC8F5">REGION · us-east-1</span></div>
+    <div class="zn" style="left: 250px; top: 80px; width: 700px; height: 690px; border: 1.5px dashed #9CC8F5"><span class="zl" style="color: #9CC8F5">VPC · prod 10.0.0.0/16</span></div>
+    <div class="zn" style="left: 276px; top: 120px; width: 200px; height: 620px; border: 1px dashed rgba(156,200,245,.6); background: rgba(156,200,245,.04)"><span class="zl" style="color: #CFE3FA">PUBLIC SUBNET</span></div>
+    <div class="zn" style="left: 500px; top: 120px; width: 430px; height: 620px; border: 1px dashed rgba(156,200,245,.6); background: rgba(127,240,230,.03)"><span class="zl" style="color: #CFE3FA">PRIVATE SUBNET</span></div>
+
+    <svg width="1160" height="848" viewBox="0 0 1160 848" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke: #9CC8F5; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round">
+      <defs><marker id="aa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#9CC8F5" stroke="none"></path></marker><marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#FFD27A" stroke="none"></path></marker></defs>
+      <path d="M190 406 H 292" marker-end="url(#aa)"></path>
+      <path d="M456 396 H 493 V 246 H 526" marker-end="url(#aa)"></path>
+      <path d="M456 416 H 510 V 426 H 526" marker-end="url(#aa)"></path>
+      <path d="M690 246 H 736" marker-end="url(#aa)"></path>
+      <path d="M690 426 H 736" stroke="#FFD27A" stroke-width="2.2" marker-end="url(#ab)" style="filter: drop-shadow(0 0 5px rgba(255,210,122,.6))"></path>
+      <path d="M610 452 V 576" marker-end="url(#aa)"></path>
+      <path d="M690 606 H 736" marker-end="url(#aa)"></path>
+      <path d="M900 606 H 996" stroke-dasharray="6 5" marker-end="url(#aa)"></path>
+    </svg>
+
+    <div class="nd" style="left: 40px; top: 380px; width: 150px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg><span><small>CLIENT</small>Users</span></div>
+    <div class="nd" style="left: 296px; top: 380px; width: 160px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M2 12h5 M17 12h5 M7 6h10v12H7z M11 9l2 3-2 3"></path></svg><span><small>API GATEWAY</small>edge-gw</span></div>
+    <div class="nd" style="left: 530px; top: 220px; width: 160px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M6 11h12v10H6z M8 11V8a4 4 0 0 1 8 0v3"></path></svg><span><small>SERVICE</small>auth</span></div>
+    <div class="nd" style="left: 740px; top: 220px; width: 160px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7 M13 11l-3 4h4l-3 4"></path></svg><span><small>CACHE</small>sessions</span></div>
+    <div class="nd" style="left: 530px; top: 400px; width: 160px; box-shadow: 0 0 0 2px #0D3560, 0 0 0 4px #FFFFFF"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M4 6h16v12H4z M8 10h8 M8 14h5"></path></svg><span><small>SERVICE</small>orders</span></div>
+    <div class="nd" style="left: 740px; top: 400px; width: 160px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"></path></svg><span><small>DATABASE</small>postgres</span></div>
+    <div class="nd" style="left: 530px; top: 580px; width: 160px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M3 8h18v8H3z M7 8v8 M11 8v8 M15 8v8"></path></svg><span><small>QUEUE</small>order-events</span></div>
+    <div class="nd" style="left: 740px; top: 580px; width: 160px"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M3 8l9-5 9 5v8l-9 5-9-5z M3 8l9 5 9-5 M12 13v8"></path></svg><span><small>CONTAINER</small>fulfil-worker</span></div>
+    <div class="nd" style="left: 1000px; top: 580px; width: 150px; border-style: dashed"><svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" class="ico"><path d="M7 16a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 6.5a4 4 0 0 1 .5 9.5 M12 11v9 M9 17l3 3 3-3"></path></svg><span><small>EXT. SAAS</small>payments</span></div>
+
+    <span class="pl" style="left: 220px; top: 384px">HTTPS</span>
+    <span class="pl" style="left: 452px; top: 300px">gRPC</span>
+    <span class="pl" style="left: 452px; top: 434px">gRPC</span>
+    <span class="pl" style="left: 694px; top: 224px">RESP</span>
+    <span class="pl" style="left: 618px; top: 500px">AMQP</span>
+    <span class="pl" style="left: 694px; top: 584px">AMQP</span>
+    <span class="pl" style="left: 920px; top: 584px">HTTPS</span>
+    <!-- protocol label being edited -->
+    <div style="position: absolute; left: 686px; top: 438px; width: 150px; border-radius: 8px; background: #0A2B50; border: 1.5px solid #FFD27A; box-shadow: 0 12px 30px rgba(0,0,0,.35); overflow: hidden">
+      <div style="padding: 6px 10px; font: 600 12px/16px 'Geist Mono', monospace; color: #FFD27A; border-bottom: 1px solid rgba(156,200,245,.2)">SQL ▍</div>
+      <div style="padding: 5px 10px; font: 500 11.5px/16px 'Geist Mono', monospace; color: #FFFFFF; background: rgba(255,210,122,.14)">SQL · 5432</div>
+      <div style="padding: 5px 10px; font: 500 11.5px/16px 'Geist Mono', monospace; color: #CFE3FA">gRPC</div>
+      <div style="padding: 5px 10px; font: 500 11.5px/16px 'Geist Mono', monospace; color: #CFE3FA">HTTPS</div>
+    </div>
+    <div style="position: absolute; right: 20px; bottom: 20px; display: flex; gap: 10px; align-items: center; height: 34px; padding: 0 14px; border-radius: 12px; background: rgba(10,40,75,.85); border: 1px solid rgba(156,200,245,.22); font-size: 12px; color: #CFE3FA">
+      <span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇥</span>dependency</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">↩</span>peer service</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇧⌘B</span>wrap in VPC/subnet</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const mk = (arr, hi) => arr.map(([n, d], i) => ({ n, d, bd: i === hi ? '#FFD27A' : 'rgba(156,200,245,.2)', bg: i === hi ? 'rgba(255,210,122,.12)' : 'rgba(255,255,255,.03)' }));
+    const lib = [
+      { t: 'DATA', items: mk([['Database', 'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6'], ['Cache', 'M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7 M13 11l-3 4h4l-3 4'], ['Queue', 'M3 8h18v8H3z M7 8v8 M11 8v8 M15 8v8'], ['Storage', 'M4 6h16l-2 14H6z M4 6c0-1 3.6-2 8-2s8 1 8 2'], ['Stream', 'M3 7h12 M3 12h18 M3 17h14'], ['Data store', 'M3 7h18 M3 17h18 M7 7v10'], ['Document', 'M6 3h8l4 4v14H6z M14 3v4h4'], ['Warehouse', 'M3 10l9-6 9 6v10H3z M8 20v-6h8v6']], 0) },
+      { t: 'COMPUTE', items: mk([['Service', 'M4 6h16v12H4z M8 10h8 M8 14h5'], ['Gateway', 'M2 12h5 M17 12h5 M7 6h10v12H7z'], ['Function', 'M6 20l6-16h2 M9.5 12.5L14 20h4'], ['Container', 'M3 8l9-5 9 5v8l-9 5-9-5z M3 8l9 5 9-5 M12 13v8']], -1) },
+      { t: 'NETWORK', items: mk([['Region', 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M3 12h18'], ['Firewall', 'M3 5h18v14H3z M3 10h18 M3 15h18 M9 5v5 M15 10v5'], ['Router', 'M3 14h18v6H3z M8 14L6 9 M16 14l2-5'], ['SaaS', 'M7 16a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 6.5a4 4 0 0 1 .5 9.5']], -1) }
+    ];
+    return { lib };
+  }
+}
+</script>
+</body>
+</html>

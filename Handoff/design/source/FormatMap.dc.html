@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Format panel, map tab</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.pn{background:#FFFFFF;border:1px solid #DCDCE2;border-radius:16px;box-shadow:0 16px 40px rgba(23,23,28,.07);display:flex;flex-direction:column;overflow:hidden;font-family:-apple-system,'SF Pro Text',Geist,sans-serif}
+.tabs{display:flex;gap:2px;padding:8px 10px 0;border-bottom:1px solid #EEEEF1}
+.tab{padding:7px 10px;font-size:12px;color:#5D5D68}
+.on{font-weight:600;color:#17171C;box-shadow:inset 0 -2px 0 #5850EC}
+.sec{padding:12px 14px;border-bottom:1px solid #F0F0F2;display:flex;flex-direction:column;gap:9px}
+.lbl{font-size:11px;font-weight:600;color:#6B6B76;display:flex;justify-content:space-between;align-items:center}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:12.5px}
+.fld{height:26px;box-sizing:border-box;border-radius:6px;border:1px solid #DCDCE2;background:#FFFFFF;padding:0 8px;display:flex;align-items:center;gap:6px;font-size:12px;color:#17171C;white-space:nowrap}
+.seg{display:flex;border:1px solid #DCDCE2;border-radius:7px;overflow:hidden}
+.seg span{flex:1;height:26px;display:flex;align-items:center;justify-content:center;font-size:11.5px;border-left:1px solid #DCDCE2;white-space:nowrap;padding:0 4px}
+.seg span:first-child{border-left:0}
+.sel{background:#F1F0FE;color:#3B34C4;font-weight:600}
+.tg{width:30px;height:18px;border-radius:999px;position:relative;display:inline-block;flex-shrink:0}
+.tg span{position:absolute;top:2px;width:14px;height:14px;border-radius:50%;background:#FFFFFF}
+.dot{width:16px;height:16px;border-radius:50%;flex-shrink:0}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1100px; box-sizing: border-box; padding: 44px 56px; background: #F5F5F2; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">FMT-3 · FORMAT PANEL · MAP TAB · CLICK EMPTY CANVAS</div>
+      <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">The whole canvas: skeleton, style, colour and layout</h1>
+    </div>
+    <div style="font-size: 13px; color: #4A4A55; max-width: 480px; line-height: 1.5">Three independent dials: <b>Skeleton</b> (structure + node style + line), <b>Colour theme</b> (palette only) and <b>Theme</b> (everything, saved). Each change is one undo step and reflows with the 300 ms spring.</div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: start">
+
+    <!-- slice 1: skeleton + node style -->
+    <div class="pn">
+      <div class="tabs"><span class="tab">Style</span><span class="tab on">Map</span><span class="tab">Data</span></div>
+      <div class="sec"><span class="lbl">SKELETON <span style="font-weight: 400; color: #5850EC">All 24 ›</span></span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{skels}}" as="k" hint-placeholder-count="9">
+            <span style="height: 58px; border-radius: 8px; border: 1.5px solid {{k.bd}}; background: {{k.bg}}; display: flex; align-items: center; justify-content: center"><svg width="56" height="40" viewBox="0 0 56 40" aria-hidden="true" style="fill: none; stroke: {{k.c}}; stroke-width: 1.4; stroke-linecap: round; stroke-linejoin: round"><path d="{{k.d}}"></path></svg></span>
+          </sc-for>
+        </div>
+      </div>
+      <div class="sec"><span class="lbl">NODE STYLE <span style="font-weight: 400">⌥⌘S cycles</span></span>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+          <sc-for list="{{ns}}" as="n" hint-placeholder-count="9">
+            <span style="height: 46px; border-radius: 8px; border: 1.5px solid {{n.bd}}; background: {{n.bg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px"><span style="width: 34px; height: 14px; box-sizing: border-box; {{n.css}}"></span><span style="font-size: 10px">{{n.n}}</span></span>
+          </sc-for>
+        </div>
+      </div>
+      <div class="sec" style="border-bottom: 0"><span class="lbl">CUSTOM THEMES</span>
+        <div class="row"><span style="display: flex; gap: 8px; align-items: center"><span class="dot" style="background: conic-gradient(#E07A5F 0 33%, #81B29A 0 66%, #F2CC8F 0)"></span>Studio Dusk</span><span style="font-size: 11.5px; color: #6B6B76">Edit · Rename · Duplicate · Delete</span></div>
+        <div class="row"><span style="display: flex; gap: 8px; align-items: center"><span class="dot" style="background: conic-gradient(#9CC8F5 0 50%, #FFD27A 0)"></span>Team blueprint</span><span style="font-size: 11.5px; color: #6B6B76">⋯</span></div>
+        <div style="display: flex; gap: 6px"><span class="fld" style="flex: 1; justify-content: center; background: #F1F0FE; color: #3B34C4; border-color: #C9C5FA">+ Save current as theme</span><span class="fld">Import…</span></div>
+      </div>
+    </div>
+
+    <!-- slice 2: colour theme -->
+    <div class="pn">
+      <div class="tabs"><span class="tab">Style</span><span class="tab on">Map</span><span class="tab">Data</span></div>
+      <div class="sec"><span class="lbl">COLOUR THEME</span>
+        <div class="seg"><span class="sel">Rainbow</span><span>Multi</span><span>Mono</span><span>Gradient</span></div>
+        <sc-for list="{{palettes}}" as="p" hint-placeholder-count="6">
+          <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; border: 1.5px solid {{p.bd}}; background: {{p.bg}}">
+            <div style="display: flex; flex: 1; height: 18px; border-radius: 5px; overflow: hidden"><sc-for list="{{p.cols}}" as="c" hint-placeholder-count="6"><span style="flex: 1; background: {{c}}"></span></sc-for></div>
+            <span style="font-size: 11.5px; width: 74px">{{p.n}}</span>
+          </div>
+        </sc-for>
+        <div class="row"><span>Colored branch</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+        <div class="row"><span>Single branch colour when off</span><span class="fld"><span class="dot" style="width: 12px; height: 12px; background: #4A4A55"></span>Ink</span></div>
+        <div class="row"><span>Reshuffle</span><span style="font: 500 11px/1 'Geist Mono', monospace; padding: 4px 7px; border-radius: 5px; background: #17171C; color: #FFFFFF">⇧⌘R</span></div>
+      </div>
+      <div class="sec" style="border-bottom: 0"><span class="lbl">MY COLOURS</span>
+        <div style="display: flex; gap: 6px; align-items: center"><span style="display: flex; height: 18px; width: 120px; border-radius: 5px; overflow: hidden"><span style="flex: 1; background: #E07A5F"></span><span style="flex: 1; background: #F2CC8F"></span><span style="flex: 1; background: #81B29A"></span><span style="flex: 1; background: #7FA7D9"></span><span style="flex: 1; background: #B794D6"></span><span style="flex: 1; background: #E5989B"></span></span><span style="font-size: 11.5px">Dusk</span><span style="flex: 1"></span><span class="fld" style="width: 26px; justify-content: center; padding: 0">+</span></div>
+      </div>
+    </div>
+
+    <!-- slice 3: canvas, fonts, layout -->
+    <div class="pn">
+      <div class="tabs"><span class="tab">Style</span><span class="tab on">Map</span><span class="tab">Data</span></div>
+      <div class="sec"><span class="lbl">CANVAS</span>
+        <div class="row"><span>Background</span><span style="display: flex; gap: 5px"><span class="dot" style="background: #F7F7F5; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 3.5px #17171C"></span><span class="dot" style="background: #F4EFE4"></span><span class="dot" style="background: #121317"></span><span class="dot" style="background: #0D3560"></span><span class="dot" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red)"></span></span></div>
+        <div class="row"><span>Pattern</span><div class="seg" style="width: 160px"><span>Plain</span><span class="sel">Dots</span><span>Lines</span></div></div>
+        <div class="row"><span>Global font</span><span class="fld">SF Pro ▾</span></div>
+        <div class="row"><span>CJK font</span><span class="fld">PingFang SC ▾</span></div>
+        <div class="row"><span>Branch line width</span><div class="seg" style="width: 170px"><span>Thin</span><span class="sel">Regular</span><span>Bold</span><span>Taper</span></div></div>
+      </div>
+      <div class="sec"><span class="lbl">MAP STYLE</span>
+        <div class="row"><span>Auto balance map</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+        <div class="row"><span>Compact map</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+        <div class="row"><span>Justify topic alignment</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+      </div>
+      <div class="sec" style="border-bottom: 0"><span class="lbl">ADVANCED LAYOUT</span>
+        <div class="row"><span>Free layout for this canvas</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+        <div class="row"><span>Branch free-positioning</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+        <div class="row"><span>Flexible floating topics</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+        <div class="row"><span>Allow topic overlap</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+      </div>
+    </div>
+
+    <!-- custom colour theme editor -->
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <div class="pn" style="box-shadow: 0 24px 60px rgba(23,23,28,.18)">
+        <div style="padding: 12px 14px; border-bottom: 1px solid #EEEEF1; font-size: 14px; font-weight: 700">New colour theme</div>
+        <div class="sec">
+          <div class="row"><span>Name</span><span class="fld" style="width: 150px">Dusk</span></div>
+          <span class="lbl">6 BRANCH COLOURS · DRAG TO REORDER</span>
+          <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+            <span style="height: 40px; border-radius: 8px; background: #E07A5F; box-shadow: 0 0 0 2px #FFFFFF, 0 0 0 4px #5850EC"></span><span style="height: 40px; border-radius: 8px; background: #F2CC8F"></span><span style="height: 40px; border-radius: 8px; background: #81B29A"></span><span style="height: 40px; border-radius: 8px; background: #7FA7D9"></span><span style="height: 40px; border-radius: 8px; background: #B794D6"></span><span style="height: 40px; border-radius: 8px; background: #E5989B"></span>
+          </div>
+          <div style="height: 90px; border-radius: 8px; background: linear-gradient(to top, #000, transparent), linear-gradient(to right, #FFFFFF, #E07A5F); position: relative"><span style="position: absolute; left: 70%; top: 30%; width: 12px; height: 12px; border-radius: 50%; border: 2px solid #FFFFFF; box-shadow: 0 0 0 1px rgba(0,0,0,.3)"></span></div>
+          <div style="display: grid; grid-template-columns: 1fr auto; gap: 6px"><span class="fld" style="font-family: 'Geist Mono', monospace">#E07A5F</span><span class="fld">⌖ Pick</span></div>
+          <div class="row"><span>Root colour</span><span class="fld"><span class="dot" style="width: 12px; height: 12px; background: #3D405B"></span>#3D405B</span></div>
+          <div class="row"><span>Contrast check</span><span style="font: 500 11px/1 'Geist Mono', monospace; padding: 4px 7px; border-radius: 5px; background: #E6F5EC; color: #1E6B41">AA on all 6</span></div>
+        </div>
+        <div style="padding: 10px 14px; display: flex; justify-content: flex-end; gap: 8px"><span class="fld">Preview</span><span class="fld" style="background: #5850EC; color: #FFFFFF; border-color: #5850EC">Save</span></div>
+      </div>
+      <div class="pn" style="padding: 14px; gap: 8px">
+        <span class="lbl">HOW THE DIALS COMBINE</span>
+        <span style="font-size: 12.5px; line-height: 1.5; color: #2C2C33"><b>Skeleton</b> sets structure + node style + branch line. <b>Colour theme</b> recolours only. <b>Theme</b> is a saved bundle of all three plus fonts and background, shareable as .nexustheme. Manual edits override all three, and Reset Style returns to them.</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sel = (on) => ({ bd: on ? '#5850EC' : '#EEEEF1', bg: on ? '#F1F0FE' : '#FFFFFF', c: on ? '#5850EC' : '#4A4A55' });
+    const S = [
+      'M28 20 m-6 0 a6 4 0 1 0 12 0 a6 4 0 1 0 -12 0 M34 20 L46 10 M34 20 L48 20 M34 20 L46 30 M22 20 L10 10 M22 20 L8 30',
+      'M4 20 h10 M14 20 V8 h10 M14 20 h10 M14 20 V32 h10 M28 8 h20 M28 20 h20 M28 32 h20',
+      'M22 4 h12 v8 h-12 z M28 12 v6 M10 18 h36 M10 18 v6 M28 18 v6 M46 18 v6 M4 24 h12 v8 H4 z M22 24 h12 v8 H22 z M40 24 h12 v8 H40 z',
+      'M4 20 h48 M10 14 h10 v12 h-10 z M26 14 h10 v12 h-10 z M42 14 h10 v12 h-10 z',
+      'M4 20 h38 M42 14 L50 20 L42 26 M16 20 L10 6 M30 20 L24 6 M16 20 L10 34 M30 20 L24 34',
+      'M4 4 h22 v14 H4 z M30 4 h22 v14 H30 z M4 22 h22 v14 H4 z M30 22 h22 v14 H30 z',
+      'M10 20 q-6 0 -6 -6 v-6 M10 20 q-6 0 -6 6 v6 M14 6 h14 M14 20 h14 M14 34 h14 M32 6 h18',
+      'M28 4 v32 M28 10 h-16 M28 20 h18 M28 30 h-14',
+      'M8 6 h40 v28 H8 z M8 14 h40 M20 6 v28'
+    ];
+    const skels = S.map((d, i) => Object.assign({ d }, sel(i === 1)));
+    const NS = [['Outline', 'background:#FFFFFF;border:2px solid #5850EC;border-radius:4px'], ['Soft', 'background:rgba(88,80,236,.18);border-radius:5px'], ['Solid', 'background:#5850EC;border-radius:4px'], ['Underline', 'border-bottom:2.5px solid #5850EC'], ['Capsule', 'background:rgba(88,80,236,.1);border:1.5px solid rgba(88,80,236,.6);border-radius:999px'], ['Sketch', 'border:2px solid #5850EC;border-radius:20px 4px 18px 4px/4px 18px 4px 20px'], ['Brutal', 'background:#FFFFFF;border:2px solid #17171C;box-shadow:2px 2px 0 #5850EC;border-radius:2px'], ['Glow', 'background:#14151B;border:1.5px solid #8F89FF;box-shadow:0 0 8px rgba(143,137,255,.7);border-radius:4px'], ['Minimal', 'border-bottom:1.5px dotted #5850EC']];
+    const ns = NS.map(([n, css], i) => Object.assign({ n, css }, sel(i === 1)));
+    const P = [['Classic', ['#5850EC', '#E4572E', '#0F9F9A', '#E0A100', '#D6408B', '#1E8BE0'], true], ['Sunset', ['#F94144', '#F3722C', '#F8961E', '#F9C74F', '#90BE6D', '#43AA8B']], ['Ocean', ['#03045E', '#0077B6', '#00B4D8', '#48CAE4', '#90E0EF', '#2A9D8F']], ['Pastel', ['#F4A6A6', '#F6D6A8', '#A6D9C8', '#A8C8F0', '#B9B4F0', '#E8B4D8']], ['Earth', ['#8C5A3C', '#B5835A', '#3D6B5A', '#7A8B5B', '#B0413E', '#5C4B51']], ['Neon', ['#FF4FD8', '#3DF5FF', '#B6FF3D', '#FFE14D', '#8F89FF', '#FF7A45']]];
+    const palettes = P.map(([n, cols, on]) => Object.assign({ n, cols }, { bd: on ? '#5850EC' : '#EEEEF1', bg: on ? '#F1F0FE' : '#FFFFFF' }));
+    return { skels, ns, palettes };
+  }
+}
+</script>
+</body>
+</html>

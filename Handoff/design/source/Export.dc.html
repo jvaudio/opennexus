@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Export sheet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.grp{font-size:10.5px;font-weight:600;color:#6B6B76;padding:12px 10px 4px}
+.lbl{font-size:12px;font-weight:600;color:#4A4A55}
+.fld{height:28px;box-sizing:border-box;border-radius:7px;border:1px solid #DCDCE2;background:#FFFFFF;padding:0 9px;display:flex;align-items:center;font-size:12.5px;color:#17171C}
+.seg{display:flex;border:1px solid #DCDCE2;border-radius:7px;overflow:hidden}
+.seg span{flex:1;height:28px;display:flex;align-items:center;justify-content:center;font-size:12px;border-left:1px solid #DCDCE2}
+.seg span:first-child{border-left:0}
+.on{background:#F1F0FE;color:#3B34C4;font-weight:600}
+.card{border-radius:16px;background:#FFFFFF;box-shadow:0 20px 50px rgba(23,23,28,.16);overflow:hidden;display:flex;flex-direction:column}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #DADADF; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <div style="position: absolute; left: 40px; top: 32px; font: 500 12px/1 'Geist Mono', monospace; letter-spacing: .1em; color: #4A4A55">S14 · EXPORT · ⇧⌘E · ONE SHEET, LIVE PREVIEW</div>
+
+  <!-- main sheet -->
+  <div class="card" style="position: absolute; left: 40px; top: 60px; width: 920px; height: 800px">
+    <div style="display: flex; flex: 1; min-height: 0">
+      <div style="width: 190px; flex-shrink: 0; padding: 8px; background: #F6F6F8; border-right: 1px solid #E8E8EC; display: flex; flex-direction: column; gap: 1px; font-size: 13px">
+        <sc-for list="{{formats}}" as="f" hint-placeholder-count="14">
+          <sc-if value="{{f.isGroup}}" hint-placeholder-val="{{false}}"><div class="grp">{{f.n}}</div></sc-if>
+          <sc-if value="{{f.isItem}}" hint-placeholder-val="{{true}}"><div style="display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-radius: 7px; background: {{f.bg}}; color: {{f.fg}}; font-weight: {{f.fw}}"><span>{{f.n}}</span><span style="font: 500 10px/1 'Geist Mono', monospace; opacity: .7">{{f.x}}</span></div></sc-if>
+        </sc-for>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; min-width: 0">
+        <div style="flex: 1; margin: 18px; border-radius: 12px; background: repeating-conic-gradient(#EEEEF1 0 25%, #FFFFFF 0 50%) 0 0 / 16px 16px; display: flex; align-items: center; justify-content: center; position: relative">
+          <div style="width: 420px; height: 270px; background: #F7F7F5; border-radius: 6px; box-shadow: 0 10px 30px rgba(23,23,28,.15); position: relative; overflow: hidden">
+            <svg width="420" height="270" viewBox="0 0 420 270" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round"><path d="M250 135 C 280 135, 280 60, 310 60 M250 135 L 310 135 M250 135 C 280 135, 280 210, 310 210" stroke-width="2.5" stroke="#5850EC"></path><path d="M170 135 C 140 135, 140 90, 110 90 M170 135 C 140 135, 140 180, 110 180" stroke-width="2.5" stroke="#E4572E"></path></svg>
+            <div style="position: absolute; left: 160px; top: 116px; width: 100px; height: 38px; border-radius: 12px; background: #17171C; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font: 700 13px/1 -apple-system, sans-serif">Launch plan</div>
+            <div style="position: absolute; left: 310px; top: 48px; width: 86px; height: 24px; box-sizing: border-box; border-radius: 7px; background: #FFFFFF; border: 1.5px solid #5850EC; font-size: 10.5px; display: flex; align-items: center; justify-content: center">Positioning</div>
+            <div style="position: absolute; left: 310px; top: 123px; width: 66px; height: 24px; box-sizing: border-box; border-radius: 7px; background: #FFFFFF; border: 1.5px solid #5850EC; font-size: 10.5px; display: flex; align-items: center; justify-content: center">Pricing</div>
+            <div style="position: absolute; left: 310px; top: 198px; width: 76px; height: 24px; box-sizing: border-box; border-radius: 7px; background: #FFFFFF; border: 1.5px solid #5850EC; font-size: 10.5px; display: flex; align-items: center; justify-content: center">Channels</div>
+            <div style="position: absolute; left: 44px; top: 78px; width: 66px; height: 24px; box-sizing: border-box; border-radius: 7px; background: #FFFFFF; border: 1.5px solid #E4572E; font-size: 10.5px; display: flex; align-items: center; justify-content: center">Risks</div>
+            <div style="position: absolute; left: 34px; top: 168px; width: 76px; height: 24px; box-sizing: border-box; border-radius: 7px; background: #FFFFFF; border: 1.5px solid #E4572E; font-size: 10.5px; display: flex; align-items: center; justify-content: center">Timeline</div>
+          </div>
+          <span style="position: absolute; right: 12px; bottom: 10px; font: 500 11px/1 'Geist Mono', monospace; color: #4A4A55; padding: 4px 7px; border-radius: 5px; background: rgba(255,255,255,.9)">2880 × 1850 px · 412 KB</span>
+        </div>
+        <div style="padding: 0 18px 18px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px">
+          <div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">Scope</span><div class="seg"><span class="on">Canvas</span><span>Selection</span><span>Branch</span></div></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">Scale</span><div class="seg"><span>1×</span><span class="on">2×</span><span>3×</span><span>4×</span></div></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">Background</span><div class="seg"><span class="on">Theme</span><span>White</span><span>Transparent</span></div></div>
+          <div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">Padding · Theme override</span><div style="display: grid; grid-template-columns: 1fr 1.4fr; gap: 6px"><span class="fld">48 px</span><span class="fld">Keep Classic ▾</span></div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; border-top: 1px solid #E8E8EC; background: #FAFAFB">
+      <span style="font-size: 12px; color: #6B6B76">Preview updates as options change · last used settings remembered per format</span>
+      <div style="display: flex; gap: 8px"><button style="height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid #DCDCE2; background: #FFFFFF; font: 500 13px -apple-system, sans-serif; color: #17171C">Copy</button><button style="height: 30px; padding: 0 12px; border-radius: 8px; border: 1px solid #DCDCE2; background: #FFFFFF; font: 500 13px -apple-system, sans-serif; color: #17171C">Cancel</button><button style="height: 30px; padding: 0 14px; border-radius: 8px; border: 0; background: #5850EC; font: 600 13px -apple-system, sans-serif; color: #FFFFFF">Export…</button></div>
+    </div>
+  </div>
+
+  <!-- SVG card -->
+  <div class="card" style="position: absolute; left: 990px; top: 60px; width: 410px; height: 300px">
+    <div style="padding: 12px 16px; border-bottom: 1px solid #EEEEF1; display: flex; justify-content: space-between; font-size: 13px; font-weight: 700">SVG<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">VISUAL · EDITABLE</span></div>
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px">
+      <div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">Text</span><div class="seg"><span class="on">Embed fonts</span><span>Outline text</span></div></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 13px"><span>Include metadata (types, fields)</span><span style="width: 34px; height: 20px; border-radius: 999px; background: #34C759; position: relative"><span style="position: absolute; right: 2px; top: 2px; width: 16px; height: 16px; border-radius: 50%; background: #FFFFFF"></span></span></div>
+      <div style="padding: 10px 12px; border-radius: 10px; background: #F6F6F8; font: 500 11.5px/1.5 'Geist Mono', monospace; color: #4A4A55">&lt;g data-nexus-type="service"<br>&#160;&#160;&#160;data-owner="Team Atlas"&gt;…</div>
+      <span style="font-size: 12px; color: #6B6B76">Scope and scale shared with PNG.</span>
+    </div>
+  </div>
+
+  <!-- Mermaid card -->
+  <div class="card" style="position: absolute; left: 990px; top: 380px; width: 410px; height: 480px">
+    <div style="padding: 12px 16px; border-bottom: 1px solid #EEEEF1; display: flex; justify-content: space-between; font-size: 13px; font-weight: 700">Mermaid<span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">STRUCTURAL</span></div>
+    <div style="padding: 16px; display: flex; flex-direction: column; gap: 12px; flex: 1">
+      <div style="display: flex; flex-direction: column; gap: 6px"><span class="lbl">Flavour · auto-chosen from type</span><div class="seg"><span>mindmap</span><span class="on">flowchart</span><span>sequence</span><span>class</span></div></div>
+      <div style="flex: 1; padding: 12px 14px; border-radius: 10px; background: #17171C; font: 500 12px/1.6 'Geist Mono', monospace; color: #E4E4EA; white-space: pre">flowchart TD
+  <span style="color: #8F89FF">A</span>([Forgot password]) --&gt; <span style="color: #8F89FF">B</span>[Enter email]
+  B --&gt; <span style="color: #8F89FF">C</span>{Account exists?}
+  C -- <span style="color: #F2B135">Yes</span> --&gt; D[Create reset token]
+  D --&gt; E[/Email the link/]
+  C -- <span style="color: #F2B135">No</span> --&gt; F[Show neutral message]
+  E --&gt; G([Done])
+  F --&gt; G</div>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #6B6B76"><span>Round-trips: paste Mermaid back to rebuild</span><span style="color: #5850EC; font-weight: 600">Copy</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const F = [['VISUAL'], ['PNG', '.png', true], ['JPEG', '.jpg'], ['SVG', '.svg'], ['PDF', '.pdf'], ['STRUCTURAL'], ['Mermaid', '.mmd'], ['PlantUML', '.puml'], ['draw.io', '.drawio'], ['JSON · YAML', '.json'], ['OPML', '.opml'], ['DOCUMENT'], ['Markdown', '.md'], ['Word', '.docx'], ['PowerPoint', '.pptx'], ['Keynote', '.key'], ['CSV · threats', '.csv']];
+    const formats = F.map(([n, x, on]) => (x === undefined ? { isGroup: true, isItem: false, n } : { isGroup: false, isItem: true, n, x, bg: on ? '#5850EC' : 'transparent', fg: on ? '#FFFFFF' : '#17171C', fw: on ? 600 : 400 }));
+    return { formats };
+  }
+}
+</script>
+</body>
+</html>

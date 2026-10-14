@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Data flow diagram</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#A9A6FF}a:hover{color:#D4D2FF}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#26272D;border:1px solid #3A3B43;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#F2F2F5}
+.tb{height:28px;padding:0 10px;display:flex;align-items:center;gap:6px;border-radius:7px;border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.05);font:500 12.5px/1 -apple-system,Geist,sans-serif;color:#F2F2F5}
+.ent{position:absolute;box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-radius:3px;background:#16324A;border:2px solid #4DA9F0;box-shadow:4px 4px 0 #4DA9F0;font:600 14px/1.2 -apple-system,Geist,sans-serif;color:#F2F2F5;text-align:center}
+.pr{position:absolute;box-sizing:border-box;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:999px;background:#26244A;border:2px solid #8F89FF;font:500 14px/1.2 -apple-system,Geist,sans-serif;color:#F2F2F5;text-align:center}
+.ds{position:absolute;box-sizing:border-box;display:flex;align-items:center;gap:10px;background:#11302F;border-top:2px solid #3FD3C9;border-bottom:2px solid #3FD3C9;border-left:10px solid #3FD3C9;padding:0 12px;font:500 14px/1 -apple-system,Geist,sans-serif;color:#F2F2F5}
+.fl{position:absolute;padding:2px 7px;border-radius:5px;background:#121317;font:500 11px/15px "Geist Mono",monospace;color:#B4B4BE;white-space:nowrap}
+.bdg{position:absolute;left:0;right:0;top:-20px;text-align:center;font:600 9.5px/13px "Geist Mono",monospace;letter-spacing:.08em;color:#8A8A96}
+@keyframes shake{0%,30%{transform:none}38%{transform:translateX(-4px)}46%{transform:translateX(4px)}54%{transform:translateX(-3px)}62%{transform:translateX(2px)}70%,100%{transform:none}}
+.shk{animation:shake 2.4s linear infinite}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #121317; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #F2F2F5">
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 52px; box-sizing: border-box; padding: 0 14px 0 18px; display: flex; align-items: center; gap: 12px; background: rgba(30,31,36,.72); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(255,255,255,.08); z-index: 5">
+    <div style="display: flex; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; margin-left: 10px"><span style="font-size: 13px; font-weight: 600">Checkout redesign.nexus</span><span style="font-size: 11px; color: #A6A6B0">Data Flow · Level 1</span></div>
+    <div style="flex: 1; display: flex; justify-content: center; gap: 6px; align-items: center; font-size: 12.5px; color: #A6A6B0">
+      <span>Context</span><span>›</span><span style="color: #F2F2F5; font-weight: 600">Level 1</span><span>›</span><span>2.0 Authorize payment</span><span class="k" style="margin-left: 6px">⌘.</span>
+    </div>
+    <button class="tb">Data Flow <span class="k">⌥⌘T</span></button>
+    <button class="tb">Graphite</button>
+    <div style="height: 28px; padding: 0 10px; display: flex; align-items: center; gap: 7px; border-radius: 999px; background: rgba(63,211,201,.1); color: #8FE7E0; font: 500 12px/1 -apple-system, sans-serif"><span style="width: 7px; height: 7px; border-radius: 50%; background: #3FD3C9"></span>On-device · Apple</div>
+  </div>
+
+  <!-- sidebar -->
+  <div style="position: absolute; left: 0; top: 52px; bottom: 0; width: 220px; box-sizing: border-box; padding: 14px 10px; background: rgba(28,29,34,.9); border-right: 1px solid rgba(255,255,255,.07); display: flex; flex-direction: column; gap: 2px; font-size: 13px">
+    <span style="font-size: 11px; font-weight: 600; color: #8A8A96; padding: 4px 10px 8px">LEVELS</span>
+    <span style="padding: 6px 10px; border-radius: 7px; color: #C9C9D2">Context (Level 0)</span>
+    <span style="padding: 6px 10px; border-radius: 7px; background: rgba(143,137,255,.18); color: #FFFFFF; font-weight: 600">Level 1</span>
+    <span style="padding: 6px 10px 6px 24px; border-radius: 7px; color: #C9C9D2">1.0 Place order</span>
+    <span style="padding: 6px 10px 6px 24px; border-radius: 7px; color: #C9C9D2">2.0 Authorize payment</span>
+    <span style="padding: 6px 10px 6px 24px; border-radius: 7px; color: #C9C9D2">3.0 Fulfil order</span>
+    <span style="font-size: 11px; font-weight: 600; color: #8A8A96; padding: 18px 10px 8px">RULE CHECKS</span>
+    <span style="padding: 6px 10px; border-radius: 7px; color: #FF9C9E; display: flex; gap: 8px; align-items: center"><span style="width: 8px; height: 8px; background: #F06C6F; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%)"></span>1 flow skips a process</span>
+    <span style="padding: 6px 10px; border-radius: 7px; color: #9ADBB3; display: flex; gap: 8px; align-items: center"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3FB97A"></span>Stores all written</span>
+    <span style="padding: 6px 10px; border-radius: 7px; color: #9ADBB3; display: flex; gap: 8px; align-items: center"><span style="width: 8px; height: 8px; border-radius: 50%; background: #3FB97A"></span>Levels balanced</span>
+  </div>
+
+  <div style="position: absolute; left: 220px; right: 0; top: 52px; bottom: 0; background-image: radial-gradient(#2A2C33 1px, transparent 1.3px); background-size: 22px 22px">
+    <!-- boundaries -->
+    <div style="position: absolute; left: 300px; top: 70px; width: 600px; height: 520px; border: 2px dashed #8F89FF; border-radius: 18px; box-sizing: border-box"><span style="position: absolute; left: 14px; top: -11px; padding: 2px 8px; background: #121317; font: 600 11px/16px 'Geist Mono', monospace; letter-spacing: .06em; color: #B9B5FF">TRUST BOUNDARY · INTERNAL NETWORK</span></div>
+    <div style="position: absolute; left: 610px; top: 120px; width: 270px; height: 440px; border: 2px dashed #F06C6F; border-radius: 14px; box-sizing: border-box; background: repeating-linear-gradient(45deg, rgba(240,108,111,.04) 0 8px, transparent 8px 16px)"><span style="position: absolute; left: 12px; top: -11px; padding: 2px 8px; background: #121317; font: 600 11px/16px 'Geist Mono', monospace; letter-spacing: .06em; color: #FF9C9E">PCI ZONE</span></div>
+
+    <svg width="1220" height="848" viewBox="0 0 1220 848" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke: #B4B4BE; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round">
+      <defs><marker id="da" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#B4B4BE" stroke="none"></path></marker><marker id="dr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#F06C6F" stroke="none"></path></marker></defs>
+      <path d="M200 196 H 346" marker-end="url(#da)"></path>
+      <path d="M506 196 H 646" marker-end="url(#da)"></path>
+      <path d="M820 186 H 972" marker-end="url(#da)"></path>
+      <path d="M972 214 H 822" marker-end="url(#da)"></path>
+      <path d="M736 234 V 440" marker-end="url(#da)"></path>
+      <path d="M428 234 V 326" marker-end="url(#da)"></path>
+      <path d="M428 374 V 446" marker-end="url(#da)"></path>
+      <path d="M350 488 H 130 V 228" marker-end="url(#da)"></path>
+      <path d="M172 224 V 352 H 349" stroke="#F06C6F" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#dr)"></path>
+    </svg>
+
+    <div class="ent" style="left: 60px; top: 168px; width: 140px; height: 56px"><span class="bdg">EXTERNAL ENTITY</span>Customer</div>
+    <div class="pr" style="left: 350px; top: 158px; width: 156px; height: 76px"><span class="bdg">PROCESS</span><span style="font: 600 10.5px/1 'Geist Mono', monospace; color: #B9B5FF">1.0</span>Place order</div>
+    <div class="pr" style="left: 650px; top: 158px; width: 170px; height: 76px; box-shadow: 0 0 0 2px #121317, 0 0 0 4px #8F89FF, 0 8px 24px rgba(143,137,255,.3)"><span class="bdg">PROCESS</span><span style="font: 600 10.5px/1 'Geist Mono', monospace; color: #B9B5FF">2.0</span>Authorize payment</div>
+    <div class="ent" style="left: 976px; top: 172px; width: 170px; height: 56px"><span class="bdg">EXTERNAL ENTITY</span>Payment provider</div>
+    <div class="pr" style="left: 350px; top: 450px; width: 156px; height: 76px"><span class="bdg" style="top: 80px">PROCESS</span><span style="font: 600 10.5px/1 'Geist Mono', monospace; color: #B9B5FF">3.0</span>Fulfil order</div>
+    <div class="ds shk" style="left: 353px; top: 330px; width: 150px; height: 44px; box-shadow: 0 0 0 2px #121317, 0 0 0 4px #F06C6F"><span style="font: 600 11px/1 'Geist Mono', monospace; color: #8FE7E0">D1</span>Orders<span class="bdg" style="left: 160px; right: auto; top: 14px; white-space: nowrap">DATA STORE</span></div>
+    <div class="ds" style="left: 660px; top: 444px; width: 170px; height: 44px"><span style="font: 600 11px/1 'Geist Mono', monospace; color: #8FE7E0">D2</span>Card tokens</div>
+
+    <span class="fl" style="left: 220px; top: 172px">order details</span>
+    <span class="fl" style="left: 518px; top: 172px">payment req</span>
+    <span class="fl" style="left: 852px; top: 162px">auth request</span>
+    <span class="fl" style="left: 852px; top: 220px">auth result</span>
+    <span class="fl" style="left: 744px; top: 330px">token</span>
+    <span class="fl" style="left: 438px; top: 270px">order</span>
+    <span class="fl" style="left: 438px; top: 400px">pending orders</span>
+    <span class="fl" style="left: 200px; top: 494px">shipping notice</span>
+
+    <!-- violation -->
+    <div class="shk" style="position: absolute; left: 196px; top: 362px; display: flex; align-items: center; gap: 6px; padding: 3px 8px; border-radius: 6px; background: #3A1416; border: 1px solid #F06C6F; font: 500 11px/15px 'Geist Mono', monospace; color: #FFB4B5">receipt <span style="width: 14px; height: 14px; background: #F06C6F; color: #121317; font: 700 10px/14px sans-serif; text-align: center; clip-path: polygon(30% 0, 70% 0, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0 70%, 0 30%)">!</span></div>
+    <div style="position: absolute; left: 60px; top: 620px; width: 380px; padding: 14px 16px; border-radius: 14px; background: rgba(30,31,36,.92); border: 1px solid rgba(240,108,111,.5); box-shadow: 0 16px 40px rgba(0,0,0,.4); display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 13px; font-weight: 600; color: #FFB4B5">A data flow must touch a process</span>
+      <span style="font-size: 12.5px; color: #C9C9D2; line-height: 1.45">“receipt” goes from Customer straight to D1 Orders. Entities can’t write to stores directly.</span>
+      <div style="display: flex; gap: 8px">
+        <button style="height: 28px; padding: 0 12px; border-radius: 7px; border: 0; background: #8F89FF; color: #121317; font: 600 12.5px -apple-system, sans-serif">Insert process ↩</button>
+        <button style="height: 28px; padding: 0 12px; border-radius: 7px; border: 1px solid rgba(255,255,255,.14); background: transparent; color: #F2F2F5; font: 500 12.5px -apple-system, sans-serif">Reroute via 1.0</button>
+        <button style="height: 28px; padding: 0 12px; border-radius: 7px; border: 1px solid rgba(255,255,255,.14); background: transparent; color: #F2F2F5; font: 500 12.5px -apple-system, sans-serif">Ignore</button>
+      </div>
+    </div>
+
+    <div style="position: absolute; right: 24px; bottom: 24px; display: flex; gap: 10px; align-items: center; height: 34px; padding: 0 14px; border-radius: 12px; background: rgba(30,31,36,.75); border: 1px solid rgba(255,255,255,.08); font-size: 12px; color: #A6A6B0">
+      <span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇥</span>downstream + flow</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">↩</span>sibling fed by same source</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⌘.</span>drill into process</span>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

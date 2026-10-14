@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Merge, password, print, canvas menu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+.sheet{border-radius:16px;background:#FFFFFF;box-shadow:0 24px 60px rgba(23,23,28,.16);display:flex;flex-direction:column;overflow:hidden;font-family:-apple-system,'SF Pro Text',Geist,sans-serif}
+.sh{padding:14px 18px;border-bottom:1px solid #EEEEF1;display:flex;justify-content:space-between;align-items:center}
+.sb{padding:16px 18px;display:flex;flex-direction:column;gap:11px;flex:1}
+.sf{padding:12px 18px;border-top:1px solid #EEEEF1;display:flex;justify-content:flex-end;gap:8px;background:#FAFAFB}
+.btn{height:30px;padding:0 13px;border-radius:8px;border:1px solid #DCDCE2;background:#FFFFFF;font:500 13px -apple-system,sans-serif;color:#17171C}
+.pri{border:0;background:#5850EC;color:#FFFFFF;font-weight:600}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:13px}
+.fld{height:30px;box-sizing:border-box;border-radius:7px;border:1px solid #DCDCE2;background:#FFFFFF;padding:0 10px;display:flex;align-items:center;font-size:13px;color:#17171C}
+.seg{display:flex;padding:2px;border-radius:8px;background:#EDEDF1}
+.seg span{flex:1;height:26px;display:flex;align-items:center;justify-content:center;border-radius:6px;font-size:12px;white-space:nowrap;padding:0 8px}
+.on{background:#FFFFFF;font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.tg{width:34px;height:20px;border-radius:999px;position:relative;display:inline-block;flex-shrink:0}
+.tg span{position:absolute;top:2px;width:16px;height:16px;border-radius:50%;background:#FFFFFF}
+.lbl{font-size:12px;font-weight:600;color:#4A4A55}
+</style>
+</helmet>
+<div style="width: 1440px; height: 1000px; box-sizing: border-box; padding: 44px 56px; background: #DADADF; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 20px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap" style="color: #4A4A55">FT · FILE TOOLS · TOOLS AND FILE MENUS</div>
+      <h1 style="margin: 0; font: 700 36px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Merge, protect, print, and the canvas tab menu</h1>
+    </div>
+    <div style="font-size: 13px; color: #2C2C33; max-width: 420px; line-height: 1.5">Recovery snapshots replace Xmind’s File Cache and live in Settings › Files &amp; Backup and File › Revert To.</div>
+  </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1.25fr; gap: 20px; flex: 1; min-height: 0">
+
+    <!-- merge -->
+    <div class="sheet">
+      <div class="sh"><span style="font-size: 15px; font-weight: 700">Merge documents</span><span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">Tools › Merge…</span></div>
+      <div class="sb">
+        <div class="seg"><span class="on">As canvases</span><span>Into this canvas</span></div>
+        <span class="lbl">DOCUMENTS · 3</span>
+        <sc-for list="{{files}}" as="f" hint-placeholder-count="3">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 9px; background: #F7F7F5">
+            <span style="width: 26px; height: 32px; border-radius: 4px; background: #FFFFFF; border: 1px solid #DCDCE2; display: flex; align-items: center; justify-content: center; font: 600 9px/1 'Geist Mono', monospace; color: {{f.c}}">{{f.x}}</span>
+            <div style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 13px; font-weight: 500">{{f.n}}</span><span style="font-size: 11.5px; color: #6B6B76">{{f.d}}</span></div>
+            <span style="color: #9A9AA6">✕</span>
+          </div>
+        </sc-for>
+        <button class="btn" style="align-self: flex-start">+ Add…</button>
+        <div class="row"><span>Generate a Map of Content</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+        <span style="font-size: 12px; color: #6B6B76; line-height: 1.45">Each root becomes a branch on a new index canvas, with topic links to the merged canvases. Styles keep their source theme. .xmind, OPML and Markdown are accepted too.</span>
+      </div>
+      <div class="sf"><button class="btn">Cancel</button><button class="btn pri">Merge · one undo</button></div>
+    </div>
+
+    <!-- password + canvas menu -->
+    <div style="display: flex; flex-direction: column; gap: 20px">
+      <div class="sheet">
+        <div class="sh"><span style="font-size: 15px; font-weight: 700">Encrypt document</span><span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">File › Set Password…</span></div>
+        <div class="sb">
+          <label class="lbl" for="p1">Password</label><input id="p1" type="password" value="correcthorse" class="fld">
+          <label class="lbl" for="p2">Confirm</label><input id="p2" type="password" value="correcthorse" class="fld">
+          <label class="lbl" for="p3">Hint (optional, stored unencrypted)</label><input id="p3" value="the battery one" class="fld">
+          <div class="row"><span>Remember in Keychain</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+          <div style="display: flex; gap: 8px; padding: 9px 11px; border-radius: 9px; background: #FFF6E5; font-size: 12px; line-height: 1.45; color: #6A4700"><span style="font-weight: 700">!</span>A forgotten password cannot be recovered. Recovery snapshots of this document are encrypted with the same key.</div>
+        </div>
+        <div class="sf"><button class="btn">Cancel</button><button class="btn pri">Encrypt</button></div>
+      </div>
+      <div class="sheet" style="padding: 6px">
+        <div style="padding: 6px 10px 8px; display: flex; gap: 6px; align-items: center"><span style="height: 26px; padding: 0 12px; display: flex; align-items: center; border-radius: 7px; background: #F1F0FE; font-size: 12.5px; font-weight: 600">Product map ▾</span><span style="font-size: 12.5px; color: #6B6B76">Rollout flow</span></div>
+        <sc-for list="{{tabmenu}}" as="i" hint-placeholder-count="9">
+          <div style="display: flex; justify-content: space-between; padding: 5px 10px; border-radius: 6px; font-size: 12.5px; background: {{i.bg}}; color: {{i.fg}}; border-top: {{i.sep}}"><span>{{i.t}}</span><span style="font: 500 11px/1 'Geist Mono', monospace; opacity: .75">{{i.k}}</span></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- print -->
+    <div class="sheet">
+      <div class="sh"><span style="font-size: 15px; font-weight: 700">Print</span><span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">⌘P</span></div>
+      <div style="display: flex; flex: 1; min-height: 0">
+        <div style="flex: 1; background: #ECECEF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 16px">
+          <div style="display: grid; grid-template-columns: repeat(2, 120px); gap: 6px">
+            <sc-for list="{{tiles}}" as="t" hint-placeholder-count="4">
+              <div style="height: 160px; background: #FFFFFF; box-shadow: 0 4px 10px rgba(0,0,0,.12); position: relative; overflow: hidden"><svg width="120" height="160" viewBox="0 0 120 160" aria-hidden="true" style="position: absolute; inset: 0; fill: none"><path d="{{t.d}}" stroke="#5850EC" stroke-width="2"></path><rect x="{{t.x}}" y="{{t.y}}" width="60" height="22" rx="6" fill="#17171C"></rect></svg><span style="position: absolute; right: 4px; bottom: 3px; font: 500 9px/1 'Geist Mono', monospace; color: #9A9AA6">{{t.n}}</span></div>
+            </sc-for>
+          </div>
+          <span style="font: 500 11px/1 'Geist Mono', monospace; color: #6B6B76">4 pages · cut marks on</span>
+        </div>
+        <div style="width: 250px; padding: 16px; display: flex; flex-direction: column; gap: 10px; border-left: 1px solid #EEEEF1">
+          <span class="lbl">CONTENT</span><div class="seg"><span class="on">Canvas</span><span>Branch</span><span>Outline</span></div>
+          <span class="lbl">PAGE</span><div class="row"><span class="fld" style="flex: 1">A4</span><div class="seg" style="width: 100px"><span>▯</span><span class="on">▭</span></div></div>
+          <span class="lbl">SCALE</span><div class="seg"><span>Fit page</span><span class="on">Actual size</span></div>
+          <div class="row"><span>Tile across pages</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+          <div class="row"><span>Background colour</span><span class="tg" style="background: #DCDCE2"><span style="left: 2px"></span></span></div>
+          <div class="row"><span>Notes as appendix</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+          <div class="row"><span>Header: title · date</span><span class="tg" style="background: #34C759"><span style="right: 2px"></span></span></div>
+          <span style="font-size: 12px; color: #6B6B76; line-height: 1.4">Right-click a branch or zone › Print Branch prints only that part.</span>
+        </div>
+      </div>
+      <div class="sf"><button class="btn">PDF ▾</button><span style="flex: 1"></span><button class="btn">Cancel</button><button class="btn pri">Print</button></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const files = [['Q3 roadmap.nexus', '48 topics · 2 canvases', 'NX', '#5850EC'], ['Offsite ideas.xmind', '112 topics · Xmind import', 'XM', '#E4572E'], ['Notes.md', '23 headings', 'MD', '#0F7F7A']].map(([n, d, x, c]) => ({ n, d, x, c }));
+    const T = [['New canvas', '⌘T'], ['New canvas from selected topic', '⌥⌘N'], ['Duplicate canvas', ''], ['Rename', ''], ['Copy canvas', '', true], ['Paste canvas', ''], ['Save canvas as document…', '', true], ['Move to new window', ''], ['Delete canvas…', '', true]];
+    const tabmenu = T.map(([t, k, sep], i) => ({ t, k, sep: sep ? '1px solid #EEEEF1' : '0', bg: i === 1 ? '#5850EC' : 'transparent', fg: i === 1 ? '#FFFFFF' : (t.indexOf('Delete') === 0 ? '#B42318' : '#17171C') }));
+    const tiles = [['M120 70 C 90 70, 90 40, 60 40 M120 70 C 90 70, 90 120, 60 120', 64, 60, '1'], ['M0 70 C 30 70, 30 30, 60 30 M0 70 C 30 70, 30 110, 60 110', -4, 60, '2'], ['M120 20 C 90 20, 90 60, 60 60', 64, 10, '3'], ['M0 20 C 30 20, 30 80, 60 80', -40, 10, '4']].map(([d, x, y, n]) => ({ d, x, y, n }));
+    return { files, tabmenu, tiles };
+  }
+}
+</script>
+</body>
+</html>

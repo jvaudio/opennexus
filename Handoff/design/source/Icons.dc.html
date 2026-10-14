@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Technical icon set</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.cap{font:500 12px/1 "Geist Mono",ui-monospace,monospace;letter-spacing:.1em;color:#6B6B76}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; padding: 56px 72px; background: #FFFFFF; color: #17171C; font-family: Geist, -apple-system, system-ui, sans-serif; display: flex; flex-direction: column; gap: 24px">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <div class="cap">09 · ICONS · 32 TECHNICAL NODE TYPES</div>
+      <h1 style="margin: 0; font: 700 40px/1 'Bricolage Grotesque', sans-serif; letter-spacing: -0.02em">Vendor-neutral, drawn on the same 24-pt grid as SF Symbols</h1>
+    </div>
+    <div style="display: flex; gap: 16px; font-size: 12.5px; color: #4A4A55"><span>1.6 pt stroke · round caps</span><span>16 / 24 / 40 pt</span><span>Inherit node-type colour</span></div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 12px">
+    <sc-for list="{{icons}}" as="i" hint-placeholder-count="32">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 8px 12px; border-radius: 14px; background: #F7F7F5">
+        <svg width="40" height="40" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: {{i.c}}; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round"><path d="{{i.d}}"></path></svg>
+        <span style="font-size: 12px; font-weight: 500; text-align: center">{{i.n}}</span>
+        <span style="font: 500 10px/1 'Geist Mono', monospace; color: #6B6B76">/{{i.slash}}</span>
+      </div>
+    </sc-for>
+  </div>
+  <div style="display: flex; gap: 14px; align-items: center">
+    <span class="cap" style="margin-right: 8px">IN NODES</span>
+    <sc-for list="{{inNodes}}" as="i" hint-placeholder-count="5">
+      <div style="height: 40px; padding: 0 14px 0 10px; box-sizing: border-box; border-radius: 10px; background: {{i.bg}}; border: 2px solid {{i.c}}; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: {{i.c}}; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round"><path d="{{i.d}}"></path></svg>{{i.n}}
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const C = { client: '#1E6FB8', compute: '#5850EC', data: '#0F7F7A', net: '#4A4A55', sec: '#C62F35', dfd: '#9B51E0' };
+    const raw = [
+      ['Client', 'client', 'M3 5h18v14H3z M3 9h18 M6 7h.01 M9 7h.01', 'client'],
+      ['Mobile', 'mobile', 'M8 3h8v18H8z M11 18h2', 'client'],
+      ['User', 'actor', 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c1-4 4-6 8-6s7 2 8 6', 'client'],
+      ['Service', 'service', 'M4 6h16v12H4z M8 10h8 M8 14h5', 'compute'],
+      ['API Gateway', 'gateway', 'M2 12h5 M17 12h5 M7 6h10v12H7z M11 9l2 3-2 3', 'compute'],
+      ['Load Balancer', 'lb', 'M10 3h4v4h-4z M12 7v4 M5 11h14 M5 11v3 M12 11v3 M19 11v3 M3 14h4v5H3z M10 14h4v5h-4z M17 14h4v5h-4z', 'compute'],
+      ['Function', 'fn', 'M6 20l6-16h2 M9.5 12.5L14 20h4', 'compute'],
+      ['Container', 'container', 'M3 8l9-5 9 5v8l-9 5-9-5z M3 8l9 5 9-5 M12 13v8', 'compute'],
+      ['Cluster', 'cluster', 'M12 3l8 4.5v9L12 21l-8-4.5v-9z M12 8v8 M8.5 10l7 4 M15.5 10l-7 4', 'compute'],
+      ['Server', 'host', 'M4 4h16v7H4z M4 13h16v7H4z M7 7.5h.01 M7 16.5h.01 M11 7.5h6 M11 16.5h6', 'compute'],
+      ['Database', 'db', 'M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3', 'data'],
+      ['Cache', 'cache', 'M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7 M13 11l-3 4h4l-3 4', 'data'],
+      ['Queue', 'queue', 'M3 8h18v8H3z M7 8v8 M11 8v8 M15 8v8', 'data'],
+      ['Event Stream', 'stream', 'M3 7h12 M3 12h18 M3 17h14 M17 5l2 2-2 2 M19 15l2 2-2 2', 'data'],
+      ['Object Storage', 'storage', 'M4 6h16l-2 14H6z M4 6c0-1 3.6-2 8-2s8 1 8 2', 'data'],
+      ['Document', 'doc', 'M6 3h8l4 4v14H6z M14 3v4h4 M9 12h6 M9 16h6', 'data'],
+      ['Cloud', 'cloud', 'M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5a4 4 0 0 1 .5 9.5z', 'net'],
+      ['Region', 'region', 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M3 12h18 M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9 M12 3c-2.5 2.5-3.5 5.5-3.5 9s1 6.5 3.5 9', 'net'],
+      ['External SaaS', 'saas', 'M7 16a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 6.5a4 4 0 0 1 .5 9.5 M12 11v9 M9 17l3 3 3-3', 'net'],
+      ['Router', 'router', 'M3 14h18v6H3z M7 17h.01 M11 17h.01 M8 14L6 9 M16 14l2-5 M9 6a5 5 0 0 1 6 0', 'net'],
+      ['Switch', 'switch', 'M3 8h18v8H3z M7 12h.01 M10 12h.01 M13 12h.01 M16 12h3', 'net'],
+      ['Firewall', 'firewall', 'M3 5h18v14H3z M3 10h18 M3 15h18 M9 5v5 M15 10v5 M9 15v4', 'sec'],
+      ['Lock · Auth', 'auth', 'M6 11h12v10H6z M8 11V8a4 4 0 0 1 8 0v3 M12 15v2', 'sec'],
+      ['Secret', 'secret', 'M8 15a4 4 0 1 1 2.8-6.8 M10.8 8.2L20 17.4V20h-2.6 M17 15l-1.5 1.5', 'sec'],
+      ['Threat', 'threat', 'M12 3L2 20h20z M12 9v5 M12 17h.01', 'sec'],
+      ['Mitigation', 'mitigation', 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M8.5 12l2.5 2.5 4.5-5', 'sec'],
+      ['Asset', 'asset', 'M6 4h12l3 5-9 11L3 9z M3 9h18 M9 4l3 16 M15 4l-3 16', 'sec'],
+      ['Monitoring', 'monitor', 'M3 12h4l3-7 4 14 3-7h4', 'net'],
+      ['Process', 'process', 'M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M8 12h8', 'dfd'],
+      ['External Entity', 'entity', 'M4 7h13v13H4z M17 7l3-3v13l-3 3 M4 7l3-3h13', 'dfd'],
+      ['Data Store', 'store', 'M3 7h18 M3 17h18 M7 7v10', 'dfd'],
+      ['Decision', 'decision', 'M12 3l9 9-9 9-9-9z M10 10a2 2 0 1 1 2.5 2c-.5.2-.5.6-.5 1 M12 15.5h.01', 'dfd']
+    ];
+    const icons = raw.map(([n, slash, d, k]) => ({ n, slash, d, c: C[k] }));
+    const pick = (name) => icons.find((i) => i.n === name);
+    const inNodes = [['API Gateway', '#ECEBFE'], ['Database', '#DDF3F1'], ['Queue', '#DDF3F1'], ['Lock · Auth', '#FDECEC'], ['External SaaS', '#F1F1F4']].map(([n, bg]) => ({ n: n.replace(' · Auth', ''), d: pick(n).d, c: pick(n).c, bg }));
+    return { icons, inNodes };
+  }
+}
+</script>
+</body>
+</html>

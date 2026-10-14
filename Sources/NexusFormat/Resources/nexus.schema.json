@@ -1,0 +1,273 @@
+{
+  "$defs": {
+    "canvas": {
+      "description": "One canvas (canvases/<id>.json): a graph of nodes and edges with a diagram type.",
+      "properties": {
+        "floating": {
+          "description": "Ids of floating topics (not attached to the root tree), in z-order.",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "layout": {
+          "properties": {
+            "mode": {
+              "description": "auto (default) or free (opt-in per canvas).",
+              "type": "string"
+            },
+            "structure": {
+              "description": "family.variant, for example mindmap.balanced or logic.right.",
+              "pattern": "^[A-Za-z]+(\\.[A-Za-z]+)?$",
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "nodes": {
+          "additionalProperties": false,
+          "patternProperties": {
+            "^[A-Za-z0-9_-]+$": {
+              "$ref": "#/$defs/node"
+            }
+          },
+          "type": "object"
+        },
+        "relationships": {
+          "items": {
+            "$ref": "#/$defs/relationship"
+          },
+          "type": "array"
+        },
+        "root": {
+          "$ref": "#/$defs/id"
+        },
+        "style": {
+          "properties": {
+            "colorTheme": {
+              "type": "string"
+            },
+            "nodeStyle": {
+              "type": "string"
+            },
+            "palette": {
+              "type": "string"
+            },
+            "paletteShift": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "theme": {
+              "type": "string"
+            }
+          },
+          "type": "object"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "description": "Diagram type: mindmap, logic, brace, org, tree, treeTable, timeline, fishbone, matrix, flowchart, swimlane, dfd, threatModel, architecture, sequence, whiteboard. Unknown values are preserved.",
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "nodes",
+        "root",
+        "type"
+      ],
+      "type": "object"
+    },
+    "id": {
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "type": "string"
+    },
+    "manifest": {
+      "description": "manifest.json at the root of a .nexus package.",
+      "properties": {
+        "app": {
+          "description": "Version of the app that last wrote the file.",
+          "type": "string"
+        },
+        "canvases": {
+          "description": "Canvas ids in tab order. Each has a canvases/<id>.json file.",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "encrypted": {
+          "type": "boolean"
+        },
+        "format": {
+          "const": "opennexus"
+        },
+        "schemaVersion": {
+          "minimum": 1,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "canvases",
+        "format",
+        "schemaVersion"
+      ],
+      "type": "object"
+    },
+    "node": {
+      "properties": {
+        "ai": {
+          "description": "Created by AI and not yet edited by the user.",
+          "type": "boolean"
+        },
+        "children": {
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "folded": {
+          "type": "boolean"
+        },
+        "kind": {
+          "description": "root, topic, floating or summary. Unknown values are preserved.",
+          "type": "string"
+        },
+        "labels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "link": {
+          "type": "string"
+        },
+        "markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "note": {
+          "properties": {
+            "format": {
+              "enum": [
+                "md",
+                "plain"
+              ]
+            },
+            "text": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "text"
+          ],
+          "type": "object"
+        },
+        "position": {
+          "$ref": "#/$defs/point"
+        },
+        "structure": {
+          "type": "string"
+        },
+        "style": {
+          "type": "object"
+        },
+        "text": {
+          "type": "string"
+        },
+        "todo": {
+          "properties": {
+            "done": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "done"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "children",
+        "kind",
+        "text"
+      ],
+      "type": "object"
+    },
+    "point": {
+      "properties": {
+        "x": {
+          "type": "number"
+        },
+        "y": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "x",
+        "y"
+      ],
+      "type": "object"
+    },
+    "relationship": {
+      "properties": {
+        "ends": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "type": "array"
+        },
+        "from": {
+          "$ref": "#/$defs/id"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "label": {
+          "type": "string"
+        },
+        "line": {
+          "type": "string"
+        },
+        "to": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "from",
+        "id",
+        "to"
+      ],
+      "type": "object"
+    },
+    "theme": {
+      "description": "theme.json: document theme, custom colour themes and quick styles.",
+      "type": "object"
+    }
+  },
+  "$id": "https://opennexus.app/schema/nexus.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "anyOf": [
+    {
+      "$ref": "#/$defs/manifest"
+    },
+    {
+      "$ref": "#/$defs/canvas"
+    }
+  ],
+  "description": "OpenNexus .nexus package files. Objects allow unknown keys so newer files round-trip through older apps.",
+  "title": "OpenNexus document"
+}

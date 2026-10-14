@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Flowchart and swimlane</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.tb{height:28px;padding:0 10px;display:flex;align-items:center;gap:6px;border-radius:7px;border:1px solid rgba(23,23,28,.09);background:rgba(255,255,255,.7);font:500 12.5px/1 -apple-system,Geist,sans-serif;color:#17171C}
+.p{position:absolute;box-sizing:border-box;display:flex;align-items:center;justify-content:center;text-align:center;font:500 14px/1.25 -apple-system,Geist,sans-serif;color:#17171C}
+.bd{position:absolute;left:0;right:0;top:-20px;text-align:center;font:600 9.5px/13px "Geist Mono",monospace;letter-spacing:.08em;color:#6B6B76}
+.lb{position:absolute;padding:1px 7px;border-radius:6px;background:#F7F7F5;font:600 11px/16px "Geist Mono",monospace;color:#4A4A55}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #F7F7F5; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 52px; box-sizing: border-box; padding: 0 14px 0 18px; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,.72); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(23,23,28,.08); z-index: 5">
+    <div style="display: flex; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; margin-left: 10px"><span style="font-size: 13px; font-weight: 600">Account recovery.nexus</span><span style="font-size: 11px; color: #5D5D68">2 canvases</span></div>
+    <div style="flex: 1"></div>
+    <button class="tb">Flowchart <span class="k">⌥⌘T</span></button>
+    <button class="tb">Classic</button>
+    <button class="tb">Dot grid</button>
+    <div style="height: 28px; padding: 0 10px; display: flex; align-items: center; gap: 7px; border-radius: 999px; background: rgba(15,159,154,.08); color: #0B6E6A; font: 500 12px/1 -apple-system, sans-serif"><span style="width: 7px; height: 7px; border-radius: 50%; background: #0F9F9A"></span>On-device · Apple</div>
+    <button class="tb">Share</button>
+  </div>
+  <div style="position: absolute; left: 0; right: 0; top: 52px; height: 34px; box-sizing: border-box; padding: 0 14px; display: flex; align-items: flex-end; gap: 4px; background: #EFEFF1; border-bottom: 1px solid #E2E2E6">
+    <span style="height: 28px; padding: 0 14px; display: flex; align-items: center; border-radius: 8px 8px 0 0; background: #F7F7F5; font-size: 12.5px; font-weight: 600; border: 1px solid #E2E2E6; border-bottom: 0">Password reset</span>
+    <span style="height: 28px; padding: 0 14px; display: flex; align-items: center; font-size: 12.5px; color: #4A4A55">Refund (swimlane)</span>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; top: 86px; bottom: 0; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 22px 22px">
+    <svg width="1440" height="814" viewBox="0 0 1440 814" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke: #4A4A55; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round">
+      <defs><marker id="fa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#4A4A55" stroke="none"></path></marker></defs>
+      <path d="M330 80 V 116" marker-end="url(#fa)"></path>
+      <path d="M330 164 V 198" marker-end="url(#fa)"></path>
+      <path d="M240 250 H 175 V 336" marker-end="url(#fa)"></path>
+      <path d="M420 250 H 495 V 336" marker-end="url(#fa)"></path>
+      <path d="M175 384 V 416" marker-end="url(#fa)"></path>
+      <path d="M175 464 V 580 H 266" marker-end="url(#fa)"></path>
+      <path d="M495 384 V 580 H 394" marker-end="url(#fa)"></path>
+      <!-- swimlane edges -->
+      <path d="M1062 150 H 1080 V 330 H 1096" marker-end="url(#fa)"></path>
+      <path d="M1172 330 H 1186 V 510 H 1206" marker-end="url(#fa)"></path>
+      <path d="M1282 510 H 1296 V 150 H 1316" marker-end="url(#fa)"></path>
+    </svg>
+
+    <!-- flowchart -->
+    <div class="p" style="left: 250px; top: 40px; width: 160px; height: 40px; border-radius: 999px; background: #17171C; color: #FFFFFF; font-weight: 600"><span class="bd">START</span>Forgot password</div>
+    <div class="p" style="left: 245px; top: 120px; width: 170px; height: 44px; border-radius: 8px; background: #FFFFFF; border: 1.5px solid #4A4A55"><span class="bd">PROCESS</span>Enter email</div>
+    <div class="p" style="left: 240px; top: 202px; width: 180px; height: 96px; background: #FBE7B5; clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); font-weight: 600">Account<br>exists?</div>
+    <span style="position: absolute; left: 290px; top: 182px; font: 600 9.5px/13px 'Geist Mono', monospace; letter-spacing: .08em; color: #6B6B76">DECISION</span>
+    <div class="p" style="left: 90px; top: 340px; width: 170px; height: 44px; border-radius: 8px; background: #FFFFFF; border: 1.5px solid #4A4A55">Create reset token</div>
+    <div class="p" style="left: 90px; top: 420px; width: 170px; height: 44px; background: #FFFFFF; border: 1.5px solid #4A4A55; transform: skewX(-14deg)"><span style="transform: skewX(14deg)">Email the link</span></div>
+    <span style="position: absolute; left: 270px; top: 434px; font: 600 9.5px/13px 'Geist Mono', monospace; letter-spacing: .08em; color: #6B6B76">I/O</span>
+    <div class="p" style="left: 400px; top: 340px; width: 190px; height: 44px; border-radius: 8px; background: #FFFFFF; border: 1.5px solid #4A4A55">Show neutral message</div>
+    <div class="p" style="left: 270px; top: 560px; width: 120px; height: 40px; border-radius: 999px; background: #17171C; color: #FFFFFF; font-weight: 600"><span class="bd" style="top: 46px">END</span>Done</div>
+    <span class="lb" style="left: 186px; top: 226px">Yes</span>
+    <span class="lb" style="left: 446px; top: 226px">No</span>
+    <!-- selected decision + hint -->
+    <div style="position: absolute; left: 236px; top: 198px; width: 188px; height: 104px; border: 2px solid #5850EC; border-radius: 12px; box-sizing: border-box; box-shadow: 0 8px 24px rgba(88,80,236,.18)"></div>
+    <div style="position: absolute; left: 440px; top: 168px; width: 250px; padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,.92); border: 1px solid #E2E2E6; box-shadow: 0 12px 30px rgba(23,23,28,.12); display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 12.5px; font-weight: 600; display: flex; gap: 6px; align-items: center"><span class="k">⇥</span>from a Decision</span>
+      <span style="font-size: 12px; color: #4A4A55; line-height: 1.45">adds a branch and opens its edge label pre-filled “Yes”, then “No”. <span class="k">↩</span> adds a parallel step at the same level.</span>
+    </div>
+    <div style="position: absolute; left: 640px; top: 470px; width: 230px; padding: 12px 14px; border-radius: 12px; background: rgba(15,159,154,.07); border: 1.5px dashed #0F9F9A; display: flex; flex-direction: column; gap: 4px">
+      <span style="font-size: 12px; font-weight: 600; color: #0B6E6A">✦ Possibly missing</span>
+      <span style="font-size: 12px; color: #2C2C33; line-height: 1.4">Rate-limit reset requests before “Create reset token”</span>
+      <span style="font-size: 11px; color: #0B6E6A; display: flex; gap: 5px; align-items: center"><span class="k">⌃↩</span>insert · <span class="k">esc</span>dismiss</span>
+    </div>
+
+    <!-- swimlane -->
+    <div style="position: absolute; left: 900px; top: 40px; width: 520px; height: 560px; border-radius: 14px; overflow: hidden; border: 1px solid #DCDCE2; background: rgba(255,255,255,.4)"></div>
+    <div style="position: absolute; left: 900px; top: 40px; width: 520px; height: 180px; border-bottom: 1px solid #DCDCE2; box-sizing: border-box; background: rgba(30,111,184,.04)"></div>
+    <div style="position: absolute; left: 900px; top: 220px; width: 520px; height: 180px; border-bottom: 1px solid #DCDCE2; box-sizing: border-box; background: rgba(88,80,236,.04)"></div>
+    <div style="position: absolute; left: 900px; top: 400px; width: 520px; height: 200px; background: rgba(15,159,154,.04)"></div>
+    <div style="position: absolute; left: 912px; top: 52px; font: 600 11px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #1E6FB8">CUSTOMER</div>
+    <div style="position: absolute; left: 912px; top: 232px; font: 600 11px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #3B34C4">SUPPORT</div>
+    <div style="position: absolute; left: 912px; top: 412px; font: 600 11px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #0B6E6A">FINANCE</div>
+    <div class="p" style="left: 966px; top: 128px; width: 96px; height: 44px; border-radius: 8px; background: #FFFFFF; border: 1.5px solid #4A4A55; font-size: 13px">Request refund</div>
+    <div class="p" style="left: 1100px; top: 308px; width: 72px; height: 44px; border-radius: 8px; background: #FFFFFF; border: 1.5px solid #4A4A55; font-size: 13px">Review</div>
+    <div class="p" style="left: 1210px; top: 488px; width: 72px; height: 44px; border-radius: 8px; background: #FFFFFF; border: 1.5px solid #4A4A55; font-size: 13px; box-shadow: 0 0 0 2px #F7F7F5, 0 0 0 4px #5850EC">Approve</div>
+    <div class="p" style="left: 1320px; top: 128px; width: 88px; height: 44px; border-radius: 999px; background: #17171C; color: #FFFFFF; font-size: 13px">Refunded</div>
+    <div style="position: absolute; left: 1134px; top: 552px; display: flex; gap: 6px; align-items: center; font-size: 12px; color: #4A4A55"><span class="k">⌥↑</span><span class="k">⌥↓</span>moves a step between lanes</div>
+    <div style="position: absolute; left: 1186px; top: 412px; font: 600 10px/1 'Geist Mono', monospace; color: #6B6B76">HAND-OFF</div>
+
+    <div style="position: absolute; left: 16px; bottom: 16px; display: flex; gap: 12px; align-items: center">
+      <span style="display: inline-flex; align-items: center; gap: 8px; height: 30px; padding: 0 13px; border-radius: 999px; background: #17171C; color: #FFFFFF; font: 600 12px/1 'Geist Mono', monospace; letter-spacing: .06em"><span style="width: 8px; height: 8px; border-radius: 2px; background: #FFFFFF"></span>SELECT</span>
+      <div style="display: flex; gap: 12px; align-items: center; height: 34px; padding: 0 14px; border-radius: 12px; background: rgba(255,255,255,.72); border: 1px solid rgba(23,23,28,.08); font-size: 12px; color: #5D5D68"><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇥</span>next step</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">↩</span>parallel step</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">/</span>shape</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇧⌘L</span>connect</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

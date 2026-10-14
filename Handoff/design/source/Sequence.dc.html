@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Sequence diagram</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#4B44D8}a:hover{color:#2F29A8}
+.k{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;padding:0 5px;box-sizing:border-box;border-radius:5px;background:#FFFFFF;border:1px solid #D4D4DB;border-bottom-width:2px;font:500 11px/1 "Geist Mono",monospace;color:#17171C}
+.tb{height:28px;padding:0 10px;display:flex;align-items:center;gap:6px;border-radius:7px;border:1px solid rgba(23,23,28,.09);background:rgba(255,255,255,.7);font:500 12.5px/1 -apple-system,Geist,sans-serif;color:#17171C}
+.pt{position:absolute;width:150px;height:48px;box-sizing:border-box;border-radius:10px;background:#FFFFFF;border:2px solid #17171C;display:flex;align-items:center;justify-content:center;gap:8px;font:600 14px/1 -apple-system,Geist,sans-serif}
+.ms{position:absolute;font:500 12.5px/16px "Geist Mono",monospace;color:#17171C;text-align:center}
+.act{position:absolute;width:12px;background:#ECEBFE;border:1.5px solid #5850EC;box-sizing:border-box;border-radius:2px}
+@keyframes caret{0%,49%{opacity:1}50%,100%{opacity:0}}
+.car{display:inline-block;width:1.5px;height:14px;background:#5850EC;vertical-align:-2px;animation:caret 1s steps(1) infinite}
+</style>
+</helmet>
+<div style="width: 1440px; height: 900px; position: relative; overflow: hidden; background: #F7F7F5; font-family: -apple-system, 'SF Pro Text', Geist, system-ui, sans-serif; color: #17171C">
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 52px; box-sizing: border-box; padding: 0 14px 0 18px; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,.72); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-bottom: 1px solid rgba(23,23,28,.08); z-index: 5">
+    <div style="display: flex; gap: 8px"><span style="width: 12px; height: 12px; border-radius: 50%; background: #FF5F57"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #FEBC2E"></span><span style="width: 12px; height: 12px; border-radius: 50%; background: #28C840"></span></div>
+    <div style="display: flex; flex-direction: column; gap: 2px; margin-left: 10px"><span style="font-size: 13px; font-weight: 600">Sign-in flow.nexus</span><span style="font-size: 11px; color: #5D5D68">Sequence · 4 participants</span></div>
+    <div style="flex: 1"></div>
+    <button class="tb">Sequence <span class="k">⌥⌘T</span></button>
+    <button class="tb">Paper</button>
+    <button class="tb">Copy as Mermaid</button>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; top: 52px; bottom: 0; background-image: radial-gradient(#D6D6DC 1px, transparent 1.3px); background-size: 22px 22px">
+    <svg width="1440" height="848" viewBox="0 0 1440 848" aria-hidden="true" style="position: absolute; inset: 0; fill: none; stroke-linecap: round; stroke-linejoin: round">
+      <defs><marker id="sa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#17171C"></path></marker><marker id="sr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0 0 L10 5 L0 10" fill="none" stroke="#4A4A55" stroke-width="1.5"></path></marker></defs>
+      <g stroke="#B9B9C2" stroke-width="1.4" stroke-dasharray="5 6"><path d="M160 104 V 760"></path><path d="M400 104 V 760"></path><path d="M640 104 V 760"></path><path d="M880 104 V 760"></path></g>
+      <g stroke="#17171C" stroke-width="1.6"><path d="M166 160 H 390" marker-end="url(#sa)"></path><path d="M406 230 H 630" marker-end="url(#sa)"></path><path d="M646 300 H 870" marker-end="url(#sa)"></path></g>
+      <g stroke="#4A4A55" stroke-width="1.6" stroke-dasharray="6 5"><path d="M874 370 H 650" marker-end="url(#sr)"></path><path d="M634 440 H 410" marker-end="url(#sr)"></path><path d="M394 510 H 170" marker-end="url(#sr)"></path></g>
+      <path d="M406 600 H 630" stroke="#5850EC" stroke-width="2" marker-end="url(#sa)"></path>
+      <path d="M634 660 H 410" stroke="#0F9F9A" stroke-width="1.6" stroke-dasharray="4 5" opacity=".8"></path>
+    </svg>
+    <div class="pt" style="left: 85px; top: 56px"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: #1E6FB8; stroke-width: 1.8"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>User</div>
+    <div class="pt" style="left: 325px; top: 56px">Web app</div>
+    <div class="pt" style="left: 565px; top: 56px">Auth service</div>
+    <div class="pt" style="left: 805px; top: 56px"><svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" style="fill: none; stroke: #0F7F7A; stroke-width: 1.8"><path d="M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6"></path></svg>Users DB</div>
+    <div class="act" style="left: 394px; top: 160px; height: 360px"></div>
+    <div class="act" style="left: 634px; top: 230px; height: 220px"></div>
+    <div class="act" style="left: 874px; top: 300px; height: 80px"></div>
+    <div class="act" style="left: 394px; top: 590px; height: 80px"></div>
+    <div class="act" style="left: 634px; top: 600px; height: 60px; border-color: #5850EC"></div>
+
+    <span class="ms" style="left: 170px; top: 136px; width: 220px">1 · Sign in</span>
+    <span class="ms" style="left: 410px; top: 206px; width: 220px">2 · POST /token</span>
+    <span class="ms" style="left: 650px; top: 276px; width: 220px">3 · SELECT user</span>
+    <span class="ms" style="left: 650px; top: 346px; width: 220px; color: #4A4A55">row</span>
+    <span class="ms" style="left: 410px; top: 416px; width: 220px; color: #4A4A55">200 · JWT</span>
+    <span class="ms" style="left: 170px; top: 486px; width: 220px; color: #4A4A55">dashboard</span>
+    <span class="ms" style="left: 410px; top: 572px; width: 220px; padding: 2px 0; border-radius: 6px; background: #FFFFFF; box-shadow: 0 0 0 2px #5850EC">7 · refresh tok<span class="car"></span></span>
+    <span class="ms" style="left: 410px; top: 668px; width: 220px; color: #0B6E6A; font-size: 11.5px">return message ready · ⌥↩</span>
+
+    <div style="position: absolute; left: 160px; top: 760px; display: flex; gap: 12px; align-items: center; height: 34px; padding: 0 14px; border-radius: 12px; background: rgba(255,255,255,.75); border: 1px solid rgba(23,23,28,.08); font-size: 12px; color: #5D5D68">
+      <span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⇥</span>message to next participant</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">↩</span>next message in time</span><span style="display: inline-flex; gap: 5px; align-items: center"><span class="k">⌥↩</span>return message</span><span>activation bars are automatic</span>
+    </div>
+
+    <!-- UML class companion -->
+    <div style="position: absolute; left: 1050px; top: 56px; width: 350px; display: flex; flex-direction: column; gap: 10px">
+      <span style="font: 600 11px/1 'Geist Mono', monospace; letter-spacing: .08em; color: #6B6B76">SAME KEYS · UML CLASS CANVAS</span>
+      <div style="border-radius: 10px; background: #FFFFFF; border: 2px solid #17171C; overflow: hidden">
+        <div style="padding: 10px 14px; border-bottom: 1.5px solid #17171C; display: flex; justify-content: space-between; align-items: center"><span style="font: 700 15px/1 -apple-system, sans-serif">Session</span><span style="font: 600 9.5px/1 'Geist Mono', monospace; color: #6B6B76">CLASS</span></div>
+        <div style="padding: 8px 14px; border-bottom: 1px solid #DCDCE2; display: flex; flex-direction: column; gap: 5px; font: 500 12.5px/1.3 'Geist Mono', monospace">
+          <span><span style="color: #2E7D4F">+</span> id: <span style="color: #5850EC">UUID</span></span>
+          <span><span style="color: #C62F35">−</span> token: <span style="color: #5850EC">String</span></span>
+          <span style="padding: 2px 4px; margin: 0 -4px; border-radius: 4px; background: #F1F0FE"><span style="color: #2E7D4F">+</span> expiresAt: <span style="color: #5850EC">Date</span><span class="car"></span></span>
+        </div>
+        <div style="padding: 8px 14px; display: flex; flex-direction: column; gap: 5px; font: 500 12.5px/1.3 'Geist Mono', monospace">
+          <span><span style="color: #2E7D4F">+</span> refresh(): <span style="color: #5850EC">Session</span></span>
+          <span><span style="color: #2E7D4F">+</span> revoke(): <span style="color: #5850EC">Void</span></span>
+        </div>
+      </div>
+      <div style="padding: 12px 14px; border-radius: 12px; background: rgba(255,255,255,.85); border: 1px solid #E2E2E6; font-size: 12.5px; line-height: 1.5; color: #2C2C33">Type <code style="font-family: 'Geist Mono', monospace; background: #F1F1F4; padding: 1px 5px; border-radius: 4px">+ expiresAt: Date</code> and it formats itself: visibility glyph, name, coloured type. <span class="k">⇥</span> adds a member, <span class="k">↩</span> the next one.</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; color: #4A4A55"><span style="padding: 4px 9px; border-radius: 999px; background: #EEEEF1">— association</span><span style="padding: 4px 9px; border-radius: 999px; background: #EEEEF1">▷ inheritance</span><span style="padding: 4px 9px; border-radius: 999px; background: #EEEEF1">◆ composition</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

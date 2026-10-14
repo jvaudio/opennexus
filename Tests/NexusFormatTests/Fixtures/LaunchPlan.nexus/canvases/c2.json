@@ -1,0 +1,39 @@
+{
+  "floating": [],
+  "id": "c2",
+  "layout": {
+    "mode": "auto",
+    "structure": "org.down"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2"
+      ],
+      "kind": "root",
+      "text": "Start"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "Build"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Ship?"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "classic",
+    "theme": "classic"
+  },
+  "title": "Rollout flow",
+  "type": "flowchart"
+}
