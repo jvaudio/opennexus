@@ -251,6 +251,16 @@ import Testing
         #expect(compact.orderedCanvases == doc.orderedCanvases)
     }
 
+    /// Settings › Files › JSON documents carry their images inline (M8).
+    @Test func documentJSONEmbedsAssetsWhenAsked() throws {
+        let png = Data([0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A, 1, 2, 3])
+        let doc = DocumentModel(canvases: [launchPlan()], assets: ["ab12.png": png])
+        let lean = try DocumentJSON.parse(Data(DocumentJSON.export(doc).utf8), name: "d.json")
+        #expect(lean.assets.isEmpty)
+        let full = try DocumentJSON.parse(Data(DocumentJSON.export(doc, assets: true).utf8), name: "d.json")
+        #expect(full.assets == doc.assets && full.orderedCanvases == doc.orderedCanvases)
+    }
+
     @Test func pastedTextIsRecognised() {
         #expect(Interchange.parsePasted("Just one line") == nil)
         let (md, _) = Interchange.parsePasted("# Trip\n## Packing\n- Passport\n")!

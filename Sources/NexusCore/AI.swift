@@ -55,7 +55,10 @@ public enum MapContext {
     ///     - Growth 2027
     ///       - Onboarding
     ///         - Welcome email
-    public static func outline(_ c: Canvas, from top: NodeID? = nil, depth: Depth = .balanced) -> String {
+    /// `notes: false` keeps notes out (Settings › Privacy & Data › Let AI read notes).
+    public static func outline(_ c: Canvas, from top: NodeID? = nil, depth: Depth = .balanced, notes: Bool = true)
+        -> String
+    {
         var lines: [String] = []
         var count = 0
         func walk(_ id: NodeID, _ d: Int) {
@@ -65,7 +68,7 @@ public enum MapContext {
             if let t = n.todo { line += t.done ? " (done)" : " (to-do)" }
             lines.append(line)
             count += line.count
-            if depth.includeNotes, let note = n.note?.text, !note.isEmpty {
+            if notes, depth.includeNotes, let note = n.note?.text, !note.isEmpty {
                 let short = note.prefix(240).replacingOccurrences(of: "\n", with: " ")
                 lines.append(String(repeating: "  ", count: d + 1) + "note: " + short)
                 count += short.count

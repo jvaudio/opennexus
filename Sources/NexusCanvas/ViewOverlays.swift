@@ -373,12 +373,26 @@ struct ZenCountView: View {
     var controller: CanvasController
 
     var body: some View {
+        let _ = controller.prefsRevision
         if controller.zen {
             let n = CanvasCounts(controller.canvas)
-            Text("\(n.topics) topics · \(n.words) words")
-                .font(.system(size: 12, design: .monospaced))
-                .foregroundStyle(.secondary.opacity(0.6))
-                .accessibilityLabel("\(n.topics) topics, \(n.words) words")
+            let count = controller.prefs.bool("appearance.zenCount")
+            let timer = controller.prefs.bool("appearance.zenTimer")
+            if count || timer {
+                TimelineView(.periodic(from: .now, by: 30)) { _ in
+                    let mins = Int(controller.zenToday / 60)
+                    Text(
+                        [
+                            timer ? "Today \(mins / 60):\(String(format: "%02d", mins % 60))" : nil,
+                            count ? "\(n.topics) topics · \(n.words) words" : nil,
+                        ]
+                        .compactMap { $0 }.joined(separator: " · ")
+                    )
+                    .font(.system(size: 12, design: .monospaced))
+                    .foregroundStyle(.secondary.opacity(0.6))
+                    .accessibilityLabel("\(n.topics) topics, \(n.words) words")
+                }
+            }
         }
     }
 }

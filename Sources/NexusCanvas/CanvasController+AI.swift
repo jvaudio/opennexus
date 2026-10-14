@@ -47,7 +47,8 @@ extension CanvasController {
         let c = canvas
         let n = c.nodes[anchor]
         return AIRequest(
-            action: action, prompt: prompt, outline: MapContext.outline(c, depth: depth),
+            action: action, prompt: prompt,
+            outline: MapContext.outline(c, depth: depth, notes: prefs.bool("privacy.aiReadNotes")),
             anchorPath: MapContext.path(c, to: anchor), anchorText: n?.text ?? "",
             existingChildren: (n?.children ?? []).compactMap { c.nodes[$0]?.text }, depth: depth)
     }
@@ -103,7 +104,7 @@ extension CanvasController {
     /// When the model can't run this stays silent; the explicit entry points explain why.
     func scheduleIdleSuggestion(for id: NodeID, after delay: Duration = .milliseconds(1500)) {
         idleSuggestion?.cancel()
-        guard UserDefaults.standard.bool(forKey: AISettingsKeys.suggestAfterPause), ai.availability.canRun else {
+        guard prefs.bool(AISettingsKeys.suggestAfterPause), ai.availability.canRun else {
             return
         }
         let before = canvas
@@ -153,7 +154,7 @@ extension CanvasController {
     }
 
     /// Settings › AI › “Mark AI-created nodes with ✦ until edited” (on unless turned off).
-    var markAI: Bool { UserDefaults.standard.object(forKey: AISettingsKeys.markAI) as? Bool ?? true }
+    var markAI: Bool { prefs.bool(AISettingsKeys.markAI) }
 
     func accept(_ indices: [Int], from g: GhostState) {
         let markAI = markAI
@@ -287,9 +288,9 @@ extension CanvasController {
         let id = store.model.makeChatID()
         var chat = AIChat(id: id, title: title)
         chat.canvas = canvasID
-        chat.discussion = UserDefaults.standard.bool(forKey: AISettingsKeys.discussionDefault)
+        chat.discussion = prefs.bool(AISettingsKeys.discussionDefault)
         chat.depth =
-            MapContext.Depth(rawValue: UserDefaults.standard.string(forKey: AISettingsKeys.depth) ?? "") ?? .balanced
+            MapContext.Depth(rawValue: prefs.string(AISettingsKeys.depth)) ?? .balanced
         store.updateDocument { $0.chats.append(chat) }
         activeChat = id
         return id

@@ -20,6 +20,20 @@
 			<key>NSDocumentClass</key>
 			<string>$(PRODUCT_MODULE_NAME).NexusDocument</string>
 		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>OpenNexus Document (Single JSON)</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.opennexus.json-document</string>
+			</array>
+			<key>NSDocumentClass</key>
+			<string>$(PRODUCT_MODULE_NAME).NexusDocument</string>
+		</dict>
 	</array>
 	<key>UTExportedTypeDeclarations</key>
 	<array>
@@ -38,6 +52,23 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>nexus</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>OpenNexus Document (Single JSON)</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.opennexus.json-document</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>nexusjson</string>
 				</array>
 			</dict>
 		</dict>

@@ -130,6 +130,8 @@ extension CommandID {
     public static let mapShot: CommandID = "file.mapShot"
     public static let copyAsImage: CommandID = "file.copyAsImage"
     public static let copyAsMarkdown: CommandID = "file.copyAsMarkdown"
+    public static let home: CommandID = "app.home"
+    public static let newChooseType: CommandID = "file.newChooseType"
     public static let printDocument: CommandID = "file.print"
     public static let printBranch: CommandID = "file.printBranch"
     public static let importFile: CommandID = "file.import"
@@ -388,6 +390,10 @@ public enum DefaultCommands {
         C(.mapShot, "Map Shot", .file, scope: .global, keys: [k("ctrl+cmd+m")], menu: .file),
         C(.copyAsImage, "Copy as Image", .file, keys: [k("ctrl+cmd+c")], menu: .edit),
         C(.copyAsMarkdown, "Copy as Markdown", .file, menu: .edit),
+        C(.home, "Home", .app, scope: .global, keys: [k("shift+cmd+h")], menu: .file, standardAction: "showHome:"),
+        C(
+            .newChooseType, "New Document of Type…", .file, scope: .global, menu: .file, note: "⇧⌘N on Home",
+            standardAction: "newDocumentChooseType:"),
         C(.printDocument, "Print…", .file, scope: .global, keys: [k("cmd+p")], menu: .file, xmind: true),
         C(.printBranch, "Print Branch…", .file, menu: .file),
         C(

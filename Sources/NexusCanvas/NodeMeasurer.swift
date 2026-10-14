@@ -58,7 +58,38 @@ public struct NodeTextStyle: Hashable, Sendable {
         }
     }
 
+    /// Fonts are built once per face: a descriptor with a cascade list is costly, and
+    /// every node's style asks for its font several times per update.
     public var font: NSFont {
+        let key = FontKey(
+            family: code ? "mono" : family, size: fontSize, weight: weight, italic: italic, cjk: Self.cjkFamily)
+        if let f = Self.fonts[key] { return f }
+        let f = makeFont()
+        Self.fonts[key] = f
+        return f
+    }
+
+    struct FontKey: Hashable {
+        var family: String
+        var size: Double
+        var weight: NodeTypography.Weight
+        var italic: Bool
+        var cjk: String?
+    }
+
+    static let fonts = FontCache()
+
+    /// NSFont is immutable once made, so sharing it across threads under a lock is safe.
+    final class FontCache: @unchecked Sendable {
+        private let lock = NSLock()
+        private var fonts: [FontKey: NSFont] = [:]
+        subscript(key: FontKey) -> NSFont? {
+            get { lock.withLock { fonts[key] } }
+            set { lock.withLock { fonts[key] = newValue } }
+        }
+    }
+
+    private func makeFont() -> NSFont {
         let size = CGFloat(fontSize)
         var f: NSFont
         switch code ? "mono" : family {
@@ -83,8 +114,20 @@ public struct NodeTextStyle: Hashable, Sendable {
         if italic {
             f = NSFontManager.shared.convert(f, toHaveTrait: .italicFontMask)
         }
+        // Settings › Appearance › CJK font: Chinese, Japanese and Korean text falls back to it.
+        if let cjk = Self.cjkFamily {
+            let fallback = NSFontDescriptor(fontAttributes: [.family: cjk])
+            if let withCascade = NSFont(
+                descriptor: f.fontDescriptor.addingAttributes([.cascadeList: [fallback]]), size: size)
+            {
+                f = withCascade
+            }
+        }
         return f
     }
+
+    /// Set from Settings (nil keeps the system's CJK fallback).
+    nonisolated(unsafe) public static var cjkFamily: String?
 
     static func managerWeight(_ w: NodeTypography.Weight) -> Int {
         switch w {
@@ -177,6 +220,8 @@ public final class NodeMeasurer {
     public private(set) var misses = 0
 
     public init() {}
+
+    func clearCache() { cache.removeAll() }
 
     /// Size of the text block (not including padding).
     public func textSize(_ text: String, style: NodeTextStyle, marks: [TextMark] = []) -> CGSize {

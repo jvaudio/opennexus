@@ -27,6 +27,12 @@ public enum ImageExporter {
         public var padding: Double = 48
         /// Render with another theme (nil keeps the canvas theme).
         public var theme: String?
+        /// Settings › Export › Image frame: none, softShadow, window, gradientMat, paper, darkMat.
+        public var frame = "none"
+        /// fit, 1:1, 4:3, 16:9 or 9:16: the framed image is padded out to this ratio.
+        public var aspect = "fit"
+        public var mat = RGBA(hex: "#E9E6FF")
+        public var displayP3 = false
         public init() {}
     }
 
@@ -107,16 +113,86 @@ public enum ImageExporter {
             case .white: RGBA(r: 1, g: 1, b: 1, a: 1)
             case .transparent: nil
             }
-        let img = draw(view, size: size, background: bg)
+        let img = draw(view, size: size, background: bg, displayP3: o.displayP3)
         window.contentView = nil
-        return img
+        guard let img, crop == nil, o.frame != "none" || o.aspect != "fit" else { return img }
+        return framed(img, o, scale: k, canvas: controller.scene.canvasColor)
     }
 
-    static func draw(_ view: CanvasView, size: CGSize, background: RGBA?) -> CGImage? {
+    /// The six image frames of Settings › Export (artboard 39), padded to the aspect ratio.
+    static func framed(_ img: CGImage, _ o: Options, scale k: CGFloat, canvas: RGBA) -> CGImage? {
+        let w = CGFloat(img.width)
+        let h = CGFloat(img.height)
+        let pad: CGFloat = o.frame == "none" ? 0 : 48 * k
+        let bar: CGFloat = o.frame == "window" ? 28 * k : 0
+        var outW = w + pad * 2
+        var outH = h + bar + pad * 2
+        let ratios: [String: CGFloat] = ["1:1": 1, "4:3": 4 / 3, "16:9": 16 / 9, "9:16": 9 / 16]
+        if let r = ratios[o.aspect] {
+            if outW / outH > r { outH = outW / r } else { outW = outH * r }
+        }
+        let space = CGColorSpace(name: o.displayP3 ? CGColorSpace.displayP3 : CGColorSpace.sRGB)!
+        guard
+            let ctx = CGContext(
+                data: nil, width: Int(outW.rounded()), height: Int(outH.rounded()), bitsPerComponent: 8, bytesPerRow: 0,
+                space: space,
+                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        else { return img }
+        let full = CGRect(x: 0, y: 0, width: outW, height: outH)
+        switch o.frame {
+        case "gradientMat":
+            let colors = [o.mat.cgColor, RGBA(hex: "#BFE7E3").cgColor] as CFArray
+            if let g = CGGradient(colorsSpace: space, colors: colors, locations: [0, 1]) {
+                ctx.drawLinearGradient(g, start: CGPoint(x: 0, y: outH), end: CGPoint(x: outW, y: 0), options: [])
+            }
+        case "paper":
+            ctx.setFillColor(RGBA(hex: "#F4EFE4").cgColor)
+            ctx.fill(full)
+        case "darkMat":
+            ctx.setFillColor(RGBA(hex: "#1D1D22").cgColor)
+            ctx.fill(full)
+        case "none":
+            ctx.setFillColor(canvas.cgColor)
+            ctx.fill(full)
+        default: break  // soft shadow and window sit on transparency
+        }
+        let card = CGRect(x: (outW - w) / 2, y: (outH - h - bar) / 2, width: w, height: h + bar)
+        let radius: CGFloat = o.frame == "none" ? 0 : 12 * k
+        if o.frame != "none" && o.frame != "paper" {
+            ctx.saveGState()
+            ctx.setShadow(
+                offset: CGSize(width: 0, height: -8 * k), blur: 28 * k,
+                color: CGColor(gray: 0, alpha: o.frame == "darkMat" ? 0.5 : 0.22))
+            ctx.setFillColor(canvas.cgColor)
+            ctx.addPath(CGPath(roundedRect: card, cornerWidth: radius, cornerHeight: radius, transform: nil))
+            ctx.fillPath()
+            ctx.restoreGState()
+        }
+        ctx.saveGState()
+        ctx.addPath(CGPath(roundedRect: card, cornerWidth: radius, cornerHeight: radius, transform: nil))
+        ctx.clip()
+        ctx.draw(img, in: CGRect(x: card.minX, y: card.minY, width: w, height: h))
+        if bar > 0 {
+            let top = CGRect(x: card.minX, y: card.maxY - bar, width: w, height: bar)
+            ctx.setFillColor(RGBA(hex: "#ECECEE").cgColor)
+            ctx.fill(top)
+            for (i, c) in ["#FF5F57", "#FEBC2E", "#28C840"].enumerated() {
+                let d = 12 * k
+                ctx.setFillColor(RGBA(hex: c).cgColor)
+                ctx.fillEllipse(
+                    in: CGRect(x: top.minX + 12 * k + CGFloat(i) * 20 * k, y: top.midY - d / 2, width: d, height: d))
+            }
+        }
+        ctx.restoreGState()
+        return ctx.makeImage()
+    }
+
+    static func draw(_ view: CanvasView, size: CGSize, background: RGBA?, displayP3: Bool = false) -> CGImage? {
         guard
             let ctx = CGContext(
                 data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 0,
-                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
+                space: CGColorSpace(name: displayP3 ? CGColorSpace.displayP3 : CGColorSpace.sRGB)!,
+                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
         else { return nil }
         if let background {
             ctx.setFillColor(background.cgColor)
@@ -445,7 +521,12 @@ public enum PrintLayout {
     }
 
     /// A single-page vector-framed PDF of the export (Export sheet › PDF).
-    public static func singlePage(_ model: DocumentModel, canvas id: CanvasID, _ io: ImageExporter.Options) -> Data {
+    public static func singlePage(
+        _ model: DocumentModel, canvas id: CanvasID, _ io: ImageExporter.Options, links: Bool = true
+    ) -> Data {
+        var io = io
+        io.frame = "none"
+        io.aspect = "fit"
         let rect = ImageExporter.contentRect(model, canvas: id, io)
         var x = io
         x.scale = max(io.scale, 2)
@@ -457,6 +538,19 @@ public enum PrintLayout {
         else { return Data() }
         ctx.beginPDFPage(nil)
         ctx.draw(img, in: box)
+        // Settings › Export › Clickable topic links: web links become link annotations.
+        if links {
+            let scene = ImageExporter.controller(model, canvas: id, io).scene
+            let c = model.canvases[id]
+            for (nid, n) in scene.nodes {
+                guard let link = c?.nodes[nid]?.link, link.hasPrefix("http"), let url = URL(string: link) else {
+                    continue
+                }
+                let r = n.frame.rect
+                let pdf = CGRect(x: r.minX - rect.minX, y: rect.maxY - r.maxY, width: r.width, height: r.height)
+                ctx.setURL(url as CFURL, for: pdf)
+            }
+        }
         ctx.endPDFPage()
         ctx.closePDF()
         return data as Data

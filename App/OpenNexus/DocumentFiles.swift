@@ -46,6 +46,26 @@ extension DocumentWindowController {
         }
     }
 
+    /// Settings that shape the window (General › Open documents in, Appearance › Toolbar
+    /// and Liquid Glass, AI › status chip). Called at open and whenever they change.
+    func applyWindowPreferences() {
+        let prefs = Preferences.shared
+        window?.toolbar?.displayMode = prefs.string("appearance.toolbar") == "iconsText" ? .iconAndLabel : .iconOnly
+        window?.tabbingMode = prefs.string("general.openIn") == "windows" ? .disallowed : .preferred
+        let glass =
+            prefs.bool("appearance.glass") && !NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
+            && prefs.string("accessibility.reduceTransparency") != "on"
+        window?.titlebarAppearsTransparent = !glass ? false : window?.titlebarAppearsTransparent ?? false
+        tabsView?.layer?.backgroundColor = glass ? nil : NSColor.windowBackgroundColor.cgColor
+        tabsView?.wantsLayer = true
+    }
+
+    /// "Use last skeleton, node style and colour theme" remembers the look of the
+    /// document you close.
+    func windowWillClose(_ notification: Notification) {
+        controller.rememberLook()
+    }
+
     func wireFileHooks() {
         controller.onSaveFile = { [weak self] data, name in self?.save(data, suggested: name) }
         controller.onSaveFolder = { [weak self] files in self?.saveFolder(files) }
@@ -256,6 +276,22 @@ extension DocumentWindowController {
     // MARK: Unlock
 
     func promptUnlock() {
+        guard window != nil, document_.lockedFiles != nil else { return }
+        if document_.prefs.bool("files.touchID") {
+            document_.unlockWithTouchID { [weak self] ok in
+                guard let self else { return }
+                if ok {
+                    self.controller.switchCanvas(to: self.document_.store.model.canvasOrder.first!)
+                } else {
+                    self.promptPassword()
+                }
+            }
+            return
+        }
+        promptPassword()
+    }
+
+    func promptPassword() {
         guard let window, let files = document_.lockedFiles else { return }
         let hint = PackageCrypto.info(files)?.hint
         let alert = NSAlert()

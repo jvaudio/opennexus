@@ -97,6 +97,11 @@ public struct SceneViewState: Equatable {
     /// AI ghosts: temporary children laid out with the map but never in the document.
     public var ghosts: [Ghost] = []
     public var ghostHighlight: Int?
+    /// Settings: canvas background (plain, dots, lines; nil follows the theme), minimum
+    /// text size at 100%, and patterns as well as colour.
+    public var background: String?
+    public var minFontSize: Double = 0
+    public var patterns = true
     /// Export scope (branch, selection): only these topics and what lies wholly among them
     /// are drawn; positions come from the full layout.
     public var isolate: Set<NodeID>?
@@ -359,7 +364,7 @@ public struct SceneBuilder {
         scene.theme = env.theme
         scene.canvasColor = env.canvas
         scene.grid =
-            switch env.canvasStyle.pattern {
+            switch env.canvasStyle.pattern ?? view.background {
             case "plain"?: .none
             case "dots"?: .dots(color: env.theme.grid.color ?? env.theme.ink.alpha(0.12), spacing: 22)
             case "lines"?: .lines(color: env.theme.grid.color ?? env.theme.ink.alpha(0.06), spacing: 24)
@@ -466,6 +471,11 @@ public struct SceneBuilder {
                     role: role, depth: depth, node: node, branch: branch, env: env)
                 if env.canvasStyle.font.map({ !$0.isEmpty && $0 != "system" }) == true, merged.font == env.theme.font {
                     appearance.font = env.canvasStyle.font!
+                }
+                // Settings › Appearance / Accessibility: text never smaller than this at 100%.
+                if view.minFontSize > 0, appearance.fontSize < view.minFontSize {
+                    appearance.lineHeight *= view.minFontSize / appearance.fontSize
+                    appearance.fontSize = view.minFontSize
                 }
                 var style = NodeTextStyle(appearance: appearance)
                 // Equations and code typeset their source, except while it's being edited.
@@ -988,6 +998,9 @@ public struct SceneBuilder {
             }
         }
         if let keep = view.isolate { Self.isolate(keep, root: canvas.root, in: &scene) }
+        if !view.patterns {
+            for i in scene.boundaries.indices { scene.boundaries[i].boundary.hatch = false }
+        }
         return scene
     }
 

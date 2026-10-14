@@ -19,8 +19,14 @@ public enum DocumentJSON {
         return .object(o)
     }
 
-    public static func export(_ doc: DocumentModel, pretty: Bool = true) -> String {
-        let v = value(doc)
+    public static func export(_ doc: DocumentModel, pretty: Bool = true, assets: Bool = false) -> String {
+        var v = value(doc)
+        // The single-file document (Settings › Files › Save as: Single JSON) carries its
+        // assets as base64.
+        if assets, !doc.assets.isEmpty, case .object(var o) = v {
+            o["assets"] = .object(doc.assets.mapValues { .string($0.base64EncodedString()) })
+            v = .object(o)
+        }
         return pretty ? CanonicalJSON.string(v) : compact(v) + "\n"
     }
 
@@ -104,6 +110,11 @@ public enum DocumentJSON {
         }
         if let t = o["theme"], t != .null { files["theme.json"] = CanonicalJSON.data(t) }
         if let ch = o["chats"], ch != .null { files["ai/chats.json"] = CanonicalJSON.data(ch) }
+        if case .object(let a)? = o["assets"] {
+            for (name, v) in a {
+                if case .string(let b) = v, let d = Data(base64Encoded: b) { files["assets/\(name)"] = d }
+            }
+        }
         do {
             return try NexusPackage.read(files: files)
         } catch {

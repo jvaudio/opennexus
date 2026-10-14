@@ -6,13 +6,32 @@ import NexusCore
 /// notes. You review each hit; the masked copy is a new canvas (the original stays).
 public enum Masker {
     public enum Kind: String, Sendable, CaseIterable {
-        case emails, keys, names, phones
+        case emails, keys, names, phones, custom
         public var title: String {
             switch self {
             case .emails: "Emails"
             case .keys: "Keys"
             case .names: "Names"
             case .phones: "Phones"
+            case .custom: "Custom"
+            }
+        }
+    }
+
+    /// Settings › Privacy & Data › Data masking.
+    public struct Options: Sendable, Equatable {
+        public var kinds: Set<Kind> = [.emails, .keys, .names, .phones, .custom]
+        /// Extra regular expressions (ticket or account ids).
+        public var custom: [String] = []
+        /// "••••", "████" or "[redacted]".
+        public var glyph = "█"
+        public init() {}
+
+        public func mask(_ length: Int) -> String {
+            switch glyph {
+            case "[redacted]": "[redacted]"
+            case "••••": String(repeating: "•", count: min(max(length, 4), 12))
+            default: String(repeating: "█", count: min(max(length, 4), 12))
             }
         }
     }
@@ -36,21 +55,35 @@ public enum Masker {
         (.phones, #"(?<![\w@])\+?\d[\d ().-]{7,}\d(?!\w)"#),
     ]
 
-    public static func scan(_ c: Canvas) -> [Hit] {
+    public static func scan(_ c: Canvas, options: Options = Options()) -> [Hit] {
         var out: [Hit] = []
         for id in c.tops.flatMap({ c.subtree($0) }) {
             guard let n = c.nodes[id] else { continue }
-            out += scan(n.text, node: id, field: "text")
-            if let note = n.note?.text { out += scan(note, node: id, field: "note") }
+            out += scan(n.text, node: id, field: "text", options: options)
+            if let note = n.note?.text { out += scan(note, node: id, field: "note", options: options) }
         }
         return out
     }
 
-    static func scan(_ s: String, node: NodeID, field: String) -> [Hit] {
+    /// The text with every hit masked (the Settings preview, quick masking).
+    public static func mask(_ s: String, options: Options = Options()) -> String {
+        var ns = s as NSString
+        for h in scan(s, node: "n", field: "text", options: options).sorted(by: {
+            $0.range.location > $1.range.location
+        }) {
+            ns = ns.replacingCharacters(in: h.range, with: options.mask(h.range.length)) as NSString
+        }
+        return ns as String
+    }
+
+    static func scan(_ s: String, node: NodeID, field: String, options: Options = Options()) -> [Hit] {
         var hits: [Hit] = []
         let ns = s as NSString
         var taken: [NSRange] = []
-        for (kind, p) in patterns {
+        let all =
+            patterns.filter { options.kinds.contains($0.0) }
+            + (options.kinds.contains(.custom) ? options.custom.filter { !$0.isEmpty }.map { (Kind.custom, $0) } : [])
+        for (kind, p) in all {
             guard let re = try? NSRegularExpression(pattern: p) else { continue }
             for m in re.matches(in: s, range: NSRange(location: 0, length: ns.length))
             where !taken.contains(where: { NSIntersectionRange($0, m.range).length > 0 }) {
@@ -60,6 +93,7 @@ public enum Masker {
             }
         }
         // Person names from NaturalLanguage's named-entity tagger.
+        guard options.kinds.contains(.names) else { return hits }
         let tagger = NLTagger(tagSchemes: [.nameType])
         tagger.string = s
         tagger.enumerateTags(
@@ -82,7 +116,7 @@ public enum Masker {
     }
 
     /// A masked copy: each accepted hit becomes a bar of █ the same length (at most 12).
-    public static func maskedCopy(_ c: Canvas, hits: [Hit], id: CanvasID) -> Canvas {
+    public static func maskedCopy(_ c: Canvas, hits: [Hit], id: CanvasID, options: Options = Options()) -> Canvas {
         var copy = c
         copy.id = id
         copy.title = (c.title.isEmpty ? (c.nodes[c.root]?.text ?? "Map") : c.title) + " (masked)"
@@ -92,10 +126,7 @@ public enum Masker {
             var s = (h0.field == "note" ? n.note?.text ?? "" : n.text) as NSString
             for h in hs.sorted(by: { $0.range.location > $1.range.location })
             where h.range.location + h.range.length <= s.length {
-                s =
-                    s.replacingCharacters(
-                        in: h.range, with: String(repeating: "█", count: min(max(h.range.length, 4), 12)))
-                    as NSString
+                s = s.replacingCharacters(in: h.range, with: options.mask(h.range.length)) as NSString
             }
             if h0.field == "note" { n.note?.text = s as String } else { n.text = s as String }
             n.marks = []

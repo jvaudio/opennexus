@@ -210,6 +210,40 @@ public enum SnapshotStore {
         .sorted { $0.date > $1.date }
     }
 
+    /// Bytes used by every document's snapshots.
+    public static func usage(base: URL? = nil) -> Int64 {
+        let root = directory(documentID: "x", base: base).deletingLastPathComponent()
+        guard let e = FileManager.default.enumerator(at: root, includingPropertiesForKeys: [.fileSizeKey]) else {
+            return 0
+        }
+        var total: Int64 = 0
+        for case let u as URL in e { total += Int64((try? u.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0) }
+        return total
+    }
+
+    /// The most recently snapshotted document's snapshots (Settings › Files & Backup).
+    public static func allRecent(base: URL? = nil) -> [RecoverySnapshot] {
+        let root = directory(documentID: "x", base: base).deletingLastPathComponent()
+        let ids = (try? FileManager.default.contentsOfDirectory(atPath: root.path)) ?? []
+        let lists = ids.map { list(documentID: $0, base: base) }.filter { !$0.isEmpty }
+        return lists.max { ($0.first?.date ?? .distantPast) < ($1.first?.date ?? .distantPast) } ?? []
+    }
+
+    /// Removes snapshots older than `days` (Settings › Keep snapshots for).
+    public static func prune(olderThan days: Double, base: URL? = nil) {
+        let root = directory(documentID: "x", base: base).deletingLastPathComponent()
+        let cutoff = Date().addingTimeInterval(-days * 86_400)
+        for id in (try? FileManager.default.contentsOfDirectory(atPath: root.path)) ?? [] {
+            for s in list(documentID: id, base: base) where s.date < cutoff {
+                try? FileManager.default.removeItem(at: s.url)
+            }
+        }
+    }
+
+    public static func deleteAll(base: URL? = nil) {
+        try? FileManager.default.removeItem(at: directory(documentID: "x", base: base).deletingLastPathComponent())
+    }
+
     public static func prune(documentID: String, keep: Int = SnapshotStore.keep, base: URL? = nil) {
         for s in list(documentID: documentID, base: base).dropFirst(keep) {
             try? FileManager.default.removeItem(at: s.url)

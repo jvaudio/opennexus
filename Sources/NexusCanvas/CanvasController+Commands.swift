@@ -178,6 +178,16 @@ extension CanvasController {
     /// Runs a command if it applies in the current mode. Returns false if it does not.
     @discardableResult
     public func perform(_ id: CommandID) -> Bool {
+        if id == .convert, let t = tour, t.convertForTour() { return true }
+        let ran = performCommand(id)
+        if ran {
+            tour?.didRun(id)
+            tour?.didChange()
+        }
+        return ran
+    }
+
+    private func performCommand(_ id: CommandID) -> Bool {
         if let v = viewCommandHandler, v(id) { return true }
         switch mode {
         case .select:
@@ -202,8 +212,23 @@ extension CanvasController {
     private func create(_ name: String, _ body: (inout CanvasEditor) throws -> NodeID) {
         let s = signposter.beginInterval("create→caret")
         defer { signposter.endInterval("create→caret", s) }
-        guard let id = perform(name, refresh: false, selectionAfter: { Selection($0) }, body) else { return }
-        let text = canvas.nodes[id]?.text ?? ""
+        let generic = prefs.string("editing.placeholderText") == "generic"
+        guard
+            let id = perform(
+                name, refresh: false, selectionAfter: { Selection($0) },
+                { e in
+                    let id = try body(&e)
+                    // Settings › Editing › Placeholder text: "Main Topic" everywhere, or by type.
+                    if generic {
+                        let t = e.canvas.depth(of: id) <= 1 ? "Main Topic" : "Subtopic"
+                        e.update(id) { $0.text = t }
+                    }
+                    return id
+                })
+        else { return }
+        // "New topics start with: Empty" opens the editor empty; the default text stays as
+        // the placeholder and is kept if nothing is typed.
+        let text = prefs.string("editing.newTopic") == "empty" ? "" : canvas.nodes[id]?.text ?? ""
         edit = EditSession(node: id, text: text, selectAll: true)
         mode = .edit
         rebuildScene()

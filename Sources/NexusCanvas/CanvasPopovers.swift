@@ -42,7 +42,8 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
             panel.allowedContentTypes = [.image]
             guard panel.runModal() == .OK, let url = panel.url, let data = try? Data(contentsOf: url) else { return }
             let size = NSImage(data: data)?.size
-            c.setImage(data, ext: url.pathExtension.isEmpty ? "png" : url.pathExtension, size: size, on: id)
+            c.setImage(
+                data, ext: url.pathExtension.isEmpty ? "png" : url.pathExtension, size: size, on: id, source: url)
         case .attachment(let id, let index):
             guard let n = c.canvas.nodes[id], n.attachments.indices.contains(index),
                 let data = c.store.model.assets[n.attachments[index].asset]

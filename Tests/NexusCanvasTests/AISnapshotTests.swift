@@ -94,7 +94,7 @@ import Testing
         let w = NSWindow(
             contentRect: NSRect(x: 40, y: 40, width: 860, height: 820), styleMask: [.titled], backing: .buffered,
             defer: false)
-        w.contentView = NSHostingView(rootView: SettingsView(availability: .ready))
+        w.contentView = NSHostingView(rootView: SettingsView(prefs: .isolated(), availability: .ready, pane: "ai"))
         w.appearance = NSAppearance(named: .aqua)
         w.orderFrontRegardless()
         RunLoop.main.run(until: Date().addingTimeInterval(0.8))

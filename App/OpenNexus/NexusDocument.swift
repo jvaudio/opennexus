@@ -1,7 +1,9 @@
 import AppKit
+import LocalAuthentication
 import NexusCanvas
 import NexusCore
 import NexusFormat
+import NexusInterchange
 
 /// A `.nexus` package document. Autosaves in place and keeps versions (File › Revert To),
 /// writes recovery snapshots, and encrypts when a password is set (M7).
@@ -21,7 +23,15 @@ final class NexusDocument: NSDocument {
         super.init()
         undoBridge.document = self
         store.undoRegistrar = undoBridge
+        // A new document takes Settings › Editing › New documents and Appearance › Default look.
+        store.replace(with: CanvasController.newDocumentModel(prefs: .shared))
+        isFreshBlank = Preferences.shared.bool("editing.startInEdit")
+        if Preferences.shared.string("files.saveAs") == "json" { fileType = Self.jsonType }
     }
+
+    static let packageType = "com.opennexus.document"
+    static let jsonType = "com.opennexus.json-document"
+    var prefs: Preferences { .shared }
 
     nonisolated override class var autosavesInPlace: Bool { true }
     nonisolated override class var preservesVersions: Bool { true }
@@ -39,16 +49,33 @@ final class NexusDocument: NSDocument {
         return id
     }
 
-    func packageFiles() -> [String: Data] {
+    /// The model as written: AI chats go in the file, on this Mac, or nowhere
+    /// (Settings › Privacy & Data › Keep AI chats).
+    func modelForSaving() -> DocumentModel {
         _ = documentID
         var doc = store.model
         doc.encrypted = cryptoKey != nil
-        return NexusPackage.files(for: doc)
+        switch prefs.string("privacy.keepChats") {
+        case "mac":
+            ChatStore.save(doc.chats, documentID: documentID)
+            doc.chats = []
+        case "none":
+            doc.chats = []
+        default: break
+        }
+        return doc
     }
+
+    func packageFiles() -> [String: Data] { NexusPackage.files(for: modelForSaving()) }
 
     override func fileWrapper(ofType typeName: String) throws -> FileWrapper {
         // A document that was never unlocked is written back exactly as it was read.
         if let lockedFiles { return NexusPackage.directoryWrapper(from: lockedFiles) }
+        if typeName == Self.jsonType {
+            let json = DocumentJSON.export(
+                modelForSaving(), pretty: prefs.string("files.jsonLayout") != "compact", assets: true)
+            return FileWrapper(regularFileWithContents: Data(json.utf8))
+        }
         let files = packageFiles()
         if let key = cryptoKey {
             return NexusPackage.directoryWrapper(from: try PackageCrypto.encrypt(files, with: key))
@@ -57,10 +84,21 @@ final class NexusDocument: NSDocument {
     }
 
     nonisolated override func read(from fileWrapper: FileWrapper, ofType typeName: String) throws {
+        if fileWrapper.isRegularFile, let data = fileWrapper.regularFileContents {
+            let doc = try DocumentJSON.parse(data, name: fileWrapper.filename ?? "document")
+            MainActor.assumeIsolated {
+                isFreshBlank = false
+                store.replace(with: doc)
+                loadChatsFromMac()
+            }
+            return
+        }
         let files = NexusPackage.flatten(fileWrapper)
         if PackageCrypto.isEncrypted(files), let info = PackageCrypto.info(files) {
-            // The Keychain may already know the password.
-            if let pw = Keychain.password(account: info.keychainAccount),
+            // The Keychain may already know the password (Touch ID first, if required).
+            let touchRequired = UserDefaults.standard.bool(forKey: "files.touchID")
+            if !touchRequired, UserDefaults.standard.object(forKey: "files.keychain") as? Bool ?? true,
+                let pw = Keychain.password(account: info.keychainAccount),
                 let opened = try? PackageCrypto.decrypt(files, with: PackageCrypto.derive(password: pw, info: info))
             {
                 let doc = try NexusPackage.read(files: opened)
@@ -82,7 +120,46 @@ final class NexusDocument: NSDocument {
         MainActor.assumeIsolated {
             isFreshBlank = false
             store.replace(with: doc)
+            loadChatsFromMac()
         }
+    }
+
+    /// Chats kept on this Mac come back when the document opens.
+    func loadChatsFromMac() {
+        guard store.model.chats.isEmpty, case .string(let id)? = store.model.manifestExtra["documentID"] else { return }
+        let chats = ChatStore.load(documentID: id)
+        if !chats.isEmpty { store.updateDocument { $0.chats = chats } }
+    }
+
+    // MARK: Closing and saving
+
+    /// Settings › Files › Ask before closing unsaved new documents (off: they close quietly).
+    override func canClose(
+        withDelegate delegate: Any, shouldClose shouldCloseSelector: Selector?, contextInfo: UnsafeMutableRawPointer?
+    ) {
+        if fileURL == nil, !prefs.bool("files.askBeforeClosing"), let sel = shouldCloseSelector {
+            let obj = delegate as AnyObject
+            typealias Callback =
+                @convention(c) (AnyObject, Selector, NSDocument, Bool, UnsafeMutableRawPointer?) -> Void
+            let imp = obj.method(for: sel)
+            unsafeBitCast(imp, to: Callback.self)(obj, sel, self, true, contextInfo)
+            return
+        }
+        super.canClose(withDelegate: delegate, shouldClose: shouldCloseSelector, contextInfo: contextInfo)
+    }
+
+    /// Settings › Files › Default location for new documents.
+    override func prepareSavePanel(_ savePanel: NSSavePanel) -> Bool {
+        let fm = FileManager.default
+        switch prefs.string("files.location") {
+        case "documents": savePanel.directoryURL = fm.urls(for: .documentDirectory, in: .userDomainMask).first
+        case "icloud":
+            savePanel.directoryURL =
+                fm.url(forUbiquityContainerIdentifier: nil)?.appending(path: "Documents")
+                ?? fm.urls(for: .documentDirectory, in: .userDomainMask).first
+        default: break
+        }
+        return super.prepareSavePanel(savePanel)
     }
 
     /// An imported document opens on its content, not in Edit mode.
@@ -94,6 +171,25 @@ final class NexusDocument: NSDocument {
     // MARK: Password
 
     /// Unlocks a document opened without a stored password.
+    /// Settings › Security › Require Touch ID: the stored password is used only after Touch ID
+    /// (or the login password) succeeds.
+    func unlockWithTouchID(_ done: @escaping @MainActor (Bool) -> Void) {
+        guard let files = lockedFiles, let info = PackageCrypto.info(files), prefs.bool("files.keychain"),
+            let pw = Keychain.password(account: info.keychainAccount)
+        else { return done(false) }
+        let ctx = LAContext()
+        var err: NSError?
+        guard ctx.canEvaluatePolicy(.deviceOwnerAuthentication, error: &err) else { return done(false) }
+        ctx.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "open an encrypted document") { ok, _ in
+            DispatchQueue.main.async {
+                MainActor.assumeIsolated {
+                    guard ok, (try? self.unlock(password: pw, remember: false)) != nil else { return done(false) }
+                    done(true)
+                }
+            }
+        }
+    }
+
     func unlock(password: String, remember: Bool) throws {
         guard let files = lockedFiles, let info = PackageCrypto.info(files) else { return }
         let key = PackageCrypto.derive(password: password, info: info)
@@ -102,14 +198,17 @@ final class NexusDocument: NSDocument {
         cryptoKey = key
         lockedFiles = nil
         store.replace(with: doc)
-        if remember { Keychain.setPassword(password, account: info.keychainAccount) }
+        if remember && prefs.bool("files.keychain") { Keychain.setPassword(password, account: info.keychainAccount) }
+        lastActivity = Date()
     }
 
     func setPassword(_ password: String, hint: String?, remember: Bool) {
         if let old = cryptoKey { Keychain.delete(account: old.info.keychainAccount) }
         let key = PackageCrypto.derive(password: password, info: PackageCrypto.newInfo(hint: hint))
         cryptoKey = key
-        if remember { Keychain.setPassword(password, account: key.info.keychainAccount) }
+        if remember && prefs.bool("files.keychain") {
+            Keychain.setPassword(password, account: key.info.keychainAccount)
+        }
         updateChangeCount(.changeDone)
         autosave(withImplicitCancellability: false) { _ in }
     }
@@ -122,17 +221,60 @@ final class NexusDocument: NSDocument {
 
     // MARK: Recovery snapshots
 
-    /// Every five minutes of editing, and on close.
+    /// Settings › Files › Snapshot every N seconds of editing, and on close. The same timer
+    /// locks an encrypted document after the idle time in Settings › Security.
     func startSnapshots() {
-        guard snapshotTimer == nil else { return }
+        snapshotTimer?.invalidate()
         lastSnapshotRevision = store.revision
-        snapshotTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
-            MainActor.assumeIsolated { self?.writeSnapshot() }
+        let every = max(10, Double(prefs.string("files.snapshotEvery")) ?? 30)
+        snapshotTimer = Timer.scheduledTimer(withTimeInterval: min(every, 60), repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.tick(every: every) }
+        }
+        if prefsObserver == nil {
+            prefsObserver = NotificationCenter.default.addObserver(
+                forName: Preferences.didChange, object: Preferences.shared, queue: .main
+            ) { [weak self] n in
+                let key = n.userInfo?["key"] as? String
+                MainActor.assumeIsolated {
+                    if key?.hasPrefix("files.snapshot") == true { self?.startSnapshots() }
+                }
+            }
         }
     }
 
+    private var lastActivity = Date()
+    private var lastSnapshotAt = Date()
+    private var prefsObserver: (any NSObjectProtocol)?
+    private var seenRevision = -1
+
+    func tick(every: Double) {
+        if store.revision != seenRevision {
+            seenRevision = store.revision
+            lastActivity = Date()
+        }
+        if Date().timeIntervalSince(lastSnapshotAt) >= every - 1 {
+            lastSnapshotAt = Date()
+            writeSnapshot()
+        }
+        let idle = Double(prefs.string("files.lockAfter")) ?? 0
+        if idle > 0, cryptoKey != nil, lockedFiles == nil, Date().timeIntervalSince(lastActivity) > idle * 60 {
+            lockNow()
+        }
+    }
+
+    /// Locks an encrypted document: its content leaves memory until the password (or
+    /// Touch ID) unlocks it again.
+    func lockNow() {
+        guard let key = cryptoKey, let sealed = try? PackageCrypto.encrypt(packageFiles(), with: key) else { return }
+        autosave(withImplicitCancellability: false) { _ in }
+        lockedFiles = sealed
+        cryptoKey = nil
+        store.replace(with: DocumentModel(canvases: [Canvas(id: "c1", title: "Locked", rootText: "Locked")]))
+        for wc in windowControllers { (wc as? DocumentWindowController)?.promptUnlock() }
+    }
+
     func writeSnapshot() {
-        guard lockedFiles == nil, store.revision != lastSnapshotRevision else { return }
+        guard prefs.bool("files.snapshots"), lockedFiles == nil, store.revision != lastSnapshotRevision else { return }
         lastSnapshotRevision = store.revision
         try? SnapshotStore.write(packageFiles(), documentID: documentID, topics: store.model.topicCount, key: cryptoKey)
     }

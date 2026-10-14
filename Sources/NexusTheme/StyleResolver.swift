@@ -77,6 +77,8 @@ public struct StyleEnvironment: Sendable {
     /// defaults → theme → node style for each role, built once per environment (these
     /// layers are the same for every node, and building them per node dominated reflow).
     let roleBase: [NodeRoleStyle: TopicStyle]
+    /// Settings › Appearance › Adapt text colour to background (off keeps theme ink).
+    public var adaptText = true
     public var palette: [RGBA]
     public var mode: ColorThemeMode
     public var quickStyles: [QuickStyle]
@@ -244,7 +246,7 @@ public enum StyleResolver {
             ? bestOf([.white, RGBA(hex: "#121317")], on: behind)
             : color(s.textColor, fallback: theme.ink)
         var text = wanted
-        if s.autoContrast ?? true {
+        if (s.autoContrast ?? true) && env.adaptText {
             let target = theme.contrastTarget
             text = Contrast.adjusted(wanted, on: behind, backdrop: env.canvas, target: target)
             // Mid-tone fills (rose, violet, mid-grey) can fail with both white and ink text.

@@ -20,6 +20,10 @@ final class CanvasHarness {
         store = DocumentStore(model: model)
         store.undoRegistrar = undo
         controller = CanvasController(store: store)
+        // Themes render as named, whatever the Mac's appearance (deterministic goldens).
+        let prefs = Preferences.isolated()
+        prefs.set("appearance.followSystem", false)
+        controller.prefs = prefs
         host = CanvasHostView(controller: controller)
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: width, height: height), styleMask: [.borderless],

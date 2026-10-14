@@ -106,7 +106,10 @@ extension CanvasController {
 
     /// Typing `/…` at the start of an empty topic opens (and filters) the menu.
     func updateSlashFromEditor(_ text: String) {
-        guard let e = edit, e.element == nil else { return }
+        guard let e = edit, e.element == nil, slashOnEmptyNode else {
+            if slash?.inEditor == true { slash = nil }
+            return
+        }
         if text.hasPrefix("/"), !text.contains(" "), !text.contains("\n"),
             (canvas.nodes[e.node]?.text.isEmpty ?? true)
                 || slash != nil || e.pendingInput == "/" || text.count <= 1

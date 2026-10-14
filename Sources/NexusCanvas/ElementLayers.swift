@@ -362,6 +362,9 @@ final class RelationshipLayer: CALayer {
 /// Owns and updates every element layer on the canvas.
 @MainActor
 final class ElementRenderer {
+    /// Settings › Appearance › Glow trail on new edges, and Flow dots in Present mode.
+    var glowTrail = true
+    var flowDots = true
     let zonesLayer = CALayer()
     let boundariesLayer = CALayer()
     let summariesLayer = CALayer()
@@ -654,6 +657,8 @@ final class ElementRenderer {
                 draw.duration = Motion.connectDraw
                 draw.timingFunction = CAMediaTimingFunction(controlPoints: 0.65, 0, 0.35, 1)
                 l.line.add(draw, forKey: "draw")
+            }
+            if isNew && animated && !drawnRelationships.contains(id) && glowTrail {
                 l.line.shadowColor = r.color.cgColor
                 l.line.shadowRadius = 5
                 l.line.shadowOffset = .zero
@@ -710,6 +715,21 @@ final class ElementRenderer {
             case "dotted": [0.01, NSNumber(value: Double(w) * 2.4)]
             default: nil
             }
+        // Present's step flow: dots travel along it.
+        if r.glow && flowDots {
+            l.line.lineDashPattern = [0.01, NSNumber(value: Double(w) * 3)]
+            l.line.lineCap = .round
+            if l.line.animation(forKey: "flow") == nil {
+                let a = CABasicAnimation(keyPath: "lineDashPhase")
+                a.fromValue = 0
+                a.toValue = -Double(w) * 3 * 4
+                a.duration = 0.9
+                a.repeatCount = .infinity
+                l.line.add(a, forKey: "flow")
+            }
+        } else {
+            l.line.removeAnimation(forKey: "flow")
+        }
         l.halo.path = g.path
         l.halo.strokeColor = scene.theme.ringSoft.cgColor
         l.halo.lineWidth = w + 8

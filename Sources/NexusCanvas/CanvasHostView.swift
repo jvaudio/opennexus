@@ -70,6 +70,12 @@ public final class CanvasHostView: NSView {
         let shotBar = NSHostingView(rootView: MapShotBar(controller: controller))
         let shotHint = NSHostingView(rootView: MapShotHintHost(controller: controller))
         let fileSheets: [NSView] = [exportSheet, printSheet, mergeSheet, passwordSheet, reportSheet, snapshotSheet]
+        // Onboarding (M8).
+        let tourBar = NSHostingView(rootView: TourOverlay(controller: controller, part: .bar))
+        let tourPill = NSHostingView(rootView: TourOverlay(controller: controller, part: .pill))
+        let tourFinish = NSHostingView(rootView: TourOverlay(controller: controller, part: .finish))
+        let tipHost = NSHostingView(rootView: TipView(controller: controller))
+        let onboarding: [NSView] = [tourBar, tourPill, tourFinish, tipHost]
         aiSheet.sizingOptions = [.intrinsicContentSize]
         present.isHidden = true
         // Pinned to all edges: its (often empty) content must not size the host.
@@ -79,7 +85,7 @@ public final class CanvasHostView: NSView {
             [
                 present, status, toast, dfd, crumb, violation, threatCard, table, icons, nav, filter, focus, counts,
                 zenCount, aiPanel, convert, aiSheet, palette, jump, cheat, shotBar, shotHint,
-            ] + fileSheets
+            ] + fileSheets + onboarding
         for h in all {
             h.translatesAutoresizingMaskIntoConstraints = false
             addSubview(h)
@@ -146,6 +152,18 @@ public final class CanvasHostView: NSView {
                 v.centerYAnchor.constraint(equalTo: centerYAnchor),
             ])
         }
+        for h in [tourBar, tourPill, tourFinish] { h.sizingOptions = [.intrinsicContentSize] }
+        tipHost.sizingOptions = [.intrinsicContentSize]
+        NSLayoutConstraint.activate([
+            tourBar.centerXAnchor.constraint(equalTo: centerXAnchor),
+            tourBar.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -70),
+            tourPill.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -20),
+            tourPill.topAnchor.constraint(equalTo: topAnchor, constant: 20),
+            tourFinish.centerXAnchor.constraint(equalTo: centerXAnchor),
+            tourFinish.centerYAnchor.constraint(equalTo: centerYAnchor),
+            tipHost.centerXAnchor.constraint(equalTo: centerXAnchor),
+            tipHost.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -72),
+        ])
         shotBar.sizingOptions = [.intrinsicContentSize]
         shotHint.sizingOptions = [.intrinsicContentSize]
         NSLayoutConstraint.activate([
@@ -172,6 +190,18 @@ public final class CanvasHostView: NSView {
             convert.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
 
+        let minimap = MinimapView()
+        minimap.canvas = canvasView
+        minimap.isHidden = true
+        minimap.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(minimap)
+        canvasView.minimap = minimap
+        NSLayoutConstraint.activate([
+            minimap.trailingAnchor.constraint(equalTo: canvasView.trailingAnchor, constant: -16),
+            minimap.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -64),
+            minimap.widthAnchor.constraint(equalToConstant: MinimapView.size.width),
+            minimap.heightAnchor.constraint(equalToConstant: MinimapView.size.height),
+        ])
         NSLayoutConstraint.activate([
             canvasView.leadingAnchor.constraint(equalTo: leadingAnchor),
             // The AI panel takes its width from the canvas (it's zero wide when hidden).

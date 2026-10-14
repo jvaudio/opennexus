@@ -62,11 +62,28 @@ extension CanvasController {
 
     // MARK: Data masking
 
-    public var maskHits: [Masker.Hit] { Masker.scan(canvas) }
+    public var maskHits: [Masker.Hit] { Masker.scan(canvas, options: maskOptions) }
+
+    /// Settings › Privacy & Data › Data masking.
+    public var maskOptions: Masker.Options {
+        var o = Masker.Options()
+        var kinds: Set<Masker.Kind> = [.custom]
+        if prefs.bool("privacy.maskEmails") { kinds.insert(.emails) }
+        if prefs.bool("privacy.maskPhones") { kinds.insert(.phones) }
+        if prefs.bool("privacy.maskKeys") { kinds.insert(.keys) }
+        if prefs.bool("privacy.maskNames") { kinds.insert(.names) }
+        o.kinds = kinds
+        o.custom = prefs.string("privacy.maskPatterns").split(separator: "\n").map {
+            String($0).trimmingCharacters(in: .whitespaces)
+        }
+        .filter { !$0.isEmpty && (try? NSRegularExpression(pattern: $0)) != nil }
+        o.glyph = prefs.string("privacy.maskGlyph")
+        return o
+    }
 
     /// A masked copy for export, Present or sharing, from the hits you kept.
     public func makeMaskedCopy(_ hits: [Masker.Hit]) {
-        let copy = Masker.maskedCopy(canvas, hits: hits, id: store.model.makeCanvasID())
+        let copy = Masker.maskedCopy(canvas, hits: hits, id: store.model.makeCanvasID(), options: maskOptions)
         addCanvas(copy)
         showToast("Masked \(hits.count) item\(hits.count == 1 ? "" : "s") · new canvas")
     }

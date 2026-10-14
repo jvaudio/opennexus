@@ -112,8 +112,18 @@ private struct ExportSheet: View {
             }
             Divider()
             HStack(spacing: 10) {
-                Text("Preview updates as options change · last used settings remembered per format")
-                    .font(.system(size: 13)).foregroundStyle(.secondary)
+                let hits = state.askMask ? controller.maskHits.count : 0
+                if hits > 0 {
+                    Toggle(
+                        "Mask \(hits) email\(hits == 1 ? "" : "s"), key\(hits == 1 ? "" : "s") or name\(hits == 1 ? "" : "s") in this export",
+                        isOn: Binding(get: { state.mask }, set: { v in set { $0.mask = v } })
+                    )
+                    .toggleStyle(.checkbox)
+                    .font(.system(size: 13))
+                } else {
+                    Text("Preview updates as options change · last used settings remembered per format")
+                        .font(.system(size: 13)).foregroundStyle(.secondary)
+                }
                 Spacer()
                 Button("Copy") { controller.copyExport(state) }.buttonStyle(FileButtonStyle())
                 Button("Cancel") { controller.closeExport() }.buttonStyle(FileButtonStyle()).keyboardShortcut(
@@ -367,15 +377,19 @@ private struct ExportSheet: View {
                     { ($0, $0.title) },
                     selection: Binding(get: { state.image.background }, set: { v in set { $0.image.background = v } }))
                 HStack(spacing: 10) {
+                    // Settings › General › Units (padding is stored in points).
+                    let unit = controller.prefs.string("general.units")
+                    let k = unit == "mm" ? 0.352_778 : 1
                     TextField(
                         "",
                         value: Binding(
-                            get: { state.image.padding }, set: { v in set { $0.image.padding = max(0, min(v, 400)) } }),
+                            get: { (state.image.padding * k * 10).rounded() / 10 },
+                            set: { v in set { $0.image.padding = max(0, min(v / k, 400)) } }),
                         format: .number
                     )
                     .textFieldStyle(.roundedBorder).frame(width: 90)
-                    .accessibilityLabel("Padding in points")
-                    Text("px").foregroundStyle(.secondary)
+                    .accessibilityLabel("Padding in \(unit)")
+                    Text(unit).foregroundStyle(.secondary)
                     Menu(state.image.theme.map { "Use \(Theme.named($0).name)" } ?? "Keep \(controller.theme.name)") {
                         Button("Keep \(controller.theme.name)") { set { $0.image.theme = nil } }
                         Divider()
@@ -774,6 +788,20 @@ struct ImportReportView: View {
 
     var body: some View {
         if let r = controller.importReport {
+            HStack(alignment: .top, spacing: 20) {
+                card(r)
+                if r.format == "Xmind" {
+                    XmindSwitcherCard(
+                        report:
+                            "Import report: \(r.topics) topics, \(r.notConverted) item\(r.notConverted == 1 ? "" : "s") not converted"
+                    )
+                }
+            }
+        }
+    }
+
+    func card(_ r: ImportReport) -> some View {
+        Group {
             VStack(alignment: .leading, spacing: 16) {
                 Text("IMPORT REPORT · \(r.source)").font(.system(size: 14, weight: .semibold)).foregroundStyle(
                     .secondary)

@@ -33,6 +33,9 @@ final class TextLayer: CALayer {
 
 /// One node: shape, text, leading markers, fold badge, and selection ring.
 final class NodeLayer: CALayer {
+    /// Selection ring width (Settings › Accessibility › Selection ring).
+    nonisolated(unsafe) static var ringWidth: CGFloat = 3
+
     let id: NodeID
     let shape = CAShapeLayer()
     /// Second outline for the double border.
@@ -392,7 +395,7 @@ final class NodeLayer: CALayer {
         }
         ring.isHidden = !(selected || editing)
         ring.path = path(3)
-        ring.lineWidth = 2
+        ring.lineWidth = NodeLayer.ringWidth
         ring.strokeColor = theme.ring.cgColor
         ring.shadowColor = theme.ringSoft.cgColor
         ring.shadowOpacity = selected ? 1 : 0

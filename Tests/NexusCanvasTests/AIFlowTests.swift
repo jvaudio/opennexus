@@ -211,7 +211,6 @@ import Testing
 
     @Test func suggestsAfterAPauseWhenEnabled() async throws {
         let key = AISettingsKeys.suggestAfterPause
-        defer { UserDefaults.standard.removeObject(forKey: key) }
         let h = harness()
         h.controller.select(node(h, "Risks"))
         h.press("tab")
@@ -220,7 +219,7 @@ import Testing
         try await Task.sleep(for: .milliseconds(1700))
         #expect(h.controller.ghosts == nil, "off by default")
 
-        UserDefaults.standard.set(true, forKey: key)
+        h.controller.prefs.set(key, true)
         h.press("tab")
         h.type("Contracts")
         h.press("return")
@@ -240,7 +239,7 @@ import Testing
         let original = h.controller.canvasID
         h.controller.makeMaskedCopy(hits)
         #expect(h.controller.canvasID != original)
-        #expect(h.canvas.nodes.values.contains { $0.text == "Pro · ████████████" })
+        #expect(h.canvas.nodes.values.contains { $0.text == "Pro · ••••••••••••" }, "Settings › Privacy › Replace with")
         #expect(h.store.model.canvases[original]!.nodes.values.contains { $0.text == "Pro · billing@acme.io" })
     }
 }

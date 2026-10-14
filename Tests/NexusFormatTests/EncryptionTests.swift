@@ -50,4 +50,23 @@ import Testing
         #expect(try SnapshotStore.read(s, key: key) == files)
         #expect(throws: PackageCrypto.CryptoError.self) { try SnapshotStore.read(s) }
     }
+
+    /// Settings › Files & Backup: usage, the most recent document, keep-for and delete all.
+    @Test func snapshotHousekeeping() throws {
+        let base = FileManager.default.temporaryDirectory.appending(path: "nexus-snap-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: base) }
+        let files = NexusPackage.files(for: launchPlanDocument())
+        let now = Date()
+        try SnapshotStore.write(
+            files, documentID: "old", topics: 10, date: now.addingTimeInterval(-40 * 86_400), base: base)
+        try SnapshotStore.write(
+            files, documentID: "old", topics: 11, date: now.addingTimeInterval(-2 * 86_400), base: base)
+        try SnapshotStore.write(files, documentID: "new", topics: 12, date: now.addingTimeInterval(-60), base: base)
+        #expect(SnapshotStore.usage(base: base) > 0)
+        #expect(SnapshotStore.allRecent(base: base).map(\.topics) == [12])
+        SnapshotStore.prune(olderThan: 30, base: base)
+        #expect(SnapshotStore.list(documentID: "old", base: base).map(\.topics) == [11])
+        SnapshotStore.deleteAll(base: base)
+        #expect(SnapshotStore.usage(base: base) == 0 && SnapshotStore.allRecent(base: base).isEmpty)
+    }
 }

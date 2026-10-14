@@ -60,6 +60,17 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     private var ghostBadge: NSHostingView<GhostBadgeView>?
     private var noticeHost: NSHostingView<AINoticeView>?
     private var mapShotView: MapShotFrameView?
+    /// Set by the host (bottom-right of the canvas).
+    weak var minimap: MinimapView?
+    private var coachHost: NSHostingView<TourCoachView>?
+    private var toolbarHost: NSHostingView<FloatingToolbarView>?
+    private var addChildHost: NSHostingView<AddTopicButton>?
+    private var addSiblingHost: NSHostingView<AddTopicButton>?
+    /// The topic the floating toolbar shows for (after the pointer rests, or a second click).
+    var toolbarFor: NodeID?
+    private var restTimer: Timer?
+    private var aidsTracking: NSTrackingArea?
+    private var hintsHost: NSHostingView<EmptyCanvasHints>?
     private var morphUntil: CFTimeInterval = 0
     private var lastMorphSerial = 0
     private var imageCache: [String: CGImage] = [:]
@@ -84,7 +95,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             if let type = UTType(filenameExtension: url.pathExtension), type.conforms(to: .image),
                 controller.canvas.nodes[id]?.image == nil
             {
-                controller.setImage(data, ext: url.pathExtension, size: NSImage(data: data)?.size, on: id)
+                controller.setImage(data, ext: url.pathExtension, size: NSImage(data: data)?.size, on: id, source: url)
             } else {
                 controller.addAttachment(data, name: url.lastPathComponent, on: id)
             }
@@ -93,11 +104,22 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     }
     private var pendingTypingEvent: NSEvent?
     private var cheatTimer: Timer?
+    private var rightPan: (start: CGPoint, offset: CGPoint, moved: Bool)?
+    // Hyper key (Settings › Shortcuts): Right Option held, or Caps Lock / sticky taps.
+    var hyperHeld = false
+    var hyperSticky = false
+    private var hyperUsed = false
+    private var hyperTapTimer: Timer?
+    /// The minimap shows while the camera moves (Settings › Appearance › Minimap).
+    public var onCameraMoved: (() -> Void)?
+
+    func noteCameraMoved() { onCameraMoved?() }
 
     /// Forces Reduce Motion (Settings › Accessibility override, and tests).
     public var reduceMotionOverride: Bool?
     var reduceMotion: Bool {
-        reduceMotionOverride ?? NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
+        reduceMotionOverride ?? controller.reduceMotionPreference
+            ?? NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
     }
 
     /// Third-time-you-mouse tips and other hooks.
@@ -224,7 +246,10 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         let scene = controller.scene
         let theme = scene.theme
         let canvas = controller.canvas
-        let animate = animated && !reduceMotion && window != nil
+        let animate = animated && !reduceMotion && window != nil && controller.animateReflow
+        NodeLayer.ringWidth = controller.ringWidth
+        elements.glowTrail = controller.prefs.bool("appearance.glowTrail")
+        elements.flowDots = controller.prefs.bool("appearance.flowDots") && !reduceMotion
         CATransaction.begin()
         CATransaction.setDisableActions(true)
 
@@ -585,11 +610,17 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         let zoomChanged = c.zoom != camera.zoom
         if zoomChanged { controller.zoom = Double(c.zoom) }
         camera = c
+        minimap?.refresh(panning: true)
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         world.position = c.offset
         world.transform = CATransform3DMakeScale(c.zoom, c.zoom, 1)
-        grid.camera = c
+        // Depth parallax when zoomed out: the grid drifts a little slower than the map.
+        if controller.prefs.bool("appearance.parallax"), c.zoom < 0.6, !reduceMotion {
+            grid.camera = Camera(offset: CGPoint(x: c.offset.x * 0.85, y: c.offset.y * 0.85), zoom: c.zoom)
+        } else {
+            grid.camera = c
+        }
         grid.setNeedsDisplay()
         CATransaction.commit()
         if zoomChanged { updateTextScale() }
@@ -671,7 +702,12 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         setCamera(cam, animated: !cut)
     }
 
-    func fitToWindow() {
+    /// Zooms to `z` around the view's centre (Settings › Editing › Default zoom).
+    public func setZoom(_ z: CGFloat) {
+        zoom(by: z / max(camera.zoom, 0.01))
+    }
+
+    public func fitToWindow() {
         let b = controller.scene.bounds
         guard !b.isNull, bounds.width > 0 else { return }
         let z = min(1, max(0.1, min((bounds.width - 80) / b.width, (bounds.height - 80) / b.height)))
@@ -748,6 +784,46 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             if ghostRect?.isNull ?? true { ghostRect = animatedFrame(g.anchor).map { camera.toView($0.rect) } }
         }
         anchored(&ghostHost, { GhostHintsView(controller: controller) }, below: ghostRect)
+        refreshMouseAids()
+        // The tour's keycap coach floats 16 pt beside the selection, never over the editor.
+        let sel =
+            controller.tour != nil ? animatedFrame(controller.selection.primary).map { camera.toView($0.rect) } : nil
+        if let r = sel {
+            let h =
+                coachHost
+                ?? {
+                    let h = NSHostingView(rootView: TourCoachView(controller: controller))
+                    h.sizingOptions = [.intrinsicContentSize]
+                    addSubview(h)
+                    return h
+                }()
+            coachHost = h
+            let size = h.fittingSize
+            let x = r.maxX + 16 + size.width < bounds.width - 8 ? r.maxX + 16 : max(8, r.minX - 16 - size.width)
+            h.frame = CGRect(x: x, y: r.midY - size.height / 2, width: size.width, height: size.height)
+            h.isHidden = size.width < 2
+        } else {
+            coachHost?.isHidden = true
+        }
+        // Empty-canvas hints sit under the central topic.
+        let root =
+            controller.showsEmptyHints ? animatedFrame(controller.canvas.root).map { camera.toView($0.rect) } : nil
+        if let r = root {
+            let h =
+                hintsHost
+                ?? {
+                    let h = NSHostingView(rootView: EmptyCanvasHints(controller: controller))
+                    h.sizingOptions = [.intrinsicContentSize]
+                    addSubview(h)
+                    return h
+                }()
+            hintsHost = h
+            let size = h.fittingSize
+            h.frame = CGRect(x: r.midX - size.width / 2, y: r.maxY + 28, width: size.width, height: size.height)
+            h.isHidden = false
+        } else {
+            hintsHost?.isHidden = true
+        }
         // ⌃↩ beside the highlighted ghost.
         let highlighted = controller.ghosts.flatMap { g in
             g.ideas.isEmpty
@@ -898,6 +974,13 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             return
         }
         editor.begin(session, style: n.textStyle, color: NSColor(cgColor: n.appearance.text.cgColor) ?? .labelColor)
+        // Settings › General › Writing (smart quotes stay off inside code).
+        let prefs = controller.prefs
+        let code = controller.canvas.nodes[session.node]?.textFormat == "code"
+        editor.isContinuousSpellCheckingEnabled = prefs.bool("general.spelling") && !code
+        editor.isAutomaticSpellingCorrectionEnabled = prefs.bool("general.autocorrect") && !code
+        editor.isAutomaticQuoteSubstitutionEnabled = prefs.bool("general.smartQuotes") && !code
+        editor.isAutomaticDashSubstitutionEnabled = prefs.bool("general.smartQuotes") && !code
         editor.isHidden = false
         positionEditor()
         window?.makeFirstResponder(editor)
@@ -946,6 +1029,15 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
 
     public override func keyDown(with event: NSEvent) {
         cancelCheatSheet()
+        toolbarFor = nil
+        if hyperHeld || hyperSticky, let chord = KeyChord(event: event) {
+            hyperUsed = true
+            hyperSticky = false
+            hyperTapTimer?.invalidate()
+            _ = controller.handleKey(KeyChord(.hyper, chord.key), characters: nil)
+            refreshOverlays()
+            return
+        }
         guard let chord = KeyChord(event: event) else {
             super.keyDown(with: event)
             return
@@ -955,17 +1047,23 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             refreshOverlays()
         case .beginTyping:
             pendingTypingEvent = event
-            controller.beginEditing(replacingWith: "")
+            if controller.typingAppends {
+                controller.beginEditing()
+            } else {
+                controller.beginEditing(replacingWith: "")
+            }
         case .ignored:
             super.keyDown(with: event)
         }
     }
 
     public override func flagsChanged(with event: NSEvent) {
+        if handleHyperFlags(event) { return }
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         if flags == .command {
             cheatTimer?.invalidate()
-            cheatTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { [weak self] _ in
+            cheatTimer = Timer.scheduledTimer(withTimeInterval: controller.cheatSheetDelay, repeats: false) {
+                [weak self] _ in
                 MainActor.assumeIsolated {
                     self?.controller.cheatSheetVisible = true
                     self?.onCheatSheet?(true)
@@ -992,8 +1090,194 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     /// responder chain (window-level commands such as New Canvas or Export).
     public func performRegistryCommand(_ sender: Any?) {
         guard let raw = (sender as? NSMenuItem)?.representedObject as? String else { return }
-        if controller.perform(CommandID(rawValue: raw)) { return }
+        let id = CommandID(rawValue: raw)
+        // A menu item chosen with the mouse counts towards a key tip (Settings › General).
+        if let t = NSApp.currentEvent?.type, [.leftMouseUp, .leftMouseDown, .rightMouseUp, .otherMouseUp].contains(t) {
+            controller.noteMouseUse(id)
+        }
+        if controller.perform(id) { return }
         nextHandler()?.performRegistryCommand(sender)
+    }
+
+    // MARK: Effects (Settings › Appearance › Motion & effects, Accessibility)
+
+    /// Branches whose to-dos are all checked (a new one sparkles once).
+    private var completed: Set<NodeID>?
+
+    func applyEffects() {
+        let scene = controller.scene
+        let prefs = controller.prefs
+        // Done sparkle.
+        let now = Set(
+            scene.nodes.compactMap { id, n in n.progress.map { $0.total > 0 && $0.done == $0.total } == true ? id : nil
+            })
+        if let before = completed, prefs.bool("appearance.sparkle"), !reduceMotion, !exportMode {
+            for id in now.subtracting(before) { sparkle(at: id) }
+        }
+        completed = now
+        // Ghost shimmer (paused by the setting or Reduce Motion).
+        let shimmer = !prefs.bool("accessibility.pauseShimmer") && !reduceMotion
+        for (id, l) in nodeLayers where CanvasController.ghostIndex(id) != nil {
+            if shimmer, l.animation(forKey: "shimmer") == nil {
+                let a = CABasicAnimation(keyPath: "opacity")
+                a.fromValue = 1
+                a.toValue = 0.55
+                a.duration = 1.1
+                a.autoreverses = true
+                a.repeatCount = .infinity
+                l.add(a, forKey: "shimmer")
+            } else if !shimmer {
+                l.removeAnimation(forKey: "shimmer")
+            }
+        }
+    }
+
+    func sparkle(at id: NodeID) {
+        guard let f = animatedFrame(id) else { return }
+        let center = CGPoint(x: f.rect.maxX - 6, y: f.rect.minY + 6)
+        for i in 0..<8 {
+            let star = CATextLayer()
+            star.string = "✦"
+            star.fontSize = 11
+            star.foregroundColor = controller.theme.ai.cgColor
+            star.alignmentMode = .center
+            star.contentsScale = window?.backingScaleFactor ?? 2
+            star.frame = CGRect(x: center.x - 8, y: center.y - 8, width: 16, height: 16)
+            world.addSublayer(star)
+            let angle = CGFloat(i) / 8 * 2 * .pi
+            let move = CABasicAnimation(keyPath: "position")
+            move.toValue = CGPoint(x: center.x + cos(angle) * 26, y: center.y + sin(angle) * 26)
+            let fade = CABasicAnimation(keyPath: "opacity")
+            fade.fromValue = 1
+            fade.toValue = 0
+            let g = CAAnimationGroup()
+            g.animations = [move, fade]
+            g.duration = 0.7
+            g.timingFunction = CAMediaTimingFunction(name: .easeOut)
+            g.isRemovedOnCompletion = false
+            g.fillMode = .forwards
+            star.add(g, forKey: "burst")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { star.removeFromSuperlayer() }
+        }
+    }
+
+    // MARK: Hyper key
+
+    /// Right Option acts as ⌃⌥⇧⌘ while held (no permission needed). Caps Lock can only be
+    /// seen as a tap, so a tap arms Hyper for the next key. A tap with no key sends Esc
+    /// (Settings › Tap Hyper alone); Sticky Hyper keeps Right Option armed after release.
+    func handleHyperFlags(_ e: NSEvent) -> Bool {
+        let prefs = controller.prefs
+        guard prefs.bool("shortcuts.hyper") else { return false }
+        let source = prefs.string("shortcuts.hyperKey")
+        if source == "rightOption", e.keyCode == 61 {
+            let down = e.modifierFlags.contains(.option)
+            if down {
+                hyperHeld = true
+                hyperUsed = false
+            } else {
+                hyperHeld = false
+                if !hyperUsed {
+                    if prefs.bool("accessibility.stickyHyper") {
+                        armSticky()
+                    } else if prefs.string("shortcuts.hyperTap") == "esc" {
+                        sendEscape()
+                    }
+                }
+            }
+            return true
+        }
+        if source == "capsLock", e.keyCode == 57 {
+            armSticky()
+            return true
+        }
+        return false
+    }
+
+    func armSticky() {
+        hyperSticky = true
+        hyperUsed = false
+        hyperTapTimer?.invalidate()
+        hyperTapTimer = Timer.scheduledTimer(withTimeInterval: 1.2, repeats: false) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, self.hyperSticky else { return }
+                self.hyperSticky = false
+                if self.controller.prefs.string("shortcuts.hyperTap") == "esc" { self.sendEscape() }
+            }
+        }
+    }
+
+    func sendEscape() {
+        _ = controller.handleKey(KeyChord([], .escape), characters: "\u{1B}")
+        refreshOverlays()
+    }
+
+    // MARK: Mouse aids (Settings › Editing › Mouse & trackpad)
+
+    func anchoredView<V: View>(_ host: inout NSHostingView<V>?, _ make: () -> V, at place: (CGSize) -> CGPoint?) {
+        guard let origin = place(host?.fittingSize ?? .zero) else {
+            host?.isHidden = true
+            return
+        }
+        let h =
+            host
+            ?? {
+                let h = NSHostingView(rootView: make())
+                h.sizingOptions = [.intrinsicContentSize]
+                addSubview(h)
+                return h
+            }()
+        host = h
+        let size = h.fittingSize
+        let o = place(size) ?? origin
+        h.frame = CGRect(origin: o, size: size)
+        h.isHidden = false
+    }
+
+    func refreshMouseAids() {
+        minimap?.refresh(panning: false)
+        applyEffects()
+        let c = controller
+        let showAids =
+            c.mode == .select && c.selection.nodes.count == 1 && c.edit == nil && c.present == nil && c.mapShot == nil
+            && c.selectedElement == nil && c.slash == nil && !exportMode
+        let r = showAids ? animatedFrame(c.selection.primary).map { camera.toView($0.rect) } : nil
+        let plus =
+            r != nil && c.prefs.bool("editing.addButtons") && CanvasController.ghostIndex(c.selection.primary) == nil
+        anchoredView(&addChildHost, { AddTopicButton(controller: c, child: true) }) { _ in
+            plus ? CGPoint(x: r!.maxX + 8, y: r!.midY - 10) : nil
+        }
+        anchoredView(&addSiblingHost, { AddTopicButton(controller: c, child: false) }) { _ in
+            plus && c.selection.primary != c.canvas.root ? CGPoint(x: r!.midX - 10, y: r!.maxY + 8) : nil
+        }
+        let bar = r != nil && toolbarFor == c.selection.primary && c.prefs.string("editing.floatingToolbar") != "never"
+        anchoredView(&toolbarHost, { FloatingToolbarView(controller: c) }) { size in
+            bar ? CGPoint(x: max(8, r!.minX), y: max(8, r!.minY - size.height - 10)) : nil
+        }
+    }
+
+    public override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        if let t = aidsTracking { removeTrackingArea(t) }
+        let t = NSTrackingArea(
+            rect: .zero, options: [.mouseMoved, .activeInKeyWindow, .inVisibleRect], owner: self, userInfo: nil)
+        addTrackingArea(t)
+        aidsTracking = t
+    }
+
+    public override func mouseMoved(with event: NSEvent) {
+        super.mouseMoved(with: event)
+        guard controller.prefs.string("editing.floatingToolbar") == "rest", controller.mode == .select else { return }
+        let p = convert(event.locationInWindow, from: nil)
+        let over = node(at: p)
+        restTimer?.invalidate()
+        guard let over, over == controller.selection.primary, controller.selection.nodes.count == 1 else { return }
+        restTimer = Timer.scheduledTimer(withTimeInterval: 0.6, repeats: false) { [weak self] _ in
+            MainActor.assumeIsolated {
+                self?.toolbarFor = over
+                self?.refreshMouseAids()
+            }
+        }
     }
 
     // Edit › Cut, Copy, Paste on topics (the text editor handles them while editing).
@@ -1077,6 +1361,13 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                 controller.select(id, extend: true)
             } else if !controller.selection.contains(id) || controller.selectedElement != nil {
                 controller.select(id)
+                toolbarFor = nil
+            } else if controller.prefs.string("editing.floatingToolbar") == "click",
+                controller.selection.nodes.count == 1
+            {
+                // Click again on the selected topic: the floating toolbar.
+                toolbarFor = id
+                refreshMouseAids()
             }
             let floating = controller.canvas.floating.contains(id)
             let sub = controller.canvas.subtree(id, includeFolded: false)
@@ -1109,7 +1400,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             return
         }
         if event.clickCount == 2 {
-            controller.addFloating(at: w)
+            switch controller.doubleClickAction {
+            case "fit": fitToWindow()
+            case "nothing": break
+            default: controller.addFloating(at: w)
+            }
             return
         }
         if controller.selectedElement != nil { controller.selectElement(nil) }
@@ -1180,7 +1475,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             if floating, let f = controller.scene.nodes[id]?.frame, let o = origins[id] {
                 // Smart guides: snap the dragged topic's centre to neighbours' centres.
                 let moved = CGPoint(x: o.x + dx, y: o.y + dy)
-                let snap: CGFloat = 6 / camera.zoom
+                let snap: CGFloat = controller.snapDistance / camera.zoom
                 for (nid, n) in controller.scene.nodes where !excluded.contains(nid) {
                     let c = n.frame.center
                     if abs(c.x - moved.x) < snap {
@@ -1199,8 +1494,36 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                         guideLabel = guideLabel ?? ("aligned centre", CGPoint(x: (c.x + moved.x) / 2, y: c.y - 12))
                     }
                 }
+                // Snap to grid (Settings › Editing) when no guide caught the topic.
+                if let g = controller.gridSnap, guideLines.isEmpty {
+                    let target = CGPoint(x: (moved.x / g).rounded() * g, y: (moved.y / g).rounded() * g)
+                    offset.width += target.x - moved.x
+                    offset.height += target.y - moved.y
+                }
                 if controller.canvas.layout.flexibleFloating, let t = treeNode(at: w, excluding: excluded) {
                     target = .child(t)
+                }
+            } else if controller.alwaysShowGuides, let o = origins[id] {
+                // Settings › Editing › Always show alignment guides: guides (no snapping) in any layout.
+                let moved = CGPoint(x: o.x + dx, y: o.y + dy)
+                let near = controller.snapDistance / camera.zoom
+                for (nid, n) in controller.scene.nodes where !excluded.contains(nid) {
+                    let c = n.frame.center
+                    if abs(c.x - moved.x) < near {
+                        guideLines.append(
+                            (CGPoint(x: c.x, y: min(c.y, moved.y) - 40), CGPoint(x: c.x, y: max(c.y, moved.y) + 40)))
+                    }
+                    if abs(c.y - moved.y) < near {
+                        guideLines.append(
+                            (CGPoint(x: min(c.x, moved.x) - 40, y: c.y), CGPoint(x: max(c.x, moved.x) + 40, y: c.y)))
+                    }
+                }
+                if !event.modifierFlags.contains(.shift), let t = treeNode(at: w, excluding: excluded),
+                    let tf = controller.scene.nodes[t]?.frame
+                {
+                    let rel = (w.y - tf.rect.minY) / max(tf.size.height, 1)
+                    let hasParent = controller.canvas.parent(of: t) != nil
+                    target = hasParent && rel < 0.28 ? .before(t) : hasParent && rel > 0.72 ? .after(t) : .child(t)
                 }
             } else if !event.modifierFlags.contains(.shift), let t = treeNode(at: w, excluding: excluded),
                 let tf = controller.scene.nodes[t]?.frame
@@ -1374,6 +1697,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                     let isAfter: Bool = { if case .after = target { return true } else { return false } }()
                     controller.moveTopic(id, toParent: p, at: isAfter ? i + 1 : i, duplicate: dup)
                 }
+            } else if controller.dragToFloat, hypot(dx, dy) > 80 {
+                // Dragged well off its branch onto empty canvas: it floats there.
+                controller.detachTopic(id, at: springs[id]?.value ?? w)
             } else {
                 // Dropped on empty canvas: settle back.
                 update(animated: true)
@@ -1387,9 +1713,36 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         }
     }
 
+    public override func rightMouseDown(with event: NSEvent) {
+        guard controller.rightDragPans else { return super.rightMouseDown(with: event) }
+        rightPan = (convert(event.locationInWindow, from: nil), camera.offset, false)
+    }
+
+    public override func rightMouseDragged(with event: NSEvent) {
+        guard let (start, offset, moved) = rightPan else { return super.rightMouseDragged(with: event) }
+        let p = convert(event.locationInWindow, from: nil)
+        rightPan = (start, offset, moved || hypot(p.x - start.x, p.y - start.y) > 3)
+        var c = camera
+        c.offset = CGPoint(x: offset.x + p.x - start.x, y: offset.y + p.y - start.y)
+        setCamera(c, animated: false)
+        noteCameraMoved()
+    }
+
+    public override func rightMouseUp(with event: NSEvent) {
+        let moved = rightPan?.moved ?? false
+        rightPan = nil
+        // A right-click without a drag still opens the context menu.
+        if !moved, let menu = menu(for: event) { NSMenu.popUpContextMenu(menu, with: event, for: self) }
+    }
+
     public override func scrollWheel(with event: NSEvent) {
         cameraTween = nil
-        if event.modifierFlags.contains(.command) || event.modifierFlags.contains(.option) {
+        noteCameraMoved()
+        // Settings › Editing › Scroll wheel: zoom (⌘ or ⌥ pans), or pan (⌘ or ⌥ zooms).
+        // Trackpads always pan (pinch zooms); a mouse wheel follows the setting.
+        let modified = event.modifierFlags.contains(.command) || event.modifierFlags.contains(.option)
+        let wheelZooms = controller.scrollZooms && !event.hasPreciseScrollingDeltas
+        if wheelZooms != modified {
             let delta = event.hasPreciseScrollingDeltas ? event.scrollingDeltaY / 200 : event.scrollingDeltaY / 20
             zoom(by: 1 + delta, around: convert(event.locationInWindow, from: nil))
             return
@@ -1408,14 +1761,30 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
 
     // MARK: Accessibility (expanded in M10)
 
+    private var announcedConnect = false
+
+    /// What VoiceOver reads for the selection (Settings › Accessibility › VoiceOver), and
+    /// the Connect-mode targets by hint letter.
     private func updateAccessibility() {
         let c = controller.canvas
-        guard let n = c.nodes[controller.selection.primary] else { return }
-        let depth = c.depth(of: controller.selection.primary)
-        let kids = n.children.count
-        var label = "\(n.text.isEmpty ? "Topic" : n.text), level \(depth + 1), \(kids) children"
-        if n.folded { label += ", collapsed" }
-        setAccessibilityValue(label)
+        guard c.nodes[controller.selection.primary] != nil else { return }
+        setAccessibilityValue(Spoken.describe(controller.selection.primary, in: c, prefs: controller.prefs))
+        if let s = controller.connect, !announcedConnect {
+            announcedConnect = true
+            if controller.prefs.bool("accessibility.announceConnect") {
+                let targets = s.candidates.prefix(6).compactMap { cand in
+                    c.nodes[cand.node].map { "\(cand.hint.uppercased()), \($0.text)" }
+                }
+                NSAccessibility.post(
+                    element: self, notification: .announcementRequested,
+                    userInfo: [
+                        .announcement: "Connect mode. " + targets.joined(separator: "; "),
+                        .priority: NSAccessibilityPriorityLevel.high.rawValue,
+                    ])
+            }
+        } else if controller.connect == nil {
+            announcedConnect = false
+        }
     }
 }
 

@@ -106,6 +106,18 @@ public final class CanvasController {
     @ObservationIgnored public var onRestoreSnapshot: ((RecoverySnapshot) -> Void)?
     /// Merge sheet › + Add… (the app shows an open panel, then calls `addMergeSource`).
     @ObservationIgnored public var onChooseMergeFiles: (() -> Void)?
+    /// The first-run tour, while it runs (M8).
+    public var tour: TourController?
+    @ObservationIgnored public var onTourEnded: ((TourController) -> Void)?
+    /// The third time a command is run with the mouse, this suggests its key (M8 tips).
+    @ObservationIgnored var mouseUses: [CommandID: Int] = [:]
+    public var tip: Tip?
+    /// ZEN's "Today" focus timer (Settings › Appearance › ZEN & chrome).
+    @ObservationIgnored var zenStarted: Date?
+    /// Forces the system appearance for "Follow system light / dark" (tests).
+    @ObservationIgnored public var systemIsDark: Bool?
+    /// Set by the first key press; the empty-canvas hints fade then.
+    public internal(set) var hasPressedKey = false
     /// The clipboard (tests use a private pasteboard).
     @ObservationIgnored public var pasteboard: NSPasteboard = .general
     /// The app's save panel: data and a suggested file name.
@@ -174,7 +186,15 @@ public final class CanvasController {
     public var cheatSheetVisible = false
     public private(set) var scene = Scene()
 
-    @ObservationIgnored public let registry: CommandRegistry
+    @ObservationIgnored public internal(set) var registry: CommandRegistry
+    @ObservationIgnored let baseRegistry: CommandRegistry
+    /// App preferences (Settings). Tests inject an isolated store.
+    @ObservationIgnored public var prefs: Preferences = .shared {
+        didSet { observePreferences() }
+    }
+    @ObservationIgnored var prefsObserver: (any NSObjectProtocol)?
+    /// Bumps when preferences change (overlays read it).
+    public internal(set) var prefsRevision = 0
     @ObservationIgnored public var profile: KeyProfile = .openNexus {
         didSet { rebuildLookup() }
     }
@@ -217,11 +237,13 @@ public final class CanvasController {
         let id = canvasID ?? store.model.canvasOrder.first ?? "c1"
         self.canvasID = id
         self.registry = registry
+        self.baseRegistry = registry
         self.builder = SceneBuilder(measurer: measurer)
         self.selection = Selection(store.model.canvases[id]?.root ?? "n1")
         rebuildLookup()
         rebuildScene()
         store.addObserver(self) { [weak self] patch in self?.storeDidApply(patch) }
+        observePreferences()
     }
 
     // MARK: Model access
@@ -246,9 +268,12 @@ public final class CanvasController {
             default: break
             }
         }
-        return StyleEnvironment(
+        theme = contrastTheme(zenTheme(followSystemTheme(theme)))
+        var env = StyleEnvironment(
             theme: theme, canvasStyle: canvas.style,
             customPalettes: lib.palettes, customQuickStyles: lib.quickStyles)
+        env.adaptText = prefs.bool("appearance.adaptText")
+        return env
     }
 
     public func switchCanvas(to id: CanvasID) {
@@ -293,6 +318,7 @@ public final class CanvasController {
     }
 
     private func storeDidApply(_ patch: Patch) {
+        defer { tour?.didChange() }
         // Canvas added or removed (merge, import, delete, or their undo): stay on a canvas
         // that exists, preferring the one the change is about.
         if patch.changesCanvasSet {
@@ -428,6 +454,7 @@ public final class CanvasController {
         }
         var text = e.text
         while let last = text.last, last.isWhitespace { text.removeLast() }
+        if umlAutoFormat { text = Self.formatUMLMember(text) }
         let old = canvas.nodes[e.node]?.text ?? ""
         if text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
             let fallback =
@@ -457,7 +484,7 @@ public final class CanvasController {
 
     // MARK: Keyboard
 
-    private func rebuildLookup() {
+    func rebuildLookup() {
         lookup = registry.lookupTable(profile: profile, custom: customBindings)
     }
 
@@ -490,6 +517,8 @@ public final class CanvasController {
 
     /// Select-mode key handling. The view calls this for every key down.
     public func handleKey(_ chord: KeyChord, characters: String?) -> KeyResult {
+        if !hasPressedKey { hasPressedKey = true }
+        if tip != nil { tip = nil }
         if palette != nil { return handlePaletteKey(chord, characters: characters) ? .handled : .ignored }
         if jump != nil { return handleJumpKey(chord, characters: characters) ? .handled : .ignored }
         if present != nil, mode == .select {

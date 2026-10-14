@@ -96,6 +96,7 @@ extension CanvasController {
     func currentViewState() -> SceneViewState {
         var v = SceneViewState()
         v.isolate = isolate
+        applyPreferenceView(&v)
         if let g = ghosts {
             v.ghosts = g.ideas.map { SceneViewState.Ghost(parent: g.anchor, parentGhost: $0.parentGhost, idea: $0) }
             v.ghostHighlight = g.ideas.isEmpty ? nil : g.highlighted
@@ -176,12 +177,12 @@ extension CanvasController {
     public func closePalette() { palette = nil }
 
     static let recentKey = "palette.recent"
-    var recentCommands: [String] { UserDefaults.standard.stringArray(forKey: Self.recentKey) ?? [] }
+    var recentCommands: [String] { prefs.defaults.stringArray(forKey: Self.recentKey) ?? [] }
 
     func noteRecent(_ id: CommandID) {
         var r = recentCommands.filter { $0 != id.rawValue }
         r.insert(id.rawValue, at: 0)
-        UserDefaults.standard.set(Array(r.prefix(12)), forKey: Self.recentKey)
+        prefs.defaults.set(Array(r.prefix(12)), forKey: Self.recentKey)
     }
 
     func canRun(_ id: CommandID) -> Bool {
@@ -645,7 +646,10 @@ extension CanvasController {
 
     public func toggleZen() {
         zen.toggle()
+        if zen { zenStarted = Date() } else if let s = zenStarted { addZenTime(Date().timeIntervalSince(s)) }
         onZen?(zen)
+        rebuildScene()
+        onSceneChange?(false)
     }
 
     // MARK: Present (⇧⌘P)

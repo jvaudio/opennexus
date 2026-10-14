@@ -1,5 +1,6 @@
 import CryptoKit
 import Foundation
+import ImageIO
 import NexusCore
 import NexusKeys
 
@@ -298,6 +299,26 @@ extension CanvasController {
     }
 
     /// Stores bytes in the package's assets under a content-hashed name.
+    /// HEIC becomes JPEG; GPS and other location metadata are removed from any photo.
+    static func optimisedImage(_ data: Data, ext: String) -> (Data, String)? {
+        guard let src = CGImageSourceCreateWithData(data as CFData, nil),
+            let type = CGImageSourceGetType(src) as String?,
+            let props = CGImageSourceCopyPropertiesAtIndex(src, 0, nil) as? [String: Any]
+        else { return nil }
+        let heic = type == "public.heic" || type == "public.heif"
+        let hasLocation = props[kCGImagePropertyGPSDictionary as String] != nil
+        guard heic || hasLocation else { return nil }
+        let outType = heic ? "public.jpeg" : type
+        let out = NSMutableData()
+        guard let dest = CGImageDestinationCreateWithData(out, outType as CFString, 1, nil) else { return nil }
+        // Copy the image without its metadata (keeping orientation).
+        var keep: [String: Any] = [kCGImageDestinationLossyCompressionQuality as String: 0.88]
+        if let o = props[kCGImagePropertyOrientation as String] { keep[kCGImagePropertyOrientation as String] = o }
+        CGImageDestinationAddImageFromSource(dest, src, 0, keep as CFDictionary)
+        guard CGImageDestinationFinalize(dest) else { return nil }
+        return (out as Data, heic ? "jpg" : ext)
+    }
+
     public func storeAsset(_ data: Data, ext: String) -> String {
         let digest = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined().prefix(20)
         let name = "\(digest).\(ext.lowercased())"
@@ -305,7 +326,23 @@ extension CanvasController {
         return name
     }
 
-    public func setImage(_ data: Data, ext: String, size: CGSize?, on id: NodeID) {
+    /// Settings › Files: images over the embed limit are linked (the topic gets a file
+    /// link), and imports can be optimised (HEIC → JPEG, location metadata stripped).
+    public func setImage(_ data: Data, ext: String, size: CGSize?, on id: NodeID, source: URL? = nil) {
+        let limit = (Double(prefs.string("files.embedLimit")) ?? 10) * 1_048_576
+        if limit > 0, Double(data.count) > limit, let source {
+            perform("Link Image") { e in e.update(id) { $0.link = source.absoluteString } }
+            showToast(
+                "\(source.lastPathComponent) is larger than \(prefs.string("files.embedLimit")) MB, so it’s linked, not copied"
+            )
+            return
+        }
+        var data = data
+        var ext = ext
+        if prefs.bool("files.optimiseImages"), let (d, e) = Self.optimisedImage(data, ext: ext) {
+            data = d
+            ext = e
+        }
         let name = storeAsset(data, ext: ext)
         let w = size.map { min(Double($0.width), 200) }
         let h = size.map { Double($0.height) * (w ?? 200) / max(Double($0.width), 1) }

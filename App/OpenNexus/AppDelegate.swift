@@ -10,21 +10,10 @@ import UniformTypeIdentifiers
 
 @main
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    private var settingsWindow: NSWindow?
 
     /// ⌘, opens Settings (the AI pane in M6; the rest arrive in M8).
     @objc func showSettings(_ sender: Any?) {
-        if settingsWindow == nil {
-            let w = NSWindow(
-                contentRect: CGRect(x: 0, y: 0, width: 1000, height: 680), styleMask: [.titled, .closable, .resizable],
-                backing: .buffered, defer: false)
-            w.title = "Settings"
-            w.isReleasedWhenClosed = false
-            w.contentView = NSHostingView(rootView: SettingsView(availability: AppleEngine().availability))
-            w.center()
-            settingsWindow = w
-        }
-        settingsWindow?.makeKeyAndOrderFront(nil)
+        AppPreferences.shared.showSettings(pane: (sender as? String) ?? "general")
     }
 
     static func main() {
@@ -36,9 +25,61 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillFinishLaunching(_ notification: Notification) {
         NSApp.mainMenu = MainMenu.build(registry: .standard, profile: .openNexus)
+        AppPreferences.shared.start()
     }
 
-    func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool { true }
+    func applicationDidFinishLaunching(_ notification: Notification) {
+        Onboarding.launch()
+    }
+
+    /// Settings › General › At launch: a new document only when that's the choice (Home
+    /// and the first-run welcome handle the rest).
+    func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
+        Onboarding.done && Preferences.shared.string("general.launch") == "new"
+    }
+
+    func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {
+        if !flag { HomeWindow.shared.show() }
+        return false
+    }
+
+    @objc func showWelcome(_ sender: Any?) { Onboarding.showWelcome() }
+    @objc func showHome(_ sender: Any?) { HomeWindow.shared.show() }
+    /// ⇧⌘N: Home's New row, to choose the type.
+    @objc func newDocumentChooseType(_ sender: Any?) { HomeWindow.shared.show(choosingType: true) }
+    /// ⌘N: a new document with the default look (Settings › New documents).
+    @objc func newDocument(_ sender: Any?) { NewDocument.make() }
+
+    /// A recovery snapshot opened as an untitled copy (Settings › Files & Backup).
+    @MainActor func openSnapshotCopy(_ url: URL, sideBySide: Bool) {
+        let s = SnapshotStore.list(documentID: url.deletingLastPathComponent().lastPathComponent).first {
+            $0.url == url
+        }
+        guard let s else { return }
+        let key = AppPreferences.shared.frontDocument?.0.cryptoKey
+        do {
+            let doc = try NexusPackage.read(files: try SnapshotStore.read(s, key: key))
+            let nx =
+                try NSDocumentController.shared.makeUntitledDocument(ofType: "com.opennexus.document") as! NexusDocument
+            nx.store.replace(with: doc)
+            nx.markImported()
+            NSDocumentController.shared.addDocument(nx)
+            nx.makeWindowControllers()
+            nx.showWindows()
+            if sideBySide, let w = nx.windowControllers.first?.window, let screen = w.screen {
+                let f = screen.visibleFrame
+                w.setFrame(CGRect(x: f.midX, y: f.minY, width: f.width / 2, height: f.height), display: true)
+                if let other = AppPreferences.shared.frontDocument?.1.window, other !== w {
+                    other.setFrame(CGRect(x: f.minX, y: f.minY, width: f.width / 2, height: f.height), display: true)
+                }
+            }
+        } catch {
+            let a = NSAlert()
+            a.messageText = "Couldn’t open the snapshot"
+            a.informativeText = "\(error)"
+            a.runModal()
+        }
+    }
 
     /// File › Import… (artboard 33): any supported format opens as a new document, followed
     /// by the import report.
@@ -87,7 +128,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 /// The menu bar, generated from the command registry so every command (and its
 /// current key) is listed once, and macOS Help search finds them all.
 enum MainMenu {
-    static func build(registry: CommandRegistry, profile: KeyProfile) -> NSMenu {
+    /// The user's shortcut changes (Settings › Shortcuts), shown on menu items.
+    nonisolated(unsafe) static var custom: [CommandID: [KeyChord]] = [:]
+
+    static func build(registry: CommandRegistry, profile: KeyProfile, custom: [CommandID: [KeyChord]] = [:]) -> NSMenu {
+        Self.custom = custom
         let main = NSMenu()
         main.addItem(submenu(appMenu()))
         main.addItem(submenu(fileMenu(registry, profile)))
@@ -151,7 +196,7 @@ enum MainMenu {
 
     private static func fileMenu(_ r: CommandRegistry, _ p: KeyProfile) -> NSMenu {
         let m = NSMenu(title: "File")
-        m.addItem(item("New", #selector(NSDocumentController.newDocument(_:)), "n"))
+        m.addItem(item("New", #selector(AppDelegate.newDocument(_:)), "n"))
         m.addItem(item("Open…", #selector(NSDocumentController.openDocument(_:)), "o"))
         let recent = NSMenu(title: "Open Recent")
         recent.perform(NSSelectorFromString("_setMenuName:"), with: "NSRecentDocumentsMenu")
@@ -223,7 +268,7 @@ enum MainMenu {
             ?? #selector(RegistryCommandTarget.performRegistryCommand(_:))
         let mi = NSMenuItem(title: c.title, action: action, keyEquivalent: "")
         mi.representedObject = c.id.rawValue
-        if let chord = r.primaryBinding(for: c.id, profile: p) {
+        if let chord = r.primaryBinding(for: c.id, profile: p, custom: custom) {
             mi.keyEquivalent = chord.key.keyEquivalent
             mi.keyEquivalentModifierMask = chord.menuModifierMask
         }

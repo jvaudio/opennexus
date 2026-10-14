@@ -1,4 +1,5 @@
 import AppKit
+import NexusAI
 import NexusCore
 import NexusFormat
 import NexusInterchange
@@ -84,6 +85,12 @@ public struct ExportState: Equatable, Sendable {
     public var prettyJSON = true
     /// PDF: this canvas, every canvas, or the presentation.
     public var pdfScope = "canvas"
+    /// Mask emails, keys and names in the exported copy (Settings › Export › Data masking).
+    public var mask = false
+    /// Show the masking toggle in the sheet (Data masking: Ask).
+    public var askMask = false
+    /// Settings › Export › Split by main branch (PNG and JPEG).
+    public var split = false
     public init() {}
 }
 
@@ -140,7 +147,7 @@ extension CanvasController {
 
     public func openExport(_ format: ExportFormat? = nil) {
         if mode == .edit { commitEdit() }
-        var s = ExportState.remembered(format ?? ExportState.lastFormat)
+        var s = ExportState.remembered(format ?? ExportState.lastFormat(in: prefs.defaults), prefs: prefs)
         s.image.selection = selection.nodes
         if selection.nodes.count == 1, selection.primary != canvas.root, format == nil, s.image.scope == .selection {
             s.image.scope = .branch
@@ -149,7 +156,7 @@ extension CanvasController {
     }
 
     public func closeExport() {
-        if let s = exportState { s.remember() }
+        if let s = exportState { s.remember(in: prefs.defaults) }
         exportState = nil
         onRestoreFocus?()
     }
@@ -159,29 +166,48 @@ extension CanvasController {
         var s = s
         s.image.selection = selection.nodes
         if let old = exportState, s.format != old.format {
-            old.remember()
-            s = ExportState.remembered(s.format, keeping: s)
+            old.remember(in: prefs.defaults)
+            s = ExportState.remembered(s.format, keeping: s, prefs: prefs)
         }
         exportState = s
     }
 
     /// Model to export from (with view-only state left out).
-    var exportModel: DocumentModel { store.model }
+    var exportModel: DocumentModel { exportModel(exportState ?? ExportState()) }
+
+    /// The exported copy: masked, without AI provenance or chats, per Settings.
+    func exportModel(_ s: ExportState) -> DocumentModel {
+        var m = store.model
+        if s.mask {
+            for (id, c) in m.canvases {
+                var masked = Masker.maskedCopy(
+                    c, hits: Masker.scan(c, options: maskOptions), id: id, options: maskOptions)
+                masked.title = c.title
+                m.canvases[id] = masked
+            }
+        }
+        if prefs.bool("export.stripAI") {
+            for (id, c) in m.canvases { for n in c.nodes.keys { m.canvases[id]?.nodes[n]?.ai = false } }
+        }
+        if prefs.bool("privacy.removeChatsOnExport") { m.chats = [] }
+        return m
+    }
 
     /// The text a structural or document format produces (the preview and Copy).
     public func exportText(_ s: ExportState) -> String? {
-        let c = canvas
+        let c = exportModel(s).canvases[canvasID] ?? canvas
         let top: NodeID? = s.image.scope == .branch ? s.image.selection.first : nil
         switch s.format {
         case .mermaid: return MermaidFormat.export(c, flavour: s.mermaid)
         case .plantuml: return PlantUMLFormat.export(c)
         case .drawio: return DrawIOFormat.export(c, frames: drawioFrames())
         case .json:
-            return s.yaml ? DocumentJSON.yaml(exportModel) : DocumentJSON.export(exportModel, pretty: s.prettyJSON)
+            return s.yaml
+                ? DocumentJSON.yaml(exportModel(s)) : DocumentJSON.export(exportModel(s), pretty: s.prettyJSON)
         case .opml: return OPMLFormat.export(c, from: top)
         case .markdown: return MarkdownFormat.export(c, from: top, options: s.markdown)
         case .csv: return CSVFormat.export(c)
-        case .svg: return SVGExporter.export(exportModel, canvas: canvasID, s.image, s.svg)
+        case .svg: return SVGExporter.export(exportModel(s), canvas: canvasID, s.image, s.svg)
         default: return nil
         }
     }
@@ -207,7 +233,7 @@ extension CanvasController {
         }
         var o = s.image
         o.scale = 1
-        return ImageExporter.image(exportModel, canvas: canvasID, o)
+        return ImageExporter.image(exportModel(s), canvas: canvasID, o)
     }
 
     /// "2880 × 1850 px · 412 KB".
@@ -233,7 +259,7 @@ extension CanvasController {
 
     /// The file for the chosen format.
     public func exportData(_ s: ExportState) -> Data? {
-        let m = exportModel
+        let m = exportModel(s)
         switch s.format {
         case .png: return ImageExporter.image(m, canvas: canvasID, s.image).map(ImageExporter.png)
         case .jpeg:
@@ -249,7 +275,7 @@ extension CanvasController {
                 o.scope = .canvas
                 let pages = m.canvasOrder.compactMap { ImageExporter.image(m, canvas: $0, o) }
                 return Self.pdfPages(pages)
-            default: return PrintLayout.singlePage(m, canvas: canvasID, s.image)
+            default: return PrintLayout.singlePage(m, canvas: canvasID, s.image, links: prefs.bool("export.pdfLinks"))
             }
         case .word:
             var images: [CanvasID: (Data, Int, Int)] = [:]
@@ -293,7 +319,12 @@ extension CanvasController {
 
     /// Export… (save panel in the app).
     public func runExport(_ s: ExportState) {
-        s.remember()
+        s.remember(in: prefs.defaults)
+        if s.split, s.format == .png || s.format == .jpeg, s.image.scope == .canvas {
+            exportState = nil
+            splitByBranch()
+            return
+        }
         guard let data = exportData(s) else {
             showToast("Nothing to export")
             return
@@ -309,7 +340,7 @@ extension CanvasController {
 
     /// Copy (the sheet's left button): an image or text on the clipboard.
     public func copyExport(_ s: ExportState) {
-        s.remember()
+        s.remember(in: prefs.defaults)
         let pb = pasteboard
         pb.clearContents()
         if s.format.isVisual, s.format != .svg {
@@ -337,7 +368,7 @@ extension CanvasController {
     }
 
     public func exportBranch(_ format: ExportFormat) {
-        var s = ExportState.remembered(format)
+        var s = ExportState.remembered(format, prefs: prefs)
         s.image.scope = .branch
         s.image.selection = [selection.primary]
         runExport(s)
@@ -571,6 +602,12 @@ extension CanvasController {
     public func openPrint(branch: Bool = false) {
         if mode == .edit { commitEdit() }
         var o = PrintLayout.Options()
+        // Settings › Export › PDF & print.
+        o.content = prefs.string("export.pdfContent") == "outline" ? .outline : .canvas
+        o.paper = PrintLayout.Paper(rawValue: prefs.string("export.pageSize")) ?? .a4
+        o.fitPage = prefs.string("export.pdfFit") == "fit"
+        o.tile = prefs.string("export.pdfFit") == "tile"
+        o.notesAppendix = prefs.bool("export.notesAppendix")
         if branch, selection.primary != canvas.root {
             o.content = .branch
             o.branch = selection.primary
@@ -809,15 +846,35 @@ extension CanvasController {
 
 extension ExportState {
     static let defaultsKey = "export.lastSettings"
-    static var lastFormat: ExportFormat {
-        ExportFormat(rawValue: UserDefaults.standard.string(forKey: "export.lastFormat") ?? "") ?? .png
+    static func lastFormat(in store: UserDefaults) -> ExportFormat {
+        ExportFormat(rawValue: store.string(forKey: "export.lastFormat") ?? "") ?? .png
     }
 
     /// The last settings used for `format` (artboard 30: "remembered per format").
-    static func remembered(_ format: ExportFormat, keeping current: ExportState? = nil) -> ExportState {
+    @MainActor static func remembered(
+        _ format: ExportFormat, keeping current: ExportState? = nil, prefs: Preferences = .shared
+    ) -> ExportState {
         var s = current ?? ExportState()
         s.format = format
-        let d = UserDefaults.standard.dictionary(forKey: "\(defaultsKey).\(format.rawValue)") ?? [:]
+        // Settings › Export are the defaults until a format remembers its own.
+        s.image.scale = Double(prefs.string("export.scale")) ?? 2
+        s.image.background = ImageExporter.Background(rawValue: prefs.string("export.background")) ?? .theme
+        s.image.padding = prefs.number("export.padding")
+        s.image.frame = prefs.string("export.frame")
+        s.image.aspect = prefs.string("export.aspect")
+        s.image.mat = RGBA(hex: prefs.string("export.matColor"))
+        s.image.displayP3 = prefs.string("export.colorProfile") == "displayP3"
+        s.markdown.headings = prefs.string("export.markdown") != "bullets"
+        s.markdown.notes = prefs.bool("export.markdownNotes")
+        s.markdown.mermaidBlock = prefs.bool("export.markdownMermaid")
+        let flavour = prefs.string("export.flavour")
+        s.mermaid = flavour == "auto" ? nil : MermaidFormat.Flavour(rawValue: flavour)
+        s.prettyJSON = prefs.string("export.json") != "compact"
+        s.split = prefs.bool("export.split")
+        let masking = prefs.string("export.masking")
+        s.mask = masking == "always" || (masking == "ask" && (current?.mask ?? false))
+        s.askMask = masking == "ask"
+        let d = prefs.defaults.dictionary(forKey: "\(defaultsKey).\(format.rawValue)") ?? [:]
         if let v = d["scope"] as? String, let sc = ImageExporter.Scope(rawValue: v) { s.image.scope = sc }
         if let v = d["scale"] as? Double { s.image.scale = v }
         if let v = d["background"] as? String, let b = ImageExporter.Background(rawValue: v) { s.image.background = b }
@@ -836,7 +893,8 @@ extension ExportState {
         return s
     }
 
-    func remember() {
+    /// Per-format choices live beside the preferences, so tests stay isolated.
+    func remember(in store: UserDefaults) {
         var d: [String: Any] = [
             "scope": image.scope.rawValue, "scale": image.scale, "background": image.background.rawValue,
             "padding": image.padding, "quality": jpegQuality, "outline": svg.outlineText, "metadata": svg.metadata,
@@ -845,7 +903,7 @@ extension ExportState {
         ]
         if let t = image.theme { d["theme"] = t }
         if let f = mermaid { d["flavour"] = f.rawValue }
-        UserDefaults.standard.set(d, forKey: "\(Self.defaultsKey).\(format.rawValue)")
-        UserDefaults.standard.set(format.rawValue, forKey: "export.lastFormat")
+        store.set(d, forKey: "\(Self.defaultsKey).\(format.rawValue)")
+        store.set(format.rawValue, forKey: "export.lastFormat")
     }
 }

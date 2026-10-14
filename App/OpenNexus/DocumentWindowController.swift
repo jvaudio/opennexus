@@ -20,7 +20,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     /// Outline (⌘2) and Split (⌘3), M5.
     let outline: OutlineView
     private var modeConstraints: [CanvasViewMode: [NSLayoutConstraint]] = [:]
-    private var tabsView: NSView?
+    var tabsView: NSView?
     private var tabsHeight: NSLayoutConstraint?
     private var presenterWindow: NSWindow?
     private var chromeBeforeImmersion: (panel: Bool, fullScreen: Bool, mode: CanvasViewMode)?
@@ -38,7 +38,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
             backing: .buffered, defer: false)
         window.minSize = NSSize(width: 720, height: 480)
         window.toolbarStyle = .unified
-        window.tabbingMode = .preferred
+        window.tabbingMode = Preferences.shared.string("general.openIn") == "windows" ? .disallowed : .preferred
         window.setFrameAutosaveName("OpenNexusDocument")
         super.init(window: window)
         window.delegate = self
@@ -114,6 +114,11 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
 
         document.store.addObserver(self) { [weak self] _ in self?.updateSubtitle() }
         updateSubtitle()
+        applyWindowPreferences()
+        // Settings › Editing › Default zoom.
+        if let z = controller.defaultZoom, document.isFreshBlank || document.fileURL == nil {
+            DispatchQueue.main.async { [weak self] in self?.host.canvasView.setZoom(z) }
+        }
         window.center()
         window.makeFirstResponder(host.canvasView)
 
@@ -310,7 +315,9 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         let store = document_.store
         let id = store.model.makeCanvasID()
         store.commitDocument("New Canvas", focus: id) { d in
-            d.canvases[id] = NexusCore.Canvas(id: id, title: "Map \(d.canvases.count + 1)")
+            var c = NexusCore.Canvas(id: id, title: "Map \(d.canvases.count + 1)")
+            CanvasController.applyDefaults(&c, prefs: .shared)
+            d.canvases[id] = c
             d.canvasOrder.append(id)
         }
         controller.switchCanvas(to: id)
@@ -442,7 +449,7 @@ struct AIStatusChip: View {
             }
         }
         .buttonStyle(.plain)
-        .opacity(UserDefaults.standard.object(forKey: AISettingsKeys.statusChip) as? Bool ?? true ? 1 : 0)
+        .opacity(Preferences.shared.bool(AISettingsKeys.statusChip) ? 1 : 0)
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
         .background(Tokens.Signal.auroraLight.swiftUIColor.opacity(0.1), in: Capsule())
