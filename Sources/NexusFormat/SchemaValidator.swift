@@ -50,6 +50,8 @@ public struct SchemaValidator: Sendable {
                 def = "canvas"
             } else if path == "theme.json" {
                 def = "theme"
+            } else if path == "ai/chats.json" {
+                def = "chats"
             } else {
                 continue
             }

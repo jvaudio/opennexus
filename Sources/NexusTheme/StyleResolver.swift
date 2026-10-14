@@ -71,9 +71,12 @@ public struct BranchLineAppearance: Equatable, Sendable {
 
 /// Everything about a canvas that styling depends on.
 public struct StyleEnvironment: Sendable {
-    public var theme: Theme
-    public var nodeStyle: NodeStyle
-    public var canvasStyle: CanvasStyle
+    public private(set) var theme: Theme
+    public private(set) var nodeStyle: NodeStyle
+    public private(set) var canvasStyle: CanvasStyle
+    /// defaults → theme → node style for each role, built once per environment (these
+    /// layers are the same for every node, and building them per node dominated reflow).
+    let roleBase: [NodeRoleStyle: TopicStyle]
     public var palette: [RGBA]
     public var mode: ColorThemeMode
     public var quickStyles: [QuickStyle]
@@ -97,6 +100,12 @@ public struct StyleEnvironment: Sendable {
         mode = ColorThemeMode(rawValue: canvasStyle.colorTheme) ?? .rainbow
         quickStyles = QuickStyle.builtIn + customQuickStyles
         canvas = canvasStyle.background.flatMap(RGBA.init(hexString:)) ?? theme.canvas
+        let nodeStyle = nodeStyle
+        roleBase = Dictionary(
+            uniqueKeysWithValues: NodeRoleStyle.allCases.map { role in
+                let base = StyleResolver.themeLayer(theme, role: role).merged(over: StyleResolver.defaults(role))
+                return (role, nodeStyle.layer(role).merged(over: base))
+            })
     }
 
     /// Branch colour for a main branch at `index` of `count` (or a topic at a sibling
@@ -184,9 +193,7 @@ public enum StyleResolver {
 
     /// Merges every layer for one node.
     public static func merged(role: NodeRoleStyle, depth: Int, node: Node?, env: StyleEnvironment) -> TopicStyle {
-        var s = defaults(role)
-        s = themeLayer(env.theme, role: role).merged(over: s)
-        s = env.nodeStyle.layer(role).merged(over: s)
+        var s = env.roleBase[role]!
         if let level = env.canvasStyle.levels[depth] { s = level.merged(over: s) }
         if let q = node?.quickStyle, let qs = env.quickStyles.first(where: { $0.id == q }) {
             s = qs.style.merged(over: s)

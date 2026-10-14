@@ -21,7 +21,11 @@ public final class CanvasHostView: NSView {
             }
         }
         let a = NSAppearance(named: dark ? .darkAqua : .aqua)
-        for v in overlays + subviews.filter({ $0 is NSHostingView<CanvasStatusBar> }) { v.appearance = a }
+        // The canvas view too, so views anchored inside it (slash menu, prompt bar, ghost
+        // hints) inherit it.
+        for v in overlays + subviews.filter({ $0 is NSHostingView<CanvasStatusBar> }) + [canvasView] {
+            v.appearance = a
+        }
     }
     /// The window shows or hides its chrome and the presenter view.
     public var onPresentChange: ((Bool) -> Void)?
@@ -52,13 +56,18 @@ public final class CanvasHostView: NSView {
         let palette = NSHostingView(rootView: PaletteView(controller: controller))
         let jump = NSHostingView(rootView: JumpView(controller: controller))
         let present = NSHostingView(rootView: PresentOverlayView(controller: controller))
+        // On-device AI (M6).
+        let aiPanel = NSHostingView(rootView: AIPanelView(controller: controller))
+        let aiSheet = NSHostingView(rootView: AISheetView(controller: controller))
+        aiPanel.sizingOptions = [.intrinsicContentSize]
+        aiSheet.sizingOptions = [.intrinsicContentSize]
         present.isHidden = true
         // Pinned to all edges: its (often empty) content must not size the host.
         present.sizingOptions = []
         presentHost = present
         let all: [NSView] = [
             present, status, toast, dfd, crumb, violation, threatCard, table, icons, nav, filter, focus, counts,
-            zenCount, convert, palette, jump, cheat,
+            zenCount, aiPanel, convert, aiSheet, palette, jump, cheat,
         ]
         for h in all {
             h.translatesAutoresizingMaskIntoConstraints = false
@@ -99,6 +108,11 @@ public final class CanvasHostView: NSView {
             zenCount.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
             palette.centerXAnchor.constraint(equalTo: centerXAnchor),
             palette.topAnchor.constraint(equalTo: topAnchor, constant: 70),
+            aiPanel.trailingAnchor.constraint(equalTo: trailingAnchor),
+            aiPanel.topAnchor.constraint(equalTo: topAnchor),
+            aiPanel.bottomAnchor.constraint(equalTo: bottomAnchor),
+            aiSheet.centerXAnchor.constraint(equalTo: centerXAnchor),
+            aiSheet.centerYAnchor.constraint(equalTo: centerYAnchor),
             jump.centerXAnchor.constraint(equalTo: centerXAnchor),
             jump.topAnchor.constraint(equalTo: topAnchor, constant: 70),
         ])
@@ -129,7 +143,8 @@ public final class CanvasHostView: NSView {
 
         NSLayoutConstraint.activate([
             canvasView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            canvasView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            // The AI panel takes its width from the canvas (it's zero wide when hidden).
+            canvasView.trailingAnchor.constraint(equalTo: aiPanel.leadingAnchor),
             canvasView.topAnchor.constraint(equalTo: topAnchor),
             canvasView.bottomAnchor.constraint(equalTo: bottomAnchor),
             status.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),

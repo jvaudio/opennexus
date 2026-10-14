@@ -1,9 +1,28 @@
 import AppKit
+import NexusAI
 import NexusCanvas
 import NexusKeys
+import SwiftUI
 
 @main
 final class AppDelegate: NSObject, NSApplicationDelegate {
+    private var settingsWindow: NSWindow?
+
+    /// ⌘, opens Settings (the AI pane in M6; the rest arrive in M8).
+    @objc func showSettings(_ sender: Any?) {
+        if settingsWindow == nil {
+            let w = NSWindow(
+                contentRect: CGRect(x: 0, y: 0, width: 1000, height: 680), styleMask: [.titled, .closable, .resizable],
+                backing: .buffered, defer: false)
+            w.title = "Settings"
+            w.isReleasedWhenClosed = false
+            w.contentView = NSHostingView(rootView: SettingsView(availability: AppleEngine().availability))
+            w.center()
+            settingsWindow = w
+        }
+        settingsWindow?.makeKeyAndOrderFront(nil)
+    }
+
     static func main() {
         let app = NSApplication.shared
         let delegate = AppDelegate()
@@ -69,7 +88,7 @@ enum MainMenu {
         let m = NSMenu(title: "OpenNexus")
         m.addItem(item("About OpenNexus", #selector(NSApplication.orderFrontStandardAboutPanel(_:)), ""))
         m.addItem(.separator())
-        m.addItem(item("Settings…", nil, ","))
+        m.addItem(item("Settings…", #selector(AppDelegate.showSettings(_:)), ","))
         m.addItem(.separator())
         let services = NSMenu(title: "Services")
         m.addItem(submenu(services))

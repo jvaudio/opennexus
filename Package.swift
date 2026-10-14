@@ -11,7 +11,7 @@ let package = Package(
     products: [
         .library(
             name: "OpenNexusKit",
-            targets: ["NexusCore", "NexusLayout", "NexusFormat", "NexusTheme", "NexusKeys", "NexusCanvas"]
+            targets: ["NexusCore", "NexusLayout", "NexusFormat", "NexusTheme", "NexusKeys", "NexusAI", "NexusCanvas"]
         ),
         .executable(name: "nexus", targets: ["nexus"]),
     ],
@@ -31,10 +31,13 @@ let package = Package(
         .target(name: "NexusTheme", dependencies: ["NexusCore"], swiftSettings: strict),
         // Command registry, key chords, profiles, conflict detection.
         .target(name: "NexusKeys", swiftSettings: strict),
+        // Thin wrappers around Apple's on-device frameworks (Foundation Models, Translation,
+        // NaturalLanguage, Vision, Image Playground, SpeechAnalyzer). No network.
+        .target(name: "NexusAI", dependencies: ["NexusCore"], swiftSettings: strict),
         // AppKit canvas: rendering, hit testing, editing overlay, animation.
         .target(
             name: "NexusCanvas",
-            dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusKeys"],
+            dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI"],
             swiftSettings: strict
         ),
         .executableTarget(
@@ -53,5 +56,6 @@ let package = Package(
         .testTarget(name: "NexusThemeTests", dependencies: ["NexusTheme", "NexusCore"]),
         .testTarget(name: "NexusKeysTests", dependencies: ["NexusKeys"]),
         .testTarget(name: "NexusCanvasTests", dependencies: ["NexusCanvas", "NexusFormat"]),
+        .testTarget(name: "NexusAITests", dependencies: ["NexusAI", "NexusCore"]),
     ]
 )

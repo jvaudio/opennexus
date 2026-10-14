@@ -61,6 +61,18 @@ extension CommandID {
     public static let copyMermaid: CommandID = "diagram.copyMermaid"
     public static let threatTable: CommandID = "diagram.threatTable"
     public static let suggestThreats: CommandID = "diagram.suggestThreats"
+    // AI actions (M6), also in ⌘K
+    public static let aiBreakdown: CommandID = "ai.breakdown"
+    public static let aiTodos: CommandID = "ai.todos"
+    public static let aiFindGaps: CommandID = "ai.findGaps"
+    public static let aiExpand: CommandID = "ai.expand"
+    public static let aiRewrite: CommandID = "ai.rewrite"
+    public static let aiSummarize: CommandID = "ai.summarize"
+    public static let aiTranslate: CommandID = "ai.translate"
+    public static let aiMask: CommandID = "ai.mask"
+    public static let aiRemoveBackground: CommandID = "ai.removeBackground"
+    public static let aiSticker: CommandID = "ai.sticker"
+    public static let aiRecord: CommandID = "ai.record"
     // Outline (M5)
     public static let outlineIndent: CommandID = "outline.indent"
     public static let outlineOutdent: CommandID = "outline.outdent"
@@ -137,7 +149,21 @@ public enum DefaultCommands {
 
     public static let all: [CommandDescriptor] =
         create + edit + navigate + restructure + elements + style + view + ai
-        + file + connect + diagrams + outline
+        + file + connect + diagrams + outline + aiActions
+
+    static let aiActions: [C] = [
+        C(.aiBreakdown, "Break Down", .ai, menu: .ai, note: "Phases with priority and duration, as ghosts"),
+        C(.aiTodos, "Make To-dos", .ai, menu: .ai, note: "Checkable steps with a progress ring"),
+        C(.aiFindGaps, "Find Gaps", .ai, menu: .ai, note: "What's missing, as ghosts"),
+        C(.aiExpand, "Expand Branch", .ai, menu: .ai, note: "More children, as ghosts"),
+        C(.aiRewrite, "Rewrite Shorter", .ai, menu: .ai, note: "A plan of renames to review"),
+        C(.aiSummarize, "Summarize", .ai, menu: .ai, note: "In the AI panel"),
+        C(.aiTranslate, "Translate Map…", .ai, menu: .ai, note: "A new canvas; the original stays"),
+        C(.aiMask, "Mask Data…", .ai, menu: .ai, note: "Emails, keys, names, phones; review each hit"),
+        C(.aiRemoveBackground, "Remove Image Background", .ai, menu: .ai, note: "Subject lift"),
+        C(.aiSticker, "Make a Sticker…", .ai, menu: .ai, note: "Image Playground"),
+        C(.aiRecord, "Record to Map…", .ai, menu: .ai, note: "Live transcript; key points as ghosts"),
+    ]
 
     static let outline: [C] = [
         C(.outlineSibling, "Add Sibling", .create, scope: .outline, keys: [k("return")], note: "Outline"),

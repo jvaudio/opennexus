@@ -248,6 +248,8 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     /// DFD drill-down inserts its level canvas undoably; CSV exports go through a save panel.
     private func wireDiagramHooks() {
         controller.onViewMode = { [weak self] m in self?.applyViewMode(m) }
+        controller.onOpenAISettings = { NSApp.sendAction(#selector(AppDelegate.showSettings(_:)), to: nil, from: nil) }
+        controller.externalCommands.insert(.inspector)
         controller.onZen = { [weak self] on in self?.setImmersive(on) }
         host.onPresentChange = { [weak self] on in
             self?.setImmersive(on)
@@ -376,7 +378,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         case .theme:
             return hosted(id, label: "Theme", ThemeButton(controller: controller))
         case .aiStatus:
-            return hosted(id, label: "AI", AIStatusChip())
+            return hosted(id, label: "AI", AIStatusChip(controller: controller))
         case .inspector:
             let item = NSToolbarItem(itemIdentifier: id)
             item.label = "Format"
@@ -452,6 +454,7 @@ struct ThemeButton: View {
 
 /// "On-device · Apple": which local model is active. Nothing leaves the Mac.
 struct AIStatusChip: View {
+    var controller: CanvasController
     /// Aurora ink, light and dark designed together.
     static let ink = NSColor(name: nil) { a in
         a.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
@@ -460,14 +463,23 @@ struct AIStatusChip: View {
     }
 
     var body: some View {
-        HStack(spacing: 6) {
-            Circle().fill(Tokens.Signal.auroraLight.swiftUIColor).frame(width: 7, height: 7)
-            Text("On-device · Apple").foregroundStyle(Color(nsColor: Self.ink))
+        let a = controller.aiAvailability
+        Button {
+            if a.canRun { controller.toggleAIPanel() } else { controller.requestGhosts() }
+        } label: {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(a.canRun ? Tokens.Signal.auroraLight.swiftUIColor : Color.secondary)
+                    .frame(width: 7, height: 7)
+                Text(a.chip).foregroundStyle(a.canRun ? Color(nsColor: Self.ink) : .secondary)
+            }
         }
+        .buttonStyle(.plain)
+        .opacity(UserDefaults.standard.object(forKey: AISettingsKeys.statusChip) as? Bool ?? true ? 1 : 0)
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
         .background(Tokens.Signal.auroraLight.swiftUIColor.opacity(0.1), in: Capsule())
-        .accessibilityLabel("AI: on-device, Apple. Nothing leaves this Mac.")
+        .accessibilityLabel("AI: \(controller.aiAvailability.chip). Nothing leaves this Mac.")
     }
 }
 

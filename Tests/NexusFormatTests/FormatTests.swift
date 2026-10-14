@@ -208,3 +208,30 @@ func launchPlanDocument() -> DocumentModel {
         }
     }
 }
+
+@Suite struct ChatFormatTests {
+    /// AI chats live in `ai/chats.json`, only when there are any (artboard 52's chat list).
+    @Test func chatsRoundTrip() throws {
+        var doc = launchPlanDocument()
+        #expect(NexusPackage.files(for: doc)["ai/chats.json"] == nil)
+        var chat = AIChat(id: "chat1", title: "Pricing review")
+        chat.canvas = "c1"
+        chat.discussion = true
+        chat.messages = [
+            AIMessage(role: "user", text: "Where is @Risks thin?"),
+            AIMessage(
+                role: "assistant", text: "Risks has one child.",
+                plan: ChangePlan(summary: "s", ops: [.rename(NodeID("n1"), from: "Risks", to: "Risks & churn")])),
+        ]
+        doc.chats = [chat]
+        let files = NexusPackage.files(for: doc)
+        let json = try #require(files["ai/chats.json"].flatMap { String(data: $0, encoding: .utf8) })
+        #expect(json.contains("\"chats\""))
+        let back = try NexusPackage.read(files: files)
+        #expect(back.chats == [chat])
+        #expect(NexusPackage.files(for: back) == files, "byte-identical")
+        #expect(SchemaValidator.bundled.validate(package: files).isEmpty)
+        let bad: JSONValue = ["chats": [["id": "c", "messages": [["role": "robot", "text": "x"]]]]]
+        #expect(!SchemaValidator.bundled.validate(bad, definition: "chats").isEmpty)
+    }
+}

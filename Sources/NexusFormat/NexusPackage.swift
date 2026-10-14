@@ -49,6 +49,9 @@ public enum NexusPackage {
             files["canvases/\(canvas.id.rawValue).json"] = CanonicalJSON.data(canvas.json)
         }
         files["theme.json"] = CanonicalJSON.data(doc.theme)
+        if !doc.chats.isEmpty {
+            files["ai/chats.json"] = CanonicalJSON.data(.object(["chats": .array(doc.chats.map(\.json))]))
+        }
         for (name, data) in doc.assets {
             files["assets/\(name)"] = data
         }
@@ -82,6 +85,10 @@ public enum NexusPackage {
         doc.encrypted = encrypted
         doc.manifestExtra = m.leftovers
         if let t = files["theme.json"] { doc.theme = try parse(t, "theme.json") }
+        if let c = files["ai/chats.json"] {
+            var r = try ObjectReader(try parse(c, "ai/chats.json"), path: "chats")
+            doc.chats = try r.array("chats").enumerated().map { try AIChat(json: $1, path: "chats[\($0)]") }
+        }
         for (path, data) in files where path.hasPrefix("assets/") && path.count > "assets/".count {
             doc.assets[String(path.dropFirst("assets/".count))] = data
         }

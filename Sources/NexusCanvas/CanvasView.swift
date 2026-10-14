@@ -51,6 +51,10 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     private var connectField: NSView?
     private var slashHost: NSHostingView<SlashMenuView>?
     private var suggestHost: NSHostingView<ProtocolSuggestionsView>?
+    private var ghostHost: NSHostingView<GhostHintsView>?
+    private var promptHost: NSHostingView<PromptBarView>?
+    private var ghostBadge: NSHostingView<GhostBadgeView>?
+    private var noticeHost: NSHostingView<AINoticeView>?
     private var morphUntil: CFTimeInterval = 0
     private var lastMorphSerial = 0
     private var imageCache: [String: CGImage] = [:]
@@ -151,6 +155,10 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         controller.onSceneChange = { [weak self] animated in self?.update(animated: animated) }
         controller.onReveal = { [weak self] id in self?.reveal(id) }
         controller.onFrame = { [weak self] ids, aspect in self?.frame(ids, aspect: aspect) }
+        controller.onRestoreFocus = { [weak self] in
+            guard let self else { return }
+            self.window?.makeFirstResponder(self)
+        }
         controller.onEditChange = { [weak self] session in self?.editChanged(session) }
         controller.onEditorReplaceText = { [weak self] text in
             guard let self else { return }
@@ -279,7 +287,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                 n, theme: theme, canvas: scene.canvasColor,
                 selected: selected.contains(id) && controller.present == nil,
                 primary: controller.selection.primary == id, editing: editing == id, morph: morph,
-                image: n.image.flatMap { image(for: $0.asset) })
+                image: n.image.flatMap { image(for: $0.asset) },
+                sticker: n.sticker.flatMap { $0.hasPrefix("emoji:") ? nil : image(for: $0) })
             layer.connectState(
                 controller.connect.map { c in
                     c.source == id
@@ -701,8 +710,75 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     // MARK: Connect field
 
     /// "Connect to …" below the source: the query, up to five matches, or Create new node.
+    private func anchored<V: View>(
+        _ host: inout NSHostingView<V>?, _ make: () -> V, below rect: CGRect?, dx: CGFloat = 0
+    ) {
+        guard let rect else {
+            host?.isHidden = true
+            return
+        }
+        let h =
+            host
+            ?? {
+                let h = NSHostingView(rootView: make())
+                h.sizingOptions = [.intrinsicContentSize]
+                addSubview(h)
+                return h
+            }()
+        host = h
+        let size = h.fittingSize
+        let x = min(max(8, rect.minX + dx), max(8, bounds.width - size.width - 8))
+        let y = min(rect.maxY + 12, max(8, bounds.height - size.height - 70))
+        h.frame = CGRect(x: x, y: y, width: size.width, height: size.height)
+        h.isHidden = size.width < 2
+    }
+
+    /// Ghost hints sit under the last ghost; the prompt bar and AI notice under their topic.
+    func refreshAIOverlays() {
+        var ghostRect: CGRect?
+        if let g = controller.ghosts {
+            let ids = g.ideas.indices.map { CanvasController.ghostID($0) }
+            let rects = ids.compactMap { animatedFrame($0) }.map { camera.toView($0.rect) }
+            ghostRect = rects.reduce(CGRect.null) { $0.union($1) }
+            if ghostRect?.isNull ?? true { ghostRect = animatedFrame(g.anchor).map { camera.toView($0.rect) } }
+        }
+        anchored(&ghostHost, { GhostHintsView(controller: controller) }, below: ghostRect)
+        // ⌃↩ beside the highlighted ghost.
+        let highlighted = controller.ghosts.flatMap { g in
+            g.ideas.isEmpty
+                ? nil : animatedFrame(CanvasController.ghostID(g.highlighted)).map { camera.toView($0.rect) }
+        }
+        if let r = highlighted {
+            let b =
+                ghostBadge
+                ?? {
+                    let h = NSHostingView(rootView: GhostBadgeView(color: controller.aiColor))
+                    h.sizingOptions = [.intrinsicContentSize]
+                    addSubview(h)
+                    return h
+                }()
+            ghostBadge = b
+            let size = b.fittingSize
+            // On the ghost's outer side, away from its edge.
+            let anchor = controller.ghosts.flatMap { animatedFrame($0.anchor) }.map { camera.toView($0.rect) }
+            let left = anchor.map { r.midX < $0.midX } ?? false
+            let x = left ? r.minX - 14 - size.width : r.maxX + 14
+            b.frame = CGRect(x: x, y: r.midY - size.height / 2, width: size.width, height: size.height)
+            b.isHidden = false
+        } else {
+            ghostBadge?.isHidden = true
+        }
+        let promptRect = controller.promptBar.flatMap { animatedFrame($0.anchor) }.map { camera.toView($0.rect) }
+        anchored(&promptHost, { PromptBarView(controller: controller) }, below: promptRect, dx: -120)
+        let noticeRect =
+            controller.aiNotice != nil
+            ? animatedFrame(controller.selection.primary).map { camera.toView($0.rect) } : nil
+        anchored(&noticeHost, { AINoticeView(controller: controller) }, below: noticeRect, dx: -20)
+    }
+
     /// The slash menu and protocol suggestions sit under what they belong to.
     func refreshOverlays() {
+        refreshAIOverlays()
         if let s = controller.slash {
             let host =
                 slashHost
@@ -946,6 +1022,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         let w = camera.toWorld(p)
         window?.makeFirstResponder(self)
         if controller.mode == .connect { controller.cancelConnect() }
+        // Clicking a ghost accepts it (one undo), like ⌃↩.
+        if let id = node(at: p), let i = CanvasController.ghostIndex(id) {
+            if controller.ghosts != nil { controller.acceptGhost(i) } else { controller.previewPlan(nil) }
+            return
+        }
         if let id = node(at: p), let n = controller.scene.nodes[id], let f = animatedFrame(id) {
             let local = CGPoint(x: w.x - f.rect.minX, y: w.y - f.rect.minY)
             if event.clickCount == 1, handleDecorationClick(id, n, local) { return }

@@ -95,6 +95,21 @@ extension CanvasController {
 
     func currentViewState() -> SceneViewState {
         var v = SceneViewState()
+        if let g = ghosts {
+            v.ghosts = g.ideas.map { SceneViewState.Ghost(parent: g.anchor, parentGhost: $0.parentGhost, idea: $0) }
+            v.ghostHighlight = g.ideas.isEmpty ? nil : g.highlighted
+        } else if let plan = previewPlan {
+            var addIndex: [Int] = []
+            for op in plan.ops {
+                if case .add(let p, let pa, let text, let markers, let labels, let todo) = op {
+                    v.ghosts.append(
+                        SceneViewState.Ghost(
+                            parent: p, parentGhost: pa.flatMap { $0 < addIndex.count ? addIndex[$0] : nil },
+                            idea: GhostIdea(text: text, markers: markers, labels: labels, todo: todo)))
+                    addIndex.append(v.ghosts.count - 1)
+                }
+            }
+        }
         v.focus = focusRoot
         let c = canvas
         let all = c.tops.flatMap { c.subtree($0, includeFolded: false) }

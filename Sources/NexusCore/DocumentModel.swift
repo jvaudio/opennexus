@@ -16,6 +16,9 @@ public struct DocumentModel: Equatable, Sendable {
     public var encrypted: Bool
     /// Unknown manifest keys, written back unchanged.
     public var manifestExtra: [String: JSONValue]
+    /// AI panel chats (`ai/chats.json`). Document-level and outside undo, so undoing a map
+    /// edit never loses a conversation.
+    public var chats: [AIChat] = []
 
     public init(canvases: [Canvas], theme: JSONValue = .object([:]), assets: [String: Data] = [:]) {
         self.canvases = Dictionary(uniqueKeysWithValues: canvases.map { ($0.id, $0) })

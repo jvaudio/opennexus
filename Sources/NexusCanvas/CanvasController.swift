@@ -1,4 +1,5 @@
 import AppKit
+import NexusAI
 import NexusCore
 import NexusKeys
 import NexusLayout
@@ -58,6 +59,36 @@ public final class CanvasController {
     public var threatTableVisible = false
     /// The DFD violation whose card is showing.
     public internal(set) var focusedViolation: String?
+    // MARK: On-device AI (M6)
+    /// The model behind every AI feature (Apple's on-device model by default).
+    @ObservationIgnored public var ai: any AIEngine = AppleEngine() {
+        didSet { aiAvailability = ai.availability }
+    }
+    public internal(set) var aiAvailability: AIAvailability = .ready
+    /// Ghost suggestions under a topic (⌥Space).
+    public internal(set) var ghosts: GhostState?
+    /// The prompt bar (⇧⌘Space), anchored to a topic.
+    public internal(set) var promptBar: PromptBarState?
+    public var aiPanelVisible = false
+    public internal(set) var activeChat: String?
+    public internal(set) var aiBusy: String?
+    /// An answer streaming into the panel.
+    public internal(set) var aiStreaming: String?
+    /// A plan previewed on the canvas (drawn as ghosts).
+    public internal(set) var previewPlan: ChangePlan?
+    /// "Apple Intelligence is off…": shown in place when an entry point can't run.
+    public internal(set) var aiNotice: String?
+    /// Time from ⌥Space to the first ghost, for the performance budget.
+    public internal(set) var lastGhostLatency: TimeInterval?
+    @ObservationIgnored var aiTask: Task<Void, Never>?
+    @ObservationIgnored var idleSuggestion: Task<Void, Never>?
+    /// An AI+ sheet (translate, mask, sticker, record, remove background).
+    public internal(set) var aiSheet: AISheet?
+    /// "Use a local model" and ⌘, open Settings › AI.
+    @ObservationIgnored public var onOpenAISettings: (() -> Void)?
+    /// Give keyboard focus back to the canvas (after the prompt bar or a panel field).
+    @ObservationIgnored public var onRestoreFocus: (() -> Void)?
+
     // MARK: Views & navigation (M5)
     /// Canvas, Outline or Split (⌘1–3).
     public var viewMode: CanvasViewMode = .canvas {
@@ -336,6 +367,8 @@ public final class CanvasController {
     /// Return / Esc: commit and return to Select on the same node.
     public func commitEdit() {
         guard let e = edit else { return }
+        // A new topic (its default text was selected) may get ideas after a pause.
+        defer { if e.selectAll && e.element == nil { scheduleIdleSuggestion(for: e.node) } }
         edit = nil
         mode = .select
         if let element = e.element {
@@ -418,6 +451,8 @@ public final class CanvasController {
             return handlePresentKey(chord, characters: characters) ? .handled : .ignored
         }
         if convert != nil { return handleConvertKey(chord, characters: characters) ? .handled : .ignored }
+        aiNotice = nil
+        if ghosts != nil, handleGhostKey(chord) { return .handled }
         // Esc climbs out of Focus, then leaves ZEN, before collapsing the selection.
         if chord.key == .escape, chord.modifiers.isEmpty, mode == .select, selectedElement == nil, slash == nil {
             if focusRoot != nil {

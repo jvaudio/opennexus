@@ -94,6 +94,21 @@ public struct SceneViewState: Equatable {
     public var matches: [NodeID: [NSRange]] = [:]
     /// A flow drawn as the present step.
     public var flowGlow: String?
+    /// AI ghosts: temporary children laid out with the map but never in the document.
+    public var ghosts: [Ghost] = []
+    public var ghostHighlight: Int?
+
+    public struct Ghost: Equatable {
+        /// Under a real topic, or under an earlier ghost (by index).
+        public var parent: NodeID?
+        public var parentGhost: Int?
+        public var idea: GhostIdea
+        public init(parent: NodeID?, parentGhost: Int?, idea: GhostIdea) {
+            self.parent = parent
+            self.parentGhost = parentGhost
+            self.idea = idea
+        }
+    }
     public init() {}
     public var isEmpty: Bool { self == SceneViewState() }
 }
@@ -330,8 +345,10 @@ public struct SceneBuilder {
     }()
 
     public func build(
-        _ canvas: Canvas, env: StyleEnvironment, editing: EditingState? = nil, view: SceneViewState = SceneViewState()
+        _ source: Canvas, env: StyleEnvironment, editing: EditingState? = nil, view: SceneViewState = SceneViewState()
     ) -> Scene {
+        let canvas =
+            view.ghosts.isEmpty ? source : Self.inject(view.ghosts, highlight: view.ghostHighlight, into: source)
         let focus = view.focus.flatMap { canvas.nodes[$0] != nil && $0 != canvas.root ? $0 : nil }
         let focusSet = focus.map { Set(canvas.subtree($0, includeFolded: false)) } ?? []
         let focusDepth = focus.map { canvas.depth(of: $0) } ?? 0
@@ -961,7 +978,42 @@ public struct SceneBuilder {
             scene.zones.append(SceneZone(zone: z, rect: rect, hidden: hidden, color: color))
         }
         if !view.isEmpty || focus != nil { Self.apply(view, focusSet: focusSet, to: &scene) }
+        if !view.ghosts.isEmpty {
+            for i in scene.edges.indices where CanvasController.ghostIndex(scene.edges[i].child) != nil {
+                scene.edges[i].line.color = env.theme.ai
+                scene.edges[i].line.dash = "dashed"
+            }
+        }
         return scene
+    }
+
+    /// Ghost suggestions styled dashed teal (artboard 28); the highlighted one is stronger
+    /// and carries a ⌃↩ badge.
+    static func inject(_ ghosts: [SceneViewState.Ghost], highlight: Int?, into c: Canvas) -> Canvas {
+        var c = c
+        for (i, g) in ghosts.enumerated() {
+            let id = CanvasController.ghostID(i)
+            let parent = g.parentGhost.map { CanvasController.ghostID($0) } ?? g.parent ?? c.root
+            guard c.nodes[parent] != nil else { continue }
+            var n = Node(text: g.idea.text, kind: .topic)
+            n.markers = g.idea.markers
+            n.labels = g.idea.labels
+            if g.idea.todo { n.todo = Todo(done: false) }
+            var st = TopicStyle()
+            st.shape = "rounded"
+            st.fill = "solid"
+            st.fillColor = i == highlight ? "ai@0.16" : "ai@0.07"
+            st.border = "dashed"
+            st.borderColor = "ai"
+            st.borderWidth = i == highlight ? 2.5 : 1.5
+            st.textColor = "ai"
+            st.shadow = "none"
+            n.style = st
+            c.nodes[id] = n
+            c.nodes[parent]?.children.append(id)
+            c.nodes[parent]?.folded = false
+        }
+        return c
     }
 
     /// Applies view state: dimming, hiding, focus blur, glows and search matches.

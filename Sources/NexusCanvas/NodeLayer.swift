@@ -125,7 +125,7 @@ final class NodeLayer: CALayer {
     /// driven by the animator.
     func apply(
         _ n: SceneNode, theme: Theme, canvas: RGBA, selected: Bool, primary: Bool, editing: Bool,
-        morph: Bool = false, image: CGImage? = nil
+        morph: Bool = false, image: CGImage? = nil, sticker: CGImage? = nil
     ) {
         let sizeChanged = node?.frame.size != n.frame.size
         let lookChanged = node?.appearance != n.appearance || node?.textStyle != n.textStyle
@@ -174,6 +174,7 @@ final class NodeLayer: CALayer {
             text.frame = n.textRect
             lead.isHidden = true
             decor.node = n
+            decor.stickerImage = sticker
             decor.theme = theme
             decor.frame = CGRect(origin: .zero, size: n.frame.size)
             decor.setNeedsDisplay()
@@ -454,6 +455,8 @@ final class NodeLayer: CALayer {
 /// label pills and pinned metadata (artboard 07 slots 3, 5, 6, 9).
 final class DecorLayer: CALayer {
     var node: SceneNode?
+    /// A sticker made with Image Playground (an asset), drawn in the sticker slot.
+    var stickerImage: CGImage?
     var theme: Theme = .classic
 
     override init() {
@@ -521,7 +524,13 @@ final class DecorLayer: CALayer {
         }
         drawTech(n, ink: ink, ctx: ctx)
         // Sticker.
-        if let st = n.sticker, !n.stickerRect.isEmpty {
+        if let img = stickerImage, !n.stickerRect.isEmpty {
+            ctx.saveGState()
+            ctx.translateBy(x: 0, y: n.stickerRect.maxY + n.stickerRect.minY)
+            ctx.scaleBy(x: 1, y: -1)
+            ctx.draw(img, in: n.stickerRect.insetBy(dx: 1, dy: 1))
+            ctx.restoreGState()
+        } else if let st = n.sticker, !n.stickerRect.isEmpty {
             let glyph = st.hasPrefix("emoji:") ? String(st.dropFirst(6)) : st.contains("/") ? "★" : st
             NSAttributedString(string: glyph, attributes: [.font: NSFont.systemFont(ofSize: 20)])
                 .draw(at: CGPoint(x: n.stickerRect.minX + 2, y: n.stickerRect.minY))

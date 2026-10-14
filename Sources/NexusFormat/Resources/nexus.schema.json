@@ -263,6 +263,147 @@
       ],
       "type": "object"
     },
+    "changeOp": {
+      "description": "One edit in an AI plan of changes.",
+      "properties": {
+        "from": {
+          "type": "string"
+        },
+        "labels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "node": {
+          "type": "string"
+        },
+        "op": {
+          "enum": [
+            "add",
+            "rename",
+            "note",
+            "move",
+            "todo"
+          ]
+        },
+        "parent": {
+          "type": "string"
+        },
+        "parentAdd": {
+          "description": "Index of an earlier add in the same plan to nest under.",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "text": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        },
+        "todo": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "op"
+      ],
+      "type": "object"
+    },
+    "changePlan": {
+      "description": "A proposed change from the AI panel, shown as a diff before applying.",
+      "properties": {
+        "ops": {
+          "items": {
+            "$ref": "#/$defs/changeOp"
+          },
+          "type": "array"
+        },
+        "summary": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "ops"
+      ],
+      "type": "object"
+    },
+    "chatMessage": {
+      "properties": {
+        "applied": {
+          "type": "boolean"
+        },
+        "plan": {
+          "$ref": "#/$defs/changePlan"
+        },
+        "role": {
+          "enum": [
+            "user",
+            "assistant"
+          ]
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "text"
+      ],
+      "type": "object"
+    },
+    "chats": {
+      "description": "ai/chats.json: the document's AI chats (kept outside undo).",
+      "properties": {
+        "chats": {
+          "items": {
+            "properties": {
+              "canvas": {
+                "$ref": "#/$defs/id"
+              },
+              "depth": {
+                "enum": [
+                  "quick",
+                  "balanced",
+                  "deep"
+                ]
+              },
+              "discussion": {
+                "type": "boolean"
+              },
+              "id": {
+                "type": "string"
+              },
+              "messages": {
+                "items": {
+                  "$ref": "#/$defs/chatMessage"
+                },
+                "type": "array"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "messages"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "chats"
+      ],
+      "type": "object"
+    },
     "diagram": {
       "description": "Technical-diagram state.",
       "properties": {
@@ -729,6 +870,9 @@
     },
     {
       "$ref": "#/$defs/canvas"
+    },
+    {
+      "$ref": "#/$defs/chats"
     }
   ],
   "description": "OpenNexus .nexus package files. Objects allow unknown keys so newer files round-trip through older apps.",
