@@ -17,12 +17,20 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     let panel: NSHostingView<FormatPanel>
     private var panelDivider: NSView?
     private var canvasConstraints: (alone: NSLayoutConstraint, withPanel: NSLayoutConstraint)?
+    /// Outline (⌘2) and Split (⌘3), M5.
+    let outline: OutlineView
+    private var modeConstraints: [CanvasViewMode: [NSLayoutConstraint]] = [:]
+    private var tabsView: NSView?
+    private var tabsHeight: NSLayoutConstraint?
+    private var presenterWindow: NSWindow?
+    private var chromeBeforeImmersion: (panel: Bool, fullScreen: Bool, mode: CanvasViewMode)?
 
     init(document: NexusDocument) {
         document_ = document
         controller = CanvasController(store: document.store)
         host = CanvasHostView(controller: controller)
         panel = NSHostingView(rootView: FormatPanel(controller: controller))
+        outline = OutlineView(controller: controller)
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 1440, height: 900),
@@ -42,6 +50,10 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         let content = NSView()
         content.addSubview(tabs)
         content.addSubview(host)
+        outline.translatesAutoresizingMaskIntoConstraints = false
+        outline.isHidden = true
+        content.addSubview(outline)
+        tabsView = tabs
         panel.translatesAutoresizingMaskIntoConstraints = false
         panel.isHidden = !UserDefaults.standard.bool(forKey: "formatPanelVisible")
         content.addSubview(panel)
@@ -58,10 +70,11 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
             tabs.topAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor),
             tabs.leadingAnchor.constraint(equalTo: content.leadingAnchor),
             tabs.trailingAnchor.constraint(equalTo: content.trailingAnchor),
-            tabs.heightAnchor.constraint(equalToConstant: 40),
             host.topAnchor.constraint(equalTo: tabs.bottomAnchor),
-            host.leadingAnchor.constraint(equalTo: content.leadingAnchor),
             host.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+            outline.topAnchor.constraint(equalTo: tabs.bottomAnchor),
+            outline.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+            outline.leadingAnchor.constraint(equalTo: content.leadingAnchor),
             divider.topAnchor.constraint(equalTo: tabs.bottomAnchor),
             divider.bottomAnchor.constraint(equalTo: content.bottomAnchor),
             divider.widthAnchor.constraint(equalToConstant: 1),
@@ -72,6 +85,24 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
             panel.widthAnchor.constraint(equalToConstant: 330),
         ])
         (panel.isHidden ? canvasTrailing : canvasToPanel).isActive = true
+        let th = tabs.heightAnchor.constraint(equalToConstant: 40)
+        th.isActive = true
+        tabsHeight = th
+        modeConstraints = [
+            .canvas: [
+                host.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+                outline.widthAnchor.constraint(equalToConstant: 0),
+            ],
+            .outline: [
+                host.leadingAnchor.constraint(equalTo: content.leadingAnchor),
+                outline.trailingAnchor.constraint(equalTo: host.trailingAnchor),
+            ],
+            .split: [
+                outline.widthAnchor.constraint(equalTo: content.widthAnchor, multiplier: 0.39),
+                host.leadingAnchor.constraint(equalTo: outline.trailingAnchor, constant: 1),
+            ],
+        ]
+        NSLayoutConstraint.activate(modeConstraints[.canvas]!)
         window.contentView = content
 
         let toolbar = NSToolbar(identifier: "DocumentToolbar")
@@ -108,8 +139,130 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
 
     // MARK: Commands handled at window level
 
+    /// Canvas ⌘1, Outline ⌘2, Split ⌘3: selection is shared, so both panes stay linked.
+    func applyViewMode(_ mode: CanvasViewMode) {
+        for (_, cs) in modeConstraints { NSLayoutConstraint.deactivate(cs) }
+        NSLayoutConstraint.activate(modeConstraints[mode] ?? [])
+        outline.isHidden = mode == .canvas
+        host.isHidden = mode == .outline
+        window?.subtitle = mode == .split ? "Split view" : mode == .outline ? "Outline" : window?.subtitle ?? ""
+        if mode == .canvas { updateSubtitle() }
+        (window?.toolbar?.items.first { $0.itemIdentifier == .viewSwitcher } as? NSToolbarItemGroup)?.selectedIndex =
+            mode == .canvas ? 0 : mode == .outline ? 1 : 2
+        window?.layoutIfNeeded()
+        if mode == .canvas { window?.makeFirstResponder(host.canvasView) } else { outline.focus() }
+    }
+
+    @objc func switchViewMode(_ sender: NSToolbarItemGroup) {
+        controller.viewMode = [.canvas, .outline, .split][max(0, min(2, sender.selectedIndex))]
+    }
+
+    /// ZEN and Present hide every toolbar and panel (and go full screen).
+    func setImmersive(_ on: Bool) {
+        guard let window else { return }
+        if on {
+            if chromeBeforeImmersion == nil {
+                chromeBeforeImmersion = (!panel.isHidden, window.styleMask.contains(.fullScreen), controller.viewMode)
+            }
+            if !panel.isHidden { toggleFormatPanel() }
+            if controller.viewMode != .canvas { controller.viewMode = .canvas }
+            window.toolbar?.isVisible = false
+            tabsHeight?.constant = 0
+            tabsView?.isHidden = true
+            if !window.styleMask.contains(.fullScreen) { window.toggleFullScreen(nil) }
+        } else if let before = chromeBeforeImmersion {
+            chromeBeforeImmersion = nil
+            window.toolbar?.isVisible = true
+            tabsHeight?.constant = 40
+            tabsView?.isHidden = false
+            if before.panel && panel.isHidden { toggleFormatPanel() }
+            if !before.fullScreen && window.styleMask.contains(.fullScreen) { window.toggleFullScreen(nil) }
+            controller.viewMode = before.mode
+        }
+        window.makeFirstResponder(host.canvasView)
+    }
+
+    /// Presenter view: on a second display when there is one.
+    func showPresenter(_ on: Bool, force: Bool = false) {
+        if !on {
+            presenterWindow?.orderOut(nil)
+            presenterWindow = nil
+            return
+        }
+        guard presenterWindow == nil, force || NSScreen.screens.count > 1,
+            let other = NSScreen.screens.first(where: { $0 != window?.screen }) ?? NSScreen.main
+        else { return }
+        let w = NSWindow(
+            contentRect: CGRect(x: 0, y: 0, width: 720, height: 520), styleMask: [.titled, .resizable],
+            backing: .buffered, defer: false)
+        w.title = "Presenter View"
+        w.contentView = NSHostingView(rootView: PresenterView(controller: controller))
+        w.setFrameOrigin(CGPoint(x: other.visibleFrame.midX - 360, y: other.visibleFrame.midY - 260))
+        w.level = force ? .floating : .normal
+        w.orderFront(nil)
+        presenterWindow = w
+    }
+
+    /// Export: PDF · PowerPoint · Keynote · Video (artboard 32).
+    func exportSlides(_ format: String) {
+        guard let window else { return }
+        let panel = NSSavePanel()
+        let base = controller.canvas.title.isEmpty ? "Slides" : controller.canvas.title
+        switch format {
+        case "PDF":
+            panel.allowedContentTypes = [.pdf]
+            panel.nameFieldStringValue = "\(base).pdf"
+        case "Video":
+            panel.allowedContentTypes = [.mpeg4Movie]
+            panel.nameFieldStringValue = "\(base).mp4"
+        default:
+            panel.allowedContentTypes = [UTType(filenameExtension: "pptx") ?? .data]
+            panel.nameFieldStringValue = "\(base).pptx"
+        }
+        let model = document_.store.model
+        let canvasID = controller.canvasID
+        let titles = controller.slides.filter { !$0.skipped }.map(\.title)
+        panel.beginSheetModal(for: window) { [weak self] response in
+            guard response == .OK, let url = panel.url else { return }
+            MainActor.assumeIsolated {
+                let images = SlideExporter.renderSlides(model, canvas: canvasID)
+                switch format {
+                case "PDF": try? SlideExporter.pdf(images).write(to: url, options: .atomic)
+                case "Video":
+                    Task { @MainActor in
+                        do {
+                            try await SlideExporter.video(images, to: url)
+                            self?.controller.showToast("Video exported")
+                        } catch {
+                            self?.controller.showToast("Video export failed: \(error.localizedDescription)")
+                        }
+                    }
+                    return
+                default: try? SlideExporter.pptx(images, titles: titles).write(to: url, options: .atomic)
+                }
+                self?.controller.showToast("Exported \(images.count) slides")
+            }
+        }
+    }
+
     /// DFD drill-down inserts its level canvas undoably; CSV exports go through a save panel.
     private func wireDiagramHooks() {
+        controller.onViewMode = { [weak self] m in self?.applyViewMode(m) }
+        controller.onZen = { [weak self] on in self?.setImmersive(on) }
+        host.onPresentChange = { [weak self] on in
+            self?.setImmersive(on)
+            self?.showPresenter(on)
+        }
+        controller.onExportSlides = { [weak self] f in self?.exportSlides(f) }
+        controller.onTogglePresenter = { [weak self] in
+            guard let self else { return }
+            self.showPresenter(self.presenterWindow == nil, force: true)
+        }
+        controller.externalCommands = [.newCanvas, .inspector]
+        controller.onExternalCommand = { [weak self] id in
+            if id == .newCanvas { self?.addCanvas() }
+            if id == .inspector { self?.toggleFormatPanel() }
+        }
         controller.onAddCanvas = { [weak self] canvas in
             guard let self else { return }
             self.insertCanvas(canvas, at: self.document_.store.model.canvasOrder.count)
@@ -215,8 +368,8 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
                 itemIdentifier: id, titles: ["Canvas", "Outline", "Split"], selectionMode: .selectOne,
                 labels: ["Canvas", "Outline", "Split"], target: nil, action: nil)
             group.selectedIndex = 0
-            // Outline and Split arrive in M5.
-            for (i, sub) in group.subitems.enumerated() where i > 0 { sub.isEnabled = false }
+            group.target = self
+            group.action = #selector(switchViewMode(_:))
             return group
         case .diagramType:
             return hosted(id, label: "Diagram type", DiagramTypeButton(controller: controller))

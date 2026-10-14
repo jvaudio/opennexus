@@ -71,6 +71,31 @@ public struct SceneNode: Equatable {
     public var pinnedRect: CGRect
     /// Technical-diagram decorations (captions, kickers, icons, risk badges).
     public var tech = TechDecor()
+    /// View state (focus, filters, search, tags, present): opacity, blur, glow and the
+    /// matched substrings highlighted in the title.
+    public var opacity: Double = 1
+    public var blurred = false
+    public var glow = false
+    public var matchRanges: [NSRange] = []
+}
+
+/// What the current view emphasises. Never stored in the document and never undone.
+public struct SceneViewState: Equatable {
+    /// Focus (⌘.): this branch is laid out as the whole map; the rest blurs.
+    public var focus: NodeID?
+    /// Topics drawn at reduced opacity (filter dim, tag highlight, present).
+    public var dimmed: Set<NodeID> = []
+    public var dimOpacity: Double = 0.3
+    /// Topics hidden by a filter (drawn almost transparent so the layout stays put).
+    public var hidden: Set<NodeID> = []
+    /// Topics with a highlight glow (search hits, present step).
+    public var glow: Set<NodeID> = []
+    /// Matched substrings per topic (search).
+    public var matches: [NodeID: [NSRange]] = [:]
+    /// A flow drawn as the present step.
+    public var flowGlow: String?
+    public init() {}
+    public var isEmpty: Bool { self == SceneViewState() }
 }
 
 /// What a node type adds to a topic on technical canvases (artboards 19–23).
@@ -115,6 +140,7 @@ public enum SceneDecor: Equatable {
 }
 
 public struct SceneEdge: Equatable {
+    public var opacity: Double = 1
     public var parent: NodeID
     public var child: NodeID
     public var family: String
@@ -136,6 +162,9 @@ public struct SceneRelationship: Equatable {
     public var flagged = false
     /// Fixed geometry (sequence messages): start and end in canvas coordinates.
     public var points: [CGPoint]?
+    public var opacity: Double = 1
+    /// The present step's flow: drawn thicker in the accent colour.
+    public var glow = false
 }
 
 public struct SceneBoundary: Equatable {
@@ -300,7 +329,12 @@ public struct SceneBuilder {
         return t
     }()
 
-    public func build(_ canvas: Canvas, env: StyleEnvironment, editing: EditingState? = nil) -> Scene {
+    public func build(
+        _ canvas: Canvas, env: StyleEnvironment, editing: EditingState? = nil, view: SceneViewState = SceneViewState()
+    ) -> Scene {
+        let focus = view.focus.flatMap { canvas.nodes[$0] != nil && $0 != canvas.root ? $0 : nil }
+        let focusSet = focus.map { Set(canvas.subtree($0, includeFolded: false)) } ?? []
+        let focusDepth = focus.map { canvas.depth(of: $0) } ?? 0
         var scene = Scene()
         scene.theme = env.theme
         scene.canvasColor = env.canvas
@@ -366,6 +400,9 @@ public struct SceneBuilder {
                 guard var node = canvas.nodes[id] else { continue }
                 var role: NodeRoleStyle =
                     switch topKind {
+                    case "root" where focusSet.contains(id):
+                        // The focused branch is drawn as a map of its own.
+                        depth == focusDepth ? .root : depth == focusDepth + 1 ? .main : .sub
                     case "root": depth == 0 ? .root : depth == 1 ? .main : .sub
                     case "summary": depth == 0 ? .main : .sub
                     case "callout": .sub
@@ -676,6 +713,14 @@ public struct SceneBuilder {
                         root: f, nodes: layoutNodes, structure: .logicRight, origin: origin, spacing: space))
             }
         }
+        // Focus: lay the branch out as a whole map where it stands.
+        if let f = focus, !technical, let at = frames[f] {
+            let s = canvas.nodes[f]?.structure ?? .mindmapBalanced
+            let r = TreeLayout.layout(root: f, nodes: layoutNodes, structure: s, origin: at.center, spacing: space)
+            frames.merge(r.frames) { _, b in b }
+            families.merge(r.families) { _, b in b }
+            cells.merge(r.cells) { _, b in b }
+        }
         // A structure may widen a topic (matrix and tree-table header bars): re-centre its content.
         for (id, f) in frames {
             guard let measured = layoutNodes[id]?.size, f.size.width > measured.width + 0.5, var p = pending[id]
@@ -915,7 +960,36 @@ public struct SceneBuilder {
             let color = z.color.flatMap(RGBA.init(hexString:)) ?? RGBA(hex: "#7A4CC2")
             scene.zones.append(SceneZone(zone: z, rect: rect, hidden: hidden, color: color))
         }
+        if !view.isEmpty || focus != nil { Self.apply(view, focusSet: focusSet, to: &scene) }
         return scene
+    }
+
+    /// Applies view state: dimming, hiding, focus blur, glows and search matches.
+    static func apply(_ view: SceneViewState, focusSet: Set<NodeID>, to scene: inout Scene) {
+        let focusing = !focusSet.isEmpty
+        for id in scene.nodes.keys {
+            var o = 1.0
+            if view.hidden.contains(id) { o = 0.05 } else if view.dimmed.contains(id) { o = view.dimOpacity }
+            if focusing && !focusSet.contains(id) {
+                o = min(o, 0.22)
+                scene.nodes[id]?.blurred = true
+            }
+            scene.nodes[id]?.opacity = o
+            scene.nodes[id]?.glow = view.glow.contains(id)
+            scene.nodes[id]?.matchRanges = view.matches[id] ?? []
+        }
+        func opacity(_ id: NodeID) -> Double { scene.nodes[id]?.opacity ?? 1 }
+        for i in scene.edges.indices {
+            scene.edges[i].opacity = min(opacity(scene.edges[i].parent), opacity(scene.edges[i].child))
+        }
+        for i in scene.relationships.indices {
+            let r = scene.relationships[i].relationship
+            scene.relationships[i].opacity = min(opacity(r.from), opacity(r.to))
+            if r.id == view.flowGlow {
+                scene.relationships[i].glow = true
+                scene.relationships[i].opacity = 1
+            }
+        }
     }
 
     /// To-do progress summed from a topic's direct children (EN).

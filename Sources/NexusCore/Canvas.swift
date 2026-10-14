@@ -145,6 +145,10 @@ public struct Canvas: Hashable, Sendable {
     public var zones: [Zone] = []
     /// Technical-diagram state: lanes, DFD levels, ignored rule checks.
     public var diagram = DiagramData()
+    /// Saved filters (filter bar › Save as …).
+    public var filters: [NodeFilter] = []
+    /// Present mode deck settings.
+    public var presentation = PresentationSettings()
     public var extra: [String: JSONValue] = [:]
 
     /// Next sequence number for new node ids. Not stored; derived on load.
@@ -194,7 +198,8 @@ public struct Canvas: Hashable, Sendable {
         a.id == b.id && a.title == b.title && a.type == b.type && a.layout == b.layout && a.style == b.style
             && a.root == b.root && a.nodes == b.nodes && a.floating == b.floating
             && a.relationships == b.relationships && a.boundaries == b.boundaries && a.summaries == b.summaries
-            && a.callouts == b.callouts && a.zones == b.zones && a.diagram == b.diagram && a.extra == b.extra
+            && a.callouts == b.callouts && a.zones == b.zones && a.diagram == b.diagram
+            && a.filters == b.filters && a.presentation == b.presentation && a.extra == b.extra
     }
 
     public func hash(into h: inout Hasher) {
@@ -231,6 +236,10 @@ extension Canvas: JSONRepresentable {
         callouts = try r.array("callouts").enumerated().map { try Callout(json: $1, path: "\(path).callouts[\($0)]") }
         zones = try r.array("zones").enumerated().map { try Zone(json: $1, path: "\(path).zones[\($0)]") }
         diagram = try r.raw("diagram").map { try DiagramData(json: $0, path: "\(path).diagram") } ?? DiagramData()
+        filters = try r.array("filters").enumerated().map { try NodeFilter(json: $1, path: "\(path).filters[\($0)]") }
+        presentation =
+            try r.raw("presentation").map { try PresentationSettings(json: $0, path: "\(path).presentation") }
+            ?? PresentationSettings()
         extra = r.leftovers
         nextSequence = Canvas.seed(for: nodes.keys)
         guard nodes[root] != nil else { throw ModelDecodingError(path: "\(path).root", "root node \(root) is missing") }
@@ -252,6 +261,8 @@ extension Canvas: JSONRepresentable {
         if !callouts.isEmpty { w.set("callouts", .array(callouts.map(\.json))) }
         if !zones.isEmpty { w.set("zones", .array(zones.map(\.json))) }
         if !diagram.isEmpty { w.set("diagram", diagram.json) }
+        if !filters.isEmpty { w.set("filters", .array(filters.map(\.json))) }
+        if !presentation.isDefault { w.set("presentation", presentation.json) }
         return w.value
     }
 }

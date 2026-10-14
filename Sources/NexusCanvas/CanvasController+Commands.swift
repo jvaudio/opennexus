@@ -19,6 +19,13 @@ extension CanvasController {
         var h: [CommandID: (CanvasController) -> Void] = [
             .addChild: { c in if !c.techAddChild() { c.addChild() } },
             .slashMenu: { $0.openSlash() },
+            .outlineSibling: { $0.addSibling(before: false) },
+            .outlineIndent: { c in c.restructure("Indent") { try $0.demote(c.selection.primary) } },
+            .outlineOutdent: { c in c.restructure("Outdent") { try $0.promote(c.selection.primary) } },
+            .outlinePrevious: { $0.stepOutline(-1) },
+            .outlineNext: { $0.stepOutline(1) },
+            .outlineCollapse: { $0.outlineCollapse() },
+            .outlineExpand: { $0.outlineExpand() },
             .convert: { $0.openConvert() },
             .laneUp: { $0.moveLane(-1) },
             .laneDown: { $0.moveLane(1) },
@@ -26,7 +33,18 @@ extension CanvasController {
             .copyMermaid: { $0.copyMermaid() },
             .threatTable: { $0.threatTableVisible.toggle() },
             .suggestThreats: { $0.suggestStrideEverywhere() },
-            .focusBranch: { c in if !c.drillIntoProcess() { c.showToast("Focus on Branch arrives with views (M5)") } },
+            .focusBranch: { c in if !c.drillIntoProcess() { c.toggleFocus() } },
+            .palette: { $0.openPalette() },
+            .quickJump: { $0.openJump() },
+            .filterBar: { $0.toggleFilterBar() },
+            .find: { $0.openSearch() },
+            .findNext: { $0.stepSearch(1) },
+            .findPrevious: { $0.stepSearch(-1) },
+            .zen: { $0.toggleZen() },
+            .present: { c in c.present == nil ? c.startPresent() : c.endPresent() },
+            .showCanvas: { $0.viewMode = .canvas },
+            .showOutline: { $0.viewMode = .outline },
+            .showSplit: { $0.viewMode = .split },
             .aiAcceptAll: { c in _ = c.acceptAllStride() },
             .addSiblingAfter: { $0.addSibling(before: false) },
             .addSiblingBefore: { $0.addSibling(before: true) },
@@ -79,6 +97,13 @@ extension CanvasController {
         for n in 1...9 {
             h[.priority(n)] = { $0.toggleMarker(n) }
             h[.structure(n)] = { $0.setStructure(Self.structureCycle[n - 1]) }
+        }
+        for n in 1...5 {
+            h[.navigationTab(n)] = { c in
+                c.navTab = c.navTab == n ? nil : n
+                if n == 1 && c.navTab == 1 { c.searchFocusSerial += 1 }
+                c.refreshView()
+            }
         }
         return h
     }

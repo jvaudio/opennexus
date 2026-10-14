@@ -49,6 +49,8 @@ final class NodeLayer: CALayer {
     let badgeText = TextLayer()
     /// Technical caption above the node (PROCESS, START, EXTERNAL ENTITY).
     let caption = TextLayer()
+    /// Search hits and the present step glow around the node.
+    let glowLayer = CAShapeLayer()
     private(set) var node: SceneNode?
     private var state: (selected: Bool, editing: Bool, connectTarget: Bool) = (false, false, false)
     var textScale: CGFloat = 2 {
@@ -90,6 +92,10 @@ final class NodeLayer: CALayer {
         addSublayer(badge)
         caption.isHidden = true
         addSublayer(caption)
+        glowLayer.fillColor = nil
+        glowLayer.isHidden = true
+        glowLayer.actions = Self.noActions
+        insertSublayer(glowLayer, at: 0)
         actions = Self.noActions
         for l in [
             shape, inner, gradient, gradientMask, text, ring, halo, lead, badge, badgeText, decor, imageLayer, caption,
@@ -153,6 +159,11 @@ final class NodeLayer: CALayer {
             let rich = NSMutableAttributedString(
                 attributedString: n.textStyle.attributed(
                     n.displayText, marks: n.marks, color: ns, linkColor: NSColor(cgColor: theme.ring.cgColor)))
+            // Search matches: the substring is highlighted (artboard 47).
+            for r in n.matchRanges where r.location + r.length <= rich.length {
+                rich.addAttribute(
+                    .backgroundColor, value: NSColor(red: 1, green: 0.86, blue: 0.3, alpha: 0.75), range: r)
+            }
             if n.todo?.done == true {
                 let all = NSRange(location: 0, length: rich.length)
                 rich.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: all)
@@ -196,6 +207,31 @@ final class NodeLayer: CALayer {
             updateRing(theme: theme, canvas: canvas, selected: selected, editing: editing)
         }
         text.isHidden = editing && !n.isPlaceholder
+        applyViewState(n, theme: theme)
+    }
+
+    /// Opacity, blur and glow from the view (filters, focus, search, present).
+    func applyViewState(_ n: SceneNode, theme: Theme) {
+        if connectRole == nil { opacity = Float(n.opacity) }
+        if n.blurred {
+            if filters?.isEmpty ?? true, let blur = CIFilter(name: "CIGaussianBlur") {
+                blur.setValue(2.5, forKey: kCIInputRadiusKey)
+                filters = [blur]
+            }
+        } else if !(filters?.isEmpty ?? true) {
+            filters = nil
+        }
+        glowLayer.isHidden = !n.glow
+        if n.glow {
+            let r = CGRect(origin: .zero, size: n.frame.size).insetBy(dx: -4, dy: -4)
+            glowLayer.path = CGPath(roundedRect: r, cornerWidth: 12, cornerHeight: 12, transform: nil)
+            glowLayer.strokeColor = NSColor(red: 1, green: 0.8, blue: 0.25, alpha: 0.75).cgColor
+            glowLayer.lineWidth = 5
+            glowLayer.shadowColor = NSColor(red: 1, green: 0.8, blue: 0.25, alpha: 1).cgColor
+            glowLayer.shadowOpacity = 0.8
+            glowLayer.shadowRadius = 8
+            glowLayer.shadowOffset = .zero
+        }
     }
 
     enum ConnectRole { case source, target, candidate, dimmed }
@@ -216,7 +252,7 @@ final class NodeLayer: CALayer {
         case .candidate?: opacity = 0.55
         case .dimmed?: opacity = 0.3
         case nil:
-            opacity = 1
+            opacity = Float(node?.opacity ?? 1)
             if let n = node {
                 updateRing(theme: theme, canvas: .white, selected: state.selected, editing: state.editing, refresh: n)
             }

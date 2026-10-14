@@ -307,7 +307,7 @@ struct DFDPanelView: View {
     var controller: CanvasController
 
     var body: some View {
-        if controller.canvas.type == .dfd {
+        if controller.canvas.type == .dfd, controller.present == nil {
             let c = controller.canvas
             VStack(alignment: .leading, spacing: 8) {
                 Text("LEVELS").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
@@ -361,8 +361,9 @@ struct ViolationCardView: View {
     var controller: CanvasController
 
     var body: some View {
-        if controller.canvas.type == .dfd
-            || (controller.canvas.type == .threatModel && !controller.threatTableVisible),
+        if controller.present == nil,
+            controller.canvas.type == .dfd
+                || (controller.canvas.type == .threatModel && !controller.threatTableVisible),
             let v = controller.shownViolation
         {
             let red = controller.theme.critical.color
@@ -401,7 +402,7 @@ struct LevelBreadcrumbView: View {
 
     var body: some View {
         let path = controller.levelPath
-        if controller.canvas.type == .dfd, path.count > 1 {
+        if controller.canvas.type == .dfd, path.count > 1, controller.present == nil {
             HStack(spacing: 6) {
                 ForEach(Array(path.enumerated()), id: \.offset) { i, l in
                     if i > 0 { Text("›").foregroundStyle(.secondary) }
@@ -425,7 +426,7 @@ struct ThreatSuggestionCard: View {
 
     var body: some View {
         let s = controller.strideSuggestionsForSelection
-        if controller.canvas.type == .threatModel, !s.isEmpty, controller.mode == .select {
+        if controller.canvas.type == .threatModel, !s.isEmpty, controller.mode == .select, controller.present == nil {
             let teal = controller.theme.ai.color
             let name = controller.canvas.nodes[controller.selection.primary]?.text ?? ""
             VStack(alignment: .leading, spacing: 4) {
@@ -449,7 +450,7 @@ struct ThreatTableView: View {
     @State private var filter = "Open"
 
     var body: some View {
-        if controller.canvas.type == .threatModel, controller.threatTableVisible {
+        if controller.canvas.type == .threatModel, controller.threatTableVisible, controller.present == nil {
             let all = controller.threats
             let rows = filter == "All" ? all : all.filter { $0.status == filter }
             VStack(alignment: .leading, spacing: 0) {

@@ -104,6 +104,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         rootLayer.actions = NodeLayer.noActions
         host.layer = rootLayer
         host.wantsLayer = true
+        // Focus blurs the rest of the map (Core Image filters on node layers).
+        host.layerUsesCoreImageFilters = true
         host.autoresizingMask = [.width, .height]
         addSubview(host)
 
@@ -148,6 +150,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
 
         controller.onSceneChange = { [weak self] animated in self?.update(animated: animated) }
         controller.onReveal = { [weak self] id in self?.reveal(id) }
+        controller.onFrame = { [weak self] ids, aspect in self?.frame(ids, aspect: aspect) }
         controller.onEditChange = { [weak self] session in self?.editChanged(session) }
         controller.onEditorReplaceText = { [weak self] text in
             guard let self else { return }
@@ -171,6 +174,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
 
     public override var isFlipped: Bool { true }
     public override var acceptsFirstResponder: Bool { true }
+
+    public override func becomeFirstResponder() -> Bool {
+        controller.outlineFocused = false
+        return super.becomeFirstResponder()
+    }
     public override var canBecomeKeyView: Bool { true }
 
     public override func layout() {
@@ -266,8 +274,10 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                 }
                 springs[id] = SpringValue(start)
             }
+            // Slides show no selection ring (the step glow says what matters).
             layer.apply(
-                n, theme: theme, canvas: scene.canvasColor, selected: selected.contains(id),
+                n, theme: theme, canvas: scene.canvasColor,
+                selected: selected.contains(id) && controller.present == nil,
                 primary: controller.selection.primary == id, editing: editing == id, morph: morph,
                 image: n.image.flatMap { image(for: $0.asset) })
             layer.connectState(
@@ -325,6 +335,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             } else {
                 l.shadowOpacity = 0
             }
+            l.opacity = Float(e.opacity)
+            capLayers[e.child]?.opacity = Float(e.opacity)
             edgeInfo[e.child] = e
             edgesByNode[e.parent, default: []].append(e.child)
             edgesByNode[e.child, default: []].append(e.child)
@@ -557,6 +569,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             return
         }
         let zoomChanged = c.zoom != camera.zoom
+        if zoomChanged { controller.zoom = Double(c.zoom) }
         camera = c
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -612,6 +625,36 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         let z = min(4, max(0.1, camera.zoom * factor))
         let w = camera.toWorld(p)
         setCamera(Camera(offset: CGPoint(x: p.x - w.x * z, y: p.y - w.y * z), zoom: z), animated: false)
+    }
+
+    /// The slide stage: the largest rect of `aspect` that fits under the title and above
+    /// the slide strip.
+    public func stageRect(aspect: Double) -> CGRect {
+        let stripH: CGFloat = controller.present?.stageOnly == false ? 250 : 0
+        let area = CGRect(x: 40, y: 150, width: bounds.width - 80, height: max(100, bounds.height - 190 - stripH))
+        var w = area.width
+        var h = w / aspect
+        if h > area.height {
+            h = area.height
+            w = h * aspect
+        }
+        return CGRect(x: area.midX - w / 2, y: area.minY + (area.height - h) / 2, width: w, height: h)
+    }
+
+    /// Flies the camera so `ids` fill the view (or the slide stage at `aspect`).
+    func frame(_ ids: [NodeID], aspect: Double?) {
+        let rects = ids.compactMap { controller.scene.nodes[$0]?.frame.rect }
+        guard bounds.width > 0, !rects.isEmpty else { return }
+        var b = rects.reduce(CGRect.null) { $0.union($1) }
+        for bd in controller.scene.boundaries where rects.contains(where: { bd.rect.intersects($0) }) {
+            b = b.union(bd.rect)
+        }
+        let target = aspect.map { stageRect(aspect: $0) } ?? bounds.insetBy(dx: 60, dy: 60)
+        let z = min(1.4, max(0.1, min(target.width / max(b.width, 1), target.height / max(b.height, 1))))
+        let cam = Camera(
+            offset: CGPoint(x: target.midX - b.midX * z, y: target.midY - b.midY * z), zoom: z)
+        let cut = controller.present != nil && controller.canvas.presentation.transition == "cut"
+        setCamera(cam, animated: !cut)
     }
 
     func fitToWindow() {
@@ -724,6 +767,15 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     // MARK: Editing
 
     private func editChanged(_ session: EditSession?) {
+        // The outline edits its own rows (live-linked: the canvas still reflows).
+        if controller.outlineFocused, session?.element == nil {
+            if !editor.isHidden {
+                editor.end()
+                editor.isHidden = true
+            }
+            controller.onOutlineEditChange?(session)
+            return
+        }
         if let session, session.element != nil {
             let style = NodeTextStyle(typography: NodeTypography.for(.sub), monospaced: false)
             var st = style

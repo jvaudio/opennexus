@@ -29,6 +29,11 @@ public struct CanvasStatusBar: View {
     public init(controller: CanvasController) { self.controller = controller }
 
     public var body: some View {
+        // Slides right of the navigation panel when it's open.
+        if !controller.zen && controller.present == nil { bar.padding(.leading, controller.navTab != nil ? 320 : 0) }
+    }
+
+    var bar: some View {
         HStack(spacing: 12) {
             StatePill(mode: controller.mode, theme: controller.theme)
             HStack(spacing: 14) {

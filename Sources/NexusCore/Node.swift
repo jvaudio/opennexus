@@ -113,6 +113,8 @@ public struct Node: Hashable, Sendable {
     public var language: String?
     /// A DFD process drilled into (⌘.): the canvas holding its next level.
     public var subCanvas: CanvasID?
+    /// Present mode: H hides this topic from slides.
+    public var presentHidden: Bool = false
     /// Position for floating topics and free layout.
     public var position: CanvasPoint?
     /// Keys this version does not understand, written back unchanged.
@@ -174,6 +176,7 @@ extension Node: JSONRepresentable {
         textFormat = try r.optionalString("textFormat")
         language = try r.optionalString("language")
         subCanvas = try r.optionalString("subCanvas").map(CanvasID.init(rawValue:))
+        presentHidden = try r.bool("presentHidden", default: false)
         if let p = r.raw("position"), p != .null { position = try CanvasPoint(json: p, path: "\(path).position") }
         extra = r.leftovers
     }
@@ -205,6 +208,7 @@ extension Node: JSONRepresentable {
         w.set("textFormat", textFormat)
         w.set("language", language)
         w.set("subCanvas", subCanvas?.rawValue)
+        w.set("presentHidden", presentHidden, omitting: false)
         if let position { w.set("position", position.json) }
         return w.value
     }

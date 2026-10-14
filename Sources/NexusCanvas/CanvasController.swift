@@ -58,6 +58,46 @@ public final class CanvasController {
     public var threatTableVisible = false
     /// The DFD violation whose card is showing.
     public internal(set) var focusedViolation: String?
+    // MARK: Views & navigation (M5)
+    /// Canvas, Outline or Split (⌘1–3).
+    public var viewMode: CanvasViewMode = .canvas {
+        didSet { if viewMode != oldValue { onViewMode?(viewMode) } }
+    }
+    public internal(set) var palette: PaletteState?
+    public internal(set) var jump: JumpState?
+    /// Focus (⌘.): the branch shown as the whole map.
+    public internal(set) var focusRoot: NodeID?
+    public var filterBarVisible = false
+    public internal(set) var filterClauses: [NodeFilter.Clause] = []
+    public internal(set) var filterHides = false
+    /// The navigation panel tab (1 Search … 5 To-dos), nil when hidden.
+    public var navTab: Int?
+    public internal(set) var search = SearchState()
+    /// Bumped to move keyboard focus into the search field (⌘F).
+    public internal(set) var searchFocusSerial = 0
+    /// Markers and labels highlighted from the Tags tab (`marker:…`, `label:…`).
+    public internal(set) var tagHighlight: Set<String> = []
+    public internal(set) var zen = false
+    public internal(set) var present: PresentState?
+    public var countsVisible = false
+    /// The camera zoom, for the zoom control.
+    public internal(set) var zoom: Double = 1
+    @ObservationIgnored public var onViewMode: ((CanvasViewMode) -> Void)?
+    /// The outline pane has keyboard focus (its key scope is active).
+    @ObservationIgnored public var outlineFocused = false
+    @ObservationIgnored public var onOutlineEditChange: ((EditSession?) -> Void)?
+    @ObservationIgnored public var onZen: ((Bool) -> Void)?
+    @ObservationIgnored public var onPresent: ((Bool) -> Void)?
+    /// Export the deck: "PDF", "PowerPoint", "Keynote" or "Video".
+    @ObservationIgnored public var onExportSlides: ((String) -> Void)?
+    /// P while presenting: show or hide the presenter view.
+    @ObservationIgnored public var onTogglePresenter: (() -> Void)?
+    /// Frames a set of topics (focus, jump, present); `stage` is the slide's aspect, if any.
+    @ObservationIgnored public var onFrame: (([NodeID], Double?) -> Void)?
+    /// Commands the window runs (new canvas, format panel, export …), for the palette.
+    @ObservationIgnored public var externalCommands: Set<CommandID> = []
+    @ObservationIgnored public var onExternalCommand: ((CommandID) -> Void)?
+
     /// The highlighted protocol suggestion while an architecture label is edited.
     public internal(set) var suggestionIndex: Int?
     /// Bumped when a conversion starts, so the view uses the 600 ms morph.
@@ -135,8 +175,17 @@ public final class CanvasController {
 
     public var styleEnvironment: StyleEnvironment {
         let lib = library
+        var theme = Theme.named(canvas.style.theme, custom: lib.themes)
+        // Present mode's slide theme swaps to the theme's dark or light counterpart.
+        if present != nil {
+            switch canvas.presentation.theme {
+            case "dark" where !theme.isDark: theme = Theme.named(theme.counterpart ?? "graphite", custom: lib.themes)
+            case "light" where theme.isDark: theme = Theme.named(theme.counterpart ?? "classic", custom: lib.themes)
+            default: break
+            }
+        }
         return StyleEnvironment(
-            theme: Theme.named(canvas.style.theme, custom: lib.themes), canvasStyle: canvas.style,
+            theme: theme, canvasStyle: canvas.style,
             customPalettes: lib.palettes, customQuickStyles: lib.quickStyles)
     }
 
@@ -210,7 +259,7 @@ public final class CanvasController {
             $0.element == nil ? .init(node: $0.node, text: $0.text) : nil
         }
         let s = signposter.beginInterval("scene")
-        scene = builder.build(canvas, env: styleEnvironment, editing: state)
+        scene = builder.build(canvas, env: styleEnvironment, editing: state, view: currentViewState())
         // A relationship label grows with the live text while it's edited.
         if let e = edit, case .relationship(let id) = e.element,
             let i = scene.relationships.firstIndex(where: { $0.relationship.id == id })
@@ -334,7 +383,7 @@ public final class CanvasController {
 
     public var activeScope: Scope {
         switch mode {
-        case .select: .canvas
+        case .select: outlineFocused ? .outline : .canvas
         case .edit: .editor
         case .connect: .connect
         }
@@ -342,7 +391,9 @@ public final class CanvasController {
 
     /// Resolves a chord in the current mode.
     public func command(for chord: KeyChord) -> CommandID? {
-        lookup[activeScope]?[chord] ?? lookup[.global]?[chord]
+        // The outline's own keys win there; everything else works as on the canvas.
+        if activeScope == .outline, let id = lookup[.outline]?[chord] ?? lookup[.canvas]?[chord] { return id }
+        return lookup[activeScope]?[chord] ?? lookup[.global]?[chord]
     }
 
     /// Bindings as resolved under the current profile (for menus, hints, cheat sheet).
@@ -359,7 +410,25 @@ public final class CanvasController {
 
     /// Select-mode key handling. The view calls this for every key down.
     public func handleKey(_ chord: KeyChord, characters: String?) -> KeyResult {
+        if palette != nil { return handlePaletteKey(chord, characters: characters) ? .handled : .ignored }
+        if jump != nil { return handleJumpKey(chord, characters: characters) ? .handled : .ignored }
+        if present != nil, mode == .select {
+            // ⌘-chords (⌘Z, ⌘S …) still work while presenting.
+            if chord.modifiers.contains(.command), let id = command(for: chord), perform(id) { return .handled }
+            return handlePresentKey(chord, characters: characters) ? .handled : .ignored
+        }
         if convert != nil { return handleConvertKey(chord, characters: characters) ? .handled : .ignored }
+        // Esc climbs out of Focus, then leaves ZEN, before collapsing the selection.
+        if chord.key == .escape, chord.modifiers.isEmpty, mode == .select, selectedElement == nil, slash == nil {
+            if focusRoot != nil {
+                climbFocus()
+                return .handled
+            }
+            if zen {
+                toggleZen()
+                return .handled
+            }
+        }
         if let s = slash, !s.inEditor { return handleSlashKey(chord, characters: characters) ? .handled : .ignored }
         if mode == .connect { return handleConnectKey(chord, characters: characters) ? .handled : .ignored }
         if selectedElement != nil, let r = handleElementKey(chord) { return r }

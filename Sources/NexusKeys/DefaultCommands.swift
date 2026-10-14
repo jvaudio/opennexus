@@ -61,6 +61,14 @@ extension CommandID {
     public static let copyMermaid: CommandID = "diagram.copyMermaid"
     public static let threatTable: CommandID = "diagram.threatTable"
     public static let suggestThreats: CommandID = "diagram.suggestThreats"
+    // Outline (M5)
+    public static let outlineIndent: CommandID = "outline.indent"
+    public static let outlineOutdent: CommandID = "outline.outdent"
+    public static let outlineSibling: CommandID = "outline.sibling"
+    public static let outlinePrevious: CommandID = "outline.previous"
+    public static let outlineNext: CommandID = "outline.next"
+    public static let outlineCollapse: CommandID = "outline.collapse"
+    public static let outlineExpand: CommandID = "outline.expand"
     public static let boundary: CommandID = "element.boundary"
     public static let summary: CommandID = "element.summary"
     public static let callout: CommandID = "element.callout"
@@ -129,7 +137,17 @@ public enum DefaultCommands {
 
     public static let all: [CommandDescriptor] =
         create + edit + navigate + restructure + elements + style + view + ai
-        + file + connect + diagrams
+        + file + connect + diagrams + outline
+
+    static let outline: [C] = [
+        C(.outlineSibling, "Add Sibling", .create, scope: .outline, keys: [k("return")], note: "Outline"),
+        C(.outlineIndent, "Indent", .restructure, scope: .outline, keys: [k("tab")], note: "Outline"),
+        C(.outlineOutdent, "Outdent", .restructure, scope: .outline, keys: [k("shift+tab")], note: "Outline"),
+        C(.outlinePrevious, "Previous Row", .navigate, scope: .outline, keys: [k("up")]),
+        C(.outlineNext, "Next Row", .navigate, scope: .outline, keys: [k("down")]),
+        C(.outlineCollapse, "Collapse / Parent", .navigate, scope: .outline, keys: [k("left")]),
+        C(.outlineExpand, "Expand / Child", .navigate, scope: .outline, keys: [k("right")]),
+    ]
 
     static let diagrams: [C] = [
         C(

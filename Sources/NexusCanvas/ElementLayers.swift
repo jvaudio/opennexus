@@ -691,10 +691,19 @@ final class ElementRenderer {
             let obstacles = scene.nodes.values.map(\.frame.rect).filter { !$0.intersects(a) && !$0.intersects(b) }
             g = RelationshipGeometry.make(rel, from: a, to: b, obstacles: obstacles)
         }
-        let w = CGFloat(rel.width)
+        let w = CGFloat(rel.width) * (r.glow ? 2 : 1)
+        l.opacity = Float(r.opacity)
         l.line.path = g.path
-        l.line.strokeColor = r.color.cgColor
+        l.line.strokeColor = (r.glow ? scene.theme.ai : r.color).cgColor
         l.line.lineWidth = w
+        if r.glow {
+            l.line.shadowColor = scene.theme.ai.cgColor
+            l.line.shadowOpacity = 0.9
+            l.line.shadowRadius = 6
+            l.line.shadowOffset = .zero
+        } else if l.line.animation(forKey: "glow") == nil {
+            l.line.shadowOpacity = 0
+        }
         l.line.lineDashPattern =
             switch rel.dash {
             case "dashed": [NSNumber(value: Double(w) * 3), NSNumber(value: Double(w) * 2.5)]
