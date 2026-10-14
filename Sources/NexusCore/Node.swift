@@ -89,6 +89,13 @@ public struct Node: Hashable, Sendable {
     public var quickStyle: String?
     /// Key-value fields (Data tab).
     public var metadata: [MetadataField] = []
+    /// Rich-text runs over `text` (bold, italic, underline, strikethrough, link).
+    public var marks: [TextMark] = []
+    /// A sticker (built-in id or asset) shown beside the title.
+    public var sticker: AssetRef?
+    public var image: AssetRef?
+    public var attachments: [AssetRef] = []
+    public var audio: AudioNote?
     /// Created by AI and not yet edited by the user (shows a sparkle).
     public var ai: Bool = false
     /// Per-branch structure override (Option-Command-1…9).
@@ -139,6 +146,13 @@ extension Node: JSONRepresentable {
         metadata = try r.array("metadata").enumerated().map {
             try MetadataField(json: $1, path: "\(path).metadata[\($0)]")
         }
+        marks = try r.array("marks").enumerated().map { try TextMark(json: $1, path: "\(path).marks[\($0)]") }
+        if let st = r.raw("sticker"), st != .null { sticker = try AssetRef(json: st, path: "\(path).sticker") }
+        if let im = r.raw("image"), im != .null { image = try AssetRef(json: im, path: "\(path).image") }
+        attachments = try r.array("attachments").enumerated().map {
+            try AssetRef(json: $1, path: "\(path).attachments[\($0)]")
+        }
+        if let a = r.raw("audio"), a != .null { audio = try AudioNote(json: a, path: "\(path).audio") }
         ai = try r.bool("ai", default: false)
         structure = try r.optionalString("structure").map(LayoutStructure.init(rawValue:))
         if let p = r.raw("position"), p != .null { position = try CanvasPoint(json: p, path: "\(path).position") }
@@ -159,6 +173,11 @@ extension Node: JSONRepresentable {
         if let style, !style.isEmpty { w.set("style", style.json) }
         w.set("quickStyle", quickStyle)
         if !metadata.isEmpty { w.set("metadata", .array(metadata.map(\.json))) }
+        if !marks.isEmpty { w.set("marks", .array(marks.map(\.json))) }
+        if let sticker { w.set("sticker", sticker.json) }
+        if let image { w.set("image", image.json) }
+        if !attachments.isEmpty { w.set("attachments", .array(attachments.map(\.json))) }
+        if let audio { w.set("audio", audio.json) }
         w.set("ai", ai, omitting: false)
         w.set("structure", structure?.rawValue)
         if let position { w.set("position", position.json) }
@@ -172,8 +191,24 @@ public struct Relationship: Hashable, Sendable, JSONRepresentable {
     public var from: NodeID
     public var to: NodeID
     public var label: String
+    /// curved, straight, elbow, zigzag
     public var line: String
+    /// Start and end caps: none, arrow, filled-arrow, triangle, diamond, filled-diamond,
+    /// dot, open-dot, bar, crows-foot, square.
     public var ends: [String]
+    /// solid, dashed, dotted
+    public var dash: String = "dashed"
+    public var width: Double = 2
+    /// `source` (follow the source topic's branch colour), `theme`, or hex.
+    public var color: String = "theme"
+    /// start, middle, end
+    public var labelPosition: String = "middle"
+    /// pill, plain, boxed
+    public var labelStyle: String = "pill"
+    /// Technical type: relationship, dataflow, call, return, message, association…
+    public var kind: String?
+    /// Offset of the curve's control point from its automatic position (dragged by hand).
+    public var bend: CanvasPoint?
     public var extra: [String: JSONValue] = [:]
 
     public init(
@@ -196,7 +231,14 @@ public struct Relationship: Hashable, Sendable, JSONRepresentable {
         label = try r.optionalString("label") ?? ""
         line = try r.optionalString("line") ?? "curved"
         let e = try r.strings("ends")
-        ends = e.isEmpty ? ["none", "arrow"] : e
+        ends = e.count == 2 ? e : ["none", "arrow"]
+        dash = try r.optionalString("dash") ?? "dashed"
+        width = try r.optionalDouble("width") ?? 2
+        color = try r.optionalString("color") ?? "theme"
+        labelPosition = try r.optionalString("labelPosition") ?? "middle"
+        labelStyle = try r.optionalString("labelStyle") ?? "pill"
+        kind = try r.optionalString("kind")
+        if let b = r.raw("bend"), b != .null { bend = try CanvasPoint(json: b, path: "\(path).bend") }
         extra = r.leftovers
     }
 
@@ -208,6 +250,13 @@ public struct Relationship: Hashable, Sendable, JSONRepresentable {
         w.set("label", label)
         w.set("line", line)
         w.set("ends", ends, omitEmpty: false)
+        if dash != "dashed" { w.set("dash", dash) }
+        if width != 2 { w.set("width", .number(width)) }
+        if color != "theme" { w.set("color", color) }
+        if labelPosition != "middle" { w.set("labelPosition", labelPosition) }
+        if labelStyle != "pill" { w.set("labelStyle", labelStyle) }
+        w.set("kind", kind)
+        if let bend { w.set("bend", bend.json) }
         return w.value
     }
 }

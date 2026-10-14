@@ -13,8 +13,13 @@ public enum CanvasMode: String, Sendable {
 
 /// A node's text editor session.
 public struct EditSession: Equatable, Sendable {
+    /// The topic being edited (for element labels: the element's anchor topic).
     public var node: NodeID
     public var text: String
+    /// Rich-text runs while editing.
+    public var marks: [TextMark] = []
+    /// Set when editing a relationship label, boundary title or zone title.
+    public var element: ElementRef?
     /// Select all text when the editor opens (new topics, so typing replaces the default).
     public var selectAll: Bool
     /// Text to insert on open (typing over a selection starts with this character).
@@ -36,7 +41,11 @@ public final class CanvasController {
     public let store: DocumentStore
     public private(set) var canvasID: CanvasID
     public internal(set) var mode: CanvasMode = .select
-    public private(set) var selection: Selection
+    public internal(set) var selection: Selection
+    /// A selected non-topic element (relationship, boundary, summary, callout, zone).
+    public internal(set) var selectedElement: ElementRef?
+    /// Connect mode state (⇧⌘L).
+    public internal(set) var connect: ConnectState?
     public internal(set) var edit: EditSession?
     public private(set) var toast: Toast?
     public var cheatSheetVisible = false
@@ -57,6 +66,12 @@ public final class CanvasController {
     @ObservationIgnored var styleClipboard: (style: TopicStyle, quick: String?)?
     /// Asks the view to morph node looks on the next update (node style changes).
     @ObservationIgnored public var onMorph: (() -> Void)?
+    /// Asks the host to present a popover or sheet (note, link, labels, markers…).
+    @ObservationIgnored public var onRequest: ((CanvasRequest) -> Void)?
+    /// Opens a web or file URL (the app routes it to NSWorkspace).
+    @ObservationIgnored public var onOpenURL: ((URL) -> Void)?
+    /// Topic-link history for ⌘[ (fly back).
+    @ObservationIgnored var linkHistory: [(CanvasID, NodeID)] = []
 
     /// Called after the scene changes. `animated` is false for edits that must not move
     /// anything (typing into the edited node still reflows, but without delay).
@@ -168,9 +183,19 @@ public final class CanvasController {
     }
 
     func rebuildScene() {
-        let state: SceneBuilder.EditingState? = edit.map { .init(node: $0.node, text: $0.text) }
+        // Element sessions (labels, titles) carry their source node for context only; the
+        // topic itself isn't being edited.
+        let state: SceneBuilder.EditingState? = edit.flatMap {
+            $0.element == nil ? .init(node: $0.node, text: $0.text) : nil
+        }
         let s = signposter.beginInterval("scene")
         scene = builder.build(canvas, env: styleEnvironment, editing: state)
+        // A relationship label grows with the live text while it's edited.
+        if let e = edit, case .relationship(let id) = e.element,
+            let i = scene.relationships.firstIndex(where: { $0.relationship.id == id })
+        {
+            scene.relationships[i].relationship.label = e.text
+        }
         signposter.endInterval("scene", s)
     }
 
@@ -180,6 +205,7 @@ public final class CanvasController {
         guard canvas.nodes[id] != nil else { return }
         if mode == .edit { commitEdit() }
         selection = extend ? selection.extended(with: id) : Selection(id)
+        selectedElement = nil
         onSceneChange?(false)
         onReveal?(id)
     }
@@ -204,7 +230,10 @@ public final class CanvasController {
         let id = id ?? selection.primary
         guard let node = canvas.nodes[id] else { return }
         selection = Selection(id)
-        edit = EditSession(node: id, text: node.text, selectAll: selectAll)
+        selectedElement = nil
+        var session = EditSession(node: id, text: node.text, selectAll: selectAll)
+        session.marks = node.marks
+        edit = session
         mode = .edit
         onEditChange?(edit)
         onReveal?(id)
@@ -223,9 +252,10 @@ public final class CanvasController {
     }
 
     /// The editor reports every text change; the node grows live and the map reflows.
-    public func editorTextDidChange(_ text: String) {
-        guard var e = edit, e.text != text else { return }
+    public func editorTextDidChange(_ text: String, marks: [TextMark]? = nil) {
+        guard var e = edit, e.text != text || (marks != nil && marks != e.marks) else { return }
         e.text = text
+        if let marks { e.marks = marks }
         e.pendingInput = nil
         edit = e
         rebuildScene()
@@ -237,6 +267,10 @@ public final class CanvasController {
         guard let e = edit else { return }
         edit = nil
         mode = .select
+        if let element = e.element {
+            commitElementText(element, e.text.trimmingCharacters(in: .whitespacesAndNewlines))
+            return
+        }
         var text = e.text
         while let last = text.last, last.isWhitespace { text.removeLast() }
         let old = canvas.nodes[e.node]?.text ?? ""
@@ -248,8 +282,13 @@ public final class CanvasController {
         }
         selection = Selection(e.node)
         onEditChange?(nil)
-        if text != old {
-            perform("Typing") { $0.setText(e.node, text) }
+        let marks = e.marks.filter { !$0.isPlain && $0.length > 0 && $0.start + $0.length <= (text as NSString).length }
+        let oldMarks = canvas.nodes[e.node]?.marks ?? []
+        if text != old || marks != oldMarks {
+            perform("Typing") {
+                $0.setText(e.node, text)
+                $0.update(e.node) { $0.marks = marks }
+            }
         } else {
             rebuildScene()
             onSceneChange?(true)
@@ -289,6 +328,8 @@ public final class CanvasController {
 
     /// Select-mode key handling. The view calls this for every key down.
     public func handleKey(_ chord: KeyChord, characters: String?) -> KeyResult {
+        if mode == .connect { return handleConnectKey(chord, characters: characters) ? .handled : .ignored }
+        if selectedElement != nil, let r = handleElementKey(chord) { return r }
         if let id = command(for: chord) {
             if perform(id) { return .handled }
             if canPerform(id) == false, registry[id]?.standardAction != nil { return .ignored }

@@ -218,8 +218,16 @@ import Testing
 
     @Test func connectAndMarkerKeysResolveThroughRegistry() {
         let h = CanvasHarness()
-        // Unbound or not-yet-built commands do nothing and never start typing.
+        // ⇧⌘L enters Connect mode from the registry; Esc leaves without touching the model.
+        h.press("tab")
+        h.press("return")
+        let before = h.canvas
         h.press("shift+cmd+l")
+        #expect(h.controller.connect != nil)
+        #expect(h.controller.edit == nil)
+        h.press("escape")
+        #expect(h.controller.connect == nil)
         #expect(h.controller.mode == .select)
+        #expect(h.canvas == before)
     }
 }

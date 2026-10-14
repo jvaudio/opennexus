@@ -116,8 +116,12 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
         if item.action == #selector(performRegistryCommand(_:)), let raw = item.representedObject as? String {
             let id = CommandID(rawValue: raw)
-            if id == .inspector { item.state = panel.isHidden ? .off : .on }
-            return id == .newCanvas || id == .inspector
+            if id == .inspector {
+                item.state = panel.isHidden ? .off : .on
+                // ⌘I is Italic while editing text; the menu item steps aside.
+                return controller.mode != .edit
+            }
+            return id == .newCanvas
         }
         return true
     }

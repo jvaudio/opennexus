@@ -136,7 +136,7 @@ extension CanvasEditor {
                 remove(d)
             }
         }
-        dropRelationships(touching: removed)
+        cleanUpElements(removed: removed)
 
         if let p = firstParent, let siblings = self[p]?.children, !siblings.isEmpty {
             return siblings[max(0, min(firstIndex - 1, siblings.count - 1))]
@@ -156,7 +156,7 @@ extension CanvasEditor {
                 $0.children.insert(contentsOf: node.children, at: i)
             }
             remove(id)
-            dropRelationships(touching: [id])
+            cleanUpElements(removed: [id])
             return node.children.first ?? p
         } else {
             // A floating top: its children become floating topics in its place.
@@ -173,14 +173,9 @@ extension CanvasEditor {
                 $0.floating.insert(contentsOf: node.children, at: min(i, $0.floating.count))
             }
             remove(id)
-            dropRelationships(touching: [id])
+            cleanUpElements(removed: [id])
             return node.children.first ?? canvas.root
         }
-    }
-
-    private mutating func dropRelationships(touching ids: Set<NodeID>) {
-        guard canvas.relationships.contains(where: { ids.contains($0.from) || ids.contains($0.to) }) else { return }
-        updateMeta { $0.relationships.removeAll { ids.contains($0.from) || ids.contains($0.to) } }
     }
 
     /// Option-Command-Up/Down: swaps with the previous or next sibling.

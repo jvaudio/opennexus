@@ -1,5 +1,11 @@
 {
   "floating": [],
+  "futureElements": [
+    {
+      "id": "z1",
+      "title": "Parking lot"
+    }
+  ],
   "id": "c1",
   "layout": {
     "mode": "auto",
@@ -33,11 +39,5 @@
     "theme": "classic"
   },
   "title": "Future",
-  "type": "mindmap",
-  "zones": [
-    {
-      "id": "z1",
-      "title": "Parking lot"
-    }
-  ]
+  "type": "mindmap"
 }

@@ -1,3 +1,4 @@
+import NexusCore
 import NexusKeys
 import NexusTheme
 import SwiftUI
@@ -185,5 +186,61 @@ public struct CheatSheetView: View {
             .transition(.opacity)
             .accessibilityIdentifier("cheat-sheet")
         }
+    }
+}
+
+/// The Connect mode search field (F2 step 2–3).
+struct ConnectFieldView: View {
+    let state: ConnectState
+    let texts: [NodeID: String]
+    let theme: Theme
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack(spacing: 6) {
+                Text("Connect to").foregroundStyle(.secondary)
+                Text(state.query).fontWeight(.semibold)
+                Rectangle().fill(Color.primary).frame(width: 1.5, height: 15)
+                Spacer(minLength: 0)
+            }
+            .font(.system(size: 13))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 9)
+            if state.offersCreate {
+                row(hint: "↩", text: "Create new node “\(state.query)”", on: true)
+            } else {
+                ForEach(Array(state.matches.prefix(5).enumerated()), id: \.offset) { i, m in
+                    row(hint: m.hint, text: texts[m.node] ?? "", on: i == state.highlighted)
+                }
+            }
+        }
+        .frame(minWidth: 260, alignment: .leading)
+        .background(.background, in: RoundedRectangle(cornerRadius: 10))
+        .overlay(RoundedRectangle(cornerRadius: 10).strokeBorder(theme.amber.color, lineWidth: 1.5))
+        .shadow(color: .black.opacity(0.12), radius: 12, y: 6)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(accessibility)
+        .accessibilityIdentifier("connect-field")
+    }
+
+    var accessibility: String {
+        if state.offersCreate { return "Connect to new node \(state.query)" }
+        let names = state.matches.prefix(5).map { "\($0.hint), \(texts[$0.node] ?? "")" }
+        return "Connect to. \(names.joined(separator: "; "))"
+    }
+
+    func row(hint: String, text: String, on: Bool) -> some View {
+        HStack(spacing: 10) {
+            Text(hint)
+                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .foregroundStyle(RGBA(hex: "#17171C").color)
+                .frame(minWidth: 20, minHeight: 20)
+                .background(theme.amber.color, in: RoundedRectangle(cornerRadius: 5))
+            Text(text).font(.system(size: 13)).lineLimit(1)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 6)
+        .background(on ? theme.amberSoft.color : .clear)
     }
 }

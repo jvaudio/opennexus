@@ -16,10 +16,13 @@ struct SplitMix64: RandomNumberGenerator {
 }
 
 /// Applies one random tree operation. Refusals are fine; they record nothing.
-func randomOperation(_ c: inout Canvas, _ undo: inout UndoStack, _ rng: inout SplitMix64) {
+@discardableResult
+func randomOperation(_ c: inout Canvas, _ undo: inout UndoStack, _ rng: inout SplitMix64) -> String {
     let ids = c.nodes.keys.sorted()
     let target = ids.randomElement(using: &rng)!
-    let op = Int.random(in: 0..<14, using: &rng)
+    let other = ids.randomElement(using: &rng)!
+    let op = Int.random(in: 0..<24, using: &rng)
+    let label = "op\(op) target \(target) other \(other)"
     _ = try? c.edit("op\(op)", undo: &undo) { e -> Void in
         switch op {
         case 0, 1: try e.addChild(of: target)
@@ -34,10 +37,27 @@ func randomOperation(_ c: inout Canvas, _ undo: inout UndoStack, _ rng: inout Sp
         case 10: try e.duplicate(target)
         case 11: try e.toggleFold(target)
         case 12: e.setText(target, "t\(Int.random(in: 0..<100, using: &rng))")
+        case 13: if other != target { e.connect(target, to: other) }
+        // M3 elements and direct manipulation.
+        case 14: try e.addBoundary(around: [target])
+        case 15:
+            if let p = e.canvas.parent(of: target), let kids = e.canvas.nodes[p]?.children, kids.count > 1 {
+                _ = try e.addSummary(over: Array(kids.prefix(2)))
+            }
+        case 16: _ = try e.addCallout(on: target)
+        case 17: e.addZone(origin: CanvasPoint(x: Double(op) * 10, y: -300))
+        case 18: try e.move(target, toParent: other)
+        case 19: try e.detach(target, at: CanvasPoint(x: 400, y: 300))
+        case 20:
+            if let z = e.canvas.zones.first { e.moveZone(z.id, by: 25, -10) }
+        case 21:
+            if let b = e.canvas.boundaries.first { e.removeElement(.boundary(b.id)) }
+        case 22: _ = try e.duplicate(target, toParent: other)
         default:
-            if let other = ids.randomElement(using: &rng), other != target { e.connect(target, to: other) }
+            if let k = e.canvas.callouts.first { e.removeElement(.callout(k.id)) }
         }
     }
+    return label
 }
 
 @Suite struct UndoPropertyTests {
@@ -51,7 +71,9 @@ func randomOperation(_ c: inout Canvas, _ undo: inout UndoStack, _ rng: inout Sp
         var undo = UndoStack()
         for _ in 0..<200 {
             randomOperation(&c, &undo, &rng)
-            #expect(c.validate().isEmpty, "invalid tree after an operation (seed \(seed))")
+            #expect(
+                c.validate().isEmpty,
+                "invalid tree after an operation (seed \(seed)): \(c.validate().first.map { "\($0)" } ?? "")")
         }
         let final = c
         var steps = 0
@@ -64,6 +86,23 @@ func randomOperation(_ c: inout Canvas, _ undo: inout UndoStack, _ rng: inout Sp
             undo.redo()!.apply(to: &c)
         }
         #expect(c == final)
+    }
+
+    /// Tree and element invariants hold after every step, and every step undoes cleanly.
+    @Test(arguments: Array(UInt64(100)..<150)) func invariantsHoldWithElements(seed: UInt64) {
+        var rng = SplitMix64(seed: seed)
+        let original = sampleCanvas()
+        var c = original
+        var undo = UndoStack()
+        for i in 0..<200 {
+            let label = randomOperation(&c, &undo, &rng)
+            if let err = c.validate().first {
+                Issue.record("seed \(seed) step \(i) \(label): \(err)")
+                return
+            }
+        }
+        while let p = undo.undo() { p.apply(to: &c) }
+        #expect(c == original)
     }
 
     @Test func eachStepIsInvertible() {

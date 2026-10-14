@@ -98,7 +98,7 @@ func launchPlanDocument() -> DocumentModel {
         let doc = try NexusPackage.read(files: files)
         #expect(doc.manifestExtra["generator"] == "OpenNexus 2.0")
         let c = try #require(doc.canvases["c1"])
-        #expect(c.extra["zones"] != nil)
+        #expect(c.extra["futureElements"] != nil)
         #expect(c.nodes["n2"]?.extra["sparkles"] == 3)
         #expect(c.nodes["n2"]?.todo?.extra["dueDate"] == "2027-01-01")
         let out = NexusPackage.files(for: doc)

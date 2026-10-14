@@ -47,6 +47,19 @@ extension CanvasController {
             .toggleTodo: { $0.toggleMarker(0) },
             .smartColor: { $0.reshuffleColors() },
             .cycleNodeStyle: { $0.cycleNodeStyle() },
+            .connect: { $0.startConnect() },
+            .boundary: { $0.addBoundary() },
+            .summary: { $0.addSummary() },
+            .callout: { $0.addCallout() },
+            .zone: { $0.addZone() },
+            .bringToFront: { $0.reorderSelection(.front) },
+            .sendToBack: { $0.reorderSelection(.back) },
+            .note: { $0.onRequest?(.note($0.selection.primary)) },
+            .hyperlink: { $0.onRequest?(.link($0.selection.primary)) },
+            .image: { $0.onRequest?(.image($0.selection.primary)) },
+            .label: { $0.onRequest?(.labels($0.selection.primary)) },
+            .markerPicker: { $0.onRequest?(.markers($0.selection.primary)) },
+            .flyBack: { $0.flyBack() },
             .copyStyle: { $0.copyStyle() },
             .pasteStyle: { $0.pasteStyle() },
             .resetStyle: { $0.resetStyle() },
@@ -87,7 +100,7 @@ extension CanvasController {
         case .edit:
             return editorHandlers[id] != nil
         case .connect:
-            return false
+            return id == .connectConfirm || id == .connectCancel
         }
     }
 
@@ -105,6 +118,8 @@ extension CanvasController {
             h(self)
             return true
         case .connect:
+            if id == .connectConfirm { finishConnect(); return true }
+            if id == .connectCancel { cancelConnect(); return true }
             return false
         }
     }

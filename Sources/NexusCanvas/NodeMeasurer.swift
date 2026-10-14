@@ -1,4 +1,5 @@
 import AppKit
+import NexusCore
 import NexusTheme
 
 /// Text attributes for a node. The same attributes are used to measure, to draw, and
@@ -114,6 +115,35 @@ public struct NodeTextStyle: Hashable, Sendable {
         return max(0, (lineHeight - natural) / 2)
     }
 
+    /// The title with its rich-text runs applied over the base attributes.
+    public func attributed(_ text: String, marks: [TextMark], color: NSColor, linkColor: NSColor? = nil)
+        -> NSAttributedString
+    {
+        let s = NSMutableAttributedString(string: text, attributes: attributes(color: color))
+        let length = (text as NSString).length
+        for m in marks {
+            let r = NSRange(location: max(0, m.start), length: max(0, min(m.length, length - m.start)))
+            guard r.length > 0, r.location < length else { continue }
+            if m.bold || m.italic {
+                let base = s.attribute(.font, at: r.location, effectiveRange: nil) as? NSFont ?? font
+                var f = base
+                if m.bold { f = NSFontManager.shared.convert(f, toHaveTrait: .boldFontMask) }
+                if m.italic { f = NSFontManager.shared.convert(f, toHaveTrait: .italicFontMask) }
+                s.addAttribute(.font, value: f, range: r)
+            }
+            if m.underline { s.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: r) }
+            if m.strikethrough {
+                s.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: r)
+            }
+            if let link = m.link {
+                s.addAttribute(.link, value: link, range: r)
+                s.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: r)
+                if let linkColor { s.addAttribute(.foregroundColor, value: linkColor, range: r) }
+            }
+        }
+        return s
+    }
+
     public func attributes(color: NSColor) -> [NSAttributedString.Key: Any] {
         var a: [NSAttributedString.Key: Any] = [
             .font: font, .paragraphStyle: paragraphStyle, .foregroundColor: color, .baselineOffset: baselineOffset,
@@ -130,6 +160,7 @@ public final class NodeMeasurer {
     private struct Key: Hashable {
         var text: String
         var style: NodeTextStyle
+        var marks: [TextMark]
     }
 
     private var cache: [Key: CGSize] = [:]
@@ -139,14 +170,14 @@ public final class NodeMeasurer {
     public init() {}
 
     /// Size of the text block (not including padding).
-    public func textSize(_ text: String, style: NodeTextStyle) -> CGSize {
-        let key = Key(text: text, style: style)
+    public func textSize(_ text: String, style: NodeTextStyle, marks: [TextMark] = []) -> CGSize {
+        let key = Key(text: text, style: style, marks: marks)
         if let s = cache[key] {
             hits += 1
             return s
         }
         misses += 1
-        let s = Self.measure(text, style: style)
+        let s = Self.measure(text, style: style, marks: marks)
         if cache.count > 20_000 { cache.removeAll(keepingCapacity: true) }
         cache[key] = s
         return s
@@ -154,16 +185,30 @@ public final class NodeMeasurer {
 
     /// Uses AppKit string drawing (TextKit), the same engine that draws node text and
     /// backs the editor.
-    static func measure(_ text: String, style: NodeTextStyle) -> CGSize {
+    static func measure(_ text: String, style: NodeTextStyle, marks: [TextMark] = []) -> CGSize {
         let string = text.isEmpty ? " " : text
-        let attr = NSAttributedString(string: string, attributes: style.attributes(color: .black))
+        let attr = style.attributed(string, marks: marks, color: .black)
         let options: NSString.DrawingOptions = [.usesLineFragmentOrigin, .usesFontLeading]
         // Natural width first, so short titles never wrap.
         let natural = attr.boundingRect(
             with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude), options: options)
         let width = min(ceil(natural.width), style.maxWidth)
-        let fitted = attr.boundingRect(with: CGSize(width: width, height: .greatestFiniteMagnitude), options: options)
-        let lines = max(1, (fitted.height / style.lineHeight).rounded())
+        func fit(_ w: CGFloat) -> (CGRect, CGFloat) {
+            let r = attr.boundingRect(with: CGSize(width: w, height: .greatestFiniteMagnitude), options: options)
+            return (r, max(1, (r.height / style.lineHeight).rounded()))
+        }
+        var (fitted, lines) = fit(width)
+        if lines > 1 {
+            // Balanced wrapping: the narrowest width that keeps the same line count, so a
+            // long topic never ends on a lone word.
+            var lo = max(1, width / lines)
+            var hi = width
+            while hi - lo > 2 {
+                let mid = ((lo + hi) / 2).rounded(.down)
+                if fit(mid).1 <= lines { hi = mid } else { lo = mid }
+            }
+            (fitted, lines) = fit(hi)
+        }
         return CGSize(width: ceil(max(fitted.width, 1)), height: lines * style.lineHeight)
     }
 }

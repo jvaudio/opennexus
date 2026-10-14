@@ -43,6 +43,8 @@ final class NodeLayer: CALayer {
     let ring = CAShapeLayer()
     let halo = CAShapeLayer()
     let lead = TextLayer()
+    let decor = DecorLayer()
+    let imageLayer = CALayer()
     let badge = CALayer()
     let badgeText = TextLayer()
     private(set) var node: SceneNode?
@@ -50,7 +52,7 @@ final class NodeLayer: CALayer {
     var textScale: CGFloat = 2 {
         didSet {
             guard textScale != oldValue else { return }
-            for l in [text, lead, badgeText] {
+            for l in [text, lead, badgeText, decor] as [CALayer] {
                 l.contentsScale = textScale
                 l.setNeedsDisplay()
             }
@@ -74,12 +76,20 @@ final class NodeLayer: CALayer {
         inner.isHidden = true
         addSublayer(inner)
         addSublayer(lead)
+        imageLayer.contentsGravity = .resizeAspect
+        imageLayer.cornerRadius = 6
+        imageLayer.masksToBounds = true
+        imageLayer.isHidden = true
+        addSublayer(imageLayer)
+        addSublayer(decor)
         addSublayer(text)
         badge.addSublayer(badgeText)
         badge.isHidden = true
         addSublayer(badge)
         actions = Self.noActions
-        for l in [shape, inner, gradient, gradientMask, text, ring, halo, lead, badge, badgeText] as [CALayer] {
+        for l in [shape, inner, gradient, gradientMask, text, ring, halo, lead, badge, badgeText, decor, imageLayer]
+            as [CALayer]
+        {
             l.actions = Self.noActions
         }
     }
@@ -103,7 +113,7 @@ final class NodeLayer: CALayer {
     /// driven by the animator.
     func apply(
         _ n: SceneNode, theme: Theme, canvas: RGBA, selected: Bool, primary: Bool, editing: Bool,
-        morph: Bool = false
+        morph: Bool = false, image: CGImage? = nil
     ) {
         let sizeChanged = node?.frame.size != n.frame.size
         let lookChanged = node?.appearance != n.appearance || node?.textStyle != n.textStyle
@@ -111,7 +121,7 @@ final class NodeLayer: CALayer {
             node?.displayText != n.displayText || node?.isPlaceholder != n.isPlaceholder
             || node?.priority != n.priority || node?.todo != n.todo || node?.hiddenCount != n.hiddenCount
             || node?.textRect != n.textRect || lookChanged || node?.frame.side != n.frame.side
-            || node?.branchColor != n.branchColor
+            || node?.branchColor != n.branchColor || node != n
         let stateChanged = state != (selected, editing, false)
         if morph, lookChanged, node != nil {
             // Node style changes morph: a 300 ms cross-fade on the glide curve.
@@ -133,21 +143,62 @@ final class NodeLayer: CALayer {
         if contentChanged {
             var color = n.appearance.text
             if n.isPlaceholder { color = color.alpha(0.4) }
-            var attrs = n.textStyle.attributes(color: NSColor(cgColor: color.cgColor) ?? .labelColor)
+            let ns = NSColor(cgColor: color.cgColor) ?? .labelColor
+            let rich = NSMutableAttributedString(
+                attributedString: n.textStyle.attributed(
+                    n.displayText, marks: n.marks, color: ns, linkColor: NSColor(cgColor: theme.ring.cgColor)))
             if n.todo?.done == true {
-                attrs[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
-                attrs[.foregroundColor] = NSColor(cgColor: n.appearance.text.alpha(0.55).cgColor)
+                let all = NSRange(location: 0, length: rich.length)
+                rich.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: all)
+                rich.addAttribute(
+                    .foregroundColor, value: NSColor(cgColor: n.appearance.text.alpha(0.55).cgColor)!, range: all)
             }
-            text.attributed = NSAttributedString(string: n.displayText, attributes: attrs)
+            text.attributed = rich
             text.frame = n.textRect
-            layoutLead(n, theme: theme)
+            lead.isHidden = true
+            decor.node = n
+            decor.theme = theme
+            decor.frame = CGRect(origin: .zero, size: n.frame.size)
+            decor.setNeedsDisplay()
             layoutBadge(n, theme: theme, canvas: canvas)
+        }
+        if let image, !n.imageRect.isEmpty {
+            imageLayer.isHidden = false
+            imageLayer.contents = image
+            imageLayer.frame = n.imageRect
+        } else {
+            imageLayer.isHidden = true
         }
 
         if stateChanged || sizeChanged || lookChanged {
             updateRing(theme: theme, canvas: canvas, selected: selected, editing: editing)
         }
         text.isHidden = editing && !n.isPlaceholder
+    }
+
+    enum ConnectRole { case source, target, candidate, dimmed }
+    private var connectRole: ConnectRole?
+
+    /// Connect mode: everything else dims, the source and target take amber rings.
+    func connectState(_ role: ConnectRole?, theme: Theme) {
+        guard role != connectRole else { return }
+        connectRole = role
+        switch role {
+        case .source?, .target?:
+            opacity = 1
+            ring.isHidden = false
+            ring.strokeColor = theme.amber.cgColor
+            ring.lineWidth = role == .target ? 3 : 2
+            ring.shadowOpacity = role == .target ? 1 : 0
+            ring.shadowColor = theme.amberSoft.cgColor
+        case .candidate?: opacity = 0.55
+        case .dimmed?: opacity = 0.3
+        case nil:
+            opacity = 1
+            if let n = node {
+                updateRing(theme: theme, canvas: .white, selected: state.selected, editing: state.editing, refresh: n)
+            }
+        }
     }
 
     private func drawShape(_ n: SceneNode, canvas: RGBA) {
@@ -272,7 +323,7 @@ final class NodeLayer: CALayer {
         badgeText.attributed = attr
     }
 
-    private func updateRing(theme: Theme, canvas: RGBA, selected: Bool, editing: Bool) {
+    private func updateRing(theme: Theme, canvas: RGBA, selected: Bool, editing: Bool, refresh: SceneNode? = nil) {
         let size = bounds.size
         let radius = (node?.appearance.cornerRadius ?? 10)
         func path(_ outset: CGFloat) -> CGPath {
@@ -338,5 +389,121 @@ final class NodeLayer: CALayer {
             }
             return true
         }
+    }
+}
+
+/// Draws a topic's decorations: leading markers and progress ring, sticker, indicators,
+/// label pills and pinned metadata (artboard 07 slots 3, 5, 6, 9).
+final class DecorLayer: CALayer {
+    var node: SceneNode?
+    var theme: Theme = .classic
+
+    override init() {
+        super.init()
+        isOpaque = false
+        needsDisplayOnBoundsChange = true
+    }
+
+    override init(layer: Any) { super.init(layer: layer) }
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func draw(in ctx: CGContext) {
+        guard let n = node else { return }
+        let g = NSGraphicsContext(cgContext: ctx, flipped: true)
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = g
+        if !contentsAreFlipped() {
+            ctx.translateBy(x: 0, y: bounds.height)
+            ctx.scaleBy(x: 1, y: -1)
+        }
+        let ink = NSColor(cgColor: n.appearance.text.cgColor) ?? .labelColor
+        // Leading slots: progress ring, priority, to-do, other markers.
+        var x = n.leadRect.minX
+        let cy = n.leadRect.midY
+        if let p = n.progress {
+            let r = CGRect(x: x + 1, y: cy - 8, width: 16, height: 16)
+            let track = NSBezierPath(ovalIn: r.insetBy(dx: 1, dy: 1))
+            track.lineWidth = 2
+            ink.withAlphaComponent(0.2).setStroke()
+            track.stroke()
+            let arc = NSBezierPath()
+            let frac = CGFloat(p.done) / CGFloat(max(p.total, 1))
+            arc.appendArc(
+                withCenter: CGPoint(x: r.midX, y: r.midY), radius: 7, startAngle: -90,
+                endAngle: -90 + 360 * frac, clockwise: false)
+            arc.lineWidth = 2.4
+            arc.lineCapStyle = .round
+            (NSColor(cgColor: theme.ai.cgColor) ?? .systemTeal).setStroke()
+            if p.done > 0 { arc.stroke() }
+            x += SceneBuilder.markerWidth
+        }
+        if let pr = n.priority {
+            NodeLayer.priorityImage(pr).draw(in: CGRect(x: x, y: cy - 9, width: 18, height: 18))
+            x += SceneBuilder.priorityWidth
+        }
+        if let t = n.todo {
+            NodeLayer.todoImage(done: t.done, theme: theme).draw(in: CGRect(x: x, y: cy - 8, width: 16, height: 16))
+            x += SceneBuilder.todoWidth
+        }
+        for m in n.otherMarkers {
+            if let mk = MarkerLibrary.marker(m) {
+                let c = NSColor(cgColor: RGBA(hex: mk.color).cgColor) ?? .gray
+                let r = CGRect(x: x, y: cy - 9, width: 18, height: 18)
+                c.setFill()
+                NSBezierPath(ovalIn: r).fill()
+                let s = NSAttributedString(
+                    string: mk.glyph,
+                    attributes: [
+                        .font: NSFont.systemFont(ofSize: 10.5, weight: .bold), .foregroundColor: NSColor.white,
+                        .paragraphStyle: NodeLayer.centered,
+                    ])
+                s.draw(in: r.offsetBy(dx: 0, dy: 2))
+            }
+            x += SceneBuilder.markerWidth
+        }
+        // Sticker.
+        if let st = n.sticker, !n.stickerRect.isEmpty {
+            let glyph = st.hasPrefix("emoji:") ? String(st.dropFirst(6)) : st.contains("/") ? "★" : st
+            NSAttributedString(string: glyph, attributes: [.font: NSFont.systemFont(ofSize: 20)])
+                .draw(at: CGPoint(x: n.stickerRect.minX + 2, y: n.stickerRect.minY))
+        }
+        // Indicators.
+        for (i, ind) in n.indicators.enumerated() where i < n.indicatorRects.count {
+            let r = n.indicatorRects[i]
+            let color = ind == .ai ? NSColor(cgColor: theme.ai.cgColor)! : ink.withAlphaComponent(0.6)
+            NSAttributedString(
+                string: ind.glyph,
+                attributes: [
+                    .font: NSFont.systemFont(ofSize: 12, weight: .semibold), .foregroundColor: color,
+                    .paragraphStyle: NodeLayer.centered,
+                ]
+            ).draw(in: r.offsetBy(dx: 0, dy: 1))
+        }
+        // Label pills.
+        for (i, l) in n.labels.enumerated() where i < n.labelRects.count {
+            let r = n.labelRects[i]
+            let pill = NSBezierPath(roundedRect: r, xRadius: r.height / 2, yRadius: r.height / 2)
+            (NSColor(cgColor: n.branchColor.alpha(0.16).cgColor) ?? .gray).setFill()
+            pill.fill()
+            NSAttributedString(
+                string: l,
+                attributes: [
+                    .font: SceneBuilder.labelFont, .foregroundColor: ink.withAlphaComponent(0.85),
+                    .paragraphStyle: NodeLayer.centered,
+                ]
+            ).draw(in: r.offsetBy(dx: 0, dy: 2))
+        }
+        // Pinned metadata.
+        if !n.pinned.isEmpty {
+            let text = n.pinned.map { "\($0.key) \($0.value)" }.joined(separator: "  ·  ")
+            NSAttributedString(
+                string: text,
+                attributes: [
+                    .font: NSFont.monospacedSystemFont(ofSize: 10.5, weight: .regular),
+                    .foregroundColor: ink.withAlphaComponent(0.6),
+                ]
+            ).draw(at: n.pinnedRect.origin)
+        }
+        NSGraphicsContext.restoreGraphicsState()
     }
 }

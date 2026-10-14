@@ -1,8 +1,126 @@
 {
   "$defs": {
+    "asset": {
+      "description": "A file stored once in the package by content hash.",
+      "properties": {
+        "asset": {
+          "description": "Path inside the package, assets/<sha256>.<ext>.",
+          "type": "string"
+        },
+        "height": {
+          "type": "number"
+        },
+        "name": {
+          "type": "string"
+        },
+        "position": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "asset"
+      ],
+      "type": "object"
+    },
+    "boundary": {
+      "description": "Encloses one or more branches.",
+      "properties": {
+        "color": {
+          "type": "string"
+        },
+        "dash": {
+          "type": "string"
+        },
+        "fillOpacity": {
+          "maximum": 1,
+          "minimum": 0,
+          "type": "number"
+        },
+        "hatch": {
+          "type": "boolean"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "meaning": {
+          "description": "group, zone, vpc, subnet or trust. Unknown values are preserved.",
+          "type": "string"
+        },
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "shape": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "titlePosition": {
+          "type": "string"
+        },
+        "trust": {
+          "type": "string"
+        },
+        "width": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "nodes"
+      ],
+      "type": "object"
+    },
+    "callout": {
+      "description": "A speech bubble attached to a host topic.",
+      "properties": {
+        "host": {
+          "$ref": "#/$defs/id"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "shape": {
+          "type": "string"
+        },
+        "side": {
+          "type": "string"
+        },
+        "topic": {
+          "$ref": "#/$defs/id",
+          "description": "The bubble, a node of kind callout."
+        }
+      },
+      "required": [
+        "id",
+        "host",
+        "topic"
+      ],
+      "type": "object"
+    },
     "canvas": {
       "description": "One canvas (canvases/<id>.json): a graph of nodes and edges with a diagram type.",
       "properties": {
+        "boundaries": {
+          "items": {
+            "$ref": "#/$defs/boundary"
+          },
+          "type": "array"
+        },
+        "callouts": {
+          "items": {
+            "$ref": "#/$defs/callout"
+          },
+          "type": "array"
+        },
         "floating": {
           "description": "Ids of floating topics (not attached to the root tree), in z-order.",
           "items": {
@@ -16,6 +134,15 @@
         },
         "layout": {
           "properties": {
+            "allowOverlap": {
+              "type": "boolean"
+            },
+            "branchFreePositioning": {
+              "type": "boolean"
+            },
+            "flexibleFloating": {
+              "type": "boolean"
+            },
             "mode": {
               "description": "auto (default) or free (opt-in per canvas).",
               "type": "string"
@@ -48,8 +175,39 @@
         },
         "style": {
           "properties": {
+            "autoBalance": {
+              "type": "boolean"
+            },
+            "background": {
+              "type": "string"
+            },
+            "cjkFont": {
+              "type": "string"
+            },
             "colorTheme": {
               "type": "string"
+            },
+            "coloredBranch": {
+              "type": "boolean"
+            },
+            "compact": {
+              "type": "boolean"
+            },
+            "font": {
+              "type": "string"
+            },
+            "justify": {
+              "type": "boolean"
+            },
+            "levels": {
+              "description": "Per-level topic style overrides keyed by depth.",
+              "type": "object"
+            },
+            "lineShape": {
+              "type": "string"
+            },
+            "lineWidth": {
+              "type": "number"
             },
             "nodeStyle": {
               "type": "string"
@@ -61,11 +219,23 @@
               "minimum": 0,
               "type": "integer"
             },
+            "pattern": {
+              "type": "string"
+            },
+            "singleColor": {
+              "type": "string"
+            },
             "theme": {
               "type": "string"
             }
           },
           "type": "object"
+        },
+        "summaries": {
+          "items": {
+            "$ref": "#/$defs/summary"
+          },
+          "type": "array"
         },
         "title": {
           "type": "string"
@@ -74,6 +244,12 @@
           "description": "Diagram type: mindmap, logic, brace, org, tree, treeTable, timeline, fishbone, matrix, flowchart, swimlane, dfd, threatModel, architecture, sequence, whiteboard. Unknown values are preserved.",
           "minLength": 1,
           "type": "string"
+        },
+        "zones": {
+          "items": {
+            "$ref": "#/$defs/zone"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -129,6 +305,27 @@
           "description": "Created by AI and not yet edited by the user.",
           "type": "boolean"
         },
+        "attachments": {
+          "items": {
+            "$ref": "#/$defs/asset"
+          },
+          "type": "array"
+        },
+        "audio": {
+          "properties": {
+            "asset": {
+              "type": "string"
+            },
+            "duration": {
+              "minimum": 0,
+              "type": "number"
+            }
+          },
+          "required": [
+            "asset"
+          ],
+          "type": "object"
+        },
         "children": {
           "items": {
             "$ref": "#/$defs/id"
@@ -139,8 +336,11 @@
         "folded": {
           "type": "boolean"
         },
+        "image": {
+          "$ref": "#/$defs/asset"
+        },
         "kind": {
-          "description": "root, topic, floating or summary. Unknown values are preserved.",
+          "description": "root, topic, floating, summary or callout. Unknown values are preserved.",
           "type": "string"
         },
         "labels": {
@@ -155,6 +355,29 @@
         "markers": {
           "items": {
             "type": "string"
+          },
+          "type": "array"
+        },
+        "marks": {
+          "items": {
+            "$ref": "#/$defs/textMark"
+          },
+          "type": "array"
+        },
+        "metadata": {
+          "items": {
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "pinned": {
+                "type": "boolean"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "type": "object"
           },
           "type": "array"
         },
@@ -177,6 +400,12 @@
         },
         "position": {
           "$ref": "#/$defs/point"
+        },
+        "quickStyle": {
+          "type": "string"
+        },
+        "sticker": {
+          "type": "string"
         },
         "structure": {
           "type": "string"
@@ -223,6 +452,16 @@
     },
     "relationship": {
       "properties": {
+        "bend": {
+          "$ref": "#/$defs/point"
+        },
+        "color": {
+          "description": "theme, source or a #RRGGBB colour.",
+          "type": "string"
+        },
+        "dash": {
+          "type": "string"
+        },
         "ends": {
           "items": {
             "type": "string"
@@ -236,7 +475,17 @@
         "id": {
           "$ref": "#/$defs/id"
         },
+        "kind": {
+          "description": "Technical edge type, for example dataflow or call. Unknown values are preserved.",
+          "type": "string"
+        },
         "label": {
+          "type": "string"
+        },
+        "labelPosition": {
+          "type": "string"
+        },
+        "labelStyle": {
           "type": "string"
         },
         "line": {
@@ -244,6 +493,10 @@
         },
         "to": {
           "$ref": "#/$defs/id"
+        },
+        "width": {
+          "minimum": 0,
+          "type": "number"
         }
       },
       "required": [
@@ -253,8 +506,129 @@
       ],
       "type": "object"
     },
+    "summary": {
+      "description": "A bracket over a contiguous sibling range with its own topic.",
+      "properties": {
+        "bracket": {
+          "description": "curly (default), square, round or line. Unknown values draw as curly.",
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "from": {
+          "$ref": "#/$defs/id"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "parent": {
+          "$ref": "#/$defs/id"
+        },
+        "to": {
+          "$ref": "#/$defs/id"
+        },
+        "topic": {
+          "$ref": "#/$defs/id",
+          "description": "The summary topic, a node of kind summary."
+        },
+        "width": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "parent",
+        "from",
+        "to",
+        "topic"
+      ],
+      "type": "object"
+    },
+    "textMark": {
+      "description": "A rich-text run over a topic's text, in UTF-16 offsets.",
+      "properties": {
+        "bold": {
+          "type": "boolean"
+        },
+        "italic": {
+          "type": "boolean"
+        },
+        "length": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "link": {
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "strikethrough": {
+          "type": "boolean"
+        },
+        "underline": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "start",
+        "length"
+      ],
+      "type": "object"
+    },
     "theme": {
       "description": "theme.json: document theme, custom colour themes and quick styles.",
+      "type": "object"
+    },
+    "zone": {
+      "description": "A titled free-standing area on the canvas, in z-order.",
+      "properties": {
+        "autoResize": {
+          "type": "boolean"
+        },
+        "collapsed": {
+          "type": "boolean"
+        },
+        "color": {
+          "type": "string"
+        },
+        "frame": {
+          "type": "string"
+        },
+        "height": {
+          "minimum": 100,
+          "type": "number"
+        },
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "members": {
+          "description": "Floating topics inside the zone; they move with it.",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "origin": {
+          "$ref": "#/$defs/point"
+        },
+        "title": {
+          "type": "string"
+        },
+        "width": {
+          "minimum": 100,
+          "type": "number"
+        }
+      },
+      "required": [
+        "id",
+        "origin",
+        "width",
+        "height"
+      ],
       "type": "object"
     }
   },

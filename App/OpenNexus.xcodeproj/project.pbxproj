@@ -212,6 +212,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "OpenNexus records audio notes on topics. Recordings stay in your document.";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -243,6 +244,7 @@
 				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "OpenNexus records audio notes on topics. Recordings stay in your document.";
 				INFOPLIST_KEY_NSPrincipalClass = NSApplication;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

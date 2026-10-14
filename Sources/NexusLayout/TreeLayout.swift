@@ -18,16 +18,22 @@ public struct LayoutNode: Sendable, Equatable {
     /// Per-branch spacing for this node's children (FMT-1 › Spacing).
     public var siblingGap: CGFloat?
     public var levelGap: CGFloat?
+    /// Room reserved around this subtree across the growth axis (boundaries draw in it);
+    /// `marginBefore` is the leading side (top in horizontal trees) and holds a title band.
+    public var margin: CGFloat
+    public var marginBefore: CGFloat
 
     public init(
         size: CGSize, children: [NodeID], structure: LayoutStructure? = nil, siblingGap: CGFloat? = nil,
-        levelGap: CGFloat? = nil
+        levelGap: CGFloat? = nil, margin: CGFloat = 0, marginBefore: CGFloat? = nil
     ) {
         self.size = size
         self.children = children
         self.structure = structure
         self.siblingGap = siblingGap
         self.levelGap = levelGap
+        self.margin = margin
+        self.marginBefore = marginBefore ?? margin
     }
 }
 
@@ -176,7 +182,7 @@ public enum TreeLayout {
             for (i, c) in node.children.enumerated() {
                 total += height(c, depth: depth + 1) + (i > 0 ? gap : 0)
             }
-            let h = max(node.size.height, total)
+            let h = max(node.size.height, total) + node.marginBefore + node.margin
             extent[id] = h
             return h
         }
@@ -197,7 +203,8 @@ public enum TreeLayout {
             for k in kids {
                 guard let n = nodes[k] else { continue }
                 let h = height(k, depth: depth + 1)
-                let center = CGPoint(x: edgeX + dir * n.size.width / 2, y: y + h / 2)
+                let inner = h - n.marginBefore - n.margin
+                let center = CGPoint(x: edgeX + dir * n.size.width / 2, y: y + n.marginBefore + inner / 2)
                 result.frames[k] = NodeFrame(center: center, size: n.size, side: side, depth: depth + 1)
                 y += h + gap
             }
@@ -214,7 +221,7 @@ public enum TreeLayout {
             for (i, c) in node.children.enumerated() {
                 total += width(c) + (i > 0 ? spacing.horizontalSiblingGap : 0)
             }
-            let w = max(node.size.width, total)
+            let w = max(node.size.width, total) + 2 * node.margin
             widths[id] = w
             return w
         }

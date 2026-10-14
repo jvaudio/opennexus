@@ -138,6 +138,11 @@ public struct Canvas: Hashable, Sendable {
     public var nodes: [NodeID: Node]
     public var floating: [NodeID] = []
     public var relationships: [Relationship] = []
+    public var boundaries: [Boundary] = []
+    public var summaries: [Summary] = []
+    public var callouts: [Callout] = []
+    /// Zones in z-order (back to front).
+    public var zones: [Zone] = []
     public var extra: [String: JSONValue] = [:]
 
     /// Next sequence number for new node ids. Not stored; derived on load.
@@ -186,7 +191,8 @@ public struct Canvas: Hashable, Sendable {
     public static func == (a: Canvas, b: Canvas) -> Bool {
         a.id == b.id && a.title == b.title && a.type == b.type && a.layout == b.layout && a.style == b.style
             && a.root == b.root && a.nodes == b.nodes && a.floating == b.floating
-            && a.relationships == b.relationships && a.extra == b.extra
+            && a.relationships == b.relationships && a.boundaries == b.boundaries && a.summaries == b.summaries
+            && a.callouts == b.callouts && a.zones == b.zones && a.extra == b.extra
     }
 
     public func hash(into h: inout Hasher) {
@@ -214,6 +220,14 @@ extension Canvas: JSONRepresentable {
         relationships = try r.array("relationships").enumerated().map {
             try Relationship(json: $1, path: "\(path).relationships[\($0)]")
         }
+        boundaries = try r.array("boundaries").enumerated().map {
+            try Boundary(json: $1, path: "\(path).boundaries[\($0)]")
+        }
+        summaries = try r.array("summaries").enumerated().map {
+            try Summary(json: $1, path: "\(path).summaries[\($0)]")
+        }
+        callouts = try r.array("callouts").enumerated().map { try Callout(json: $1, path: "\(path).callouts[\($0)]") }
+        zones = try r.array("zones").enumerated().map { try Zone(json: $1, path: "\(path).zones[\($0)]") }
         extra = r.leftovers
         nextSequence = Canvas.seed(for: nodes.keys)
         guard nodes[root] != nil else { throw ModelDecodingError(path: "\(path).root", "root node \(root) is missing") }
@@ -230,6 +244,10 @@ extension Canvas: JSONRepresentable {
         w.set("nodes", .object(Dictionary(uniqueKeysWithValues: nodes.map { ($0.key.rawValue, $0.value.json) })))
         w.set("floating", floating.map(\.rawValue), omitEmpty: false)
         w.set("relationships", .array(relationships.map(\.json)))
+        if !boundaries.isEmpty { w.set("boundaries", .array(boundaries.map(\.json))) }
+        if !summaries.isEmpty { w.set("summaries", .array(summaries.map(\.json))) }
+        if !callouts.isEmpty { w.set("callouts", .array(callouts.map(\.json))) }
+        if !zones.isEmpty { w.set("zones", .array(zones.map(\.json))) }
         return w.value
     }
 }

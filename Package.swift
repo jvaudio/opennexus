@@ -52,6 +52,6 @@ let package = Package(
         ),
         .testTarget(name: "NexusThemeTests", dependencies: ["NexusTheme", "NexusCore"]),
         .testTarget(name: "NexusKeysTests", dependencies: ["NexusKeys"]),
-        .testTarget(name: "NexusCanvasTests", dependencies: ["NexusCanvas"]),
+        .testTarget(name: "NexusCanvasTests", dependencies: ["NexusCanvas", "NexusFormat"]),
     ]
 )

@@ -42,7 +42,12 @@ public struct FormatPanel: View {
                     switch tab {
                     case "map": MapTab(controller: controller)
                     case "data": DataTab(controller: controller)
-                    default: StyleTab(controller: controller)
+                    default:
+                        if let ref = controller.selectedElement, !(ref.isCallout) {
+                            ElementStyleTab(controller: controller, ref: ref)
+                        } else {
+                            StyleTab(controller: controller)
+                        }
                     }
                 }
                 .padding(.bottom, 24)

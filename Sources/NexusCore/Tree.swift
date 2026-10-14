@@ -2,6 +2,12 @@ import Foundation
 
 /// Read-only tree queries. The file stores only `children`, so parents are derived.
 extension Canvas {
+    /// The top of every tree on the canvas: the root, floating topics, summary topics and
+    /// callout topics.
+    public var tops: [NodeID] {
+        [root] + floating + summaries.map(\.topic) + callouts.map(\.topic)
+    }
+
     /// Maps every attached node to its parent.
     public func parentMap() -> [NodeID: NodeID] {
         var map: [NodeID: NodeID] = [:]
@@ -52,7 +58,7 @@ extension Canvas {
     /// Every node visible on the canvas: the root tree and floating trees, minus folded descendants.
     public func visibleNodes() -> [NodeID] {
         var out: [NodeID] = []
-        for top in [root] + floating {
+        for top in tops {
             var stack = [top]
             while let cur = stack.popLast() {
                 guard let node = nodes[cur] else { continue }
@@ -92,13 +98,23 @@ extension Canvas {
             }
         }
         if seen[root] != nil { problems.append("root \(root) has a parent") }
-        for f in floating {
-            if nodes[f] == nil { problems.append("floating \(f) missing") }
-            if seen[f] != nil { problems.append("floating \(f) has a parent") }
+        for f in tops.dropFirst() {
+            if nodes[f] == nil { problems.append("top \(f) missing") }
+            if seen[f] != nil { problems.append("top \(f) has a parent") }
+        }
+        for b in boundaries where b.nodes.contains(where: { nodes[$0] == nil }) {
+            problems.append("boundary \(b.id) wraps a missing node")
+        }
+        for s in summaries where [s.parent, s.from, s.to].contains(where: { nodes[$0] == nil }) {
+            problems.append("summary \(s.id) points at a missing node")
+        }
+        for c in callouts where nodes[c.host] == nil { problems.append("callout \(c.id) host is missing") }
+        for z in zones where z.members.contains(where: { !floating.contains($0) }) {
+            problems.append("zone \(z.id) holds a topic that is not floating")
         }
         // Every node must be reachable from the root or a floating topic.
         var reachable = Set<NodeID>()
-        for top in [root] + floating {
+        for top in tops {
             var stack = [top]
             while let cur = stack.popLast() {
                 guard reachable.insert(cur).inserted, let n = nodes[cur] else { continue }
