@@ -1,0 +1,6 @@
+@startuml
+actor "Shopper" as U
+participant "Payments API" as P
+U -> P : charge
+P --> U : receipt
+@enduml

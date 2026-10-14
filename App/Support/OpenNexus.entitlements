@@ -7,6 +7,9 @@
 	<true/>
 	<key>com.apple.security.files.user-selected.read-write</key>
 	<true/>
+	<!-- Map Shot's save folder (Settings › Export) is remembered as a security-scoped bookmark. -->
+	<key>com.apple.security.files.bookmarks.app-scope</key>
+	<true/>
 	<!-- Audio notes (M3) record locally to the package's assets/. -->
 	<key>com.apple.security.device.audio-input</key>
 	<true/>

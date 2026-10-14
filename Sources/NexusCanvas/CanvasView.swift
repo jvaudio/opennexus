@@ -36,6 +36,10 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     private var lastBackground: (RGBA, Theme.Grid)?
     /// Set before an update that should morph node looks (⌥⌘S).
     public var morphNextUpdate = false
+    /// Offscreen export: no selection ring, no grid.
+    public var exportMode = false {
+        didSet { grid.isHidden = exportMode }
+    }
 
     public private(set) var camera = Camera()
     private var cameraTween: CameraTween?
@@ -55,6 +59,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     private var promptHost: NSHostingView<PromptBarView>?
     private var ghostBadge: NSHostingView<GhostBadgeView>?
     private var noticeHost: NSHostingView<AINoticeView>?
+    private var mapShotView: MapShotFrameView?
     private var morphUntil: CFTimeInterval = 0
     private var lastMorphSerial = 0
     private var imageCache: [String: CGImage] = [:]
@@ -285,7 +290,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             // Slides show no selection ring (the step glow says what matters).
             layer.apply(
                 n, theme: theme, canvas: scene.canvasColor,
-                selected: selected.contains(id) && controller.present == nil,
+                selected: selected.contains(id) && controller.present == nil && !exportMode,
                 primary: controller.selection.primary == id, editing: editing == id, morph: morph,
                 image: n.image.flatMap { image(for: $0.asset) },
                 sticker: n.sticker.flatMap { $0.hasPrefix("emoji:") ? nil : image(for: $0) })
@@ -779,6 +784,24 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     /// The slash menu and protocol suggestions sit under what they belong to.
     func refreshOverlays() {
         refreshAIOverlays()
+        if let s = controller.mapShot {
+            let v =
+                mapShotView
+                ?? {
+                    let v = MapShotFrameView()
+                    v.canvas = self
+                    addSubview(v)
+                    return v
+                }()
+            mapShotView = v
+            v.frame = bounds
+            v.state = s
+            v.needsDisplay = true
+            window?.invalidateCursorRects(for: v)
+        } else if mapShotView != nil {
+            mapShotView?.removeFromSuperview()
+            mapShotView = nil
+        }
         if let s = controller.slash {
             let host =
                 slashHost
@@ -973,7 +996,23 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         nextHandler()?.performRegistryCommand(sender)
     }
 
+    // Edit › Cut, Copy, Paste on topics (the text editor handles them while editing).
+    @objc public func copy(_ sender: Any?) { controller.copySelection() }
+    @objc public func cut(_ sender: Any?) {
+        controller.cutSelection()
+        refreshOverlays()
+    }
+    @objc public func paste(_ sender: Any?) {
+        controller.paste()
+        refreshOverlays()
+    }
+
     public func validateMenuItem(_ item: NSMenuItem) -> Bool {
+        if item.action == #selector(copy(_:)) || item.action == #selector(cut(_:)) {
+            return controller.mode == .select
+                && !(item.action == #selector(cut(_:)) && controller.selection.nodes == [controller.canvas.root])
+        }
+        if item.action == #selector(paste(_:)) { return controller.mode == .select }
         if item.action == #selector(performRegistryCommand(_:)), let raw = item.representedObject as? String {
             if controller.canPerform(CommandID(rawValue: raw)) { return true }
             return (nextHandler() as? any NSMenuItemValidation)?.validateMenuItem(item) ?? false

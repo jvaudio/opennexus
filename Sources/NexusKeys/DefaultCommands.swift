@@ -129,6 +129,27 @@ extension CommandID {
     public static let export: CommandID = "file.export"
     public static let mapShot: CommandID = "file.mapShot"
     public static let copyAsImage: CommandID = "file.copyAsImage"
+    public static let copyAsMarkdown: CommandID = "file.copyAsMarkdown"
+    public static let printDocument: CommandID = "file.print"
+    public static let printBranch: CommandID = "file.printBranch"
+    public static let importFile: CommandID = "file.import"
+    public static let mergeDocuments: CommandID = "file.merge"
+    public static let setPassword: CommandID = "file.setPassword"
+    public static let recoverySnapshots: CommandID = "file.recoverySnapshots"
+    public static let exportBranchPNG: CommandID = "file.exportBranchPNG"
+    public static let exportBranchSVG: CommandID = "file.exportBranchSVG"
+    public static let exportBranchMarkdown: CommandID = "file.exportBranchMarkdown"
+    public static let splitByBranch: CommandID = "file.splitByBranch"
+    public static let duplicateCanvas: CommandID = "canvas.duplicate"
+    public static let renameCanvas: CommandID = "canvas.rename"
+    public static let deleteCanvas: CommandID = "canvas.delete"
+    public static let copyCanvas: CommandID = "canvas.copy"
+    public static let pasteCanvas: CommandID = "canvas.paste"
+    public static let saveCanvasAsDocument: CommandID = "canvas.saveAsDocument"
+    public static let moveCanvasToWindow: CommandID = "canvas.moveToWindow"
+    public static let copy: CommandID = "edit.copy"
+    public static let cut: CommandID = "edit.cut"
+    public static let paste: CommandID = "edit.paste"
     public static let quickCapture: CommandID = "app.quickCapture"
     public static let undo: CommandID = "edit.undo"
     public static let redo: CommandID = "edit.redo"
@@ -366,6 +387,33 @@ public enum DefaultCommands {
         C(.export, "Export…", .file, scope: .global, keys: [k("shift+cmd+e")], menu: .file),
         C(.mapShot, "Map Shot", .file, scope: .global, keys: [k("ctrl+cmd+m")], menu: .file),
         C(.copyAsImage, "Copy as Image", .file, keys: [k("ctrl+cmd+c")], menu: .edit),
+        C(.copyAsMarkdown, "Copy as Markdown", .file, menu: .edit),
+        C(.printDocument, "Print…", .file, scope: .global, keys: [k("cmd+p")], menu: .file, xmind: true),
+        C(.printBranch, "Print Branch…", .file, menu: .file),
+        C(
+            .importFile, "Import…", .file, scope: .global, menu: .file,
+            note: ".xmind, OPML, Markdown, Mermaid, draw.io …"),
+        C(
+            .mergeDocuments, "Merge Documents…", .file, scope: .global, menu: .file,
+            note: "As canvases or into this canvas"),
+        C(.setPassword, "Set Password…", .file, scope: .global, menu: .file),
+        C(.recoverySnapshots, "Browse Recovery Snapshots…", .file, scope: .global, menu: .file),
+        C(.exportBranchPNG, "Export Branch as PNG…", .file, menu: .file),
+        C(.exportBranchSVG, "Export Branch as SVG…", .file, menu: .file),
+        C(.exportBranchMarkdown, "Export Branch as Markdown…", .file, menu: .file),
+        C(.splitByBranch, "Export Split by Main Branch…", .file, scope: .global, menu: .file),
+        C(.duplicateCanvas, "Duplicate Canvas", .file, scope: .global, menu: .file),
+        C(.renameCanvas, "Rename Canvas…", .file, scope: .global, menu: .file),
+        C(.deleteCanvas, "Delete Canvas…", .file, scope: .global, menu: .file),
+        C(.copyCanvas, "Copy Canvas", .file, scope: .global, menu: .file),
+        C(.pasteCanvas, "Paste Canvas", .file, scope: .global, menu: .file),
+        C(.saveCanvasAsDocument, "Save Canvas as Document…", .file, scope: .global, menu: .file),
+        C(.moveCanvasToWindow, "Move Canvas to New Window", .file, scope: .global, menu: .file),
+        C(.cut, "Cut", .edit, keys: [k("cmd+x")], menu: .edit, xmind: true, standardAction: "cut:"),
+        C(.copy, "Copy", .edit, keys: [k("cmd+c")], menu: .edit, xmind: true, standardAction: "copy:"),
+        C(
+            .paste, "Paste", .edit, keys: [k("cmd+v")], menu: .edit, xmind: true,
+            note: "Markdown or indented text becomes a branch", standardAction: "paste:"),
         C(.quickCapture, "Quick Capture", .app, scope: .global, hyper: k("hyper+n"), note: "System-wide"),
     ]
 

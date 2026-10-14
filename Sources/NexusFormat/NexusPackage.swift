@@ -22,9 +22,12 @@ public enum NexusPackage {
         case notOpenNexus(String)
         case newerSchema(Int)
         case invalid(String)
+        /// Password-protected; the hint, if any, is readable.
+        case encrypted(String?)
 
         public var description: String {
             switch self {
+            case .encrypted(let h): "This document is password-protected" + (h.map { " (hint: \($0))" } ?? "") + "."
             case .missingFile(let f): "The package is missing \(f)."
             case .notOpenNexus(let f): "This is not an OpenNexus file (format “\(f)”)."
             case .newerSchema(let v): "This file was made by a newer OpenNexus (schema \(v))."
@@ -60,6 +63,7 @@ public enum NexusPackage {
     }
 
     public static func read(files: [String: Data]) throws -> DocumentModel {
+        if PackageCrypto.isEncrypted(files) { throw ReadError.encrypted(PackageCrypto.info(files)?.hint) }
         guard let manifestData = files["manifest.json"] else { throw ReadError.missingFile("manifest.json") }
         let manifestJSON = try parse(manifestData, "manifest.json")
         var m = try ObjectReader(manifestJSON, path: "manifest")
@@ -123,7 +127,7 @@ public enum NexusPackage {
         return try read(from: wrapper)
     }
 
-    static func directoryWrapper(from files: [String: Data]) -> FileWrapper {
+    public static func directoryWrapper(from files: [String: Data]) -> FileWrapper {
         final class Dir {
             var files: [String: Data] = [:]
             var dirs: [String: Dir] = [:]
@@ -156,7 +160,7 @@ public enum NexusPackage {
         return wrap(root)
     }
 
-    static func flatten(_ wrapper: FileWrapper, prefix: String = "") -> [String: Data] {
+    public static func flatten(_ wrapper: FileWrapper, prefix: String = "") -> [String: Data] {
         var out: [String: Data] = [:]
         for (name, child) in wrapper.fileWrappers ?? [:] {
             let path = prefix.isEmpty ? name : "\(prefix)/\(name)"

@@ -130,3 +130,25 @@ extension Canvas {
         return problems.sorted()
     }
 }
+
+extension Canvas {
+    /// Pre-order walk of the main tree (root first), with depth (root = 0).
+    public func walk(_ visit: (NodeID, Node, Int) -> Void) {
+        func go(_ id: NodeID, _ d: Int) {
+            guard let n = nodes[id] else { return }
+            visit(id, n, d)
+            for c in n.children { go(c, d + 1) }
+        }
+        go(root, 0)
+    }
+
+    /// Walks one branch from `top` (depth 0 at `top`).
+    public func walk(from top: NodeID, _ visit: (NodeID, Node, Int) -> Void) {
+        func go(_ id: NodeID, _ d: Int) {
+            guard let n = nodes[id] else { return }
+            visit(id, n, d)
+            for c in n.children { go(c, d + 1) }
+        }
+        go(top, 0)
+    }
+}

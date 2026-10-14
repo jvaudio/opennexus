@@ -11,7 +11,9 @@ let package = Package(
     products: [
         .library(
             name: "OpenNexusKit",
-            targets: ["NexusCore", "NexusLayout", "NexusFormat", "NexusTheme", "NexusKeys", "NexusAI", "NexusCanvas"]
+            targets: ["NexusCore", "NexusLayout", "NexusFormat", "NexusTheme", "NexusKeys", "NexusAI", "NexusInterchange",
+                "NexusCanvas",
+            ]
         ),
         .executable(name: "nexus", targets: ["nexus"]),
     ],
@@ -31,18 +33,21 @@ let package = Package(
         .target(name: "NexusTheme", dependencies: ["NexusCore"], swiftSettings: strict),
         // Command registry, key chords, profiles, conflict detection.
         .target(name: "NexusKeys", swiftSettings: strict),
+        // Import and export of other formats (.xmind, OPML, Markdown, Mermaid, PlantUML,
+        // draw.io, FreeMind, MindManager, Word, CSV, JSON/YAML). Pure and headless.
+        .target(name: "NexusInterchange", dependencies: ["NexusCore", "NexusFormat"], swiftSettings: strict),
         // Thin wrappers around Apple's on-device frameworks (Foundation Models, Translation,
         // NaturalLanguage, Vision, Image Playground, SpeechAnalyzer). No network.
         .target(name: "NexusAI", dependencies: ["NexusCore"], swiftSettings: strict),
         // AppKit canvas: rendering, hit testing, editing overlay, animation.
         .target(
             name: "NexusCanvas",
-            dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI"],
+            dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI", "NexusFormat", "NexusInterchange"],
             swiftSettings: strict
         ),
         .executableTarget(
             name: "nexus",
-            dependencies: ["NexusCore", "NexusFormat"],
+            dependencies: ["NexusCore", "NexusFormat", "NexusInterchange"],
             swiftSettings: strict
         ),
 
@@ -57,5 +62,10 @@ let package = Package(
         .testTarget(name: "NexusKeysTests", dependencies: ["NexusKeys"]),
         .testTarget(name: "NexusCanvasTests", dependencies: ["NexusCanvas", "NexusFormat"]),
         .testTarget(name: "NexusAITests", dependencies: ["NexusAI", "NexusCore"]),
+        .testTarget(
+            name: "NexusInterchangeTests",
+            dependencies: ["NexusInterchange", "NexusFormat", "NexusCore"],
+            exclude: ["Fixtures", "Goldens"]
+        ),
     ]
 )

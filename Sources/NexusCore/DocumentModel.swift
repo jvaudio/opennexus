@@ -38,9 +38,29 @@ public struct DocumentModel: Equatable, Sendable {
 
     public mutating func apply(_ patch: Patch) {
         if let t = patch.themeAfter { theme = t }
-        guard var c = canvases[patch.canvasID] else { return }
+        for (id, change) in patch.canvases { canvases[id] = change.after }
+        if let order = patch.orderAfter { canvasOrder = order.filter { canvases[$0] != nil } }
+        guard !patch.nodes.isEmpty || patch.metaAfter != nil, var c = canvases[patch.canvasID] else { return }
         patch.apply(to: &c)
         canvases[patch.canvasID] = c
+    }
+
+    /// A patch that turns `self` into `after` at the canvas level (whole-canvas changes and
+    /// the tab order), for merges, imports, duplicates and deletes.
+    public func canvasSetPatch(to after: DocumentModel, focus: CanvasID, actionName: String) -> Patch {
+        var p = Patch(canvasID: focus, actionName: actionName)
+        for id in Set(canvases.keys).union(after.canvases.keys) where canvases[id] != after.canvases[id] {
+            p.canvases[id] = Patch.CanvasChange(before: canvases[id], after: after.canvases[id])
+        }
+        if canvasOrder != after.canvasOrder {
+            p.orderBefore = canvasOrder
+            p.orderAfter = after.canvasOrder
+        }
+        if after.theme != theme {
+            p.themeBefore = theme
+            p.themeAfter = after.theme
+        }
+        return p
     }
 
     public func makeCanvasID() -> CanvasID {

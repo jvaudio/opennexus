@@ -3,12 +3,19 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 
-/// A `.nexus` package document. Autosaves in place and keeps versions (File › Revert To).
+/// A `.nexus` package document. Autosaves in place and keeps versions (File › Revert To),
+/// writes recovery snapshots, and encrypts when a password is set (M7).
 final class NexusDocument: NSDocument {
     let store = DocumentStore(model: .blank())
     private let undoBridge = DocumentUndoRegistrar()
     /// True for a brand-new untitled document, so the window opens with the root in Edit mode.
     private(set) var isFreshBlank = true
+    /// The derived key while the document is password-protected (kept in memory only).
+    nonisolated(unsafe) var cryptoKey: PackageCrypto.Key?
+    /// An encrypted package waiting for its password (the window shows the unlock prompt).
+    nonisolated(unsafe) var lockedFiles: [String: Data]?
+    private var snapshotTimer: Timer?
+    private var lastSnapshotRevision = -1
 
     override init() {
         super.init()
@@ -21,19 +28,140 @@ final class NexusDocument: NSDocument {
 
     override func makeWindowControllers() {
         addWindowController(DocumentWindowController(document: self))
+        startSnapshots()
+    }
+
+    /// A stable id for this document's recovery snapshots (kept in the manifest).
+    var documentID: String {
+        if case .string(let s)? = store.model.manifestExtra["documentID"] { return s }
+        let id = UUID().uuidString
+        store.updateDocument { $0.manifestExtra["documentID"] = .string(id) }
+        return id
+    }
+
+    func packageFiles() -> [String: Data] {
+        _ = documentID
+        var doc = store.model
+        doc.encrypted = cryptoKey != nil
+        return NexusPackage.files(for: doc)
     }
 
     override func fileWrapper(ofType typeName: String) throws -> FileWrapper {
-        NexusPackage.fileWrapper(for: store.model)
+        // A document that was never unlocked is written back exactly as it was read.
+        if let lockedFiles { return NexusPackage.directoryWrapper(from: lockedFiles) }
+        let files = packageFiles()
+        if let key = cryptoKey {
+            return NexusPackage.directoryWrapper(from: try PackageCrypto.encrypt(files, with: key))
+        }
+        return NexusPackage.directoryWrapper(from: files)
     }
 
     nonisolated override func read(from fileWrapper: FileWrapper, ofType typeName: String) throws {
-        let doc = try NexusPackage.read(from: fileWrapper)
+        let files = NexusPackage.flatten(fileWrapper)
+        if PackageCrypto.isEncrypted(files), let info = PackageCrypto.info(files) {
+            // The Keychain may already know the password.
+            if let pw = Keychain.password(account: info.keychainAccount),
+                let opened = try? PackageCrypto.decrypt(files, with: PackageCrypto.derive(password: pw, info: info))
+            {
+                let doc = try NexusPackage.read(files: opened)
+                MainActor.assumeIsolated {
+                    cryptoKey = PackageCrypto.derive(password: pw, info: info)
+                    isFreshBlank = false
+                    store.replace(with: doc)
+                }
+                return
+            }
+            MainActor.assumeIsolated {
+                lockedFiles = files
+                isFreshBlank = false
+            }
+            return
+        }
+        let doc = try NexusPackage.read(files: files)
         // AppKit reads on the main thread unless concurrent reading is enabled (it is not).
         MainActor.assumeIsolated {
             isFreshBlank = false
             store.replace(with: doc)
         }
+    }
+
+    /// An imported document opens on its content, not in Edit mode.
+    func markImported() {
+        isFreshBlank = false
+        updateChangeCount(.changeDone)
+    }
+
+    // MARK: Password
+
+    /// Unlocks a document opened without a stored password.
+    func unlock(password: String, remember: Bool) throws {
+        guard let files = lockedFiles, let info = PackageCrypto.info(files) else { return }
+        let key = PackageCrypto.derive(password: password, info: info)
+        let opened = try PackageCrypto.decrypt(files, with: key)
+        let doc = try NexusPackage.read(files: opened)
+        cryptoKey = key
+        lockedFiles = nil
+        store.replace(with: doc)
+        if remember { Keychain.setPassword(password, account: info.keychainAccount) }
+    }
+
+    func setPassword(_ password: String, hint: String?, remember: Bool) {
+        if let old = cryptoKey { Keychain.delete(account: old.info.keychainAccount) }
+        let key = PackageCrypto.derive(password: password, info: PackageCrypto.newInfo(hint: hint))
+        cryptoKey = key
+        if remember { Keychain.setPassword(password, account: key.info.keychainAccount) }
+        updateChangeCount(.changeDone)
+        autosave(withImplicitCancellability: false) { _ in }
+    }
+
+    func removePassword() {
+        if let old = cryptoKey { Keychain.delete(account: old.info.keychainAccount) }
+        cryptoKey = nil
+        updateChangeCount(.changeDone)
+    }
+
+    // MARK: Recovery snapshots
+
+    /// Every five minutes of editing, and on close.
+    func startSnapshots() {
+        guard snapshotTimer == nil else { return }
+        lastSnapshotRevision = store.revision
+        snapshotTimer = Timer.scheduledTimer(withTimeInterval: 300, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated { self?.writeSnapshot() }
+        }
+    }
+
+    func writeSnapshot() {
+        guard lockedFiles == nil, store.revision != lastSnapshotRevision else { return }
+        lastSnapshotRevision = store.revision
+        try? SnapshotStore.write(packageFiles(), documentID: documentID, topics: store.model.topicCount, key: cryptoKey)
+    }
+
+    var snapshots: [RecoverySnapshot] { SnapshotStore.list(documentID: documentID) }
+
+    /// Restore is one undo step.
+    func restore(_ s: RecoverySnapshot, controller: CanvasController) {
+        do {
+            let restored = try NexusPackage.read(files: try SnapshotStore.read(s, key: cryptoKey))
+            let focus = restored.canvasOrder.first ?? controller.canvasID
+            store.commitDocument("Restore Snapshot", focus: focus) { d in
+                d.canvases = restored.canvases
+                d.canvasOrder = restored.canvasOrder
+                d.theme = restored.theme
+                for (k, v) in restored.assets where d.assets[k] == nil { d.assets[k] = v }
+            }
+            controller.showToast(
+                "Restored the snapshot from \(s.date.formatted(date: .abbreviated, time: .shortened)) · ⌘Z undoes")
+        } catch {
+            controller.showToast("Couldn’t restore: \(error)")
+        }
+    }
+
+    override func close() {
+        writeSnapshot()
+        snapshotTimer?.invalidate()
+        snapshotTimer = nil
+        super.close()
     }
 }
 
@@ -57,5 +185,40 @@ final class DocumentUndoRegistrar: UndoRegistrar {
                 um.setActionName(patch.actionName)
             }
         }
+    }
+}
+
+/// Document passwords in the login Keychain (generic passwords, this app only).
+enum Keychain {
+    nonisolated static let service = "org.opennexus.document-password"
+
+    nonisolated static func setPassword(_ password: String, account: String) {
+        delete(account: account)
+        let q: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
+            kSecAttrAccount as String: account, kSecValueData as String: Data(password.utf8),
+            kSecAttrLabel as String: "OpenNexus document password",
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked,
+        ]
+        SecItemAdd(q as CFDictionary, nil)
+    }
+
+    nonisolated static func password(account: String) -> String? {
+        let q: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
+            kSecAttrAccount as String: account, kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        var out: CFTypeRef?
+        guard SecItemCopyMatching(q as CFDictionary, &out) == errSecSuccess, let d = out as? Data else { return nil }
+        return String(data: d, encoding: .utf8)
+    }
+
+    nonisolated static func delete(account: String) {
+        let q: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+        ]
+        SecItemDelete(q as CFDictionary)
     }
 }

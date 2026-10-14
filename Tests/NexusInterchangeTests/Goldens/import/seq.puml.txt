@@ -1,0 +1,68 @@
+seq.puml · PlantUML
+1 sheets → 1 canvases · 3 topics, 0 markers, 0 notes
+0 not converted
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "sequence.lifelines"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n3"
+      ],
+      "kind": "root",
+      "text": "seq"
+    },
+    "n2": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "actor",
+      "text": "Shopper"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "participant",
+      "text": "Payments API"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n2",
+      "id": "r1",
+      "label": "charge",
+      "line": "curved",
+      "to": "n3"
+    },
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n3",
+      "id": "r2",
+      "kind": "return",
+      "label": "receipt",
+      "line": "curved",
+      "to": "n2"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "seq",
+  "type": "sequence"
+}

@@ -1,0 +1,25 @@
+- Forgot password
+  - Enter email
+    - Account exists?
+      - Create reset token
+        - Email the link
+          - Done
+      - Show neutral message
+
+```mermaid
+flowchart TD
+    n1(["Forgot password"])
+    n2["Enter email"]
+    n3{"Account exists?"}
+    n4["Create reset token"]
+    n5[/"Email the link"/]
+    n7(["Done"])
+    n6["Show neutral message"]
+    n1 --> n2
+    n2 --> n3
+    n3 -->|Yes| n4
+    n4 --> n5
+    n5 --> n7
+    n3 -->|No| n6
+    n6 -.-> n7
+```

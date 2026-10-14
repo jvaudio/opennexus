@@ -24,6 +24,20 @@ public struct Patch: Sendable, Equatable {
     /// Document-level `theme.json` (custom themes, colour themes, quick styles), when changed.
     public var themeBefore: JSONValue?
     public var themeAfter: JSONValue?
+    /// Document-level: whole canvases added, removed or replaced (merge, import, duplicate,
+    /// delete), and the tab order.
+    public var canvases: [CanvasID: CanvasChange] = [:]
+    public var orderBefore: [CanvasID]?
+    public var orderAfter: [CanvasID]?
+
+    public struct CanvasChange: Sendable, Equatable {
+        public var before: Canvas?
+        public var after: Canvas?
+        public init(before: Canvas?, after: Canvas?) {
+            self.before = before
+            self.after = after
+        }
+    }
 
     public init(
         canvasID: CanvasID, nodes: [NodeID: NodeChange] = [:], metaBefore: Canvas? = nil,
@@ -39,7 +53,12 @@ public struct Patch: Sendable, Equatable {
         self.actionName = actionName
     }
 
-    public var isEmpty: Bool { nodes.isEmpty && metaBefore == nil && themeBefore == nil }
+    public var isEmpty: Bool {
+        nodes.isEmpty && metaBefore == nil && themeBefore == nil && canvases.isEmpty && orderBefore == orderAfter
+    }
+
+    /// True when the patch adds, removes or reorders canvases.
+    public var changesCanvasSet: Bool { !canvases.isEmpty || orderBefore != orderAfter }
 
     public var inverted: Patch {
         var p = Patch(
@@ -50,6 +69,9 @@ public struct Patch: Sendable, Equatable {
             actionName: actionName)
         p.themeBefore = themeAfter
         p.themeAfter = themeBefore
+        p.canvases = canvases.mapValues { CanvasChange(before: $0.after, after: $0.before) }
+        p.orderBefore = orderAfter
+        p.orderAfter = orderBefore
         return p
     }
 
@@ -97,6 +119,14 @@ public struct Patch: Sendable, Equatable {
         if out.themeBefore == out.themeAfter {
             out.themeBefore = nil
             out.themeAfter = nil
+        }
+        for (id, change) in next.canvases {
+            out.canvases[id] = CanvasChange(before: out.canvases[id]?.before ?? change.before, after: change.after)
+        }
+        out.canvases = out.canvases.filter { $0.value.before != $0.value.after }
+        if next.orderAfter != nil {
+            out.orderBefore = out.orderBefore ?? next.orderBefore
+            out.orderAfter = next.orderAfter
         }
         out.selectionAfter = next.selectionAfter ?? out.selectionAfter
         return out

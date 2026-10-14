@@ -1,0 +1,101 @@
+flow.mmd · Mermaid
+1 sheets → 1 canvases · 7 topics, 0 markers, 0 notes
+1 not converted
+· Mermaid styling and click handlers
+
+{
+  "boundaries": [
+    {
+      "id": "b1",
+      "nodes": [
+        "n5"
+      ],
+      "title": "Mail service"
+    }
+  ],
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "flow.down"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2"
+      ],
+      "kind": "root",
+      "nodeType": "start",
+      "text": "Forgot password"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "nodeType": "process",
+      "text": "Enter email"
+    },
+    "n3": {
+      "children": [
+        "n4",
+        "n6"
+      ],
+      "kind": "topic",
+      "nodeType": "decision",
+      "text": "Account exists?"
+    },
+    "n4": {
+      "children": [
+        "n5"
+      ],
+      "edgeLabel": "Yes",
+      "kind": "topic",
+      "nodeType": "process",
+      "text": "Create reset token"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "io",
+      "text": "Email the link"
+    },
+    "n6": {
+      "children": [
+        "n7"
+      ],
+      "edgeLabel": "No",
+      "kind": "topic",
+      "nodeType": "process",
+      "text": "Show neutral message"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "end",
+      "text": "Done"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n5",
+      "id": "r1",
+      "label": "",
+      "line": "curved",
+      "to": "n7"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "flow",
+  "type": "flowchart"
+}

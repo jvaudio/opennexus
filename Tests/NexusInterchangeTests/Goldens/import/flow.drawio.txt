@@ -1,0 +1,68 @@
+flow.drawio · draw.io
+1 sheets → 1 canvases · 4 topics, 0 markers, 0 notes
+1 not converted
+· Connector without both ends
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "flow.down"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2"
+      ],
+      "kind": "root",
+      "nodeType": "start",
+      "text": "Start"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "nodeType": "decision",
+      "text": "Valid?"
+    },
+    "n3": {
+      "children": [
+        "n4"
+      ],
+      "edgeLabel": "yes",
+      "kind": "topic",
+      "nodeType": "process",
+      "text": "Save record"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "store",
+      "text": "Orders"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n2",
+      "id": "r1",
+      "label": "no",
+      "line": "curved",
+      "to": "n1"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Checkout",
+  "type": "flowchart"
+}

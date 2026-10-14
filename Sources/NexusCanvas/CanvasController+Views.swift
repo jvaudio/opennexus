@@ -95,6 +95,7 @@ extension CanvasController {
 
     func currentViewState() -> SceneViewState {
         var v = SceneViewState()
+        v.isolate = isolate
         if let g = ghosts {
             v.ghosts = g.ideas.map { SceneViewState.Ghost(parent: g.anchor, parentGhost: $0.parentGhost, idea: $0) }
             v.ghostHighlight = g.ideas.isEmpty ? nil : g.highlighted

@@ -1,0 +1,66 @@
+mindmanager.mmap · MindManager
+1 sheets → 1 canvases · 3 topics, 1 markers, 1 notes
+1 not converted
+· Icon “SmileyHappy” (no equivalent)
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n3"
+      ],
+      "kind": "root",
+      "text": "Annual plan"
+    },
+    "n2": {
+      "children": [],
+      "kind": "topic",
+      "markers": [
+        "priority-2"
+      ],
+      "note": {
+        "format": "md",
+        "text": "Approved in March"
+      },
+      "text": "Budget",
+      "todo": {
+        "done": true
+      }
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "link": "https://jobs.example",
+      "text": "Hiring"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n2",
+      "id": "r1",
+      "label": "",
+      "line": "curved",
+      "to": "n3"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Annual plan",
+  "type": "mindmap"
+}

@@ -504,8 +504,8 @@ extension CanvasController {
 
     public func copyMermaid() {
         let text = canvas.type == .sequence ? Mermaid.sequence(canvas) : Mermaid.flowchart(canvas)
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(text, forType: .string)
+        pasteboard.clearContents()
+        pasteboard.setString(text, forType: .string)
         showToast("Copied as Mermaid")
     }
 
@@ -583,15 +583,13 @@ extension CanvasController {
                 }
             }
         }
-        if let add = onAddCanvas {
-            add(level)
-        } else {
-            store.updateDocument {
-                $0.canvases[level.id] = level
-                $0.canvasOrder.append(level.id)
-            }
+        // The level canvas and the process's link to it are one undo step.
+        let here = canvasID
+        store.commitDocument("Drill Into Process", focus: here) { d in
+            d.canvases[level.id] = level
+            d.canvasOrder.append(level.id)
+            d.canvases[here]?.nodes[id]?.subCanvas = newID
         }
-        perform("Drill Into Process") { $0.update(id) { $0.subCanvas = newID } }
         switchCanvas(to: newID)
         showToast("Level \(prefix) · ⌘[ climbs back")
         return true
@@ -671,8 +669,8 @@ extension CanvasController {
     }
 
     public func copyThreatsMarkdown(_ rows: [Stride.Threat]) {
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(Stride.markdown(rows), forType: .string)
+        pasteboard.clearContents()
+        pasteboard.setString(Stride.markdown(rows), forType: .string)
         showToast("Copied threat table as Markdown")
     }
 

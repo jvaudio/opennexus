@@ -1,0 +1,97 @@
+notes.md · Markdown
+1 sheets → 1 canvases · 8 topics, 1 markers, 2 notes
+2 not converted
+· Mermaid block (paste it on its own to rebuild the diagram)
+· Image reference (import images with drag and drop)
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n8"
+      ],
+      "kind": "root",
+      "note": {
+        "format": "md",
+        "text": "Ship by **January**."
+      },
+      "text": "Launch plan"
+    },
+    "n2": {
+      "children": [
+        "n3",
+        "n4",
+        "n7"
+      ],
+      "kind": "topic",
+      "text": "Pricing"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "labels": [
+        "growth"
+      ],
+      "text": "Free tier"
+    },
+    "n4": {
+      "children": [
+        "n5",
+        "n6"
+      ],
+      "kind": "topic",
+      "markers": [
+        "priority-1"
+      ],
+      "text": "Pro"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Annual discount",
+      "todo": {
+        "done": false
+      }
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "Monthly",
+      "todo": {
+        "done": true
+      }
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "link": "https://example.com/pricing",
+      "text": "See the doc"
+    },
+    "n8": {
+      "children": [],
+      "kind": "topic",
+      "note": {
+        "format": "md",
+        "text": "Competitors may respond.\n\n```swift\nlet x = 1\n```"
+      },
+      "text": "Risks"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Launch plan",
+  "type": "mindmap"
+}

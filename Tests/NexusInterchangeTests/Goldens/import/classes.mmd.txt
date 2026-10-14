@@ -1,0 +1,74 @@
+classes.mmd · Mermaid
+1 sheets → 1 canvases · 6 topics, 0 markers, 0 notes
+0 not converted
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n5"
+      ],
+      "kind": "root",
+      "text": "classes"
+    },
+    "n2": {
+      "children": [
+        "n3",
+        "n4"
+      ],
+      "kind": "topic",
+      "text": "Animal"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "String name"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "eat()"
+    },
+    "n5": {
+      "children": [
+        "n6"
+      ],
+      "kind": "topic",
+      "text": "Dog"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "bark()"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n2",
+      "id": "r1",
+      "label": "inherits",
+      "line": "curved",
+      "to": "n5"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "classes",
+  "type": "mindmap"
+}

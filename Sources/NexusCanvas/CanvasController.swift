@@ -1,6 +1,8 @@
 import AppKit
 import NexusAI
 import NexusCore
+import NexusFormat
+import NexusInterchange
 import NexusKeys
 import NexusLayout
 import NexusTheme
@@ -82,8 +84,38 @@ public final class CanvasController {
     public internal(set) var lastGhostLatency: TimeInterval?
     @ObservationIgnored var aiTask: Task<Void, Never>?
     @ObservationIgnored var idleSuggestion: Task<Void, Never>?
+    /// Export scope: only these topics are drawn (offscreen exporters set it).
+    @ObservationIgnored public var isolate: Set<NodeID>?
     /// An AI+ sheet (translate, mask, sticker, record, remove background).
     public internal(set) var aiSheet: AISheet?
+    // Files, import and export (M7).
+    public internal(set) var exportState: ExportState?
+    public internal(set) var mapShot: MapShotState? {
+        didSet { if oldValue != mapShot { onSceneChange?(true) } }
+    }
+    public internal(set) var printState: PrintLayout.Options?
+    public internal(set) var mergeState: MergeState?
+    public internal(set) var importReport: ImportReport?
+    /// File › Set Password… sheet (the app encrypts on save).
+    public var passwordSheet = false
+    public var documentEncrypted = false
+    @ObservationIgnored public var onSetPassword: ((String, String?, Bool) -> Void)?
+    @ObservationIgnored public var onRemovePassword: (() -> Void)?
+    /// File › Revert To › Browse Recovery Snapshots…
+    public var snapshots: [RecoverySnapshot]?
+    @ObservationIgnored public var onRestoreSnapshot: ((RecoverySnapshot) -> Void)?
+    /// Merge sheet › + Add… (the app shows an open panel, then calls `addMergeSource`).
+    @ObservationIgnored public var onChooseMergeFiles: (() -> Void)?
+    /// The clipboard (tests use a private pasteboard).
+    @ObservationIgnored public var pasteboard: NSPasteboard = .general
+    /// The app's save panel: data and a suggested file name.
+    @ObservationIgnored public var onSaveFile: ((Data, String) -> Void)?
+    /// Choose a folder, then write these files (split by branch).
+    @ObservationIgnored public var onSaveFolder: (([(String, Data)]) -> Void)?
+    /// Map Shot: saved to the folder from Settings › Export.
+    @ObservationIgnored public var onSaveMapShot: ((Data, String) -> Void)?
+    @ObservationIgnored public var onPrintPDF: ((Data, String) -> Void)?
+    @ObservationIgnored public var onSaveDocument: ((DocumentModel, String) -> Void)?
     /// "Use a local model" and ⌘, open Settings › AI.
     @ObservationIgnored public var onOpenAISettings: (() -> Void)?
     /// Give keyboard focus back to the canvas (after the prompt bar or a panel field).
@@ -134,7 +166,6 @@ public final class CanvasController {
     /// Bumped when a conversion starts, so the view uses the 600 ms morph.
     public internal(set) var morphSerial = 0
     /// Adds a canvas to the document (the window wires this to an undoable insert).
-    @ObservationIgnored public var onAddCanvas: ((Canvas) -> Void)?
     /// Saves text the user exported (CSV): suggested name and contents.
     @ObservationIgnored public var onSaveText: ((String, String) -> Void)?
     /// Replaces the live editor's text (slash menu picks clear their `/query`).
@@ -262,6 +293,22 @@ public final class CanvasController {
     }
 
     private func storeDidApply(_ patch: Patch) {
+        // Canvas added or removed (merge, import, delete, or their undo): stay on a canvas
+        // that exists, preferring the one the change is about.
+        if patch.changesCanvasSet {
+            if store.canvas(canvasID) == nil || (patch.canvases[patch.canvasID]?.after != nil && !committingOwnPatch) {
+                let target = store.canvas(patch.canvasID) != nil ? patch.canvasID : store.model.canvasOrder.first
+                if let target, target != canvasID {
+                    canvasID = target
+                    selection = Selection(canvas.root)
+                    edit = nil
+                    mode = .select
+                    rebuildScene()
+                    onSceneChange?(false)
+                    return
+                }
+            }
+        }
         guard patch.canvasID == canvasID, !committingOwnPatch else { return }
         if let s = patch.selectionAfter {
             let c = canvas
@@ -451,6 +498,7 @@ public final class CanvasController {
             return handlePresentKey(chord, characters: characters) ? .handled : .ignored
         }
         if convert != nil { return handleConvertKey(chord, characters: characters) ? .handled : .ignored }
+        if mapShot != nil { return handleMapShotKey(chord) ? .handled : .ignored }
         aiNotice = nil
         if ghosts != nil, handleGhostKey(chord) { return .handled }
         // Esc climbs out of Focus, then leaves ZEN, before collapsing the selection.

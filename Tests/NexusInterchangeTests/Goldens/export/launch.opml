@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>Launch plan</title>
+  </head>
+  <body>
+    <outline text="Launch plan">
+      <outline text="Positioning">
+        <outline text="Developers"/>
+        <outline text="Teams"/>
+      </outline>
+      <outline text="Pricing" _note="Keep the free tier generous.">
+        <outline text="Free tier"/>
+        <outline text="Pro" _status="unchecked"/>
+        <outline text="Annual discount"/>
+      </outline>
+      <outline text="Channels">
+        <outline text="Product Hunt"/>
+        <outline text="Newsletter"/>
+      </outline>
+      <outline text="Timeline">
+        <outline text="Beta · Nov"/>
+        <outline text="GA · Jan"/>
+      </outline>
+      <outline text="Risks" url="https://example.com/risks">
+        <outline text="Competitor response"/>
+      </outline>
+    </outline>
+  </body>
+</opml>

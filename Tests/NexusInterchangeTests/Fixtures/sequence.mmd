@@ -1,0 +1,10 @@
+sequenceDiagram
+    title Checkout
+    actor U as Shopper
+    participant API
+    participant DB as Orders DB
+    U->>API: POST /cart
+    API->>DB: insert
+    DB-->>API: id
+    Note over API: logs
+    API-->>U: 201

@@ -1,0 +1,57 @@
+outline.opml · OPML
+1 sheets → 1 canvases · 4 topics, 0 markers, 1 notes
+0 not converted
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n4"
+      ],
+      "kind": "root",
+      "text": "Reading list"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "note": {
+        "format": "md",
+        "text": "Summer"
+      },
+      "text": "Fiction"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Dune",
+      "todo": {
+        "done": true
+      }
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "link": "https://essays.example",
+      "text": "Essays"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Reading list",
+  "type": "mindmap"
+}

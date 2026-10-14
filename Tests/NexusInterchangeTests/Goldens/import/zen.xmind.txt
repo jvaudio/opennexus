@@ -1,0 +1,248 @@
+zen.xmind · Xmind
+3 sheets → 3 canvases · 18 topics, 4 markers, 1 notes
+6 not converted
+· Marker “smiley-laugh” (no equivalent)
+· Audio note on “Kickoff” (kept as attachment)
+· Gantt task dates (not in v1)
+· Nested sheet copy (an Xmind file quirk), imported as its own canvas
+· Duplicate nested sheet (skipped)
+· Relationship to a missing topic
+
+{
+  "boundaries": [
+    {
+      "id": "b1",
+      "nodes": [
+        "n3",
+        "n4"
+      ],
+      "title": "Prep"
+    }
+  ],
+  "callouts": [
+    {
+      "host": "n9",
+      "id": "k1",
+      "topic": "n14"
+    }
+  ],
+  "floating": [
+    "n11"
+  ],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.right"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n5",
+        "n9"
+      ],
+      "kind": "root",
+      "note": {
+        "format": "md",
+        "text": "North star: retention."
+      },
+      "text": "Strategy 2026"
+    },
+    "n10": {
+      "children": [],
+      "kind": "topic",
+      "link": "nexus:topic/c1/n7",
+      "text": "Churn"
+    },
+    "n11": {
+      "children": [
+        "n12"
+      ],
+      "kind": "floating",
+      "position": {
+        "x": 300,
+        "y": -200
+      },
+      "text": "Parking lot"
+    },
+    "n12": {
+      "children": [],
+      "kind": "topic",
+      "text": "Ideas"
+    },
+    "n13": {
+      "children": [],
+      "kind": "summary",
+      "text": "Sequenced"
+    },
+    "n14": {
+      "children": [],
+      "kind": "callout",
+      "text": "Watch closely"
+    },
+    "n2": {
+      "children": [
+        "n3",
+        "n4"
+      ],
+      "kind": "topic",
+      "labels": [
+        "Q1"
+      ],
+      "markers": [
+        "priority-1"
+      ],
+      "text": "Kickoff"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Agenda"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "markers": [
+        "progress-100"
+      ],
+      "text": "Owners"
+    },
+    "n5": {
+      "children": [
+        "n6",
+        "n7",
+        "n8"
+      ],
+      "folded": true,
+      "kind": "topic",
+      "link": "https://example.com/roadmap",
+      "text": "Roadmap"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "Now"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "text": "Next"
+    },
+    "n8": {
+      "children": [],
+      "kind": "topic",
+      "text": "Later"
+    },
+    "n9": {
+      "children": [
+        "n10"
+      ],
+      "image": {
+        "asset": "c414cd0e204de974f737.png",
+        "height": 60,
+        "width": 80
+      },
+      "kind": "topic",
+      "markers": [
+        "flag-red",
+        "progress-50"
+      ],
+      "text": "Risks"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n2",
+      "id": "r1",
+      "label": "drives",
+      "line": "curved",
+      "to": "n10"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "summaries": [
+    {
+      "from": "n6",
+      "id": "s1",
+      "parent": "n5",
+      "to": "n8",
+      "topic": "n13"
+    }
+  ],
+  "title": "Strategy 2026",
+  "type": "mindmap"
+}
+{
+  "floating": [],
+  "id": "c2",
+  "layout": {
+    "mode": "auto",
+    "structure": "org.down"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n3"
+      ],
+      "kind": "root",
+      "text": "Team"
+    },
+    "n2": {
+      "children": [],
+      "kind": "topic",
+      "text": "Design"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Engineering"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Org",
+  "type": "org"
+}
+{
+  "floating": [],
+  "id": "c3",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [],
+      "kind": "root",
+      "text": "Copy"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Copy",
+  "type": "mindmap"
+}
+asset c414cd0e204de974f737.png 70 bytes

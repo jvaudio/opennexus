@@ -97,6 +97,9 @@ public struct SceneViewState: Equatable {
     /// AI ghosts: temporary children laid out with the map but never in the document.
     public var ghosts: [Ghost] = []
     public var ghostHighlight: Int?
+    /// Export scope (branch, selection): only these topics and what lies wholly among them
+    /// are drawn; positions come from the full layout.
+    public var isolate: Set<NodeID>?
 
     public struct Ghost: Equatable {
         /// Under a real topic, or under an earlier ghost (by index).
@@ -984,7 +987,27 @@ public struct SceneBuilder {
                 scene.edges[i].line.dash = "dashed"
             }
         }
+        if let keep = view.isolate { Self.isolate(keep, root: canvas.root, in: &scene) }
         return scene
+    }
+
+    static func isolate(_ keep: Set<NodeID>, root: NodeID, in scene: inout Scene) {
+        scene.nodes = scene.nodes.filter { keep.contains($0.key) }
+        scene.order = scene.order.filter(keep.contains)
+        scene.edges = scene.edges.filter { keep.contains($0.parent) && keep.contains($0.child) }
+        scene.relationships = scene.relationships.filter {
+            keep.contains($0.relationship.from) && keep.contains($0.relationship.to)
+        }
+        scene.boundaries = scene.boundaries.filter {
+            !$0.boundary.nodes.isEmpty && Set($0.boundary.nodes).isSubset(of: keep)
+        }
+        scene.summaries = scene.summaries.filter {
+            keep.contains($0.summary.topic) && keep.contains($0.summary.from) && keep.contains($0.summary.to)
+        }
+        scene.callouts = scene.callouts.filter { keep.contains($0.callout.host) && keep.contains($0.callout.topic) }
+        scene.zones = scene.zones.filter { !$0.zone.members.isEmpty && Set($0.zone.members).isSubset(of: keep) }
+        // Structure decor (timeline spines, lanes) belongs to the whole map.
+        if !keep.contains(root) { scene.decor = [] }
     }
 
     /// Ghost suggestions styled dashed teal (artboard 28); the highlighted one is stronger

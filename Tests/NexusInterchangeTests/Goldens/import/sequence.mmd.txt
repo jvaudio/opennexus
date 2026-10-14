@@ -1,0 +1,99 @@
+sequence.mmd · Mermaid
+1 sheets → 1 canvases · 4 topics, 0 markers, 0 notes
+1 not converted
+· Sequence blocks, notes and activations (Note)
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "sequence.lifelines"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n3",
+        "n4"
+      ],
+      "kind": "root",
+      "text": "Checkout"
+    },
+    "n2": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "actor",
+      "text": "Shopper"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "participant",
+      "text": "API"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "participant",
+      "text": "Orders DB"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n2",
+      "id": "r1",
+      "label": "POST /cart",
+      "line": "curved",
+      "to": "n3"
+    },
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n3",
+      "id": "r2",
+      "label": "insert",
+      "line": "curved",
+      "to": "n4"
+    },
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n4",
+      "id": "r3",
+      "kind": "return",
+      "label": "id",
+      "line": "curved",
+      "to": "n3"
+    },
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n3",
+      "id": "r4",
+      "kind": "return",
+      "label": "201",
+      "line": "curved",
+      "to": "n2"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Checkout",
+  "type": "sequence"
+}

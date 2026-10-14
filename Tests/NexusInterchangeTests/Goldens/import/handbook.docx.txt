@@ -1,0 +1,61 @@
+handbook.docx · Word
+1 sheets → 1 canvases · 5 topics, 0 markers, 1 notes
+1 not converted
+· Table
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n5"
+      ],
+      "kind": "root",
+      "text": "Handbook"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "note": {
+        "format": "md",
+        "text": "First week essentials."
+      },
+      "text": "Onboarding"
+    },
+    "n3": {
+      "children": [
+        "n4"
+      ],
+      "kind": "topic",
+      "text": "Laptop"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "Accounts"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Benefits"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Handbook",
+  "type": "mindmap"
+}

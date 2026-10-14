@@ -1,0 +1,388 @@
+{
+  "canvases": [
+    {
+      "floating": [],
+      "id": "c1",
+      "layout": {
+        "mode": "auto",
+        "structure": "mindmap.balanced"
+      },
+      "nodes": {
+        "n1": {
+          "children": [
+            "n2",
+            "n5",
+            "n9",
+            "n12",
+            "n15"
+          ],
+          "kind": "root",
+          "text": "Launch plan"
+        },
+        "n10": {
+          "children": [],
+          "kind": "topic",
+          "text": "Product Hunt"
+        },
+        "n11": {
+          "children": [],
+          "kind": "topic",
+          "text": "Newsletter"
+        },
+        "n12": {
+          "children": [
+            "n13",
+            "n14"
+          ],
+          "kind": "topic",
+          "text": "Timeline"
+        },
+        "n13": {
+          "children": [],
+          "kind": "topic",
+          "text": "Beta · Nov"
+        },
+        "n14": {
+          "children": [],
+          "kind": "topic",
+          "text": "GA · Jan"
+        },
+        "n15": {
+          "children": [
+            "n16"
+          ],
+          "kind": "topic",
+          "link": "https://example.com/risks",
+          "text": "Risks"
+        },
+        "n16": {
+          "children": [],
+          "kind": "topic",
+          "text": "Competitor response"
+        },
+        "n2": {
+          "children": [
+            "n3",
+            "n4"
+          ],
+          "kind": "topic",
+          "text": "Positioning"
+        },
+        "n3": {
+          "children": [],
+          "kind": "topic",
+          "text": "Developers"
+        },
+        "n4": {
+          "children": [],
+          "kind": "topic",
+          "text": "Teams"
+        },
+        "n5": {
+          "children": [
+            "n6",
+            "n7",
+            "n8"
+          ],
+          "kind": "topic",
+          "labels": [
+            "Q4"
+          ],
+          "note": {
+            "format": "md",
+            "text": "Keep the free tier generous."
+          },
+          "text": "Pricing"
+        },
+        "n6": {
+          "children": [],
+          "kind": "topic",
+          "text": "Free tier"
+        },
+        "n7": {
+          "children": [],
+          "kind": "topic",
+          "markers": [
+            "priority-1"
+          ],
+          "text": "Pro",
+          "todo": {
+            "done": false
+          }
+        },
+        "n8": {
+          "children": [],
+          "kind": "topic",
+          "text": "Annual discount"
+        },
+        "n9": {
+          "children": [
+            "n10",
+            "n11"
+          ],
+          "kind": "topic",
+          "text": "Channels"
+        }
+      },
+      "relationships": [
+        {
+          "ends": [
+            "none",
+            "arrow"
+          ],
+          "from": "n9",
+          "id": "r1",
+          "label": "feeds",
+          "line": "curved",
+          "to": "n15"
+        }
+      ],
+      "root": "n1",
+      "style": {
+        "colorTheme": "rainbow",
+        "nodeStyle": "outline",
+        "palette": "theme",
+        "theme": "classic"
+      },
+      "title": "Launch plan",
+      "type": "mindmap"
+    },
+    {
+      "floating": [],
+      "id": "c2",
+      "layout": {
+        "mode": "auto",
+        "structure": "flow.down"
+      },
+      "nodes": {
+        "n1": {
+          "children": [
+            "n2"
+          ],
+          "kind": "root",
+          "nodeType": "start",
+          "text": "Forgot password"
+        },
+        "n2": {
+          "children": [
+            "n3"
+          ],
+          "kind": "topic",
+          "text": "Enter email"
+        },
+        "n3": {
+          "children": [
+            "n4",
+            "n6"
+          ],
+          "kind": "topic",
+          "nodeType": "decision",
+          "text": "Account exists?"
+        },
+        "n4": {
+          "children": [
+            "n5"
+          ],
+          "edgeLabel": "Yes",
+          "kind": "topic",
+          "text": "Create reset token"
+        },
+        "n5": {
+          "children": [
+            "n7"
+          ],
+          "kind": "topic",
+          "nodeType": "io",
+          "text": "Email the link"
+        },
+        "n6": {
+          "children": [],
+          "edgeLabel": "No",
+          "kind": "topic",
+          "text": "Show neutral message"
+        },
+        "n7": {
+          "children": [],
+          "kind": "topic",
+          "nodeType": "end",
+          "text": "Done"
+        }
+      },
+      "relationships": [
+        {
+          "ends": [
+            "none",
+            "arrow"
+          ],
+          "from": "n6",
+          "id": "r1",
+          "label": "",
+          "line": "curved",
+          "to": "n7"
+        }
+      ],
+      "root": "n1",
+      "style": {
+        "colorTheme": "rainbow",
+        "nodeStyle": "outline",
+        "palette": "theme",
+        "theme": "classic"
+      },
+      "title": "Forgot password",
+      "type": "flowchart"
+    },
+    {
+      "floating": [],
+      "id": "c3",
+      "layout": {
+        "mode": "auto",
+        "structure": "sequence.lifelines"
+      },
+      "nodes": {
+        "n1": {
+          "children": [
+            "n2",
+            "n3"
+          ],
+          "kind": "root",
+          "text": "Checkout"
+        },
+        "n2": {
+          "children": [],
+          "kind": "topic",
+          "nodeType": "actor",
+          "text": "Shopper"
+        },
+        "n3": {
+          "children": [],
+          "kind": "topic",
+          "nodeType": "participant",
+          "text": "API"
+        }
+      },
+      "relationships": [
+        {
+          "ends": [
+            "none",
+            "arrow"
+          ],
+          "from": "n2",
+          "id": "r1",
+          "label": "POST /cart",
+          "line": "curved",
+          "to": "n3"
+        },
+        {
+          "ends": [
+            "none",
+            "arrow"
+          ],
+          "from": "n3",
+          "id": "r2",
+          "kind": "return",
+          "label": "201",
+          "line": "curved",
+          "to": "n2"
+        }
+      ],
+      "root": "n1",
+      "style": {
+        "colorTheme": "rainbow",
+        "nodeStyle": "outline",
+        "palette": "theme",
+        "theme": "classic"
+      },
+      "title": "Checkout",
+      "type": "sequence"
+    },
+    {
+      "floating": [],
+      "id": "c4",
+      "layout": {
+        "mode": "auto",
+        "structure": "graph.right"
+      },
+      "nodes": {
+        "n1": {
+          "children": [
+            "n2"
+          ],
+          "kind": "root",
+          "text": "Payments"
+        },
+        "n2": {
+          "children": [
+            "n3",
+            "n4"
+          ],
+          "kind": "topic",
+          "nodeType": "process",
+          "text": "Payments API"
+        },
+        "n3": {
+          "children": [],
+          "kind": "topic",
+          "metadata": [
+            {
+              "key": "STRIDE",
+              "value": "Spoofing"
+            },
+            {
+              "key": "Risk",
+              "value": "High"
+            },
+            {
+              "key": "Status",
+              "value": "Open"
+            }
+          ],
+          "nodeType": "threat",
+          "text": "Stolen API key"
+        },
+        "n4": {
+          "children": [],
+          "kind": "topic",
+          "metadata": [
+            {
+              "key": "STRIDE",
+              "value": "Tampering"
+            },
+            {
+              "key": "Risk",
+              "value": "Medium"
+            },
+            {
+              "key": "Status",
+              "value": "Open"
+            }
+          ],
+          "nodeType": "threat",
+          "text": "Replayed charge"
+        }
+      },
+      "relationships": [],
+      "root": "n1",
+      "style": {
+        "colorTheme": "rainbow",
+        "nodeStyle": "outline",
+        "palette": "theme",
+        "theme": "classic"
+      },
+      "title": "Payments",
+      "type": "threatModel"
+    }
+  ],
+  "manifest": {
+    "app": "1.0",
+    "canvases": [
+      "c1",
+      "c2",
+      "c3",
+      "c4"
+    ],
+    "encrypted": false,
+    "format": "opennexus",
+    "schemaVersion": 1
+  },
+  "theme": {}
+}

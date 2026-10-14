@@ -1,0 +1,16 @@
+Topic,Path,Status,Priority,Labels,Note
+Positioning,Launch plan,,,,
+Developers,Launch plan › Positioning,,,,
+Teams,Launch plan › Positioning,,,,
+Pricing,Launch plan,,,Q4,Keep the free tier generous.
+Free tier,Launch plan › Pricing,,,,
+Pro,Launch plan › Pricing,open,P1,,
+Annual discount,Launch plan › Pricing,,,,
+Channels,Launch plan,,,,
+Product Hunt,Launch plan › Channels,,,,
+Newsletter,Launch plan › Channels,,,,
+Timeline,Launch plan,,,,
+Beta · Nov,Launch plan › Timeline,,,,
+GA · Jan,Launch plan › Timeline,,,,
+Risks,Launch plan,,,,
+Competitor response,Launch plan › Risks,,,,

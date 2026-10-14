@@ -1,0 +1,9 @@
+@startuml
+rectangle "Payments" as n1
+rectangle "Payments API" as n2
+rectangle "Stolen API key" as n3
+rectangle "Replayed charge" as n4
+n1 --> n2
+n2 --> n3
+n2 --> n4
+@enduml

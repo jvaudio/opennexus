@@ -260,15 +260,9 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
             guard let self else { return }
             self.showPresenter(self.presenterWindow == nil, force: true)
         }
-        controller.externalCommands = [.newCanvas, .inspector]
-        controller.onExternalCommand = { [weak self] id in
-            if id == .newCanvas { self?.addCanvas() }
-            if id == .inspector { self?.toggleFormatPanel() }
-        }
-        controller.onAddCanvas = { [weak self] canvas in
-            guard let self else { return }
-            self.insertCanvas(canvas, at: self.document_.store.model.canvasOrder.count)
-        }
+        controller.externalCommands = Self.windowCommands
+        controller.onExternalCommand = { [weak self] id in self?.runWindowCommand(id) }
+        wireFileHooks()
         controller.onSaveText = { [weak self] name, text in
             guard let window = self?.window else { return }
             let panel = NSSavePanel()
@@ -283,9 +277,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
 
     @objc func performRegistryCommand(_ sender: Any?) {
         guard let raw = (sender as? NSMenuItem)?.representedObject as? String else { return }
-        let id = CommandID(rawValue: raw)
-        if id == .newCanvas { addCanvas() }
-        if id == .inspector { toggleFormatPanel() }
+        runWindowCommand(CommandID(rawValue: raw))
     }
 
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
@@ -296,7 +288,9 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
                 // ⌘I is Italic while editing text; the menu item steps aside.
                 return controller.mode != .edit
             }
-            return id == .newCanvas
+            if id == .pasteCanvas { return controller.canPasteCanvas }
+            if id == .setPassword { item.title = document_.cryptoKey == nil ? "Set Password…" : "Change Password…" }
+            return Self.windowCommands.contains(id)
         }
         return true
     }
@@ -315,39 +309,12 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     func addCanvas() {
         let store = document_.store
         let id = store.model.makeCanvasID()
-        let canvas = NexusCore.Canvas(id: id, title: "Map \(store.model.canvases.count + 1)")
-        insertCanvas(canvas, at: store.model.canvasOrder.count)
+        store.commitDocument("New Canvas", focus: id) { d in
+            d.canvases[id] = NexusCore.Canvas(id: id, title: "Map \(d.canvases.count + 1)")
+            d.canvasOrder.append(id)
+        }
         controller.switchCanvas(to: id)
         controller.beginEditing(replacingWith: "")
-    }
-
-    private func insertCanvas(_ canvas: NexusCore.Canvas, at index: Int) {
-        let store = document_.store
-        store.updateDocument {
-            $0.canvases[canvas.id] = canvas
-            $0.canvasOrder.insert(canvas.id, at: min(index, $0.canvasOrder.count))
-        }
-        document_.undoManager?.registerUndo(withTarget: self) { wc in
-            MainActor.assumeIsolated { wc.removeCanvas(canvas.id) }
-        }
-        document_.undoManager?.setActionName("New Canvas")
-    }
-
-    private func removeCanvas(_ id: CanvasID) {
-        let store = document_.store
-        guard let canvas = store.model.canvases[id], store.model.canvases.count > 1,
-            let index = store.model.canvasOrder.firstIndex(of: id)
-        else { return }
-        if controller.canvasID == id {
-            controller.switchCanvas(to: store.model.canvasOrder.first { $0 != id }!)
-        }
-        store.updateDocument {
-            $0.canvases[id] = nil
-            $0.canvasOrder.removeAll { $0 == id }
-        }
-        document_.undoManager?.registerUndo(withTarget: self) { wc in
-            MainActor.assumeIsolated { wc.insertCanvas(canvas, at: index) }
-        }
     }
 
     // MARK: Toolbar
@@ -511,6 +478,22 @@ struct CanvasTabsView: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(on ? .isSelected : [])
+                .contextMenu { CanvasTabMenu(controller: controller, target: c.id) }
+                .overlay(alignment: .trailing) {
+                    if on {
+                        Menu {
+                            CanvasTabMenu(controller: controller, target: c.id)
+                        } label: {
+                            Image(systemName: "chevron.down").font(.system(size: 9, weight: .semibold))
+                        }
+                        .menuStyle(.borderlessButton)
+                        .menuIndicator(.hidden)
+                        .fixedSize()
+                        .offset(x: 14)
+                        .accessibilityLabel("Canvas menu")
+                    }
+                }
+                .padding(.trailing, on ? 14 : 0)
             }
             Button {
                 NSApp.sendAction(

@@ -1,0 +1,12 @@
+flowchart TD
+  A([Forgot password]) --> B[Enter email]
+  B --> C{Account exists?}
+  C -- Yes --> D[Create reset token]
+  D --> E[/Email the link/]
+  C -->|No| F[Show neutral message]
+  E --> G([Done])
+  F --> G
+  subgraph Mail [Mail service]
+    E
+  end
+  classDef warn fill:#f00

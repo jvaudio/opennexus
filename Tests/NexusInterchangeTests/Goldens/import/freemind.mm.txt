@@ -1,0 +1,83 @@
+freemind.mm · FreeMind
+1 sheets → 1 canvases · 4 topics, 1 markers, 1 notes
+1 not converted
+· Icon “ksmiletris” (no equivalent)
+
+{
+  "boundaries": [
+    {
+      "id": "b1",
+      "nodes": [
+        "n4"
+      ],
+      "title": ""
+    }
+  ],
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n4"
+      ],
+      "kind": "root",
+      "note": {
+        "format": "md",
+        "text": "Summer & sun"
+      },
+      "text": "Trip"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "folded": true,
+      "kind": "topic",
+      "markers": [
+        "priority-1"
+      ],
+      "text": "Packing"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Passport"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "labels": [
+        "km: 300"
+      ],
+      "link": "https://maps.example",
+      "text": "Route A"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n4",
+      "id": "r1",
+      "label": "",
+      "line": "curved",
+      "to": "n3"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Trip",
+  "type": "mindmap"
+}

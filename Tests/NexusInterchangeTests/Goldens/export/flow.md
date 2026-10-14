@@ -1,0 +1,9 @@
+# Forgot password
+
+## Enter email
+
+- Account exists?
+  - Create reset token
+    - Email the link
+      - Done
+  - Show neutral message

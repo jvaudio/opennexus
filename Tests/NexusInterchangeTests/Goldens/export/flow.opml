@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<opml version="2.0">
+  <head>
+    <title>Forgot password</title>
+  </head>
+  <body>
+    <outline text="Forgot password">
+      <outline text="Enter email">
+        <outline text="Account exists?">
+          <outline text="Create reset token">
+            <outline text="Email the link">
+              <outline text="Done"/>
+            </outline>
+          </outline>
+          <outline text="Show neutral message"/>
+        </outline>
+      </outline>
+    </outline>
+  </body>
+</opml>

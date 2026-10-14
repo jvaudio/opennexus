@@ -1,0 +1,52 @@
+notes.textpack · TextBundle
+1 sheets → 1 canvases · 4 topics, 0 markers, 0 notes
+0 not converted
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2"
+      ],
+      "kind": "root",
+      "text": "Notes"
+    },
+    "n2": {
+      "children": [
+        "n3",
+        "n4"
+      ],
+      "kind": "topic",
+      "text": "Inbox"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Call Sam"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "Book room",
+      "todo": {
+        "done": true
+      }
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Notes",
+  "type": "mindmap"
+}

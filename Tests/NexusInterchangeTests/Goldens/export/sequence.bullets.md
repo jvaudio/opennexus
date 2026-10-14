@@ -1,0 +1,12 @@
+- Checkout
+  - Shopper
+  - API
+
+```mermaid
+sequenceDiagram
+    title Checkout
+    actor P1 as Shopper
+    participant P2 as API
+    P1->>P2: POST /cart
+    P2-->>P1: 201
+```

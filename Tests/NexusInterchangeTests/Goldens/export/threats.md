@@ -1,0 +1,6 @@
+# Payments
+
+## Payments API
+
+- Stolen API key
+- Replayed charge

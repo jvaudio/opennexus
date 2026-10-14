@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="OpenNexus">
+  <diagram name="Forgot password" id="c2">
+    <mxGraphModel grid="1" gridSize="10" page="0">
+      <root>
+      <mxCell id="0"/>
+      <mxCell id="1" parent="0"/>
+      <mxCell id="n1" value="Forgot password" style="whiteSpace=wrap;html=1;rounded=1;arcSize=50;fillColor=#1D1D22;strokeColor=#5850EC;fontColor=#FFFFFF;" vertex="1" parent="1">
+        <mxGeometry x="0" y="0" width="120" height="40" as="geometry"/>
+      </mxCell>
+      <mxCell id="n2" value="Enter email" style="whiteSpace=wrap;html=1;rounded=1;fillColor=#FFFFFF;strokeColor=#5850EC;" vertex="1" parent="1">
+        <mxGeometry x="220" y="60" width="120" height="40" as="geometry"/>
+      </mxCell>
+      <mxCell id="n3" value="Account exists?" style="whiteSpace=wrap;html=1;rhombus;fillColor=#FFFFFF;strokeColor=#5850EC;" vertex="1" parent="1">
+        <mxGeometry x="440" y="120" width="120" height="40" as="geometry"/>
+      </mxCell>
+      <mxCell id="n4" value="Create reset token" style="whiteSpace=wrap;html=1;rounded=1;fillColor=#FFFFFF;strokeColor=#5850EC;" vertex="1" parent="1">
+        <mxGeometry x="660" y="180" width="144" height="40" as="geometry"/>
+      </mxCell>
+      <mxCell id="n5" value="Email the link" style="whiteSpace=wrap;html=1;shape=parallelogram;fillColor=#FFFFFF;strokeColor=#5850EC;" vertex="1" parent="1">
+        <mxGeometry x="880" y="240" width="120" height="40" as="geometry"/>
+      </mxCell>
+      <mxCell id="n7" value="Done" style="whiteSpace=wrap;html=1;rounded=1;arcSize=50;fillColor=#FFFFFF;strokeColor=#5850EC;" vertex="1" parent="1">
+        <mxGeometry x="1100" y="300" width="120" height="40" as="geometry"/>
+      </mxCell>
+      <mxCell id="n6" value="Show neutral message" style="whiteSpace=wrap;html=1;rounded=1;fillColor=#FFFFFF;strokeColor=#5850EC;" vertex="1" parent="1">
+        <mxGeometry x="660" y="360" width="160" height="40" as="geometry"/>
+      </mxCell>
+      <mxCell id="e1" value="" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;endArrow=none;" edge="1" parent="1" source="n1" target="n2">
+        <mxGeometry relative="1" as="geometry"/>
+      </mxCell>
+      <mxCell id="e2" value="" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;endArrow=none;" edge="1" parent="1" source="n2" target="n3">
+        <mxGeometry relative="1" as="geometry"/>
+      </mxCell>
+      <mxCell id="e3" value="Yes" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;endArrow=none;" edge="1" parent="1" source="n3" target="n4">
+        <mxGeometry relative="1" as="geometry"/>
+      </mxCell>
+      <mxCell id="e4" value="" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;endArrow=none;" edge="1" parent="1" source="n4" target="n5">
+        <mxGeometry relative="1" as="geometry"/>
+      </mxCell>
+      <mxCell id="e5" value="" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;endArrow=none;" edge="1" parent="1" source="n5" target="n7">
+        <mxGeometry relative="1" as="geometry"/>
+      </mxCell>
+      <mxCell id="e6" value="No" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;endArrow=none;" edge="1" parent="1" source="n3" target="n6">
+        <mxGeometry relative="1" as="geometry"/>
+      </mxCell>
+      <mxCell id="e7" value="" style="edgeStyle=orthogonalEdgeStyle;curved=1;html=1;endArrow=classic;dashed=1;" edge="1" parent="1" source="n6" target="n7">
+        <mxGeometry relative="1" as="geometry"/>
+      </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

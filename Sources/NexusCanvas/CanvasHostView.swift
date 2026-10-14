@@ -60,15 +60,26 @@ public final class CanvasHostView: NSView {
         let aiPanel = NSHostingView(rootView: AIPanelView(controller: controller))
         let aiSheet = NSHostingView(rootView: AISheetView(controller: controller))
         aiPanel.sizingOptions = [.intrinsicContentSize]
+        // Files (M7).
+        let exportSheet = NSHostingView(rootView: ExportSheetView(controller: controller))
+        let printSheet = NSHostingView(rootView: PrintSheetView(controller: controller))
+        let mergeSheet = NSHostingView(rootView: MergeSheetView(controller: controller))
+        let passwordSheet = NSHostingView(rootView: PasswordSheetView(controller: controller))
+        let reportSheet = NSHostingView(rootView: ImportReportView(controller: controller))
+        let snapshotSheet = NSHostingView(rootView: SnapshotsSheetView(controller: controller))
+        let shotBar = NSHostingView(rootView: MapShotBar(controller: controller))
+        let shotHint = NSHostingView(rootView: MapShotHintHost(controller: controller))
+        let fileSheets: [NSView] = [exportSheet, printSheet, mergeSheet, passwordSheet, reportSheet, snapshotSheet]
         aiSheet.sizingOptions = [.intrinsicContentSize]
         present.isHidden = true
         // Pinned to all edges: its (often empty) content must not size the host.
         present.sizingOptions = []
         presentHost = present
-        let all: [NSView] = [
-            present, status, toast, dfd, crumb, violation, threatCard, table, icons, nav, filter, focus, counts,
-            zenCount, aiPanel, convert, aiSheet, palette, jump, cheat,
-        ]
+        let all: [NSView] =
+            [
+                present, status, toast, dfd, crumb, violation, threatCard, table, icons, nav, filter, focus, counts,
+                zenCount, aiPanel, convert, aiSheet, palette, jump, cheat, shotBar, shotHint,
+            ] + fileSheets
         for h in all {
             h.translatesAutoresizingMaskIntoConstraints = false
             addSubview(h)
@@ -123,6 +134,26 @@ public final class CanvasHostView: NSView {
             self?.onPresentChange?(on)
             if !on { controller?.refreshView() }
         }
+        for v in fileSheets {
+            if let h = v as? NSHostingView<ExportSheetView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<PrintSheetView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<MergeSheetView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<PasswordSheetView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<ImportReportView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<SnapshotsSheetView> { h.sizingOptions = [.intrinsicContentSize] }
+            NSLayoutConstraint.activate([
+                v.centerXAnchor.constraint(equalTo: centerXAnchor),
+                v.centerYAnchor.constraint(equalTo: centerYAnchor),
+            ])
+        }
+        shotBar.sizingOptions = [.intrinsicContentSize]
+        shotHint.sizingOptions = [.intrinsicContentSize]
+        NSLayoutConstraint.activate([
+            shotBar.centerXAnchor.constraint(equalTo: centerXAnchor),
+            shotBar.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -40),
+            shotHint.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 24),
+            shotHint.topAnchor.constraint(equalTo: topAnchor, constant: 20),
+        ])
         NSLayoutConstraint.activate([
             dfd.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             dfd.topAnchor.constraint(equalTo: topAnchor, constant: 16),

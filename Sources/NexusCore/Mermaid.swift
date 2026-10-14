@@ -3,11 +3,11 @@ import Foundation
 /// Mermaid text for "Copy as Mermaid" (artboard 23). M7 adds the full exporter set; the
 /// same generators back it.
 public enum Mermaid {
-    static func quote(_ s: String) -> String {
+    public static func quote(_ s: String) -> String {
         "\"" + s.replacingOccurrences(of: "\"", with: "#quot;").replacingOccurrences(of: "\n", with: "<br/>") + "\""
     }
 
-    static func label(_ s: String) -> String {
+    public static func label(_ s: String) -> String {
         s.replacingOccurrences(of: "\n", with: " ").replacingOccurrences(of: ";", with: "#59;")
             .replacingOccurrences(of: "|", with: "#124;")
     }

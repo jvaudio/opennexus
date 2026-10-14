@@ -53,7 +53,20 @@ public final class DocumentStore {
         for o in observers.values { o(Patch(canvasID: model.canvasOrder.first ?? "c1")) }
     }
 
-    /// Document-level changes that are not canvas patches (adding canvases, reordering tabs).
+    /// A document-level edit (canvases added, removed or replaced, tab order) as one undo
+    /// step. `focus` is the canvas to show afterwards. Assets the edit adds are kept even if
+    /// it's undone (they're content-addressed and harmless).
+    @discardableResult
+    public func commitDocument(_ actionName: String, focus: CanvasID, _ body: (inout DocumentModel) -> Void) -> Patch {
+        var after = model
+        body(&after)
+        let patch = model.canvasSetPatch(to: after, focus: focus, actionName: actionName)
+        for (k, v) in after.assets where model.assets[k] == nil { model.assets[k] = v }
+        commit(patch)
+        return patch
+    }
+
+    /// Document-level changes outside undo (chats, assets).
     public func updateDocument(_ body: (inout DocumentModel) -> Void) {
         body(&model)
         revision += 1

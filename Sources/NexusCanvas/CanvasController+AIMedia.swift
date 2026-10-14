@@ -51,16 +51,13 @@ extension CanvasController {
         }
     }
 
-    func addCanvas(_ c: Canvas) {
-        if let add = onAddCanvas {
-            add(c)
-        } else {
-            store.updateDocument {
-                $0.canvases[c.id] = c
-                $0.canvasOrder.append(c.id)
-            }
+    /// Adds a canvas after the current one, as one undo step, and shows it.
+    func addCanvas(_ c: Canvas, actionName: String = "New Canvas") {
+        var target = c.id
+        store.commitDocument(actionName, focus: canvasID) { d in
+            target = d.add([c], after: d.canvasOrder.firstIndex(of: canvasID))[0]
         }
-        switchCanvas(to: c.id)
+        switchCanvas(to: target)
     }
 
     // MARK: Data masking

@@ -1,0 +1,7 @@
+@startuml
+title Checkout
+actor "Shopper" as P1
+participant "API" as P2
+P1 -> P2 : POST /cart
+P2 --> P1 : 201
+@enduml

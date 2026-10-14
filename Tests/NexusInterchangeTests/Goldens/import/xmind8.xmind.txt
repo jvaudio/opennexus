@@ -1,0 +1,154 @@
+xmind8.xmind · Xmind
+2 sheets → 2 canvases · 9 topics, 2 markers, 1 notes
+0 not converted
+
+{
+  "boundaries": [
+    {
+      "id": "b1",
+      "nodes": [
+        "n3",
+        "n4"
+      ],
+      "title": "Methods"
+    }
+  ],
+  "floating": [
+    "n7"
+  ],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "logic.right"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n5"
+      ],
+      "kind": "root",
+      "structure": "logic.right",
+      "text": "Legacy plan"
+    },
+    "n2": {
+      "children": [
+        "n3",
+        "n4"
+      ],
+      "kind": "topic",
+      "labels": [
+        "ux"
+      ],
+      "link": "https://example.org",
+      "markers": [
+        "priority-2",
+        "star-gold"
+      ],
+      "note": {
+        "format": "md",
+        "text": "Talk to 5 users"
+      },
+      "text": "Research"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Interviews"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "Survey"
+    },
+    "n5": {
+      "children": [
+        "n6"
+      ],
+      "folded": true,
+      "image": {
+        "asset": "c414cd0e204de974f737.png",
+        "height": 40,
+        "width": 40
+      },
+      "kind": "topic",
+      "text": "Build"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "MVP"
+    },
+    "n7": {
+      "children": [],
+      "kind": "floating",
+      "position": {
+        "x": 100,
+        "y": 200
+      },
+      "text": "Floating"
+    },
+    "n8": {
+      "children": [],
+      "kind": "summary",
+      "text": "Discovery"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n3",
+      "id": "r1",
+      "label": "informs",
+      "line": "curved",
+      "to": "n6"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "summaries": [
+    {
+      "from": "n3",
+      "id": "s1",
+      "parent": "n2",
+      "to": "n4",
+      "topic": "n8"
+    }
+  ],
+  "title": "Legacy plan",
+  "type": "logic"
+}
+{
+  "floating": [],
+  "id": "c2",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [],
+      "kind": "root",
+      "text": "Second"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Second",
+  "type": "mindmap"
+}
+asset c414cd0e204de974f737.png 70 bytes

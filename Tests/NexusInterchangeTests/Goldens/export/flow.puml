@@ -1,0 +1,16 @@
+@startuml
+rectangle "Forgot password" as n1
+rectangle "Enter email" as n2
+agent "Account exists?" as n3
+rectangle "Create reset token" as n4
+rectangle "Email the link" as n5
+rectangle "Done" as n7
+rectangle "Show neutral message" as n6
+n1 --> n2
+n2 --> n3
+n3 --> n4 : Yes
+n4 --> n5
+n5 --> n7
+n3 --> n6 : No
+n6 ..> n7
+@enduml

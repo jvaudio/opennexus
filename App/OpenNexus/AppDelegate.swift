@@ -1,8 +1,12 @@
 import AppKit
 import NexusAI
 import NexusCanvas
+import NexusCore
+import NexusFormat
+import NexusInterchange
 import NexusKeys
 import SwiftUI
+import UniformTypeIdentifiers
 
 @main
 final class AppDelegate: NSObject, NSApplicationDelegate {
@@ -35,6 +39,49 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool { true }
+
+    /// File › Import… (artboard 33): any supported format opens as a new document, followed
+    /// by the import report.
+    @objc func importDocument(_ sender: Any?) {
+        let panel = NSOpenPanel()
+        panel.allowsMultipleSelection = true
+        panel.canChooseDirectories = true
+        panel.allowedContentTypes = DocumentWindowController.importTypes
+        panel.message =
+            "Import .xmind, OPML, Markdown, Mermaid, PlantUML, draw.io, FreeMind, MindManager, MindNode, Word or text."
+        guard panel.runModal() == .OK else { return }
+        for url in panel.urls { importFile(url) }
+    }
+
+    @MainActor func importFile(_ url: URL) {
+        do {
+            let name = url.lastPathComponent
+            var files: [String: Data]?
+            var data: Data?
+            if (try? url.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) == true {
+                files = NexusPackage.flatten(try FileWrapper(url: url, options: .immediate))
+            } else {
+                data = try Data(contentsOf: url)
+            }
+            let imported = try Interchange.importFile(name: name, data: data, files: files)
+            let doc = try NSDocumentController.shared.makeUntitledDocument(ofType: "com.opennexus.document")
+            guard let nx = doc as? NexusDocument else { return }
+            nx.store.replace(with: imported.document)
+            nx.markImported()
+            NSDocumentController.shared.addDocument(nx)
+            nx.makeWindowControllers()
+            nx.showWindows()
+            if let wc = nx.windowControllers.first as? DocumentWindowController {
+                wc.controller.switchCanvas(to: imported.document.canvasOrder.first!)
+                wc.controller.showImportReport(imported.report)
+            }
+        } catch {
+            let alert = NSAlert()
+            alert.messageText = "Couldn’t import “\(url.lastPathComponent)”"
+            alert.informativeText = "\(error)"
+            alert.runModal()
+        }
+    }
 }
 
 /// The menu bar, generated from the command registry so every command (and its
@@ -131,7 +178,7 @@ enum MainMenu {
         m.addItem(item("Copy", #selector(NSText.copy(_:)), "c"))
         m.addItem(item("Paste", #selector(NSText.paste(_:)), "v"))
         m.addItem(.separator())
-        addRegistryItems(r, p, .edit, to: m, excluding: [.undo, .redo])
+        addRegistryItems(r, p, .edit, to: m, excluding: [.undo, .redo, .cut, .copy, .paste])
         return m
     }
 

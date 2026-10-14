@@ -1,0 +1,55 @@
+indented.txt · Indented text
+1 sheets → 1 canvases · 5 topics, 0 markers, 0 notes
+0 not converted
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n5"
+      ],
+      "kind": "root",
+      "text": "Groceries"
+    },
+    "n2": {
+      "children": [
+        "n3",
+        "n4"
+      ],
+      "kind": "topic",
+      "text": "Fruit"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Apples"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "Pears"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Bread"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Groceries",
+  "type": "mindmap"
+}

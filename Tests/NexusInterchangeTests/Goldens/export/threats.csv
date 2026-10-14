@@ -1,0 +1,3 @@
+ID,Element,STRIDE,Threat,Risk,Mitigation,Status
+T-01,1.0 Payments API,Spoofing,Stolen API key,High,—,Open
+T-02,1.0 Payments API,Tampering,Replayed charge,Medium,—,Open

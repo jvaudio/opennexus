@@ -1,0 +1,73 @@
+plan.puml · PlantUML
+1 sheets → 1 canvases · 7 topics, 0 markers, 1 notes
+0 not converted
+
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n4",
+        "n6"
+      ],
+      "kind": "root",
+      "text": "Launch plan"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "Positioning"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Developers"
+    },
+    "n4": {
+      "children": [
+        "n5"
+      ],
+      "kind": "topic",
+      "text": "Pricing"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "note": {
+        "format": "md",
+        "text": "with limits"
+      },
+      "text": "Free tier"
+    },
+    "n6": {
+      "children": [
+        "n7"
+      ],
+      "kind": "topic",
+      "text": "Risks"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "text": "Competitors"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Launch plan",
+  "type": "mindmap"
+}

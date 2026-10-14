@@ -1,0 +1,80 @@
+garden.mindnode · MindNode
+1 sheets → 1 canvases · 5 topics, 0 markers, 1 notes
+0 not converted
+
+{
+  "floating": [
+    "n5"
+  ],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n3"
+      ],
+      "kind": "root",
+      "note": {
+        "format": "md",
+        "text": "South facing"
+      },
+      "text": "Garden"
+    },
+    "n2": {
+      "children": [],
+      "kind": "topic",
+      "text": "Tomatoes",
+      "todo": {
+        "done": true
+      }
+    },
+    "n3": {
+      "children": [
+        "n4"
+      ],
+      "folded": true,
+      "kind": "topic",
+      "text": "Herbs"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "Basil"
+    },
+    "n5": {
+      "children": [],
+      "kind": "floating",
+      "position": {
+        "x": 0,
+        "y": 260
+      },
+      "text": "Tools"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n2",
+      "id": "r1",
+      "label": "companion",
+      "line": "curved",
+      "to": "n4"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Garden",
+  "type": "mindmap"
+}
