@@ -22,7 +22,7 @@ Choices made where the design was silent or ambiguous, each with a one-line rati
 | D13 | **The app is AppKit-lifecycle** (`NSApplication` + `NSDocument`, programmatic menus) with SwiftUI hosted for panels and settings. | Menus must be generated from the registry and the canvas needs first-responder control; the document needs file-package autosave and versions. |
 | D14 | **Sandboxed with no network entitlement.** | "Local and owned": the OS enforces that the app cannot open connections. |
 | D15 | The Xcode project is hand-maintained and uses **synchronized folders** (`App/OpenNexus/` is picked up automatically). All logic lives in the Swift package; the app target is thin. | Keeps the project file tiny and merge-friendly; no generator dependency for contributors. |
-| D16 | Licence file deferred: README §4 leaves Apache-2.0 vs MIT to the product owner. | Not ours to choose. |
+| D16 | **MIT licence** (product owner's choice, 2026-10-14). | README §4 left Apache-2.0 vs MIT to the product owner. |
 
 ## M1 · Canvas and keyboard core
 

@@ -46,3 +46,7 @@ swift run nexus validate path/to/Map.nexus
 A `.nexus` document is a folder package of canonical, diff-friendly JSON: `manifest.json`,
 one `canvases/<id>.json` per canvas, `theme.json`, and `assets/`. See
 [`schema/nexus.schema.json`](schema/nexus.schema.json).
+
+## Licence
+
+MIT. See [LICENSE](LICENSE).
