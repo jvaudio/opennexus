@@ -21,6 +21,9 @@ public struct Patch: Sendable, Equatable {
     public var selectionAfter: Selection?
     /// Human name for the Edit menu ("Undo Add Topic").
     public var actionName: String
+    /// Document-level `theme.json` (custom themes, colour themes, quick styles), when changed.
+    public var themeBefore: JSONValue?
+    public var themeAfter: JSONValue?
 
     public init(
         canvasID: CanvasID, nodes: [NodeID: NodeChange] = [:], metaBefore: Canvas? = nil,
@@ -36,15 +39,18 @@ public struct Patch: Sendable, Equatable {
         self.actionName = actionName
     }
 
-    public var isEmpty: Bool { nodes.isEmpty && metaBefore == nil }
+    public var isEmpty: Bool { nodes.isEmpty && metaBefore == nil && themeBefore == nil }
 
     public var inverted: Patch {
-        Patch(
+        var p = Patch(
             canvasID: canvasID,
             nodes: nodes.mapValues { NodeChange(before: $0.after, after: $0.before) },
             metaBefore: metaAfter, metaAfter: metaBefore,
             selectionBefore: selectionAfter, selectionAfter: selectionBefore,
             actionName: actionName)
+        p.themeBefore = themeAfter
+        p.themeAfter = themeBefore
+        return p
     }
 
     /// Applies the patch forward (`before` → `after`).
@@ -83,6 +89,14 @@ public struct Patch: Sendable, Equatable {
         if out.metaBefore == out.metaAfter {
             out.metaBefore = nil
             out.metaAfter = nil
+        }
+        if next.themeBefore != nil {
+            out.themeBefore = out.themeBefore ?? next.themeBefore
+            out.themeAfter = next.themeAfter
+        }
+        if out.themeBefore == out.themeAfter {
+            out.themeBefore = nil
+            out.themeAfter = nil
         }
         out.selectionAfter = next.selectionAfter ?? out.selectionAfter
         return out

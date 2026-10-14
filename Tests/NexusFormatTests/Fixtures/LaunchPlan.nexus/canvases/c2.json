@@ -31,7 +31,7 @@
   "style": {
     "colorTheme": "rainbow",
     "nodeStyle": "outline",
-    "palette": "classic",
+    "palette": "theme",
     "theme": "classic"
   },
   "title": "Rollout flow",

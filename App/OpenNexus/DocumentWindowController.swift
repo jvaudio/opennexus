@@ -13,10 +13,15 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     let controller: CanvasController
     let host: CanvasHostView
 
+    let panel: NSHostingView<FormatPanel>
+    private var panelDivider: NSView?
+    private var canvasConstraints: (alone: NSLayoutConstraint, withPanel: NSLayoutConstraint)?
+
     init(document: NexusDocument) {
         document_ = document
         controller = CanvasController(store: document.store)
         host = CanvasHostView(controller: controller)
+        panel = NSHostingView(rootView: FormatPanel(controller: controller))
 
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 1440, height: 900),
@@ -35,6 +40,18 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         let content = NSView()
         content.addSubview(tabs)
         content.addSubview(host)
+        panel.translatesAutoresizingMaskIntoConstraints = false
+        panel.isHidden = !UserDefaults.standard.bool(forKey: "formatPanelVisible")
+        content.addSubview(panel)
+        let divider = NSBox()
+        divider.boxType = .separator
+        divider.translatesAutoresizingMaskIntoConstraints = false
+        content.addSubview(divider)
+        panelDivider = divider
+        divider.isHidden = panel.isHidden
+        let canvasTrailing = host.trailingAnchor.constraint(equalTo: content.trailingAnchor)
+        let canvasToPanel = host.trailingAnchor.constraint(equalTo: divider.leadingAnchor)
+        canvasConstraints = (canvasTrailing, canvasToPanel)
         NSLayoutConstraint.activate([
             tabs.topAnchor.constraint(equalTo: content.safeAreaLayoutGuide.topAnchor),
             tabs.leadingAnchor.constraint(equalTo: content.leadingAnchor),
@@ -42,9 +59,17 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
             tabs.heightAnchor.constraint(equalToConstant: 40),
             host.topAnchor.constraint(equalTo: tabs.bottomAnchor),
             host.leadingAnchor.constraint(equalTo: content.leadingAnchor),
-            host.trailingAnchor.constraint(equalTo: content.trailingAnchor),
             host.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+            divider.topAnchor.constraint(equalTo: tabs.bottomAnchor),
+            divider.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+            divider.widthAnchor.constraint(equalToConstant: 1),
+            divider.trailingAnchor.constraint(equalTo: panel.leadingAnchor),
+            panel.topAnchor.constraint(equalTo: tabs.bottomAnchor),
+            panel.bottomAnchor.constraint(equalTo: content.bottomAnchor),
+            panel.trailingAnchor.constraint(equalTo: content.trailingAnchor),
+            panel.widthAnchor.constraint(equalToConstant: 330),
         ])
+        (panel.isHidden ? canvasTrailing : canvasToPanel).isActive = true
         window.contentView = content
 
         let toolbar = NSToolbar(identifier: "DocumentToolbar")
@@ -72,11 +97,11 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         displayName.hasSuffix(".nexus") ? displayName : displayName + ".nexus"
     }
 
+    /// "16 topics · autosaved" (macOS adds its own "Edited" to the title for unsaved documents).
     func updateSubtitle() {
         let n = controller.canvas.nodes.count
-        let edited = document_.isDocumentEdited
-        window?.subtitle =
-            "\(n) topic\(n == 1 ? "" : "s") · \(edited && document_.fileURL == nil ? "edited" : "autosaved")"
+        let topics = "\(n) topic\(n == 1 ? "" : "s")"
+        window?.subtitle = document_.fileURL == nil ? topics : "\(topics) · autosaved"
     }
 
     // MARK: Commands handled at window level
@@ -85,13 +110,27 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         guard let raw = (sender as? NSMenuItem)?.representedObject as? String else { return }
         let id = CommandID(rawValue: raw)
         if id == .newCanvas { addCanvas() }
+        if id == .inspector { toggleFormatPanel() }
     }
 
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
         if item.action == #selector(performRegistryCommand(_:)), let raw = item.representedObject as? String {
-            return CommandID(rawValue: raw) == .newCanvas
+            let id = CommandID(rawValue: raw)
+            if id == .inspector { item.state = panel.isHidden ? .off : .on }
+            return id == .newCanvas || id == .inspector
         }
         return true
+    }
+
+    /// ⌘I: the Format panel slides in on the right only when asked (calm chrome).
+    @objc func toggleFormatPanel() {
+        let show = panel.isHidden
+        panel.isHidden = !show
+        panelDivider?.isHidden = !show
+        canvasConstraints?.alone.isActive = !show
+        canvasConstraints?.withPanel.isActive = show
+        UserDefaults.standard.set(show, forKey: "formatPanelVisible")
+        window?.makeFirstResponder(host.canvasView)
     }
 
     func addCanvas() {
@@ -135,7 +174,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     // MARK: Toolbar
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.flexibleSpace, .viewSwitcher, .flexibleSpace, .diagramType, .theme, .aiStatus, .share]
+        [.flexibleSpace, .viewSwitcher, .flexibleSpace, .diagramType, .theme, .aiStatus, .share, .inspector]
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -161,6 +200,14 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
             return hosted(id, label: "Theme", ThemeButton(controller: controller))
         case .aiStatus:
             return hosted(id, label: "AI", AIStatusChip())
+        case .inspector:
+            let item = NSToolbarItem(itemIdentifier: id)
+            item.label = "Format"
+            item.toolTip = "Format panel (⌘I)"
+            item.image = NSImage(systemSymbolName: "sidebar.right", accessibilityDescription: "Format panel")
+            item.target = self
+            item.action = #selector(toggleFormatPanel)
+            return item
         case .share:
             let item = NSSharingServicePickerToolbarItem(itemIdentifier: id)
             item.label = "Share"
@@ -184,6 +231,7 @@ extension NSToolbarItem.Identifier {
     static let theme = Self("theme")
     static let aiStatus = Self("aiStatus")
     static let share = Self("share")
+    static let inspector = Self("inspector")
 }
 
 // MARK: Toolbar content
@@ -226,8 +274,13 @@ struct ThemeButton: View {
 
     var body: some View {
         Menu(controller.theme.name) {
-            ForEach(Theme.all) { t in
+            ForEach(Theme.builtIn) { t in
                 Button(t.name) { controller.setTheme(t.id) }
+            }
+            let custom = controller.library.themes
+            if !custom.isEmpty {
+                Divider()
+                ForEach(custom) { t in Button(t.name) { controller.setTheme(t.id) } }
             }
         }
         .fixedSize()

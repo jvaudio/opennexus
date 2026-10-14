@@ -15,11 +15,19 @@ public struct LayoutNode: Sendable, Equatable {
     public var children: [NodeID]
     /// Per-branch structure override (mixed structures, Option-Command-1…9).
     public var structure: LayoutStructure?
+    /// Per-branch spacing for this node's children (FMT-1 › Spacing).
+    public var siblingGap: CGFloat?
+    public var levelGap: CGFloat?
 
-    public init(size: CGSize, children: [NodeID], structure: LayoutStructure? = nil) {
+    public init(
+        size: CGSize, children: [NodeID], structure: LayoutStructure? = nil, siblingGap: CGFloat? = nil,
+        levelGap: CGFloat? = nil
+    ) {
         self.size = size
         self.children = children
         self.structure = structure
+        self.siblingGap = siblingGap
+        self.levelGap = levelGap
     }
 }
 
@@ -65,8 +73,22 @@ public struct LayoutSpacing: Sendable, Equatable {
     /// Org / tree charts.
     public var verticalLevelGap: CGFloat = 56
     public var horizontalSiblingGap: CGFloat = 24
+    /// Balance a mind map's two sides by subtree height rather than by count.
+    public var balanceByHeight: Bool = true
 
     public static let standard = LayoutSpacing()
+
+    /// Compact map (FMT-3): tighter gaps everywhere.
+    public var compacted: LayoutSpacing {
+        var s = self
+        s.mainSiblingGap *= 0.6
+        s.subSiblingGap *= 0.6
+        s.rootLevelGap *= 0.7
+        s.levelGap *= 0.7
+        s.verticalLevelGap *= 0.7
+        s.horizontalSiblingGap *= 0.6
+        return s
+    }
 
     public func siblingGap(_ depth: Int) -> CGFloat { depth <= 1 ? mainSiblingGap : subSiblingGap }
     public func levelGap(_ parentDepth: Int) -> CGFloat { parentDepth == 0 ? rootLevelGap : levelGap }
@@ -106,19 +128,32 @@ public enum TreeLayout {
             result.families[id] = family
             switch structure {
             case .mindmapBalanced where depth == 0:
-                let half = (node.children.count + 1) / 2
+                var half = (node.children.count + 1) / 2
+                if spacing.balanceByHeight, node.children.count > 2 {
+                    // Split where the two sides' total heights are closest.
+                    let hs = node.children.map { height($0, depth: depth + 1) }
+                    let total = hs.reduce(0, +)
+                    var acc: CGFloat = 0
+                    var best = (half, CGFloat.greatestFiniteMagnitude)
+                    for (i, h) in hs.enumerated() {
+                        acc += h
+                        let diff = abs(total - 2 * acc)
+                        if diff <= best.1 { best = (i + 1, diff) }  // ties favour the right side
+                    }
+                    half = max(1, min(node.children.count - 1, best.0))
+                }
                 let right = Array(node.children.prefix(half))
                 let left = Array(node.children.dropFirst(half).reversed())
-                placeHorizontal(right, parent: frame, side: .right, depth: depth, into: &result)
-                placeHorizontal(left, parent: frame, side: .left, depth: depth, into: &result)
+                placeHorizontal(right, parent: frame, side: .right, depth: depth, into: &result, owner: id)
+                placeHorizontal(left, parent: frame, side: .left, depth: depth, into: &result, owner: id)
             case .mindmapLeft where depth == 0, .logicLeft:
-                placeHorizontal(node.children, parent: frame, side: .left, depth: depth, into: &result)
+                placeHorizontal(node.children, parent: frame, side: .left, depth: depth, into: &result, owner: id)
             case .orgDown, .treeDown:
                 placeVertical(node.children, parent: frame, depth: depth, into: &result)
             default:
                 // Mind map below the root keeps the side it started on; logic charts grow right.
                 let side: Side = frame.side == .left ? .left : .right
-                placeHorizontal(node.children, parent: frame, side: side, depth: depth, into: &result)
+                placeHorizontal(node.children, parent: frame, side: side, depth: depth, into: &result, owner: id)
             }
             for child in node.children {
                 let s = nodes[child]?.structure ?? childStructure(structure, depth: depth)
@@ -137,8 +172,9 @@ public enum TreeLayout {
             if let h = extent[id] { return h }
             guard let node = nodes[id] else { return 0 }
             var total: CGFloat = 0
+            let gap = node.siblingGap ?? spacing.siblingGap(depth + 1)
             for (i, c) in node.children.enumerated() {
-                total += height(c, depth: depth + 1) + (i > 0 ? spacing.siblingGap(depth + 1) : 0)
+                total += height(c, depth: depth + 1) + (i > 0 ? gap : 0)
             }
             let h = max(node.size.height, total)
             extent[id] = h
@@ -147,15 +183,17 @@ public enum TreeLayout {
 
         mutating func placeHorizontal(
             _ kids: [NodeID], parent: NodeFrame, side: Side, depth: Int,
-            into result: inout LayoutResult
+            into result: inout LayoutResult, owner: NodeID? = nil
         ) {
             guard !kids.isEmpty else { return }
-            let gap = spacing.siblingGap(depth + 1)
+            let ownerNode = owner.flatMap { nodes[$0] }
+            let gap = ownerNode?.siblingGap ?? spacing.siblingGap(depth + 1)
             var total: CGFloat = 0
             for (i, k) in kids.enumerated() { total += height(k, depth: depth + 1) + (i > 0 ? gap : 0) }
             var y = parent.center.y - total / 2
             let dir = CGFloat(side.rawValue)
-            let edgeX = parent.center.x + dir * (parent.size.width / 2 + spacing.levelGap(depth))
+            let edgeX =
+                parent.center.x + dir * (parent.size.width / 2 + (ownerNode?.levelGap ?? spacing.levelGap(depth)))
             for k in kids {
                 guard let n = nodes[k] else { continue }
                 let h = height(k, depth: depth + 1)

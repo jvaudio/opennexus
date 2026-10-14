@@ -37,3 +37,19 @@ Choices made where the design was silent or ambiguous, each with a one-line rati
 | D23 | ⌥⌘1…9 on the root changes the canvas structure; on any other topic it sets that branch's structure. | Matches "change branch structure" while giving the root a keyboard path to the canvas layout. |
 | D24 | Empty-canvas drag pans in M1; rubber-band selection arrives with drag-and-drop (M3). | Keeps the mouse useful before direct manipulation is built. |
 | D25 | Document chrome follows the system appearance; the canvas follows the theme. | Native macOS behaviour; themes colour content, not chrome. |
+
+## M2 · Styling
+
+| # | Decision | Rationale |
+| --- | --- | --- |
+| D26 | **Node styles are style layers** (a `TopicStyle` per role plus line character) resolved with colour tokens (`branch`, `branch@0.14`, `ink`, `ring@0.2`, `canvas`, `mainBg`, `auto`, hex). | "Implement presets as data" (README §8); users can save a modified preset as a quick style or theme. |
+| D27 | **Node styles never change the canvas colour** (Sketch's paper and Glow's dark canvas on artboard NS are pairing suggestions). | Theme supplies colour; style supplies shape (README §8). P0's live `styleLook` works on every theme the same way. |
+| D28 | **Auto contrast is on by default** and guarantees the theme's target (AA, or AAA for High Contrast): text is toned toward ink or white; if neither can pass, a solid fill is deepened just enough. | Contrast is a hard requirement for every theme; gap analysis asks for "text colour auto-adapts to background". |
+| D29 | Palette id `theme` (new default) means "use the theme's own eight colours"; the six FMT-3 colour themes override it. | Lets Graphite, Paper and the rest keep their designed palettes while colour themes still recolour any theme. |
+| D30 | Colour-theme modes: **Rainbow** (next colour per main branch), **Multi** (by sibling position), **Mono** (one colour), **Gradient** (first → last palette colour across main branches). | FMT-3 names the four modes but not their rules. |
+| D31 | **Auto balance on** keeps P0's count-based split (ties favour the right); **off** puts every main topic on the right. | Matches P0 and the screenshots; a height-based split moved branches unexpectedly. |
+| D32 | **Numbering on a topic numbers its children**; "Apply to siblings" (default on) stores it on the parent so the selected topic and its siblings are numbered. | Matches Xmind's behaviour and FMT-1's "2.1 PRICING" example. |
+| D33 | The **Sketch style uses Noteworthy** (ships with macOS) rather than bundling Kalam. | No bundled font or extra licence; Kalam (OFL) can be added later if wanted. |
+| D34 | **Skeleton gallery of 24** = FMT-3's nine plus fifteen structure × node style × line pairings. | README §14 asks us to derive the rest. |
+| D35 | Custom themes, colour themes and quick styles live in the document's `theme.json` (`StyleLibrary`), and library edits ride on patches so they undo. | Files carry their own look; one undo mechanism. An app-wide library can come with Settings (M8). |
+| D36 | Golden snapshots render offscreen with `CALayer.render(in:)` (flipping the hosted root explicitly) instead of capturing the window. | Runs without screen-recording permission or a visible window, so CI can run it. |

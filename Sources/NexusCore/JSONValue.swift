@@ -140,6 +140,14 @@ public struct ObjectReader {
         }
     }
 
+    public mutating func optionalBool(_ key: String) throws -> Bool? {
+        switch raw(key) {
+        case nil, .null?: return nil
+        case .bool(let b)?: return b
+        default: throw ModelDecodingError(path: "\(path).\(key)", "expected a boolean")
+        }
+    }
+
     public mutating func optionalDouble(_ key: String) throws -> Double? {
         switch raw(key) {
         case nil, .null?: return nil
@@ -195,6 +203,14 @@ public struct ObjectWriter {
 
     public mutating func set(_ key: String, _ value: String?) {
         if let value { object[key] = .string(value) }
+    }
+
+    public mutating func set(_ key: String, _ value: Double?) {
+        if let value { object[key] = .number(value) }
+    }
+
+    public mutating func set(_ key: String, _ value: Bool?) {
+        if let value { object[key] = .bool(value) }
     }
 
     public mutating func set(_ key: String, _ value: Bool, omitting defaultValue: Bool) {

@@ -53,6 +53,10 @@ public final class CanvasController {
     @ObservationIgnored let builder: SceneBuilder
     @ObservationIgnored private var toastSerial = 0
     @ObservationIgnored private var committingOwnPatch = false
+    /// ⌥⌘C / ⌥⌘V style clipboard.
+    @ObservationIgnored var styleClipboard: (style: TopicStyle, quick: String?)?
+    /// Asks the view to morph node looks on the next update (node style changes).
+    @ObservationIgnored public var onMorph: (() -> Void)?
 
     /// Called after the scene changes. `animated` is false for edits that must not move
     /// anything (typing into the edited node still reflows, but without delay).
@@ -88,7 +92,17 @@ public final class CanvasController {
         store.canvas(canvasID) ?? Canvas(id: canvasID, title: "")
     }
 
-    public var theme: Theme { Theme.named(canvas.style.theme) }
+    /// Custom themes, colour themes and quick styles saved in the document (`theme.json`).
+    public var library: StyleLibrary { StyleLibrary(json: store.model.theme) }
+
+    public var theme: Theme { Theme.named(canvas.style.theme, custom: library.themes) }
+
+    public var styleEnvironment: StyleEnvironment {
+        let lib = library
+        return StyleEnvironment(
+            theme: Theme.named(canvas.style.theme, custom: lib.themes), canvasStyle: canvas.style,
+            customPalettes: lib.palettes, customQuickStyles: lib.quickStyles)
+    }
 
     public func switchCanvas(to id: CanvasID) {
         guard store.canvas(id) != nil, id != canvasID else { return }
@@ -156,7 +170,7 @@ public final class CanvasController {
     func rebuildScene() {
         let state: SceneBuilder.EditingState? = edit.map { .init(node: $0.node, text: $0.text) }
         let s = signposter.beginInterval("scene")
-        scene = builder.build(canvas, theme: theme, editing: state)
+        scene = builder.build(canvas, env: styleEnvironment, editing: state)
         signposter.endInterval("scene", s)
     }
 

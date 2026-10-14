@@ -57,6 +57,26 @@ public struct RGBA: Hashable, Sendable, CustomStringConvertible {
     }
 }
 
+extension RGBA: Codable {
+    public init(from decoder: any Decoder) throws {
+        self.init(hex: try decoder.singleValueContainer().decode(String.self))
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var c = encoder.singleValueContainer()
+        try c.encode(hex)
+    }
+
+    /// Parses `#RRGGBB`, `#RRGGBBAA`, or nil for anything else.
+    public init?(hexString s: String) {
+        let t = s.trimmingCharacters(in: .whitespaces)
+        guard t.hasPrefix("#"), t.count == 7 || t.count == 9,
+            t.dropFirst().allSatisfy({ $0.isHexDigit })
+        else { return nil }
+        self.init(hex: t)
+    }
+}
+
 /// WCAG 2.x contrast.
 public enum Contrast {
     public static func relativeLuminance(_ c: RGBA) -> Double {
@@ -82,5 +102,25 @@ public enum Contrast {
 
     public static func passes(_ fg: RGBA, _ bg: RGBA, backdrop: RGBA = .white, level: Level) -> Bool {
         ratio(fg, bg, backdrop: backdrop) >= level.minimum
+    }
+
+    /// The colour closest to `fg` that reaches `target` against `bg` (auto contrast:
+    /// "text colour auto-adapts to background"). Tones toward ink or white, whichever
+    /// direction gains contrast, in small steps.
+    public static func adjusted(_ fg: RGBA, on bg: RGBA, backdrop: RGBA = .white, target: Double = 4.5) -> RGBA {
+        let b = bg.composited(over: backdrop)
+        let f = fg.composited(over: b)
+        if ratio(f, b) >= target { return fg.a < 1 ? f : fg }
+        let ink = RGBA(hex: "#111114")
+        let darkFirst = relativeLuminance(b) > 0.25
+        for toward in darkFirst ? [ink, .white] : [.white, ink] {
+            var t = 0.05
+            while t <= 1.0001 {
+                let c = f.mix(toward, t)
+                if ratio(c, b) >= target { return c }
+                t += 0.05
+            }
+        }
+        return ratio(ink, b) >= ratio(.white, b) ? ink : .white
     }
 }

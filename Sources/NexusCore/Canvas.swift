@@ -3,6 +3,10 @@ import Foundation
 public struct CanvasLayout: Hashable, Sendable, JSONRepresentable {
     public var mode: LayoutMode
     public var structure: LayoutStructure
+    /// Advanced layout (FMT-3): drag branches freely, flexible floating topics, overlap.
+    public var branchFreePositioning: Bool = false
+    public var flexibleFloating: Bool = true
+    public var allowOverlap: Bool = false
     public var extra: [String: JSONValue] = [:]
 
     public init(mode: LayoutMode = .auto, structure: LayoutStructure = .mindmapBalanced) {
@@ -22,6 +26,9 @@ public struct CanvasLayout: Hashable, Sendable, JSONRepresentable {
         var w = ObjectWriter(extra: extra)
         w.set("mode", mode.rawValue)
         w.set("structure", structure.rawValue)
+        w.set("branchFreePositioning", branchFreePositioning, omitting: false)
+        w.set("flexibleFloating", flexibleFloating, omitting: true)
+        w.set("allowOverlap", allowOverlap, omitting: false)
         return w.value
     }
 }
@@ -29,15 +36,36 @@ public struct CanvasLayout: Hashable, Sendable, JSONRepresentable {
 public struct CanvasStyle: Hashable, Sendable, JSONRepresentable {
     public var theme: String
     public var nodeStyle: String
+    /// rainbow, multi, mono, gradient (FMT-3 › Colour theme).
     public var colorTheme: String
+    /// Palette id (classic, sunset, ocean, pastel, earth, neon) or a custom one.
     public var palette: String
-    /// Smart Color (⇧⌘R) rotation applied to the theme's branch palette.
+    /// Smart Color (⇧⌘R) rotation applied to the branch palette.
     public var paletteShift: Int = 0
+    /// Colour each main branch; when off every branch uses `singleColor`.
+    public var coloredBranch: Bool = true
+    /// `ink` or hex, used when coloured branches are off.
+    public var singleColor: String?
+    /// Background override (hex) and pattern override (plain, dots, lines).
+    public var background: String?
+    public var pattern: String?
+    /// Global diagram font and CJK font.
+    public var font: String?
+    public var cjkFont: String?
+    /// thin, regular, bold, taper
+    public var lineWidth: String?
+    /// Branch line shape chosen by a skeleton (overrides the theme's).
+    public var lineShape: String?
+    public var autoBalance: Bool = true
+    public var compact: Bool = false
+    public var justify: Bool = false
+    /// Update Style › "Apply to all level-N topics", keyed by depth.
+    public var levels: [Int: TopicStyle] = [:]
     public var extra: [String: JSONValue] = [:]
 
     public init(
         theme: String = "classic", nodeStyle: String = "outline", colorTheme: String = "rainbow",
-        palette: String = "classic"
+        palette: String = "theme"
     ) {
         self.theme = theme
         self.nodeStyle = nodeStyle
@@ -50,8 +78,23 @@ public struct CanvasStyle: Hashable, Sendable, JSONRepresentable {
         theme = try r.optionalString("theme") ?? "classic"
         nodeStyle = try r.optionalString("nodeStyle") ?? "outline"
         colorTheme = try r.optionalString("colorTheme") ?? "rainbow"
-        palette = try r.optionalString("palette") ?? "classic"
+        palette = try r.optionalString("palette") ?? "theme"
         paletteShift = Int(try r.optionalDouble("paletteShift") ?? 0)
+        coloredBranch = try r.bool("coloredBranch", default: true)
+        singleColor = try r.optionalString("singleColor")
+        background = try r.optionalString("background")
+        pattern = try r.optionalString("pattern")
+        font = try r.optionalString("font")
+        cjkFont = try r.optionalString("cjkFont")
+        lineWidth = try r.optionalString("lineWidth")
+        lineShape = try r.optionalString("lineShape")
+        autoBalance = try r.bool("autoBalance", default: true)
+        compact = try r.bool("compact", default: false)
+        justify = try r.bool("justify", default: false)
+        for (k, v) in try r.object("levels") ?? [:] {
+            guard let d = Int(k) else { continue }
+            levels[d] = try TopicStyle(json: v, path: "\(path).levels.\(k)")
+        }
         extra = r.leftovers
     }
 
@@ -62,6 +105,21 @@ public struct CanvasStyle: Hashable, Sendable, JSONRepresentable {
         w.set("colorTheme", colorTheme)
         w.set("palette", palette)
         if paletteShift != 0 { w.set("paletteShift", .number(Double(paletteShift))) }
+        w.set("coloredBranch", coloredBranch, omitting: true)
+        w.set("singleColor", singleColor)
+        w.set("background", background)
+        w.set("pattern", pattern)
+        w.set("font", font)
+        w.set("cjkFont", cjkFont)
+        w.set("lineWidth", lineWidth)
+        w.set("lineShape", lineShape)
+        w.set("autoBalance", autoBalance, omitting: true)
+        w.set("compact", compact, omitting: false)
+        w.set("justify", justify, omitting: false)
+        let lv = levels.filter { !$0.value.isEmpty }
+        if !lv.isEmpty {
+            w.set("levels", .object(Dictionary(uniqueKeysWithValues: lv.map { ("\($0.key)", $0.value.json) })))
+        }
         return w.value
     }
 }

@@ -34,6 +34,7 @@ public struct DocumentModel: Equatable, Sendable {
     public var orderedCanvases: [Canvas] { canvasOrder.compactMap { canvases[$0] } }
 
     public mutating func apply(_ patch: Patch) {
+        if let t = patch.themeAfter { theme = t }
         guard var c = canvases[patch.canvasID] else { return }
         patch.apply(to: &c)
         canvases[patch.canvasID] = c

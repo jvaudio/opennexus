@@ -8,34 +8,98 @@ public struct NodeTextStyle: Hashable, Sendable {
     public var fontSize: Double
     public var weight: NodeTypography.Weight
     public var lineHeight: Double
-    public var monospaced: Bool
+    /// system, serif, mono, rounded, hand, or a family name.
+    public var family: String
+    public var italic: Bool
     public var maxWidth: Double
+    /// leading, center, trailing
+    public var align: String
+    public var underline: Bool
+    public var strikethrough: Bool
+    public var code: Bool
 
     public init(typography t: NodeTypography, monospaced: Bool) {
         fontSize = t.fontSize
         weight = t.weight
         lineHeight = t.lineHeight
-        self.monospaced = monospaced
+        family = monospaced ? "mono" : "system"
+        italic = false
         maxWidth = t.maxWidth
+        align = "center"
+        underline = false
+        strikethrough = false
+        code = false
+    }
+
+    public init(appearance a: NodeAppearance) {
+        fontSize = a.fontSize
+        weight = a.fontWeight
+        lineHeight = a.lineHeight
+        family = a.font
+        italic = a.italic
+        maxWidth = a.maxWidth
+        align = a.align
+        underline = a.underline
+        strikethrough = a.strikethrough
+        code = a.code
+    }
+
+    var nsWeight: NSFont.Weight {
+        switch weight {
+        case .regular: .regular
+        case .medium: .medium
+        case .semibold: .semibold
+        case .bold: .bold
+        case .heavy: .heavy
+        }
     }
 
     public var font: NSFont {
-        let w: NSFont.Weight =
-            switch weight {
-            case .regular: .regular
-            case .medium: .medium
-            case .semibold: .semibold
-            case .bold: .bold
-            case .heavy: .heavy
-            }
-        return monospaced
-            ? NSFont.monospacedSystemFont(ofSize: fontSize, weight: w)
-            : NSFont.systemFont(ofSize: fontSize, weight: w)
+        let size = CGFloat(fontSize)
+        var f: NSFont
+        switch code ? "mono" : family {
+        case "system", "": f = .systemFont(ofSize: size, weight: nsWeight)
+        case "mono": f = .monospacedSystemFont(ofSize: size, weight: nsWeight)
+        case "serif", "rounded":
+            let base = NSFont.systemFont(ofSize: size, weight: nsWeight)
+            let design: NSFontDescriptor.SystemDesign = family == "serif" ? .serif : .rounded
+            f = base.fontDescriptor.withDesign(design).flatMap { NSFont(descriptor: $0, size: size) } ?? base
+        case "hand":
+            // A handwriting face that ships with macOS (no bundled font needed).
+            let heavy = weight == .bold || weight == .heavy || weight == .semibold
+            f =
+                NSFont(name: heavy ? "Noteworthy-Bold" : "Noteworthy-Light", size: size)
+                ?? NSFont(name: "ChalkboardSE-Regular", size: size) ?? .systemFont(ofSize: size, weight: nsWeight)
+        default:
+            f =
+                NSFontManager.shared.font(
+                    withFamily: family, traits: [], weight: Self.managerWeight(weight), size: size)
+                ?? .systemFont(ofSize: size, weight: nsWeight)
+        }
+        if italic {
+            f = NSFontManager.shared.convert(f, toHaveTrait: .italicFontMask)
+        }
+        return f
+    }
+
+    static func managerWeight(_ w: NodeTypography.Weight) -> Int {
+        switch w {
+        case .regular: 5
+        case .medium: 6
+        case .semibold: 8
+        case .bold: 9
+        case .heavy: 11
+        }
     }
 
     public var paragraphStyle: NSParagraphStyle {
         let p = NSMutableParagraphStyle()
-        p.alignment = .center
+        p.alignment =
+            switch align {
+            case "leading": .left
+            case "trailing": .right
+            default: .center
+            }
         p.lineBreakMode = .byWordWrapping
         p.minimumLineHeight = lineHeight
         p.maximumLineHeight = lineHeight
@@ -51,7 +115,12 @@ public struct NodeTextStyle: Hashable, Sendable {
     }
 
     public func attributes(color: NSColor) -> [NSAttributedString.Key: Any] {
-        [.font: font, .paragraphStyle: paragraphStyle, .foregroundColor: color, .baselineOffset: baselineOffset]
+        var a: [NSAttributedString.Key: Any] = [
+            .font: font, .paragraphStyle: paragraphStyle, .foregroundColor: color, .baselineOffset: baselineOffset,
+        ]
+        if underline { a[.underlineStyle] = NSUnderlineStyle.single.rawValue }
+        if strikethrough { a[.strikethroughStyle] = NSUnderlineStyle.single.rawValue }
+        return a
     }
 }
 

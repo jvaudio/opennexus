@@ -50,7 +50,7 @@ let package = Package(
             dependencies: ["NexusFormat"],
             resources: [.copy("Fixtures")]
         ),
-        .testTarget(name: "NexusThemeTests", dependencies: ["NexusTheme"]),
+        .testTarget(name: "NexusThemeTests", dependencies: ["NexusTheme", "NexusCore"]),
         .testTarget(name: "NexusKeysTests", dependencies: ["NexusKeys"]),
         .testTarget(name: "NexusCanvasTests", dependencies: ["NexusCanvas"]),
     ]

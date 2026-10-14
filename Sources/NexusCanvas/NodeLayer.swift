@@ -35,6 +35,10 @@ final class TextLayer: CALayer {
 final class NodeLayer: CALayer {
     let id: NodeID
     let shape = CAShapeLayer()
+    /// Second outline for the double border.
+    let inner = CAShapeLayer()
+    let gradient = CAGradientLayer()
+    let gradientMask = CAShapeLayer()
     let text = TextLayer()
     let ring = CAShapeLayer()
     let halo = CAShapeLayer()
@@ -62,14 +66,22 @@ final class NodeLayer: CALayer {
             l.isHidden = true
             addSublayer(l)
         }
+        gradient.mask = gradientMask
+        gradient.isHidden = true
         addSublayer(shape)
+        addSublayer(gradient)
+        inner.fillColor = nil
+        inner.isHidden = true
+        addSublayer(inner)
         addSublayer(lead)
         addSublayer(text)
         badge.addSublayer(badgeText)
         badge.isHidden = true
         addSublayer(badge)
         actions = Self.noActions
-        for l in [shape, text, ring, halo, lead, badge, badgeText] as [CALayer] { l.actions = Self.noActions }
+        for l in [shape, inner, gradient, gradientMask, text, ring, halo, lead, badge, badgeText] as [CALayer] {
+            l.actions = Self.noActions
+        }
     }
 
     override init(layer: Any) {
@@ -83,61 +95,126 @@ final class NodeLayer: CALayer {
         "position": NSNull(), "bounds": NSNull(), "path": NSNull(), "contents": NSNull(), "hidden": NSNull(),
         "fillColor": NSNull(), "strokeColor": NSNull(), "lineWidth": NSNull(), "frame": NSNull(),
         "opacity": NSNull(), "transform": NSNull(), "shadowPath": NSNull(), "backgroundColor": NSNull(),
-        "sublayers": NSNull(),
+        "sublayers": NSNull(), "colors": NSNull(), "lineDashPattern": NSNull(), "shadowColor": NSNull(),
+        "shadowOpacity": NSNull(), "shadowOffset": NSNull(), "shadowRadius": NSNull(),
     ]
 
-    /// Applies a scene node. Geometry other than size is driven by the animator.
-    func apply(_ n: SceneNode, theme: Theme, selected: Bool, primary: Bool, editing: Bool) {
+    /// Applies a scene node. Geometry other than position is applied here; position is
+    /// driven by the animator.
+    func apply(
+        _ n: SceneNode, theme: Theme, canvas: RGBA, selected: Bool, primary: Bool, editing: Bool,
+        morph: Bool = false
+    ) {
         let sizeChanged = node?.frame.size != n.frame.size
-        let lookChanged = node?.look != n.look || node?.textStyle != n.textStyle
+        let lookChanged = node?.appearance != n.appearance || node?.textStyle != n.textStyle
         let contentChanged =
             node?.displayText != n.displayText || node?.isPlaceholder != n.isPlaceholder
             || node?.priority != n.priority || node?.todo != n.todo || node?.hiddenCount != n.hiddenCount
             || node?.textRect != n.textRect || lookChanged || node?.frame.side != n.frame.side
+            || node?.branchColor != n.branchColor
         let stateChanged = state != (selected, editing, false)
+        if morph, lookChanged, node != nil {
+            // Node style changes morph: a 300 ms cross-fade on the glide curve.
+            let t = CATransition()
+            t.type = .fade
+            t.duration = Motion.nodeStyleCycle
+            t.timingFunction = CAMediaTimingFunction(controlPoints: 0.65, 0, 0.35, 1)
+            add(t, forKey: "morph")
+        }
         node = n
         state = (selected, editing, false)
         let size = n.frame.size
         if sizeChanged { bounds = CGRect(origin: .zero, size: size) }
 
         if sizeChanged || lookChanged {
-            let look = n.look
-            let inset = look.borderWidth / 2
-            let r = CGRect(origin: .zero, size: size).insetBy(dx: inset, dy: inset)
-            let radius = min(look.cornerRadius, Double(min(size.width, size.height) / 2))
-            shape.path = CGPath(
-                roundedRect: r, cornerWidth: max(0, radius - inset), cornerHeight: max(0, radius - inset),
-                transform: nil)
-            shape.fillColor = look.fill.cgColor
-            shape.strokeColor = look.borderWidth > 0 ? look.borderColor.cgColor : nil
-            shape.lineWidth = look.borderWidth
-            shape.lineDashPattern = look.dashed ? [4, 3] : nil
-            shadowOpacity = Float(look.shadowOpacity > 0 ? 1 : 0)
-            shadowColor = RGBA.black.alpha(look.shadowOpacity).cgColor
-            shadowRadius = 1
-            shadowOffset = CGSize(width: 0, height: 1)
-            shadowPath = CGPath(
-                roundedRect: CGRect(origin: .zero, size: size), cornerWidth: radius, cornerHeight: radius,
-                transform: nil)
+            drawShape(n, canvas: canvas)
         }
 
         if contentChanged {
-            let color = n.isPlaceholder ? n.look.text.alpha(0.4) : n.look.text
+            var color = n.appearance.text
+            if n.isPlaceholder { color = color.alpha(0.4) }
             var attrs = n.textStyle.attributes(color: NSColor(cgColor: color.cgColor) ?? .labelColor)
             if n.todo?.done == true {
                 attrs[.strikethroughStyle] = NSUnderlineStyle.single.rawValue
-                attrs[.foregroundColor] = NSColor(cgColor: n.look.text.alpha(0.55).cgColor)
+                attrs[.foregroundColor] = NSColor(cgColor: n.appearance.text.alpha(0.55).cgColor)
             }
             text.attributed = NSAttributedString(string: n.displayText, attributes: attrs)
             text.frame = n.textRect
             layoutLead(n, theme: theme)
-            layoutBadge(n, theme: theme)
+            layoutBadge(n, theme: theme, canvas: canvas)
         }
 
         if stateChanged || sizeChanged || lookChanged {
-            updateRing(theme: theme, selected: selected, editing: editing)
+            updateRing(theme: theme, canvas: canvas, selected: selected, editing: editing)
         }
         text.isHidden = editing && !n.isPlaceholder
+    }
+
+    private func drawShape(_ n: SceneNode, canvas: RGBA) {
+        let a = n.appearance
+        let size = n.frame.size
+        let bw = CGFloat(a.borderWidth)
+        let rect = CGRect(origin: .zero, size: size).insetBy(dx: bw / 2, dy: bw / 2)
+        let radius = max(0, CGFloat(a.cornerRadius) - bw / 2)
+        var outline = ShapeLibrary.path(a.shape, in: rect, radius: radius)
+        if a.border == .hand {
+            outline = ShapeLibrary.wobble(
+                outline, seed: UInt64(abs(id.rawValue.hashValue % 9973)) + 11,
+                amplitude: 1.2)
+        }
+        let open = ShapeLibrary.openShapes.contains(a.shape)
+
+        if a.isUnderline {
+            let line = CGMutablePath()
+            line.move(to: CGPoint(x: 0, y: size.height - bw / 2))
+            line.addLine(to: CGPoint(x: size.width, y: size.height - bw / 2))
+            shape.path = line
+            shape.fillColor = nil
+        } else {
+            shape.path = outline
+            switch a.fill {
+            case .solid(let c) where !open: shape.fillColor = c.cgColor
+            default: shape.fillColor = nil
+            }
+        }
+        if case .gradient(let c1, let c2) = a.fill, !open {
+            gradient.isHidden = false
+            gradient.frame = CGRect(origin: .zero, size: size)
+            gradient.colors = [c2.cgColor, c1.cgColor]
+            gradient.startPoint = CGPoint(x: 0.5, y: 0)
+            gradient.endPoint = CGPoint(x: 0.5, y: 1)
+            gradientMask.path = outline
+        } else {
+            gradient.isHidden = true
+        }
+        let stroked = a.border != .none && bw > 0
+        shape.strokeColor = stroked ? a.borderColor.cgColor : nil
+        shape.lineWidth = bw
+        shape.lineCap = a.border == .dotted ? .round : .butt
+        shape.lineDashPattern =
+            switch a.border {
+            case .dashed: [NSNumber(value: Double(bw) * 3), NSNumber(value: Double(bw) * 2)]
+            case .dotted: [0.01, NSNumber(value: Double(bw) * 2.2)]
+            default: nil
+            }
+        if a.border == .double && stroked {
+            inner.isHidden = false
+            let i = rect.insetBy(dx: bw * 2, dy: bw * 2)
+            inner.path = ShapeLibrary.path(a.shape, in: i, radius: max(0, radius - bw * 2))
+            inner.strokeColor = a.borderColor.cgColor
+            inner.lineWidth = max(1, bw / 2)
+        } else {
+            inner.isHidden = true
+        }
+        if let sh = a.shadow {
+            shape.shadowColor = sh.color.alpha(1).cgColor
+            shape.shadowOpacity = Float(sh.color.a)
+            shape.shadowOffset = CGSize(width: sh.dx, height: sh.dy)
+            shape.shadowRadius = CGFloat(sh.radius)
+            shape.shadowPath = a.isUnderline ? nil : outline
+        } else {
+            shape.shadowOpacity = 0
+        }
     }
 
     private func layoutLead(_ n: SceneNode, theme: Theme) {
@@ -165,7 +242,7 @@ final class NodeLayer: CALayer {
         lead.attributed = s
     }
 
-    private func layoutBadge(_ n: SceneNode, theme: Theme) {
+    private func layoutBadge(_ n: SceneNode, theme: Theme, canvas: RGBA) {
         guard n.hiddenCount > 0 else {
             badge.isHidden = true
             return
@@ -189,15 +266,15 @@ final class NodeLayer: CALayer {
         badge.frame = CGRect(origin: origin, size: CGSize(width: w, height: h))
         badge.cornerRadius = h / 2
         badge.backgroundColor = n.branchColor.cgColor
-        badge.borderColor = theme.canvas.cgColor
+        badge.borderColor = canvas.cgColor
         badge.borderWidth = 2
         badgeText.frame = CGRect(x: 0, y: 4, width: w, height: 14)
         badgeText.attributed = attr
     }
 
-    private func updateRing(theme: Theme, selected: Bool, editing: Bool) {
+    private func updateRing(theme: Theme, canvas: RGBA, selected: Bool, editing: Bool) {
         let size = bounds.size
-        let radius = (node?.look.cornerRadius ?? 10)
+        let radius = (node?.appearance.cornerRadius ?? 10)
         func path(_ outset: CGFloat) -> CGPath {
             let r = CGRect(origin: .zero, size: size).insetBy(dx: -outset, dy: -outset)
             let rr = min(radius + outset, min(r.width, r.height) / 2)

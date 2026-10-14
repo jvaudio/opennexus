@@ -83,8 +83,12 @@ public struct Node: Hashable, Sendable {
     public var todo: Todo?
     public var note: Note?
     public var link: String?
-    /// Node-level style override; typed in M2, kept as raw JSON until then.
-    public var style: JSONValue?
+    /// Node-level style override (highest priority in style resolution).
+    public var style: TopicStyle?
+    /// Applied quick style id (`very-important`, `done`, … or a custom one).
+    public var quickStyle: String?
+    /// Key-value fields (Data tab).
+    public var metadata: [MetadataField] = []
     /// Created by AI and not yet edited by the user (shows a sparkle).
     public var ai: Bool = false
     /// Per-branch structure override (Option-Command-1…9).
@@ -127,7 +131,14 @@ extension Node: JSONRepresentable {
         if let t = r.raw("todo"), t != .null { todo = try Todo(json: t, path: "\(path).todo") }
         if let n = r.raw("note"), n != .null { note = try Note(json: n, path: "\(path).note") }
         link = try r.optionalString("link")
-        if let s = r.raw("style"), s != .null { style = s }
+        if let s = r.raw("style"), s != .null {
+            let st = try TopicStyle(json: s, path: "\(path).style")
+            style = st.isEmpty ? nil : st
+        }
+        quickStyle = try r.optionalString("quickStyle")
+        metadata = try r.array("metadata").enumerated().map {
+            try MetadataField(json: $1, path: "\(path).metadata[\($0)]")
+        }
         ai = try r.bool("ai", default: false)
         structure = try r.optionalString("structure").map(LayoutStructure.init(rawValue:))
         if let p = r.raw("position"), p != .null { position = try CanvasPoint(json: p, path: "\(path).position") }
@@ -145,7 +156,9 @@ extension Node: JSONRepresentable {
         if let todo { w.set("todo", todo.json) }
         if let note { w.set("note", note.json) }
         w.set("link", link)
-        if let style { w.set("style", style) }
+        if let style, !style.isEmpty { w.set("style", style.json) }
+        w.set("quickStyle", quickStyle)
+        if !metadata.isEmpty { w.set("metadata", .array(metadata.map(\.json))) }
         w.set("ai", ai, omitting: false)
         w.set("structure", structure?.rawValue)
         if let position { w.set("position", position.json) }

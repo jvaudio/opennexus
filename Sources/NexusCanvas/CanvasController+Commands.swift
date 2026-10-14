@@ -46,7 +46,12 @@ extension CanvasController {
             .foldAll: { c in c.restructure("Fold All") { try $0.toggleFoldAll() } },
             .toggleTodo: { $0.toggleMarker(0) },
             .smartColor: { $0.reshuffleColors() },
+            .cycleNodeStyle: { $0.cycleNodeStyle() },
+            .copyStyle: { $0.copyStyle() },
+            .pasteStyle: { $0.pasteStyle() },
+            .resetStyle: { $0.resetStyle() },
         ]
+        for n in 1...8 { h[.quickStyle(n)] = { $0.applyQuickStyle(index: n) } }
         for n in 1...9 {
             h[.priority(n)] = { $0.toggleMarker(n) }
             h[.structure(n)] = { $0.setStructure(Self.structureCycle[n - 1]) }

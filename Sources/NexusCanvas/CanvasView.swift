@@ -29,7 +29,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     private var scales: [NodeID: SpringScalar] = [:]
     private var moving = Set<NodeID>()
     private var edgesByNode: [NodeID: [NodeID]] = [:]
-    private var lastTheme: Theme?
+    private var edgeInfo: [NodeID: SceneEdge] = [:]
+    private var capLayers: [NodeID: CAShapeLayer] = [:]
+    private var lastBackground: (RGBA, Theme.Grid)?
+    /// Set before an update that should morph node looks (⌥⌘S).
+    public var morphNextUpdate = false
 
     public private(set) var camera = Camera()
     private var cameraTween: CameraTween?
@@ -89,9 +93,13 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         controller.viewCommandHandler = { [weak self] id in self?.performViewCommand(id) ?? false }
         controller.viewCommandValidator = { id in Self.viewCommands.contains(id) }
         controller.floatingPlacement = { [weak self] in self?.defaultFloatingPoint() ?? .zero }
+        controller.onMorph = { [weak self] in self?.morphNextUpdate = true }
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    /// The root of the canvas layer tree (offscreen rendering, snapshots, export).
+    var sceneLayer: CALayer { rootLayer }
 
     public override var isFlipped: Bool { true }
     public override var acceptsFirstResponder: Bool { true }
@@ -131,12 +139,14 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         CATransaction.begin()
         CATransaction.setDisableActions(true)
 
-        if lastTheme != theme {
-            rootLayer.backgroundColor = theme.canvas.cgColor
-            grid.theme = theme
+        if lastBackground.map({ $0.0 != scene.canvasColor || $0.1 != scene.grid }) ?? true {
+            rootLayer.backgroundColor = scene.canvasColor.cgColor
+            grid.pattern = scene.grid
             grid.setNeedsDisplay()
-            lastTheme = theme
+            lastBackground = (scene.canvasColor, scene.grid)
         }
+        let morph = morphNextUpdate && animate
+        morphNextUpdate = false
         if animated && reduceMotion && window != nil {
             let fade = CATransition()
             fade.type = .fade
@@ -189,8 +199,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                 springs[id] = SpringValue(start)
             }
             layer.apply(
-                n, theme: theme, selected: selected.contains(id), primary: controller.selection.primary == id,
-                editing: editing == id)
+                n, theme: theme, canvas: scene.canvasColor, selected: selected.contains(id),
+                primary: controller.selection.primary == id, editing: editing == id, morph: morph)
             springs[id]?.target = n.frame.center
             if !animate {
                 springs[id]?.snap()
@@ -202,30 +212,53 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         // Branch lines, keyed by child.
         var seen = Set<NodeID>()
         edgesByNode.removeAll(keepingCapacity: true)
+        edgeInfo.removeAll(keepingCapacity: true)
         for e in scene.edges {
             seen.insert(e.child)
             let l =
                 edgeLayers[e.child]
                 ?? {
                     let s = CAShapeLayer()
-                    s.fillColor = nil
-                    s.lineCap = .round
                     s.lineJoin = .round
                     s.actions = NodeLayer.noActions
                     edgesLayer.addSublayer(s)
                     edgeLayers[e.child] = s
                     return s
                 }()
-            l.strokeColor = e.color.cgColor
-            l.lineWidth = e.width
-            l.setValue(e.family, forKey: "family")
-            l.setValue(e.parent.rawValue, forKey: "parent")
+            let line = e.line
+            if line.taper {
+                l.fillColor = line.color.cgColor
+                l.strokeColor = nil
+                l.lineDashPattern = nil
+            } else {
+                l.fillColor = nil
+                l.strokeColor = line.color.cgColor
+                l.lineWidth = line.width
+                l.lineCap = line.dash == "dotted" ? .round : .round
+                l.lineDashPattern =
+                    switch line.dash {
+                    case "dotted": [0.01, NSNumber(value: line.width * 2.6)]
+                    case "dashed": [NSNumber(value: line.width * 3), NSNumber(value: line.width * 2.5)]
+                    default: nil
+                    }
+            }
+            if line.glow {
+                l.shadowColor = line.color.cgColor
+                l.shadowOpacity = 0.8
+                l.shadowRadius = 4
+                l.shadowOffset = .zero
+            } else {
+                l.shadowOpacity = 0
+            }
+            edgeInfo[e.child] = e
             edgesByNode[e.parent, default: []].append(e.child)
             edgesByNode[e.child, default: []].append(e.child)
         }
         for (child, l) in edgeLayers where !seen.contains(child) {
             l.removeFromSuperlayer()
             edgeLayers[child] = nil
+            capLayers[child]?.removeFromSuperlayer()
+            capLayers[child] = nil
         }
 
         applyFrames(all: true)
@@ -288,11 +321,75 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             for c in edgesByNode[id] ?? [] { dirtyEdges.insert(c) }
         }
         for child in dirtyEdges {
-            guard let l = edgeLayers[child], let p = (l.value(forKey: "parent") as? String).map({ NodeID($0) }),
-                let pf = animatedFrame(p), let cf = animatedFrame(child)
+            guard let l = edgeLayers[child], let e = edgeInfo[child], let pf = animatedFrame(e.parent),
+                let cf = animatedFrame(child)
             else { continue }
-            l.path = BranchLines.path(from: pf, to: cf, family: l.value(forKey: "family") as? String ?? "mindmap")
+            let path = BranchLines.path(
+                from: pf, to: cf, family: e.family, shape: BranchLineShape(name: e.line.shape),
+                parentBaseline: e.parentBaseline, childBaseline: e.childBaseline)
+            l.path =
+                e.line.taper
+                ? BranchLines.tapered(path, startWidth: e.line.width * 1.8, endWidth: max(1, e.line.width * 0.5)) : path
+            updateCap(child, edge: e, parent: pf, child: cf)
         }
+    }
+
+    /// End caps (FMT-1 › Branch line › End cap): arrow, dot or bar where the line meets the child.
+    private func updateCap(_ id: NodeID, edge e: SceneEdge, parent pf: NodeFrame, child cf: NodeFrame) {
+        guard e.line.endCap != "none" else {
+            capLayers[id]?.isHidden = true
+            return
+        }
+        let cap =
+            capLayers[id]
+            ?? {
+                let c = CAShapeLayer()
+                c.actions = NodeLayer.noActions
+                edgesLayer.addSublayer(c)
+                capLayers[id] = c
+                return c
+            }()
+        cap.isHidden = false
+        // End point and incoming direction, on the child's near edge.
+        let dir = CGFloat(cf.side.rawValue)
+        let end: CGPoint
+        let angle: CGFloat
+        if cf.side == .down {
+            end = CGPoint(x: cf.center.x, y: cf.center.y - cf.size.height / 2)
+            angle = .pi / 2
+        } else {
+            end = CGPoint(
+                x: cf.center.x - dir * cf.size.width / 2,
+                y: e.childBaseline ? cf.center.y + cf.size.height / 2 : cf.center.y)
+            angle = dir > 0 ? 0 : .pi
+        }
+        let w = max(e.line.width, 1.5)
+        let p = CGMutablePath()
+        switch e.line.endCap {
+        case "arrow":
+            let len = w * 3.2
+            let half = w * 2.2
+            p.move(to: end)
+            p.addLine(
+                to: CGPoint(
+                    x: end.x - len * cos(angle) - half * sin(angle), y: end.y - len * sin(angle) + half * cos(angle)))
+            p.addLine(
+                to: CGPoint(
+                    x: end.x - len * cos(angle) + half * sin(angle), y: end.y - len * sin(angle) - half * cos(angle)))
+            p.closeSubpath()
+        case "dot":
+            let r = w * 1.6
+            p.addEllipse(
+                in: CGRect(x: end.x - r - r * cos(angle), y: end.y - r - r * sin(angle), width: 2 * r, height: 2 * r))
+        default:  // bar
+            let half = w * 2.4
+            p.move(to: CGPoint(x: end.x - half * sin(angle), y: end.y + half * cos(angle)))
+            p.addLine(to: CGPoint(x: end.x + half * sin(angle), y: end.y - half * cos(angle)))
+        }
+        cap.path = p
+        cap.fillColor = e.line.endCap == "bar" ? nil : e.line.color.cgColor
+        cap.strokeColor = e.line.endCap == "bar" ? e.line.color.cgColor : nil
+        cap.lineWidth = w
     }
 
     // MARK: Animation loop
@@ -467,7 +564,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             if controller.mode == .select, window?.firstResponder !== self { window?.makeFirstResponder(self) }
             return
         }
-        editor.begin(session, style: n.textStyle, color: NSColor(cgColor: n.look.text.cgColor) ?? .labelColor)
+        editor.begin(session, style: n.textStyle, color: NSColor(cgColor: n.appearance.text.cgColor) ?? .labelColor)
         editor.isHidden = false
         positionEditor()
         window?.makeFirstResponder(editor)
@@ -648,14 +745,14 @@ final class FlippedView: NSView {
 
 /// Dot or line grid in world space, drawn for the visible rect only.
 final class GridLayer: CALayer {
-    var theme: Theme = .classic
+    var pattern: Theme.Grid = Theme.classic.grid
     var camera = Camera()
 
     override func draw(in ctx: CGContext) {
         let spacing: CGFloat
         let color: RGBA
         let lines: Bool
-        switch theme.grid {
+        switch pattern {
         case .none: return
         case .dots(let c, let s):
             (color, spacing, lines) = (c, s, false)

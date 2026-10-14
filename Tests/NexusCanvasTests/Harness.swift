@@ -16,13 +16,13 @@ final class CanvasHarness {
     let host: CanvasHostView
     let window: NSWindow
 
-    init(model: DocumentModel = .blank()) {
+    init(model: DocumentModel = .blank(), width: CGFloat = 1440, height: CGFloat = 860) {
         store = DocumentStore(model: model)
         store.undoRegistrar = undo
         controller = CanvasController(store: store)
         host = CanvasHostView(controller: controller)
         window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 1440, height: 860), styleMask: [.titled, .resizable],
+            contentRect: NSRect(x: 0, y: 0, width: width, height: height), styleMask: [.borderless],
             backing: .buffered, defer: false)
         window.contentView = host
         host.canvasView.reduceMotionOverride = true
@@ -87,5 +87,37 @@ final class CanvasHarness {
         p.arguments = ["-x", "-o", "-l", "\(window.windowNumber)", url.path]
         try? p.run()
         p.waitUntilExit()
+    }
+
+    /// Renders the canvas layer tree offscreen (no window server needed), at `scale`.
+    func renderOffscreen(scale: CGFloat = 1) -> NSBitmapImageRep? {
+        host.layoutSubtreeIfNeeded()
+        let size = host.canvasView.bounds.size
+        guard
+            let rep = NSBitmapImageRep(
+                bitmapDataPlanes: nil, pixelsWide: Int(size.width * scale), pixelsHigh: Int(size.height * scale),
+                bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB,
+                bytesPerRow: 0, bitsPerPixel: 0),
+            let ctx = NSGraphicsContext(bitmapImageRep: rep)
+        else { return nil }
+        let cg = ctx.cgContext
+        cg.scaleBy(x: scale, y: scale)
+        // Offscreen, AppKit has not flipped the hosted layer tree; flip it so text and
+        // shadows render as they do on screen, then flip the bitmap to match.
+        let root = host.canvasView.sceneLayer
+        root.isGeometryFlipped = true
+        root.layoutIfNeeded()
+        func redraw(_ l: CALayer) {
+            if l is TextLayer { l.setNeedsDisplay(); l.displayIfNeeded() }
+            l.sublayers?.forEach(redraw)
+        }
+        redraw(root)
+        cg.translateBy(x: 0, y: size.height)
+        cg.scaleBy(x: 1, y: -1)
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = ctx
+        host.canvasView.sceneLayer.render(in: cg)
+        NSGraphicsContext.restoreGraphicsState()
+        return rep
     }
 }
