@@ -35,7 +35,7 @@ let package = Package(
         .target(
             name: "NexusCanvas",
             dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusKeys"],
-            swiftSettings: strict + [.defaultIsolation(MainActor.self)]
+            swiftSettings: strict
         ),
         .executableTarget(
             name: "nexus",

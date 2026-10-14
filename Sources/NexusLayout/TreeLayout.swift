@@ -30,6 +30,13 @@ public struct NodeFrame: Sendable, Equatable {
     public var side: Side
     public var depth: Int
 
+    public init(center: CGPoint, size: CGSize, side: Side, depth: Int) {
+        self.center = center
+        self.size = size
+        self.side = side
+        self.depth = depth
+    }
+
     public var rect: CGRect {
         CGRect(x: center.x - size.width / 2, y: center.y - size.height / 2, width: size.width, height: size.height)
     }

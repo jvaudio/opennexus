@@ -23,3 +23,17 @@ Choices made where the design was silent or ambiguous, each with a one-line rati
 | D14 | **Sandboxed with no network entitlement.** | "Local and owned": the OS enforces that the app cannot open connections. |
 | D15 | The Xcode project is hand-maintained and uses **synchronized folders** (`App/OpenNexus/` is picked up automatically). All logic lives in the Swift package; the app target is thin. | Keeps the project file tiny and merge-friendly; no generator dependency for contributors. |
 | D16 | Licence file deferred: README §4 leaves Apache-2.0 vs MIT to the product owner. | Not ours to choose. |
+
+## M1 · Canvas and keyboard core
+
+| # | Decision | Rationale |
+| --- | --- | --- |
+| D17 | **Branch lines are recomputed every frame from animated node frames** (display-link spring stepping) instead of separate Core Animation path animations. | Lines stay glued to nodes through overshoot, and new input retargets springs in flight (motion rule 2). |
+| D18 | **Node text is measured and drawn with AppKit string drawing (TextKit)**, the same engine as the `NSTextView` editor. | One engine for measure, draw and edit removes P0's mid-word wrap artefact (README §14). |
+| D19 | **The editor opens at the node's final frame**; the node's shape grows in behind it. | Caret live at 0 ms while the creation animation still plays (brief §8). |
+| D20 | **Creating a topic and naming it are two undo steps** (as in Xmind and P0). | Native `NSUndoManager` grouping per event; merging would need to rewrite a registered action. |
+| D21 | Edit-mode typing has its own per-session undo manager. | ⌘Z while editing undoes typing only and never touches model undo with stale text-view state. |
+| D22 | Keys map from key codes for special keys and from the current layout's unshifted character for printable keys (US ANSI fallback). | Shortcuts follow the user's layout for letters while arrows, Tab, Return stay positional. |
+| D23 | ⌥⌘1…9 on the root changes the canvas structure; on any other topic it sets that branch's structure. | Matches "change branch structure" while giving the root a keyboard path to the canvas layout. |
+| D24 | Empty-canvas drag pans in M1; rubber-band selection arrives with drag-and-drop (M3). | Keeps the mouse useful before direct manipulation is built. |
+| D25 | Document chrome follows the system appearance; the canvas follows the theme. | Native macOS behaviour; themes colour content, not chrome. |
