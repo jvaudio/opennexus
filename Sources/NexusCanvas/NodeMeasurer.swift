@@ -18,6 +18,9 @@ public struct NodeTextStyle: Hashable, Sendable {
     public var underline: Bool
     public var strikethrough: Bool
     public var code: Bool
+    /// plain (nil), math or code: how the topic's text is typeset (`/math`, `/code`).
+    public var format: String?
+    public var language: String?
 
     public init(typography t: NodeTypography, monospaced: Bool) {
         fontSize = t.fontSize
@@ -119,6 +122,12 @@ public struct NodeTextStyle: Hashable, Sendable {
     public func attributed(_ text: String, marks: [TextMark], color: NSColor, linkColor: NSColor? = nil)
         -> NSAttributedString
     {
+        if format == "math" {
+            return MathText.render(text, size: CGFloat(fontSize) * 1.15, color: color, paragraph: paragraphStyle)
+        }
+        if format == "code" {
+            return CodeText.render(text, size: CGFloat(fontSize) * 0.92, color: color, paragraph: paragraphStyle)
+        }
         let s = NSMutableAttributedString(string: text, attributes: attributes(color: color))
         let length = (text as NSString).length
         for m in marks {

@@ -116,6 +116,7 @@ extension CanvasController {
     /// Keys while an element is selected: Delete removes it, Space / Return edits its
     /// label or title, ⌘/ collapses a zone, Esc returns to the topic.
     func handleElementKey(_ chord: KeyChord) -> KeyResult? {
+        if case .relationship(let id)? = selectedElement, let r = sequenceMessageKey(chord, id) { return r }
         guard let ref = selectedElement, chord.modifiers.subtracting(.shift).isEmpty || chord.key == .character("/")
         else { return nil }
         switch chord.key {
@@ -145,7 +146,11 @@ extension CanvasController {
         let c = canvas
         let text: String
         switch ref {
-        case .relationship(let id): text = c.relationships.first { $0.id == id }?.label ?? ""
+        case .relationship(let id):
+            text =
+                id.hasPrefix("t:")
+                ? c.nodes[NodeID(String(id.dropFirst(2)))]?.edgeLabel ?? ""
+                : c.relationships.first { $0.id == id }?.label ?? ""
         case .boundary(let id): text = c.boundaries.first { $0.id == id }?.title ?? ""
         case .zone(let id): text = c.zones.first { $0.id == id }?.title ?? ""
         case .summary(let id):
@@ -166,6 +171,10 @@ extension CanvasController {
     func commitElementText(_ ref: ElementRef, _ text: String) {
         onEditChange?(nil)
         switch ref {
+        case .relationship(let id) where id.hasPrefix("t:"):
+            // A tree edge drawn as a flow: its label lives on the child.
+            let child = NodeID(String(id.dropFirst(2)))
+            perform("Label") { $0.update(child) { $0.edgeLabel = text.isEmpty ? nil : text } }
         case .relationship(let id): perform("Label") { $0.updateRelationship(id) { $0.label = text } }
         case .boundary(let id): perform("Boundary Title") { $0.updateBoundary(id) { $0.title = text } }
         case .zone(let id): perform("Zone Title") { $0.updateZone(id) { $0.title = text.isEmpty ? "Zone" : text } }

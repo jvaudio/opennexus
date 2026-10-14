@@ -43,6 +43,9 @@ final class NodeTextView: NSTextView {
 
     func begin(_ session: EditSession, style: NodeTextStyle, color: NSColor) {
         node = session.node
+        // The editor always shows source: LaTeX and code are typeset only when committed.
+        var style = style
+        style.format = nil
         self.style = style
         sessionUndo.removeAllActions()
         let attrs = style.attributes(color: color)
@@ -68,6 +71,7 @@ final class NodeTextView: NSTextView {
             super.keyDown(with: event)
             return
         }
+        if controller.handleEditorSlashKey(chord) || controller.handleSuggestionKey(chord) { return }
         if let id = controller.command(for: chord) {
             if id == .lineBreak {
                 insertNewlineIgnoringFieldEditor(nil)

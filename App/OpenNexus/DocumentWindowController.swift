@@ -4,6 +4,7 @@ import NexusCore
 import NexusKeys
 import NexusTheme
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// The document window (P0 / S3): unified toolbar, canvas tabs, and the canvas.
 final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSToolbarDelegate, RegistryCommandTarget,
@@ -33,6 +34,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         window.setFrameAutosaveName("OpenNexusDocument")
         super.init(window: window)
         window.delegate = self
+        wireDiagramHooks()
 
         let tabs = NSHostingView(rootView: CanvasTabsView(store: document.store, controller: controller))
         tabs.translatesAutoresizingMaskIntoConstraints = false
@@ -105,6 +107,24 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     }
 
     // MARK: Commands handled at window level
+
+    /// DFD drill-down inserts its level canvas undoably; CSV exports go through a save panel.
+    private func wireDiagramHooks() {
+        controller.onAddCanvas = { [weak self] canvas in
+            guard let self else { return }
+            self.insertCanvas(canvas, at: self.document_.store.model.canvasOrder.count)
+        }
+        controller.onSaveText = { [weak self] name, text in
+            guard let window = self?.window else { return }
+            let panel = NSSavePanel()
+            panel.nameFieldStringValue = name
+            panel.allowedContentTypes = [.commaSeparatedText]
+            panel.beginSheetModal(for: window) { response in
+                guard response == .OK, let url = panel.url else { return }
+                try? text.data(using: .utf8)?.write(to: url, options: .atomic)
+            }
+        }
+    }
 
     @objc func performRegistryCommand(_ sender: Any?) {
         guard let raw = (sender as? NSMenuItem)?.representedObject as? String else { return }
@@ -246,30 +266,16 @@ struct DiagramTypeButton: View {
     var controller: CanvasController
 
     var body: some View {
-        let structure = controller.canvas.layout.structure
-        Menu {
-            ForEach(Array(CanvasController.structureCycle.prefix(2).enumerated()), id: \.offset) { i, s in
-                Button(name(s)) {
-                    controller.select(controller.canvas.root)
-                    controller.setStructure(s)
-                }
-                .keyboardShortcut(KeyEquivalent(Character("\(i + 1)")), modifiers: [.option, .command])
-            }
+        Button {
+            controller.openConvert()
         } label: {
             HStack(spacing: 8) {
-                Text(name(structure))
+                Text(controller.canvas.type.displayName)
                 Text("⌥⌘T").font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
             }
         }
         .fixedSize()
-    }
-
-    func name(_ s: LayoutStructure) -> String {
-        switch s.family {
-        case "logic": "Logic Chart"
-        case "org": "Org Chart"
-        default: controller.canvas.type.displayName
-        }
+        .help("Convert diagram type (⌥⌘T)")
     }
 }
 

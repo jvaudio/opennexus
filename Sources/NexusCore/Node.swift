@@ -100,6 +100,19 @@ public struct Node: Hashable, Sendable {
     public var ai: Bool = false
     /// Per-branch structure override (Option-Command-1…9).
     public var structure: LayoutStructure?
+    /// Technical node type (process, decision, entity, store, db, …). Nil means the
+    /// diagram infers one (`DiagramCatalog.effectiveType`).
+    public var nodeType: NodeType?
+    /// Label on the tree edge into this node: "Yes" / "No", a data flow, a protocol.
+    public var edgeLabel: String?
+    /// Swimlane id (`DiagramData.lanes`).
+    public var lane: String?
+    /// plain (default), math (LaTeX subset) or code.
+    public var textFormat: String?
+    /// Code block language, for highlighting.
+    public var language: String?
+    /// A DFD process drilled into (⌘.): the canvas holding its next level.
+    public var subCanvas: CanvasID?
     /// Position for floating topics and free layout.
     public var position: CanvasPoint?
     /// Keys this version does not understand, written back unchanged.
@@ -155,6 +168,12 @@ extension Node: JSONRepresentable {
         if let a = r.raw("audio"), a != .null { audio = try AudioNote(json: a, path: "\(path).audio") }
         ai = try r.bool("ai", default: false)
         structure = try r.optionalString("structure").map(LayoutStructure.init(rawValue:))
+        nodeType = try r.optionalString("nodeType").map(NodeType.init(rawValue:))
+        edgeLabel = try r.optionalString("edgeLabel")
+        lane = try r.optionalString("lane")
+        textFormat = try r.optionalString("textFormat")
+        language = try r.optionalString("language")
+        subCanvas = try r.optionalString("subCanvas").map(CanvasID.init(rawValue:))
         if let p = r.raw("position"), p != .null { position = try CanvasPoint(json: p, path: "\(path).position") }
         extra = r.leftovers
     }
@@ -180,6 +199,12 @@ extension Node: JSONRepresentable {
         if let audio { w.set("audio", audio.json) }
         w.set("ai", ai, omitting: false)
         w.set("structure", structure?.rawValue)
+        w.set("nodeType", nodeType?.rawValue)
+        w.set("edgeLabel", edgeLabel)
+        w.set("lane", lane)
+        w.set("textFormat", textFormat)
+        w.set("language", language)
+        w.set("subCanvas", subCanvas?.rawValue)
         if let position { w.set("position", position.json) }
         return w.value
     }

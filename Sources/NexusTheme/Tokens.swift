@@ -58,6 +58,8 @@ public enum Motion {
 
     public static let snap = Spring(response: 0.28, dampingFraction: 0.80)
     public static let settle = Spring(response: 0.36, dampingFraction: 0.68)
+    /// Structure changes and Convert: nodes glide over about 600 ms.
+    public static let morph = Spring(response: 0.52, dampingFraction: 0.92)
     public static let glide = Curve(c1x: 0.65, c1y: 0, c2x: 0.35, c2y: 1)
     public static let exit = Curve(c1x: 0.4, c1y: 0, c2x: 1, c2y: 1)
 

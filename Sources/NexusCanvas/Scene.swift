@@ -69,6 +69,49 @@ public struct SceneNode: Equatable {
     public var indicatorRects: [CGRect]
     public var labelRects: [CGRect]
     public var pinnedRect: CGRect
+    /// Technical-diagram decorations (captions, kickers, icons, risk badges).
+    public var tech = TechDecor()
+}
+
+/// What a node type adds to a topic on technical canvases (artboards 19–23).
+public struct TechDecor: Equatable {
+    /// Small caps above the node, outside it (PROCESS, EXTERNAL ENTITY, START).
+    public var caption: String?
+    /// A line above the title inside the node (1.0, SERVICE).
+    public var kicker: String?
+    public var kickerRect: CGRect = .zero
+    /// An icon from the technical set, before the title.
+    public var icon: String?
+    public var iconRect: CGRect = .zero
+    /// Mono text before the title (D1).
+    public var leadText: String?
+    public var leadTextRect: CGRect = .zero
+    /// A trailing pill (threat risk H / M / L, ASSET).
+    public var badge: String?
+    public var badgeColor: RGBA?
+    public var badgeRect: CGRect = .zero
+    /// A bar down the leading edge (data stores).
+    public var accent: RGBA?
+    /// The kicker / icon / caption colour.
+    public var tint: RGBA?
+    /// A rule check flags this node.
+    public var flagged = false
+
+    public init() {}
+}
+
+/// Paths a structure draws behind or between topics, recomputed from live frames.
+public enum SceneDecor: Equatable {
+    /// Brace map: one curly brace per parent spanning its children.
+    case brace(parent: NodeID, children: [NodeID], color: RGBA, width: CGFloat)
+    /// Matrix and tree-table cells, relative to their node's centre.
+    case cell(node: NodeID, rect: CGRect, kind: LayoutCell.Kind, color: RGBA)
+    /// A swimlane band (absolute) with its title.
+    case band(rect: CGRect, title: String, color: RGBA)
+    /// A sequence participant's dashed lifeline, down to `bottom`.
+    case lifeline(node: NodeID, bottom: CGFloat, color: RGBA)
+    /// An activation bar on a lifeline.
+    case activation(node: NodeID, y0: CGFloat, y1: CGFloat, color: RGBA)
 }
 
 public struct SceneEdge: Equatable {
@@ -86,6 +129,13 @@ public struct SceneEdge: Equatable {
 public struct SceneRelationship: Equatable {
     public var relationship: Relationship
     public var color: RGBA
+    /// A tree edge drawn as a flow (technical canvases); its id is `t:<child>` and its
+    /// label is the child's `edgeLabel`.
+    public var isVirtual = false
+    /// A DFD rule check flags this flow (red, dashed, "!" badge).
+    public var flagged = false
+    /// Fixed geometry (sequence messages): start and end in canvas coordinates.
+    public var points: [CGPoint]?
 }
 
 public struct SceneBoundary: Equatable {
@@ -128,6 +178,9 @@ public struct Scene {
     public var summaries: [SceneSummary] = []
     public var zones: [SceneZone] = []
     public var callouts: [SceneCallout] = []
+    public var decor: [SceneDecor] = []
+    /// DFD rule checks for this canvas.
+    public var violations: [DFDRules.Violation] = []
     public var theme: Theme = .classic
     /// Canvas colour after the Map tab's background override.
     public var canvasColor: RGBA = Theme.classic.canvas
@@ -137,6 +190,9 @@ public struct Scene {
         var b = nodes.values.reduce(CGRect.null) { $0.union($1.frame.rect) }
         for z in zones { b = b.union(z.rect) }
         for bd in boundaries { b = b.union(bd.rect) }
+        for d in decor {
+            if case .band(let r, _, _) = d { b = b.union(r) }
+        }
         return b
     }
 }
@@ -146,6 +202,8 @@ public struct Scene {
 public struct SceneBuilder {
     public var measurer: NodeMeasurer
     public var spacing: LayoutSpacing = .standard
+    /// Resolves a DFD process's drilled-down canvas (for the levels-balanced rule).
+    public var levels: (CanvasID) -> Canvas? = { _ in nil }
 
     public init(measurer: NodeMeasurer) { self.measurer = measurer }
 
@@ -154,6 +212,9 @@ public struct SceneBuilder {
     nonisolated static let todoWidth: CGFloat = 21
     nonisolated static let markerWidth: CGFloat = 22
     nonisolated static let stickerWidth: CGFloat = 30
+    nonisolated static var kickerFont: NSFont { .monospacedSystemFont(ofSize: 10.5, weight: .semibold) }
+    nonisolated static var badgeFont: NSFont { .monospacedSystemFont(ofSize: 10.5, weight: .bold) }
+    nonisolated static let kickerHeight: CGFloat = 15
     nonisolated static let boundaryPad: CGFloat = 14
     nonisolated static let boundaryTitle: CGFloat = 16
     nonisolated static let indicatorWidth: CGFloat = 18
@@ -194,6 +255,7 @@ public struct SceneBuilder {
         var indicatorRects: [CGRect]
         var labelRects: [CGRect]
         var pinnedRect: CGRect
+        var tech = TechDecor()
     }
 
     /// Default looks for the summary and callout topics (artboard 07: "Summary dashed,
@@ -206,6 +268,21 @@ public struct SceneBuilder {
         t.fill = "solid"
         t.fillColor = "mainBg"
         t.fontWeight = "semibold"
+        return t
+    }()
+
+    /// `/code` blocks: a dark rounded panel, left-aligned monospace (artboard 12).
+    static let codeLayer: TopicStyle = {
+        var t = TopicStyle()
+        t.fill = "solid"
+        t.fillColor = "#17171C"
+        t.textColor = "#E8E8EE"
+        t.border = "none"
+        t.shape = "rounded"
+        t.cornerRadius = 8
+        t.align = "leading"
+        t.shadow = "none"
+        t.autoContrast = false
         return t
     }()
 
@@ -242,6 +319,29 @@ public struct SceneBuilder {
         let summaryTopics = Set(canvas.summaries.map(\.topic))
         let calloutTopics = Set(canvas.callouts.map(\.topic))
         let collapsedMembers = Set(canvas.zones.filter(\.collapsed).flatMap(\.members))
+        // Technical canvases: node types, numbering, threats.
+        let diagramType = canvas.type
+        let technical = DiagramCatalog.isTechnical(diagramType)
+        let titleRoot = DiagramCatalog.rootIsTitle(diagramType)
+        var nodeTypes: [NodeID: NodeType] = [:]
+        if technical {
+            for id in canvas.nodes.keys {
+                if let t = DiagramCatalog.effectiveType(id, in: canvas, parents: parents) { nodeTypes[id] = t }
+            }
+        }
+        let isDFD = diagramType == .dfd || diagramType == .threatModel
+        let dfdNumbers = isDFD ? DFDRules.numbers(canvas) : [:]
+        let threatList = diagramType == .threatModel ? Stride.threats(canvas) : []
+        let threats = Dictionary(threatList.map { ($0.node, $0) }, uniquingKeysWith: { a, _ in a })
+        // Colour by risk: each element's highest open risk.
+        var riskOf: [NodeID: String] = [:]
+        if canvas.diagram.colorByRisk {
+            let rank = ["High": 3, "Med": 2, "Low": 1]
+            for t in threatList where t.status != "Mitigated" {
+                guard let e = t.element else { continue }
+                if (rank[t.risk] ?? 0) > (rank[riskOf[e] ?? ""] ?? 0) { riskOf[e] = t.risk }
+            }
+        }
 
         var layoutNodes: [NodeID: LayoutNode] = [:]
         // Boundary targets → whether that boundary has a title band.
@@ -264,9 +364,9 @@ public struct SceneBuilder {
             var stack: [(NodeID, Int, Int)] = [(top, 0, 0)]  // id, depth, sibling index
             while let (id, depth, sibling) = stack.popLast() {
                 guard var node = canvas.nodes[id] else { continue }
-                let role: NodeRoleStyle =
+                var role: NodeRoleStyle =
                     switch topKind {
-                    case "root": depth == 0 ? .root : (depth == 1 || family == "org") ? .main : .sub
+                    case "root": depth == 0 ? .root : depth == 1 ? .main : .sub
                     case "summary": depth == 0 ? .main : .sub
                     case "callout": .sub
                     default: depth == 0 ? .floating : .sub
@@ -275,6 +375,29 @@ public struct SceneBuilder {
                     node.style = (node.style ?? TopicStyle()).merged(over: Self.summaryLayer)
                 }
                 if topKind == "callout" { node.style = (node.style ?? TopicStyle()).merged(over: Self.calloutLayer) }
+                if node.textFormat == "code" {
+                    node.style = (node.style ?? TopicStyle()).merged(over: Self.codeLayer)
+                }
+                var tech = TechDecor()
+                if technical {
+                    // Sequence diagrams show participants; deeper topics stay in the outline.
+                    if diagramType == .sequence && depth >= 2 && topKind == "root" { continue }
+                    if role != .root { role = .main }
+                    if titleRoot && id == canvas.root {
+                        node.style = (node.style ?? TopicStyle()).merged(over: Self.titleLayer)
+                    } else if let t = nodeTypes[id], let info = DiagramCatalog.info(t, in: diagramType) {
+                        node.style = (node.style ?? TopicStyle()).merged(
+                            over: Self.typeLayer(info, diagram: diagramType))
+                        tech = Self.techDecor(
+                            id, info: info, canvas: canvas, numbers: dfdNumbers, threats: threats, env: env)
+                        if let risk = riskOf[id] {
+                            var r = TopicStyle()
+                            r.borderColor = risk == "High" ? "critical" : risk == "Med" ? "amber" : "ink2"
+                            r.borderWidth = 3
+                            node.style = r.merged(over: node.style ?? TopicStyle())
+                        }
+                    }
+                }
                 let branch: RGBA =
                     if role == .root {
                         env.theme.ring
@@ -287,7 +410,13 @@ public struct SceneBuilder {
                 if env.canvasStyle.font.map({ !$0.isEmpty && $0 != "system" }) == true, merged.font == env.theme.font {
                     appearance.font = env.canvasStyle.font!
                 }
-                let style = NodeTextStyle(appearance: appearance)
+                var style = NodeTextStyle(appearance: appearance)
+                // Equations and code typeset their source, except while it's being edited.
+                if editing?.node != id {
+                    style.format = node.textFormat
+                    style.language = node.language
+                }
+                if node.textFormat == "code" { style.maxWidth = max(style.maxWidth, 560) }
                 var text = node.text
                 var marks = node.marks
                 var placeholder = false
@@ -322,6 +451,13 @@ public struct SceneBuilder {
                 if node.priority != nil { lead += Self.priorityWidth }
                 if node.todo != nil { lead += Self.todoWidth }
                 lead += CGFloat(others.count) * Self.markerWidth
+                let markerLead = lead
+                let iconW: CGFloat = tech.icon != nil ? 24 : 0
+                let leadTextW: CGFloat =
+                    tech.leadText.map {
+                        ceil(($0 as NSString).size(withAttributes: [.font: Self.kickerFont]).width) + 10
+                    } ?? 0
+                lead += iconW + leadTextW
                 var indicators: [Indicator] = []
                 if node.note != nil { indicators.append(.note) }
                 if let link = node.link {
@@ -331,7 +467,11 @@ public struct SceneBuilder {
                 if !node.attachments.isEmpty { indicators.append(.attachment) }
                 if node.audio != nil { indicators.append(.audio) }
                 if node.ai { indicators.append(.ai) }
-                let trail = CGFloat(indicators.count) * Self.indicatorWidth
+                let badgeW: CGFloat =
+                    tech.badge.map {
+                        ceil(($0 as NSString).size(withAttributes: [.font: Self.badgeFont]).width) + 14
+                    } ?? 0
+                let trail = CGFloat(indicators.count) * Self.indicatorWidth + (badgeW > 0 ? badgeW + 8 : 0)
                 let stickerW: CGFloat = node.sticker != nil ? Self.stickerWidth : 0
                 let rowWidth = lead + stickerW + textSize.width + trail
                 let rowHeight = max(textSize.height, node.sticker != nil ? 26 : 0)
@@ -366,8 +506,12 @@ public struct SceneBuilder {
                 let px = CGFloat(appearance.paddingX)
                 let py = CGFloat(appearance.paddingY)
                 let padBottom = appearance.isUnderline ? CGFloat(appearance.borderWidth) + 4 : py
-                var innerW = max(rowWidth, labelsRow, pinnedW)
+                let kickerW: CGFloat =
+                    tech.kicker.map { ceil(($0 as NSString).size(withAttributes: [.font: Self.kickerFont]).width) }
+                    ?? 0
+                var innerW = max(rowWidth, labelsRow, pinnedW, kickerW)
                 var innerH = rowHeight
+                if tech.kicker != nil { innerH += Self.kickerHeight }
                 if !node.labels.isEmpty { innerH += 6 + Self.labelHeight }
                 if !pinned.isEmpty { innerH += 4 + 14 }
                 if node.image != nil {
@@ -391,6 +535,12 @@ public struct SceneBuilder {
                 if appearance.isUnderline { cursorY = h - padBottom - innerH }
                 var imageRect = CGRect.zero
                 var rowX = contentX
+                if tech.kicker != nil {
+                    let align = appearance.align
+                    let kx = align == "left" ? contentX + lead : (w - kickerW) / 2
+                    tech.kickerRect = CGRect(x: kx, y: cursorY, width: kickerW, height: Self.kickerHeight - 2)
+                    cursorY += Self.kickerHeight
+                }
                 if node.image != nil {
                     switch imagePos {
                     case "left":
@@ -409,7 +559,16 @@ public struct SceneBuilder {
                 }
                 let rowW = imageSide ? innerW - imageSize.width - 10 : innerW
                 let rowStart = rowX + (rowW - rowWidth) / 2
-                let leadRect = CGRect(x: rowStart, y: cursorY + (rowHeight - 18) / 2, width: lead, height: 18)
+                let leadRect = CGRect(x: rowStart, y: cursorY + (rowHeight - 18) / 2, width: markerLead, height: 18)
+                if iconW > 0 {
+                    tech.iconRect = CGRect(
+                        x: rowStart + markerLead, y: cursorY + (rowHeight - 18) / 2, width: 18, height: 18)
+                }
+                if leadTextW > 0 {
+                    tech.leadTextRect = CGRect(
+                        x: rowStart + markerLead + iconW, y: cursorY + (rowHeight - 14) / 2, width: leadTextW - 6,
+                        height: 14)
+                }
                 let stickerRect = CGRect(
                     x: rowStart + lead, y: cursorY + (rowHeight - 26) / 2, width: stickerW, height: 26)
                 let textRect = CGRect(
@@ -419,6 +578,10 @@ public struct SceneBuilder {
                     CGRect(
                         x: textRect.maxX + 2 + CGFloat(i) * Self.indicatorWidth, y: textRect.midY - 9,
                         width: Self.indicatorWidth, height: 18)
+                }
+                if badgeW > 0 {
+                    let x = (indicatorRects.last?.maxX ?? textRect.maxX) + 8
+                    tech.badgeRect = CGRect(x: x, y: cursorY + (rowHeight - 18) / 2, width: badgeW, height: 18)
                 }
                 cursorY += rowHeight
                 var labelRects: [CGRect] = []
@@ -457,7 +620,9 @@ public struct SceneBuilder {
                     inherits: node.style?.line?.inherit ?? true, labels: node.labels, indicators: indicators,
                     sticker: node.sticker?.asset, progress: progress, others: others, pinned: pinned,
                     image: node.image, textRect: textRect, leadRect: leadRect, stickerRect: stickerRect,
-                    imageRect: imageRect, indicatorRects: indicatorRects, labelRects: labelRects, pinnedRect: pinnedRect
+                    imageRect: imageRect, indicatorRects: indicatorRects, labelRects: labelRects,
+                    pinnedRect: pinnedRect,
+                    tech: tech
                 )
                 // Numbering on a topic numbers its children.
                 if let num = merged.numbering, let fmt = num.format, fmt != "none" {
@@ -485,15 +650,45 @@ public struct SceneBuilder {
             !env.canvasStyle.autoBalance && structure == .mindmapBalanced ? .mindmapRight : structure
         var frames: [NodeID: NodeFrame] = [:]
         var families: [NodeID: String] = [:]
+        var cells: [NodeID: LayoutCell] = [:]
         func merge(_ r: LayoutResult) {
             frames.merge(r.frames) { a, _ in a }
             families.merge(r.families) { a, _ in a }
+            cells.merge(r.cells) { a, _ in a }
         }
-        merge(TreeLayout.layout(root: canvas.root, nodes: layoutNodes, structure: rootStructure, spacing: space))
-        for f in canvas.floating where !collapsedMembers.contains(f) {
-            let origin = canvas.nodes[f]?.position.map { CGPoint(x: $0.x, y: $0.y) } ?? .zero
-            merge(
-                TreeLayout.layout(root: f, nodes: layoutNodes, structure: .logicRight, origin: origin, spacing: space))
+        var techResult: TechLayout?
+        if technical {
+            var order: [NodeID] = []
+            for top in tops where top == canvas.root || canvas.floating.contains(top) {
+                for id in canvas.subtree(top, includeFolded: false) where layoutNodes[id] != nil { order.append(id) }
+            }
+            let sizes = layoutNodes.mapValues(\.size)
+            let t = techLayout(canvas, sizes: sizes, order: order, parents: parents, env: env)
+            frames = t.frames
+            scene.decor += t.decor
+            techResult = t
+        } else {
+            merge(TreeLayout.layout(root: canvas.root, nodes: layoutNodes, structure: rootStructure, spacing: space))
+            for f in canvas.floating where !collapsedMembers.contains(f) {
+                let origin = canvas.nodes[f]?.position.map { CGPoint(x: $0.x, y: $0.y) } ?? .zero
+                merge(
+                    TreeLayout.layout(
+                        root: f, nodes: layoutNodes, structure: .logicRight, origin: origin, spacing: space))
+            }
+        }
+        // A structure may widen a topic (matrix and tree-table header bars): re-centre its content.
+        for (id, f) in frames {
+            guard let measured = layoutNodes[id]?.size, f.size.width > measured.width + 0.5, var p = pending[id]
+            else { continue }
+            let dx = (f.size.width - measured.width) / 2
+            p.textRect = p.textRect.offsetBy(dx: dx, dy: 0)
+            p.leadRect = p.leadRect.offsetBy(dx: dx, dy: 0)
+            p.stickerRect = p.stickerRect.offsetBy(dx: dx, dy: 0)
+            p.imageRect = p.imageRect.offsetBy(dx: dx, dy: 0)
+            p.indicatorRects = p.indicatorRects.map { $0.offsetBy(dx: dx, dy: 0) }
+            p.labelRects = p.labelRects.map { $0.offsetBy(dx: dx, dy: 0) }
+            p.pinnedRect = p.pinnedRect.offsetBy(dx: dx, dy: 0)
+            pending[id] = p
         }
 
         // Summaries: bracket beside the range, topic beyond the bracket.
@@ -579,9 +774,17 @@ public struct SceneBuilder {
                     hiddenCount: node.folded ? canvas.subtree(id).count - 1 : 0, ai: node.ai, labels: p.labels,
                     indicators: p.indicators, sticker: p.sticker, image: p.image, pinned: p.pinned,
                     textRect: p.textRect, leadRect: p.leadRect, stickerRect: p.stickerRect, imageRect: p.imageRect,
-                    indicatorRects: p.indicatorRects, labelRects: p.labelRects, pinnedRect: p.pinnedRect)
+                    indicatorRects: p.indicatorRects, labelRects: p.labelRects, pinnedRect: p.pinnedRect,
+                    tech: p.tech)
                 scene.order.append(id)
-                if let parent = allParents[id], frames[parent] != nil, let pp = pending[parent] {
+                if technical {
+                    if let parent = allParents[id], frames[parent] != nil, !(titleRoot && parent == canvas.root),
+                        diagramType != .sequence
+                    {
+                        scene.relationships.append(
+                            virtualFlow(parent: parent, child: id, canvas: canvas, types: nodeTypes, env: env))
+                    }
+                } else if let parent = allParents[id], frames[parent] != nil, let pp = pending[parent] {
                     let chain = inheritedLines[parent] ?? []
                     let fam = families[parent] ?? family
                     let line = StyleResolver.line(
@@ -599,6 +802,7 @@ public struct SceneBuilder {
             }
         }
 
+        var messageIndex = 0
         // Relationships between visible topics.
         for r in canvas.relationships where scene.nodes[r.from] != nil && scene.nodes[r.to] != nil {
             let color: RGBA =
@@ -607,7 +811,52 @@ public struct SceneBuilder {
                 case "theme": env.theme.relationship
                 default: RGBA(hexString: r.color) ?? env.theme.relationship
                 }
-            scene.relationships.append(SceneRelationship(relationship: r, color: color))
+            var sr = SceneRelationship(relationship: r, color: color)
+            sr.points = techResult?.messagePoints[r.id]
+            if technical {
+                // Technical canvases draw relationships as flows: neutral arrows, quiet labels.
+                if r.color == "theme" { sr.color = env.theme.arrow }
+                if r.labelStyle == "pill" {
+                    sr.relationship.labelStyle = diagramType == .architecture ? "boxed" : "plain"
+                }
+                if diagramType == .flowchart && (r.line == "elbow" || r.line == "curved") {
+                    sr.relationship.line = "flow-vh"
+                }
+            }
+            if diagramType == .sequence, sr.points != nil {
+                // Messages: solid calls numbered in time order, dashed returns with open arrows.
+                let isReturn = r.kind == "return"
+                messageIndex += 1
+                sr.relationship.label = isReturn || r.label.isEmpty ? r.label : "\(messageIndex) · \(r.label)"
+                sr.relationship.dash = isReturn ? "dashed" : "solid"
+                sr.relationship.ends = ["none", isReturn ? "arrow" : "filled-arrow"]
+                sr.relationship.labelStyle = "plain"
+                sr.relationship.width = 1.5
+                sr.color = r.color == "theme" ? env.theme.ink : color
+            }
+            scene.relationships.append(sr)
+        }
+        if !technical {
+            scene.decor += Self.structureDecor(
+                families: families, cells: cells, canvas: canvas, frames: frames,
+                branch: { pending[$0]?.branch ?? env.theme.ink2 }, env: env)
+        }
+        // DFD rule checks flag their flows and nodes.
+        if isDFD {
+            let v = DFDRules.check(canvas, level: levels)
+            scene.violations = v
+            var flaggedFlows = Set<String>()
+            for x in v where x.severity == .error {
+                switch x.subject {
+                case .flow(let f): flaggedFlows.insert(f)
+                case .node(let n): scene.nodes[n]?.tech.flagged = true
+                }
+            }
+            for i in scene.relationships.indices where flaggedFlows.contains(scene.relationships[i].relationship.id) {
+                scene.relationships[i].flagged = true
+                scene.relationships[i].color = env.theme.critical
+                scene.relationships[i].relationship.dash = "dashed"
+            }
         }
 
         // Boundaries around their branches; outer boundaries pad around inner ones.

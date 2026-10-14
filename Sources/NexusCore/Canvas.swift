@@ -143,6 +143,8 @@ public struct Canvas: Hashable, Sendable {
     public var callouts: [Callout] = []
     /// Zones in z-order (back to front).
     public var zones: [Zone] = []
+    /// Technical-diagram state: lanes, DFD levels, ignored rule checks.
+    public var diagram = DiagramData()
     public var extra: [String: JSONValue] = [:]
 
     /// Next sequence number for new node ids. Not stored; derived on load.
@@ -192,7 +194,7 @@ public struct Canvas: Hashable, Sendable {
         a.id == b.id && a.title == b.title && a.type == b.type && a.layout == b.layout && a.style == b.style
             && a.root == b.root && a.nodes == b.nodes && a.floating == b.floating
             && a.relationships == b.relationships && a.boundaries == b.boundaries && a.summaries == b.summaries
-            && a.callouts == b.callouts && a.zones == b.zones && a.extra == b.extra
+            && a.callouts == b.callouts && a.zones == b.zones && a.diagram == b.diagram && a.extra == b.extra
     }
 
     public func hash(into h: inout Hasher) {
@@ -228,6 +230,7 @@ extension Canvas: JSONRepresentable {
         }
         callouts = try r.array("callouts").enumerated().map { try Callout(json: $1, path: "\(path).callouts[\($0)]") }
         zones = try r.array("zones").enumerated().map { try Zone(json: $1, path: "\(path).zones[\($0)]") }
+        diagram = try r.raw("diagram").map { try DiagramData(json: $0, path: "\(path).diagram") } ?? DiagramData()
         extra = r.leftovers
         nextSequence = Canvas.seed(for: nodes.keys)
         guard nodes[root] != nil else { throw ModelDecodingError(path: "\(path).root", "root node \(root) is missing") }
@@ -248,6 +251,7 @@ extension Canvas: JSONRepresentable {
         if !summaries.isEmpty { w.set("summaries", .array(summaries.map(\.json))) }
         if !callouts.isEmpty { w.set("callouts", .array(callouts.map(\.json))) }
         if !zones.isEmpty { w.set("zones", .array(zones.map(\.json))) }
+        if !diagram.isEmpty { w.set("diagram", diagram.json) }
         return w.value
     }
 }
@@ -258,13 +262,15 @@ extension DiagramType {
         case .logic: .logicRight
         case .brace: .braceRight
         case .org: .orgDown
-        case .tree: .treeDown
+        case .tree: .treeIndented
         case .treeTable: .treeTable
         case .timeline: .timelineHorizontal
         case .fishbone: .fishboneLeft
         case .matrix: .matrix
-        case .flowchart, .swimlane, .sequence: .orgDown
-        case .dfd, .threatModel, .architecture: .logicRight
+        case .flowchart: .flowDown
+        case .swimlane: .swimlanes
+        case .sequence: .sequence
+        case .dfd, .threatModel, .architecture: .graphRight
         default: .mindmapBalanced
         }
     }

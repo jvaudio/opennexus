@@ -45,9 +45,14 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
 
     let editor = NodeTextView()
     let elements = ElementRenderer()
+    let decorRenderer = DecorRenderer()
     private let rubberBand = CAShapeLayer()
     private let dropIndicator = CAShapeLayer()
     private var connectField: NSView?
+    private var slashHost: NSHostingView<SlashMenuView>?
+    private var suggestHost: NSHostingView<ProtocolSuggestionsView>?
+    private var morphUntil: CFTimeInterval = 0
+    private var lastMorphSerial = 0
     private var imageCache: [String: CGImage] = [:]
     private var popovers: CanvasPopovers?
 
@@ -109,8 +114,10 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         world.actions = NodeLayer.noActions
         edgesLayer.actions = NodeLayer.noActions
         nodesLayer.actions = NodeLayer.noActions
+        world.addSublayer(decorRenderer.bandsLayer)
         world.addSublayer(elements.zonesLayer)
         world.addSublayer(elements.boundariesLayer)
+        world.addSublayer(decorRenderer.layer)
         world.addSublayer(edgesLayer)
         world.addSublayer(elements.summariesLayer)
         world.addSublayer(elements.relationshipsLayer)
@@ -142,6 +149,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         controller.onSceneChange = { [weak self] animated in self?.update(animated: animated) }
         controller.onReveal = { [weak self] id in self?.reveal(id) }
         controller.onEditChange = { [weak self] session in self?.editChanged(session) }
+        controller.onEditorReplaceText = { [weak self] text in
+            guard let self else { return }
+            self.editor.string = text
+            self.positionEditor()
+        }
         controller.viewCommandHandler = { [weak self] id in self?.performViewCommand(id) ?? false }
         controller.viewCommandValidator = { id in Self.viewCommands.contains(id) }
         controller.floatingPlacement = { [weak self] in self?.defaultFloatingPoint() ?? .zero }
@@ -330,8 +342,15 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         elements.update(
             scene: scene, selected: controller.selectedElement, connect: controller.connect,
             frame: { [weak self] in self?.animatedFrame($0)?.rect }, animated: animate)
+        decorRenderer.textScale = textScale
+        decorRenderer.update(scene: scene, frame: { [weak self] in self?.animatedFrame($0)?.rect })
         CATransaction.commit()
         updateConnectField()
+        if controller.morphSerial != lastMorphSerial {
+            lastMorphSerial = controller.morphSerial
+            morphUntil = CACurrentMediaTime() + Motion.convert + 0.15
+        }
+        refreshOverlays()
         if editing != nil || controller.edit != nil { positionEditor() }
         updateAccessibility()
         if moving.contains(where: { !(springs[$0]?.isSettled ?? true) || !(scales[$0]?.isSettled ?? true) }) {
@@ -494,7 +513,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         CATransaction.setDisableActions(true)
         var settled = Set<NodeID>()
         for id in moving {
-            springs[id]?.step(dt, spring: Motion.snap)
+            springs[id]?.step(dt, spring: now < morphUntil ? Motion.morph : Motion.snap)
             scales[id]?.step(dt, spring: Motion.snap)
             if scales[id]?.isSettled == true { scales[id] = nil }
             if springs[id]?.isSettled ?? true, scales[id] == nil { settled.insert(id) }
@@ -503,6 +522,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         elements.updateGeometry(
             selected: controller.selectedElement, connect: controller.connect,
             frame: { [weak self] in self?.animatedFrame($0)?.rect })
+        decorRenderer.updateGeometry(frame: { [weak self] in self?.animatedFrame($0)?.rect })
         moving.subtract(settled)
         var cameraDone = true
         if let tween = cameraTween {
@@ -638,6 +658,47 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     // MARK: Connect field
 
     /// "Connect to …" below the source: the query, up to five matches, or Create new node.
+    /// The slash menu and protocol suggestions sit under what they belong to.
+    func refreshOverlays() {
+        if let s = controller.slash {
+            let host =
+                slashHost
+                ?? {
+                    let h = NSHostingView(rootView: SlashMenuView(controller: controller))
+                    h.sizingOptions = [.intrinsicContentSize]
+                    addSubview(h)
+                    slashHost = h
+                    return h
+                }()
+            let anchor: CGRect? =
+                s.inEditor && !editor.isHidden ? editor.frame : animatedFrame(s.node).map { camera.toView($0.rect) }
+            if let r = anchor {
+                let size = host.fittingSize
+                host.frame = CGRect(x: r.minX, y: r.maxY + 8, width: size.width, height: size.height)
+            }
+            host.isHidden = false
+        } else {
+            slashHost?.isHidden = true
+        }
+        if controller.edit?.element != nil, !controller.protocolSuggestions.isEmpty {
+            let host =
+                suggestHost
+                ?? {
+                    let h = NSHostingView(rootView: ProtocolSuggestionsView(controller: controller))
+                    h.sizingOptions = [.intrinsicContentSize]
+                    addSubview(h)
+                    suggestHost = h
+                    return h
+                }()
+            let size = host.fittingSize
+            host.frame = CGRect(
+                x: editor.frame.minX - 8, y: editor.frame.maxY + 6, width: size.width, height: size.height)
+            host.isHidden = false
+        } else {
+            suggestHost?.isHidden = true
+        }
+    }
+
     private func updateConnectField() {
         guard let c = controller.connect, let src = animatedFrame(c.source) else {
             connectField?.removeFromSuperview()
@@ -740,7 +801,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         }
         switch controller.handleKey(chord, characters: event.characters) {
         case .handled:
-            break
+            refreshOverlays()
         case .beginTyping:
             pendingTypingEvent = event
             controller.beginEditing(replacingWith: "")
@@ -998,6 +1059,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             elements.updateGeometry(
                 selected: controller.selectedElement, connect: nil,
                 frame: { [weak self] in self?.animatedFrame($0)?.rect })
+            decorRenderer.updateGeometry(frame: { [weak self] in self?.animatedFrame($0)?.rect })
             CATransaction.commit()
             moving.removeAll()
             drag = .node(

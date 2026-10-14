@@ -18,6 +18,9 @@ public enum BranchLineShape: String, Sendable, CaseIterable {
 }
 
 public enum BranchLines {
+    /// Horizontal run per unit of height along a fishbone bone (matches the layout).
+    public static let fishboneSlope: CGFloat = 0.5
+
     /// The connector from a parent to one child, in canvas coordinates.
     /// Underline-style nodes attach lines to their baseline (`parentBaseline`,
     /// `childBaseline`), and the line runs on under the child's text.
@@ -26,10 +29,59 @@ public enum BranchLines {
         parentBaseline: Bool = false, childBaseline: Bool = false
     ) -> CGPath {
         let p = CGMutablePath()
+        let pr = parent.rect
+        let cr = child.rect
+        switch family {
+        case "none", "brace", "matrix", "treeTable":
+            // Drawn by the structure (cells, braces) instead of per-child lines.
+            return p
+        case "indent":
+            // └ from under the parent's leading edge to the child's leading edge.
+            let left = child.side != .left
+            let x = left ? min(pr.minX + 10, cr.minX - 6) : max(pr.maxX - 10, cr.maxX + 6)
+            p.move(to: CGPoint(x: x, y: pr.maxY))
+            p.addLine(to: CGPoint(x: x, y: child.center.y))
+            p.addLine(to: CGPoint(x: left ? cr.minX : cr.maxX, y: child.center.y))
+            return p
+        case "timeline":
+            // The axis: siblings sit on one line, so segments join behind the events.
+            let right = child.center.x >= parent.center.x
+            p.move(to: CGPoint(x: right ? pr.maxX : pr.minX, y: parent.center.y))
+            p.addLine(to: CGPoint(x: right ? cr.minX : cr.maxX, y: child.center.y))
+            return p
+        case "timelineV":
+            p.move(to: CGPoint(x: parent.center.x, y: pr.maxY))
+            p.addLine(to: CGPoint(x: child.center.x, y: cr.minY))
+            return p
+        case "fishbone":
+            // Spine from the head to the bone's foot, then the bone up (or down) to its label.
+            let bodyLeft = child.side == .left
+            let lean: CGFloat = bodyLeft ? 1 : -1
+            let topBone = child.center.y < parent.center.y
+            let reach = abs(child.center.y - parent.center.y) - child.size.height / 2
+            let foot = CGPoint(x: child.center.x + lean * reach * fishboneSlope, y: parent.center.y)
+            p.move(to: CGPoint(x: bodyLeft ? pr.minX : pr.maxX, y: parent.center.y))
+            p.addLine(to: foot)
+            p.addLine(to: CGPoint(x: child.center.x, y: topBone ? cr.maxY : cr.minY))
+            return p
+        case "fishboneCause":
+            // A rib from the cause to its bone at the cause's height.
+            let lean: CGFloat = child.side == .left ? 1 : -1
+            let y = cr.maxY - 2
+            let below = child.center.y > parent.center.y
+            let along = below ? y - pr.maxY : pr.minY - y
+            let boneX = parent.center.x + lean * along * fishboneSlope
+            p.move(to: CGPoint(x: lean > 0 ? cr.minX : cr.maxX, y: y))
+            p.addLine(to: CGPoint(x: boneX, y: y))
+            return p
+        default:
+            break
+        }
         if child.side == .down {
             let start = CGPoint(x: parent.center.x, y: parent.center.y + parent.size.height / 2)
             let end = CGPoint(x: child.center.x, y: child.center.y - child.size.height / 2)
-            vertical(p, start, end, shape: shape)
+            // Org charts read as reporting lines: a curved default becomes a bus.
+            vertical(p, start, end, shape: family == "org" && shape == .curved ? .elbow : shape)
             return p
         }
         let dir = CGFloat(child.side.rawValue)

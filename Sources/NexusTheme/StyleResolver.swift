@@ -336,6 +336,19 @@ public enum StyleResolver {
             case "mainBg": t.main.background
             case "rootBg": t.root.background
             case "white": .white
+            case "ink2": t.ink2
+            case "decision": t.decision
+            case "entity": t.entity
+            case "entityLine": t.entityLine
+            case "process": t.process
+            case "processLine": t.processLine
+            case "store": t.store
+            case "storeLine": t.storeLine
+            case "critical": t.critical
+            case "amber": t.amber
+            case "amberSoft": t.amberSoft
+            case "ai": t.ai
+            case "aiSoft": t.aiSoft
             case "auto": nil
             default: RGBA(hexString: name)
             }

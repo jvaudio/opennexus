@@ -99,8 +99,29 @@ public struct LayoutStructure: OpenEnum {
     public static let fishboneLeft: LayoutStructure = "fishbone.left"
     public static let matrix: LayoutStructure = "matrix.grid"
     public static let treeTable: LayoutStructure = "treeTable.rows"
+    public static let timelineVertical: LayoutStructure = "timeline.vertical"
+    public static let fishboneRight: LayoutStructure = "fishbone.right"
+    public static let braceLeft: LayoutStructure = "brace.left"
+    // Technical canvases (graph layouts over tree edges plus relationships).
+    public static let flowDown: LayoutStructure = "flow.down"
+    public static let graphRight: LayoutStructure = "graph.right"
+    public static let swimlanes: LayoutStructure = "swimlane.rows"
+    public static let sequence: LayoutStructure = "sequence.lifelines"
+
+    /// Exotic structures lay out their whole subtree themselves (no per-node overrides
+    /// inside), so they can be mixed into any branch.
+    public var isSelfContained: Bool {
+        ["timeline", "fishbone", "matrix", "treeTable", "tree"].contains(family)
+    }
 
     public var family: String { String(rawValue.split(separator: ".").first ?? "") }
+}
+
+/// A technical node type: flowchart steps, DFD elements, threat-model cards, the 32
+/// architecture icons, sequence participants, UML classes.
+public struct NodeType: OpenEnum {
+    public let rawValue: String
+    public init(rawValue: String) { self.rawValue = rawValue }
 }
 
 public struct LayoutMode: OpenEnum {

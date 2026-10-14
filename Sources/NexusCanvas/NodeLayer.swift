@@ -47,6 +47,8 @@ final class NodeLayer: CALayer {
     let imageLayer = CALayer()
     let badge = CALayer()
     let badgeText = TextLayer()
+    /// Technical caption above the node (PROCESS, START, EXTERNAL ENTITY).
+    let caption = TextLayer()
     private(set) var node: SceneNode?
     private var state: (selected: Bool, editing: Bool, connectTarget: Bool) = (false, false, false)
     var textScale: CGFloat = 2 {
@@ -86,8 +88,12 @@ final class NodeLayer: CALayer {
         badge.addSublayer(badgeText)
         badge.isHidden = true
         addSublayer(badge)
+        caption.isHidden = true
+        addSublayer(caption)
         actions = Self.noActions
-        for l in [shape, inner, gradient, gradientMask, text, ring, halo, lead, badge, badgeText, decor, imageLayer]
+        for l in [
+            shape, inner, gradient, gradientMask, text, ring, halo, lead, badge, badgeText, decor, imageLayer, caption,
+        ]
             as [CALayer]
         {
             l.actions = Self.noActions
@@ -161,6 +167,22 @@ final class NodeLayer: CALayer {
             decor.frame = CGRect(origin: .zero, size: n.frame.size)
             decor.setNeedsDisplay()
             layoutBadge(n, theme: theme, canvas: canvas)
+            if let c = n.tech.caption {
+                let a = NSAttributedString(
+                    string: c,
+                    attributes: [
+                        .font: NSFont.monospacedSystemFont(ofSize: 9.5, weight: .medium),
+                        .foregroundColor: NSColor(cgColor: theme.ink2.cgColor) ?? .secondaryLabelColor,
+                        .kern: 1.2, .paragraphStyle: Self.centered,
+                    ])
+                caption.attributed = a
+                caption.isHidden = false
+                caption.contentsScale = textScale
+                caption.frame = CGRect(x: -60, y: -17, width: n.frame.size.width + 120, height: 13)
+                caption.setNeedsDisplay()
+            } else {
+                caption.isHidden = true
+            }
         }
         if let image, !n.imageRect.isEmpty {
             imageLayer.isHidden = false
@@ -461,6 +483,7 @@ final class DecorLayer: CALayer {
             }
             x += SceneBuilder.markerWidth
         }
+        drawTech(n, ink: ink, ctx: ctx)
         // Sticker.
         if let st = n.sticker, !n.stickerRect.isEmpty {
             let glyph = st.hasPrefix("emoji:") ? String(st.dropFirst(6)) : st.contains("/") ? "★" : st
@@ -505,5 +528,75 @@ final class DecorLayer: CALayer {
             ).draw(at: n.pinnedRect.origin)
         }
         NSGraphicsContext.restoreGraphicsState()
+    }
+
+    /// Technical decorations: data-store accent bar, icon, kicker, lead text, risk badge,
+    /// and the rule-check flag.
+    private func drawTech(_ n: SceneNode, ink: NSColor, ctx: CGContext) {
+        let t = n.tech
+        let tint = NSColor(cgColor: (t.tint ?? n.appearance.text).cgColor) ?? ink
+        if let a = t.accent {
+            (NSColor(cgColor: a.cgColor) ?? tint).setFill()
+            NSBezierPath(rect: CGRect(x: 0, y: 0, width: 6, height: bounds.height)).fill()
+            let edge = NSBezierPath()
+            edge.move(to: CGPoint(x: 0, y: 1))
+            edge.line(to: CGPoint(x: bounds.width, y: 1))
+            edge.move(to: CGPoint(x: 0, y: bounds.height - 1))
+            edge.line(to: CGPoint(x: bounds.width, y: bounds.height - 1))
+            edge.lineWidth = 2
+            (NSColor(cgColor: a.cgColor) ?? tint).setStroke()
+            edge.stroke()
+        }
+        if let icon = t.icon, let path = TechIcons.path(icon, in: t.iconRect) {
+            ctx.saveGState()
+            ctx.addPath(path)
+            ctx.setStrokeColor(tint.cgColor)
+            ctx.setLineWidth(1.6 * t.iconRect.width / 24)
+            ctx.setLineCap(.round)
+            ctx.setLineJoin(.round)
+            ctx.strokePath()
+            ctx.restoreGState()
+        }
+        let small: [NSAttributedString.Key: Any] = [
+            .font: SceneBuilder.kickerFont, .foregroundColor: tint, .kern: 0.6,
+        ]
+        if let k = t.kicker {
+            NSAttributedString(string: k, attributes: small).draw(at: t.kickerRect.origin)
+        }
+        if let l = t.leadText {
+            NSAttributedString(string: l, attributes: small).draw(at: t.leadTextRect.origin)
+        }
+        if let b = t.badge {
+            let r = t.badgeRect
+            let c = NSColor(cgColor: (t.badgeColor ?? n.branchColor).cgColor) ?? tint
+            let pill = NSBezierPath(roundedRect: r, xRadius: 4, yRadius: 4)
+            if b.count == 1 {
+                c.setFill()
+                pill.fill()
+            } else {
+                c.setStroke()
+                pill.lineWidth = 1
+                pill.stroke()
+            }
+            NSAttributedString(
+                string: b,
+                attributes: [
+                    .font: SceneBuilder.badgeFont, .foregroundColor: b.count == 1 ? NSColor.white : c,
+                    .paragraphStyle: NodeLayer.centered,
+                ]
+            ).draw(in: r.offsetBy(dx: 0, dy: 2))
+        }
+        if t.flagged {
+            let r = CGRect(x: bounds.width - 17, y: 3, width: 14, height: 14)
+            (NSColor(cgColor: theme.critical.cgColor) ?? .systemRed).setFill()
+            NSBezierPath(ovalIn: r).fill()
+            NSAttributedString(
+                string: "!",
+                attributes: [
+                    .font: NSFont.systemFont(ofSize: 10, weight: .heavy), .foregroundColor: NSColor.white,
+                    .paragraphStyle: NodeLayer.centered,
+                ]
+            ).draw(in: r.offsetBy(dx: 0, dy: 1))
+        }
     }
 }

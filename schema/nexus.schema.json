@@ -121,6 +121,9 @@
           },
           "type": "array"
         },
+        "diagram": {
+          "$ref": "#/$defs/diagram"
+        },
         "floating": {
           "description": "Ids of floating topics (not attached to the root tree), in z-order.",
           "items": {
@@ -260,6 +263,65 @@
       ],
       "type": "object"
     },
+    "diagram": {
+      "description": "Technical-diagram state.",
+      "properties": {
+        "colorByRisk": {
+          "type": "boolean"
+        },
+        "ignoredRules": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "lanes": {
+          "items": {
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "levelNumber": {
+          "type": "string"
+        },
+        "parent": {
+          "properties": {
+            "canvas": {
+              "$ref": "#/$defs/id"
+            },
+            "node": {
+              "$ref": "#/$defs/id"
+            }
+          },
+          "required": [
+            "canvas",
+            "node"
+          ],
+          "type": "object"
+        },
+        "previousStructure": {
+          "description": "The hierarchy structure before converting to a technical type.",
+          "type": "string"
+        },
+        "view": {
+          "description": "level (default) or context.",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
     "id": {
       "minLength": 1,
       "pattern": "^[A-Za-z0-9_-]+$",
@@ -333,6 +395,10 @@
           "type": "array",
           "uniqueItems": true
         },
+        "edgeLabel": {
+          "description": "Label on the tree edge into this node: Yes / No, a data flow, a protocol.",
+          "type": "string"
+        },
         "folded": {
           "type": "boolean"
         },
@@ -348,6 +414,13 @@
             "type": "string"
           },
           "type": "array"
+        },
+        "lane": {
+          "description": "Swimlane id (diagram.lanes).",
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
         },
         "link": {
           "type": "string"
@@ -381,6 +454,10 @@
           },
           "type": "array"
         },
+        "nodeType": {
+          "description": "Technical node type (process, decision, entity, store, threat, db, service, participant …). Absent means the diagram infers one. Unknown values are preserved.",
+          "type": "string"
+        },
         "note": {
           "properties": {
             "format": {
@@ -413,8 +490,20 @@
         "style": {
           "type": "object"
         },
+        "subCanvas": {
+          "$ref": "#/$defs/id",
+          "description": "A DFD process's next level (⌘.)."
+        },
         "text": {
           "type": "string"
+        },
+        "textFormat": {
+          "description": "How the text is typeset: a LaTeX subset (math) or a code block.",
+          "enum": [
+            "plain",
+            "math",
+            "code"
+          ]
         },
         "todo": {
           "properties": {

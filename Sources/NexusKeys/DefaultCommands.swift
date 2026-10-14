@@ -53,6 +53,14 @@ extension CommandID {
     public static func structure(_ n: Int) -> CommandID { CommandID(rawValue: "structure.\(n)") }
     // Elements
     public static let connect: CommandID = "element.connect"
+    // Technical canvases (M4)
+    public static let slashMenu: CommandID = "insert.slash"
+    public static let laneUp: CommandID = "diagram.laneUp"
+    public static let laneDown: CommandID = "diagram.laneDown"
+    public static let iconLibrary: CommandID = "diagram.iconLibrary"
+    public static let copyMermaid: CommandID = "diagram.copyMermaid"
+    public static let threatTable: CommandID = "diagram.threatTable"
+    public static let suggestThreats: CommandID = "diagram.suggestThreats"
     public static let boundary: CommandID = "element.boundary"
     public static let summary: CommandID = "element.summary"
     public static let callout: CommandID = "element.callout"
@@ -121,7 +129,21 @@ public enum DefaultCommands {
 
     public static let all: [CommandDescriptor] =
         create + edit + navigate + restructure + elements + style + view + ai
-        + file + connect
+        + file + connect + diagrams
+
+    static let diagrams: [C] = [
+        C(
+            .slashMenu, "Insert…", .elements, keys: [k("/")], menu: .insert,
+            note: "Slash menu: node types, icons, /math, /code; also / at the start of a topic"),
+        C(.laneUp, "Move to Lane Above", .restructure, keys: [k("opt+up")], menu: .topic, note: "Swimlanes"),
+        C(.laneDown, "Move to Lane Below", .restructure, keys: [k("opt+down")], menu: .topic, note: "Swimlanes"),
+        C(
+            .iconLibrary, "Icon Library", .view, scope: .global, keys: [k("shift+cmd+y")], menu: .view,
+            note: "Architecture icons; ↩ inserts a child"),
+        C(.copyMermaid, "Copy as Mermaid", .file, scope: .global, menu: .edit, note: "Sequence and flowchart"),
+        C(.threatTable, "Threat Table", .view, scope: .global, menu: .view, note: "Threat models"),
+        C(.suggestThreats, "Suggest STRIDE Threats", .ai, menu: .ai, note: "Threat models"),
+    ]
 
     static let create: [C] = [
         C(

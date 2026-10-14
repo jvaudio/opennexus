@@ -17,7 +17,10 @@ public struct FormatPanel: View {
         let _ = controller.store.revision
         VStack(spacing: 0) {
             HStack(spacing: 18) {
-                ForEach([("style", "Style"), ("map", "Map"), ("data", "Data")], id: \.0) { id, title in
+                ForEach(
+                    [("style", "Style"), ("map", "Map"), ("data", "Data")]
+                        + (controller.canvas.type == .threatModel ? [("stride", "STRIDE")] : []), id: \.0
+                ) { id, title in
                     Button {
                         tab = id
                     } label: {
@@ -42,6 +45,7 @@ public struct FormatPanel: View {
                     switch tab {
                     case "map": MapTab(controller: controller)
                     case "data": DataTab(controller: controller)
+                    case "stride" where controller.canvas.type == .threatModel: StrideTab(controller: controller)
                     default:
                         if let ref = controller.selectedElement, !(ref.isCallout) {
                             ElementStyleTab(controller: controller, ref: ref)

@@ -8,15 +8,26 @@ import NexusLayout
 @MainActor
 extension CanvasController {
     /// Xmind's nine structures in ⌥⌘1…9 order.
+    /// ⌥⌘1–9 in artboard 18's order.
     public static let structureCycle: [LayoutStructure] = [
-        .mindmapBalanced, .logicRight, .braceRight, .orgDown, .treeDown, .timelineHorizontal, .fishboneLeft,
-        .matrix, .treeTable,
+        .mindmapBalanced, .logicRight, .orgDown, .timelineHorizontal, .fishboneLeft, .matrix, .braceRight,
+        .treeTable, .treeIndented,
     ]
 
     /// Commands that work in Select mode on the current selection.
     private var handlers: [CommandID: (CanvasController) -> Void] {
         var h: [CommandID: (CanvasController) -> Void] = [
-            .addChild: { $0.addChild() },
+            .addChild: { c in if !c.techAddChild() { c.addChild() } },
+            .slashMenu: { $0.openSlash() },
+            .convert: { $0.openConvert() },
+            .laneUp: { $0.moveLane(-1) },
+            .laneDown: { $0.moveLane(1) },
+            .iconLibrary: { $0.iconLibraryVisible.toggle() },
+            .copyMermaid: { $0.copyMermaid() },
+            .threatTable: { $0.threatTableVisible.toggle() },
+            .suggestThreats: { $0.suggestStrideEverywhere() },
+            .focusBranch: { c in if !c.drillIntoProcess() { c.showToast("Focus on Branch arrives with views (M5)") } },
+            .aiAcceptAll: { c in _ = c.acceptAllStride() },
             .addSiblingAfter: { $0.addSibling(before: false) },
             .addSiblingBefore: { $0.addSibling(before: true) },
             .addParent: { $0.addParent() },
@@ -59,7 +70,7 @@ extension CanvasController {
             .image: { $0.onRequest?(.image($0.selection.primary)) },
             .label: { $0.onRequest?(.labels($0.selection.primary)) },
             .markerPicker: { $0.onRequest?(.markers($0.selection.primary)) },
-            .flyBack: { $0.flyBack() },
+            .flyBack: { c in if !c.climbLevel() { c.flyBack() } },
             .copyStyle: { $0.copyStyle() },
             .pasteStyle: { $0.pasteStyle() },
             .resetStyle: { $0.resetStyle() },
@@ -212,14 +223,38 @@ extension CanvasController {
     public func setStructure(_ s: LayoutStructure) {
         let target = selection.primary
         let root = canvas.root
+        let technical = DiagramCatalog.isTechnical(canvas.type)
+        morphSerial += 1
         perform("Change Structure") { e in
             if target == root {
-                e.updateMeta { $0.layout.structure = s }
+                // The central topic's structure is the canvas's type (Mind Map ⌥⌘T in the toolbar).
+                if technical {
+                    e.convert(to: Self.diagramType(for: s))
+                }
+                e.updateMeta {
+                    $0.layout.structure = s
+                    $0.type = Self.diagramType(for: s)
+                }
             } else {
                 e.update(target) { $0.structure = s }
             }
         }
         onReveal?(selection.primary)
+    }
+
+    /// The hierarchy diagram type that uses a structure.
+    static func diagramType(for s: LayoutStructure) -> DiagramType {
+        switch s.family {
+        case "logic": .logic
+        case "org": .org
+        case "timeline": .timeline
+        case "fishbone": .fishbone
+        case "matrix": .matrix
+        case "brace": .brace
+        case "treeTable": .treeTable
+        case "tree": .tree
+        default: .mindmap
+        }
     }
 
     // MARK: Select helpers

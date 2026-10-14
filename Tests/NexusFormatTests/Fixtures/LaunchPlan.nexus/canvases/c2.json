@@ -3,7 +3,7 @@
   "id": "c2",
   "layout": {
     "mode": "auto",
-    "structure": "org.down"
+    "structure": "flow.down"
   },
   "nodes": {
     "n1": {

@@ -60,7 +60,36 @@ enum RelationshipGeometry {
             return Result(
                 path: p, start: s, end: e, startAngle: ang + .pi, endAngle: ang,
                 control: CGPoint(x: (s.x + e.x) / 2, y: (s.y + e.y) / 2))
+        case "flow-vh", "flow-hv":
+            // Flowcharts (S5): a decision exits sideways then drops into its branch
+            // (hv); a step drops then turns into a merge's side (vh).
+            let below = b.minY > a.maxY - 4
+            guard below else { return make(withLine(r, "elbow"), from: a, to: b, obstacles: obstacles) }
+            if abs(cb.x - ca.x) < min(a.width, b.width) / 2 - 4 {
+                return polyline([CGPoint(x: cb.x, y: a.maxY), CGPoint(x: cb.x, y: b.minY - 2)])
+            }
+            let right = cb.x > ca.x
+            if r.line == "flow-hv" {
+                return polyline([
+                    CGPoint(x: right ? a.maxX : a.minX, y: ca.y), CGPoint(x: cb.x, y: ca.y),
+                    CGPoint(x: cb.x, y: b.minY - 2),
+                ])
+            }
+            return polyline([
+                CGPoint(x: ca.x, y: a.maxY), CGPoint(x: ca.x, y: cb.y),
+                CGPoint(x: right ? b.minX - 2 : b.maxX + 2, y: cb.y),
+            ])
         case "elbow":
+            // Stacked boxes connect top-to-bottom; otherwise side-to-side.
+            let overlapX = b.minX < a.maxX - 8 && b.maxX > a.minX + 8
+            if overlapX && (b.minY > a.maxY || b.maxY < a.minY) {
+                let down = b.minY > a.maxY
+                let s = CGPoint(x: ca.x, y: down ? a.maxY + 4 : a.minY - 4)
+                let e = CGPoint(x: cb.x, y: down ? b.minY - 6 : b.maxY + 6)
+                if abs(s.x - e.x) < 1 { return polyline([s, e]) }
+                let my = (s.y + e.y) / 2
+                return polyline([s, CGPoint(x: s.x, y: my), CGPoint(x: e.x, y: my), e])
+            }
             let right = cb.x >= ca.x
             let s = CGPoint(x: right ? a.maxX + 4 : a.minX - 4, y: ca.y)
             let e = CGPoint(x: right ? b.minX - 6 : b.maxX + 6, y: cb.y)
@@ -108,6 +137,31 @@ enum RelationshipGeometry {
             for (j, o) in obstacles.enumerated() where o.contains(p) { hit.insert(j) }
         }
         return hit.count
+    }
+
+    static func withLine(_ r: Relationship, _ line: String) -> Relationship {
+        var x = r
+        x.line = line
+        return x
+    }
+
+    /// A polyline through `pts`; the label anchors at the middle segment.
+    static func polyline(_ pts: [CGPoint]) -> Result {
+        let p = CGMutablePath()
+        guard let first = pts.first, let last = pts.last, pts.count >= 2 else {
+            return Result(path: p, start: .zero, end: .zero, startAngle: 0, endAngle: 0, control: .zero)
+        }
+        p.move(to: first)
+        for q in pts.dropFirst() { p.addLine(to: q) }
+        let a = pts[1]
+        let b = pts[pts.count - 2]
+        let m = pts.count / 2
+        let mid = CGPoint(x: (pts[m - 1].x + pts[m].x) / 2, y: (pts[m - 1].y + pts[m].y) / 2)
+        // A quadratic through the midpoint with this control passes near it, so labels sit on the line.
+        let control = CGPoint(x: 2 * mid.x - (first.x + last.x) / 2, y: 2 * mid.y - (first.y + last.y) / 2)
+        return Result(
+            path: p, start: first, end: last, startAngle: atan2(first.y - a.y, first.x - a.x),
+            endAngle: atan2(last.y - b.y, last.x - b.x), control: pts.count == 2 ? mid : control)
     }
 
     /// The 11 end caps (FMT-2): none, arrow, filled-arrow, triangle, diamond,
@@ -277,6 +331,8 @@ final class RelationshipLayer: CALayer {
     let endCap = CAShapeLayer()
     let labelBack = CAShapeLayer()
     let label = TextLayer()
+    let flag = CAShapeLayer()
+    let flagText = TextLayer()
     var labelRect: CGRect = .zero
     var hitPath: CGPath?
 
@@ -291,6 +347,11 @@ final class RelationshipLayer: CALayer {
         }
         label.actions = NodeLayer.noActions
         addSublayer(label)
+        for l in [flag, flagText] as [CALayer] {
+            l.actions = NodeLayer.noActions
+            l.isHidden = true
+            addSublayer(l)
+        }
         actions = NodeLayer.noActions
     }
 
@@ -309,6 +370,7 @@ final class ElementRenderer {
     let overlayLayer = CALayer()
 
     private var relLayers: [String: RelationshipLayer] = [:]
+    private var flaggedFlows = Set<String>()
     private var boundaryLayers: [String: CALayer] = [:]
     private var summaryLayers: [String: CAShapeLayer] = [:]
     private var zoneLayers: [String: CALayer] = [:]
@@ -602,7 +664,15 @@ final class ElementRenderer {
                 l.line.add(glow, forKey: "glow")
             }
             drawnRelationships.insert(id)
+            // A newly broken rule shakes its flow once (artboard 20).
+            if r.flagged && !flaggedFlows.contains(id) && animated {
+                let shake = CAKeyframeAnimation(keyPath: "transform.translation.x")
+                shake.values = [0, -7, 7, -5, 5, -2, 0]
+                shake.duration = 0.42
+                l.add(shake, forKey: "shake")
+            }
         }
+        flaggedFlows = Set(scene.relationships.filter(\.flagged).map(\.relationship.id))
         for (id, l) in relLayers where !seen.contains(id) {
             l.removeFromSuperlayer()
             relLayers[id] = nil
@@ -614,8 +684,13 @@ final class ElementRenderer {
         selected: Bool
     ) {
         let rel = r.relationship
-        let obstacles = scene.nodes.values.map(\.frame.rect).filter { !$0.intersects(a) && !$0.intersects(b) }
-        let g = RelationshipGeometry.make(rel, from: a, to: b, obstacles: obstacles)
+        let g: RelationshipGeometry.Result
+        if let pts = r.points {
+            g = RelationshipGeometry.polyline(pts)
+        } else {
+            let obstacles = scene.nodes.values.map(\.frame.rect).filter { !$0.intersects(a) && !$0.intersects(b) }
+            g = RelationshipGeometry.make(rel, from: a, to: b, obstacles: obstacles)
+        }
         let w = CGFloat(rel.width)
         l.line.path = g.path
         l.line.strokeColor = r.color.cgColor
@@ -666,6 +741,8 @@ final class ElementRenderer {
             ])
         let size = CGSize(width: ceil(attr.size().width) + 18, height: 22)
         var center = g.point(at: t)
+        // Sequence messages read like UML: the label sits above the arrow.
+        if r.points != nil { center.y -= 13 }
         let tangent = CGPoint(
             x: g.point(at: min(1, t + 0.01)).x - g.point(at: max(0, t - 0.01)).x,
             y: g.point(at: min(1, t + 0.01)).y - g.point(at: max(0, t - 0.01)).y)
@@ -683,7 +760,8 @@ final class ElementRenderer {
         let rect = CGRect(
             x: center.x - size.width / 2, y: center.y - size.height / 2, width: size.width, height: size.height)
         l.labelRect = rect
-        l.labelBack.isHidden = rel.labelStyle == "plain" && !selected
+        // Plain labels keep a canvas-coloured chip so the line doesn't strike through them.
+        l.labelBack.isHidden = false
         l.labelBack.path = CGPath(
             roundedRect: rect, cornerWidth: rel.labelStyle == "boxed" ? 4 : 11,
             cornerHeight: rel.labelStyle == "boxed" ? 4 : 11, transform: nil)
@@ -695,6 +773,34 @@ final class ElementRenderer {
         l.label.attributed = attr
         l.label.contentsScale = textScale
         l.label.frame = rect.insetBy(dx: 4, dy: 3).offsetBy(dx: 0, dy: 0)
+        // A rule violation: red boxed chip with a "!" badge (artboard 20).
+        if r.flagged {
+            l.labelBack.isHidden = false
+            l.labelBack.fillColor = scene.theme.critical.alpha(0.12).cgColor
+            l.labelBack.strokeColor = scene.theme.critical.cgColor
+            l.labelBack.lineWidth = 1.5
+            l.labelBack.path = CGPath(
+                roundedRect: rect.insetBy(dx: 0, dy: 0).union(rect.offsetBy(dx: 18, dy: 0)), cornerWidth: 5,
+                cornerHeight: 5, transform: nil)
+            l.flag.isHidden = false
+            l.flag.path = CGPath(
+                ellipseIn: CGRect(x: rect.maxX + 18 - 22, y: rect.midY - 8, width: 16, height: 16), transform: nil)
+            l.flag.fillColor = scene.theme.critical.cgColor
+            l.flagText.isHidden = false
+            l.flagText.attributed = NSAttributedString(
+                string: "!",
+                attributes: [
+                    .font: NSFont.systemFont(ofSize: 11, weight: .heavy), .foregroundColor: NSColor.white,
+                    .paragraphStyle: NodeLayer.centered,
+                ])
+            l.flagText.contentsScale = textScale
+            l.flagText.frame = CGRect(x: rect.maxX + 18 - 22, y: rect.midY - 7, width: 16, height: 15)
+            l.flagText.setNeedsDisplay()
+            l.labelRect = rect.union(rect.offsetBy(dx: 18, dy: 0))
+        } else {
+            l.flag.isHidden = true
+            l.flagText.isHidden = true
+        }
     }
 
     private func syncPointers(_ scene: Scene, frame: (NodeID) -> CGRect?) {

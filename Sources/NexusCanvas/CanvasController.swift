@@ -24,6 +24,8 @@ public struct EditSession: Equatable, Sendable {
     public var selectAll: Bool
     /// Text to insert on open (typing over a selection starts with this character).
     public var pendingInput: String?
+    /// After this session commits, edit this topic (a decision branch: label, then step).
+    public var then: NodeID?
 }
 
 public struct Toast: Equatable, Sendable {
@@ -47,6 +49,25 @@ public final class CanvasController {
     /// Connect mode state (⇧⌘L).
     public internal(set) var connect: ConnectState?
     public internal(set) var edit: EditSession?
+    /// The slash menu (`/`), in Select mode or at the start of an empty topic.
+    public internal(set) var slash: SlashState?
+    /// The Convert picker (⌥⌘T).
+    public internal(set) var convert: ConvertState?
+    /// Panels on technical canvases.
+    public var iconLibraryVisible = false
+    public var threatTableVisible = false
+    /// The DFD violation whose card is showing.
+    public internal(set) var focusedViolation: String?
+    /// The highlighted protocol suggestion while an architecture label is edited.
+    public internal(set) var suggestionIndex: Int?
+    /// Bumped when a conversion starts, so the view uses the 600 ms morph.
+    public internal(set) var morphSerial = 0
+    /// Adds a canvas to the document (the window wires this to an undoable insert).
+    @ObservationIgnored public var onAddCanvas: ((Canvas) -> Void)?
+    /// Saves text the user exported (CSV): suggested name and contents.
+    @ObservationIgnored public var onSaveText: ((String, String) -> Void)?
+    /// Replaces the live editor's text (slash menu picks clear their `/query`).
+    @ObservationIgnored public var onEditorReplaceText: ((String) -> Void)?
     public private(set) var toast: Toast?
     public var cheatSheetVisible = false
     public private(set) var scene = Scene()
@@ -258,6 +279,7 @@ public final class CanvasController {
         if let marks { e.marks = marks }
         e.pendingInput = nil
         edit = e
+        updateSlashFromEditor(text)
         rebuildScene()
         onSceneChange?(true)
     }
@@ -269,6 +291,10 @@ public final class CanvasController {
         mode = .select
         if let element = e.element {
             commitElementText(element, e.text.trimmingCharacters(in: .whitespacesAndNewlines))
+            if let next = e.then {
+                selectedElement = nil
+                beginEditing(next, selectAll: true)
+            }
             return
         }
         var text = e.text
@@ -284,10 +310,15 @@ public final class CanvasController {
         onEditChange?(nil)
         let marks = e.marks.filter { !$0.isPlain && $0.length > 0 && $0.start + $0.length <= (text as NSString).length }
         let oldMarks = canvas.nodes[e.node]?.marks ?? []
+        slash = nil
         if text != old || marks != oldMarks {
+            let protocolLabel = defaultProtocolLabel(for: e.node, text: text)
             perform("Typing") {
                 $0.setText(e.node, text)
-                $0.update(e.node) { $0.marks = marks }
+                $0.update(e.node) {
+                    $0.marks = marks
+                    if let protocolLabel { $0.edgeLabel = protocolLabel }
+                }
             }
         } else {
             rebuildScene()
@@ -328,6 +359,8 @@ public final class CanvasController {
 
     /// Select-mode key handling. The view calls this for every key down.
     public func handleKey(_ chord: KeyChord, characters: String?) -> KeyResult {
+        if convert != nil { return handleConvertKey(chord, characters: characters) ? .handled : .ignored }
+        if let s = slash, !s.inEditor { return handleSlashKey(chord, characters: characters) ? .handled : .ignored }
         if mode == .connect { return handleConnectKey(chord, characters: characters) ? .handled : .ignored }
         if selectedElement != nil, let r = handleElementKey(chord) { return r }
         if let id = command(for: chord) {
