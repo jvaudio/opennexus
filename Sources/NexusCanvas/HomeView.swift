@@ -103,7 +103,7 @@ public struct HomeView: View {
         (.threatModel, "Threat Model"), (.sequence, "Sequence"), (.whiteboard, "Whiteboard"),
     ]
 
-    static func typeName(_ t: DiagramType) -> String {
+    public static func typeName(_ t: DiagramType) -> String {
         switch t {
         case .mindmap: "Mind Map"
         case .flowchart: "Flowchart"

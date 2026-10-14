@@ -64,6 +64,49 @@ final class AppPreferences {
         }
     }
 
+    // MARK: Integrations
+
+    private var foldersWindow: NSWindow?
+
+    /// Settings › Integrations › Allowed folders: where `nexus mcp` may read and write.
+    func showAllowedFolders() {
+        let view = AllowedFoldersView(prefs: prefs) { [weak self] in self?.foldersWindow?.close() }
+        let w =
+            foldersWindow
+            ?? NSPanel(
+                contentRect: CGRect(x: 0, y: 0, width: 520, height: 360), styleMask: [.titled, .closable],
+                backing: .buffered, defer: false)
+        w.title = "Allowed Folders"
+        w.isReleasedWhenClosed = false
+        w.contentView = NSHostingView(rootView: view)
+        if let s = settingsWindow, s.isVisible {
+            s.beginSheet(w)
+        } else {
+            w.center()
+            w.makeKeyAndOrderFront(nil)
+        }
+        foldersWindow = w
+    }
+
+    /// The `nexus` tool ships inside the app (Contents/Helpers). A sandboxed app can't
+    /// write to /usr/local/bin, so Install… gives the one command to link it (D118).
+    func installCLI() {
+        let tool = Bundle.main.bundleURL.appending(path: "Contents/Helpers/nexus")
+        let command = "sudo mkdir -p /usr/local/bin && sudo ln -sf '\(tool.path)' /usr/local/bin/nexus"
+        let a = NSAlert()
+        a.messageText = "Install the nexus command-line tool"
+        a.informativeText =
+            FileManager.default.isExecutableFile(atPath: tool.path)
+            ? "Run this in Terminal to link the tool into your PATH (it asks for your password):\n\n\(command)\n\nThen MCP clients can use { \"command\": \"nexus\", \"args\": [\"mcp\"] }."
+            : "This build doesn't include the tool. Build it with:\n\nswift build -c release --product nexus"
+        a.addButton(withTitle: "Copy Command")
+        a.addButton(withTitle: "Done")
+        if a.runModal() == .alertFirstButtonReturn {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(command, forType: .string)
+        }
+    }
+
     // MARK: Settings window
 
     func showSettings(pane: String = "general") {
@@ -136,24 +179,9 @@ final class AppPreferences {
             if a.runModal() == .alertFirstButtonReturn { SnapshotStore.deleteAll() }
             prefs.set("files.lastCleared", Date().timeIntervalSince1970)
         case "integrations.folders":
-            let p = NSOpenPanel()
-            p.canChooseDirectories = true
-            p.canChooseFiles = false
-            p.allowsMultipleSelection = true
-            p.prompt = "Allow"
-            p.message = "Agents can read and edit maps only in these folders."
-            if p.runModal() == .OK {
-                let marks = p.urls.compactMap {
-                    try? $0.bookmarkData(
-                        options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
-                }
-                prefs.setData("integrations.folderBookmarks", try? JSONEncoder().encode(marks))
-            }
+            showAllowedFolders()
         case "integrations.cli":
-            showInfo(
-                "Command-line tool",
-                "The `nexus` tool (validate, export, mcp) is bundled with the integrations release. Until then, build it from the source:\n\n  swift build -c release --product nexus\n\nOpenNexus never writes outside its sandbox itself, so linking it into your PATH is always your step."
-            )
+            installCLI()
         case "privacy.clearChats":
             let a = NSAlert()
             a.messageText = "Clear all AI chats?"

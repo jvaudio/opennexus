@@ -401,52 +401,70 @@ private struct AgentCard: View {
     var prefs: Preferences
     var body: some View {
         let on = prefs.bool("integrations.mcp")
-        Card(dark: true) {
+        let folders = AgentFolders.list(prefs).count
+        Card {
             VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 8) {
-                    Circle().fill(on ? Color.green : Color.gray).frame(width: 8, height: 8)
-                    Text(on ? "Server enabled · local only" : "Server off · local only").font(
-                        .system(size: 13.5, weight: .semibold)
-                    ).foregroundStyle(.white)
+                HStack(spacing: 6) {
+                    Text("CONNECT AN AGENT").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(.secondary)
+                    Spacer()
+                    Circle().fill(on ? Color.green : Color.gray.opacity(0.6)).frame(width: 7, height: 7)
+                    Text(
+                        on
+                            ? (folders > 0 ? "Server on · local only" : "On · allow a folder first")
+                            : "Server off · local only"
+                    )
+                    .font(.system(size: 12.5)).foregroundStyle(on ? Color.green : .secondary)
                 }
                 Text(
                     "Any MCP client on this Mac (Claude, Codex, Cursor…) can read and edit maps in the folders you allow. Nothing is uploaded."
                 )
-                .font(.system(size: 13)).foregroundStyle(.white.opacity(0.75)).fixedSize(
-                    horizontal: false, vertical: true)
-                Text(
+                .font(.system(size: 12.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                Self.code(
                     """
                     $ nexus mcp            # stdio server
                     $ nexus new "Q3 plan" --type mindmap
                     $ nexus export plan.nexus --to mermaid
                     $ nexus validate plan.nexus
-
+                    """)
+                Self.code(
+                    """
                     // MCP client config
                     { "opennexus": { "command": "nexus", "args": ["mcp"] } }
-                    """
-                )
-                .font(.system(size: 12, design: .monospaced)).foregroundStyle(.white.opacity(0.9))
-                .textSelection(.enabled)
-                FlowChips(items: [
-                    "list_maps", "read_map", "add_topic", "add_edge", "set_style", "convert_type", "export",
-                ])
+                    """)
+                FlowChips(
+                    read: ["list_maps", "read_map"],
+                    edit: ["add_topic", "add_edge", "set_style", "convert_type", "export"])
             }
         }
     }
+
+    /// Commands and config on a dark block (artboard 40), selectable for copying.
+    static func code(_ text: String) -> some View {
+        Text(text).font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.white.opacity(0.92))
+            .textSelection(.enabled)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(RoundedRectangle(cornerRadius: 9).fill(Color(hex: "#17171C")))
+    }
 }
 
+/// The MCP tools: reading (indigo) and changing things (amber).
 private struct FlowChips: View {
-    let items: [String]
+    let read: [String]
+    let edit: [String]
     var body: some View {
         LazyVGrid(
             columns: [GridItem(.adaptive(minimum: 96), spacing: 6, alignment: .leading)], alignment: .leading,
             spacing: 6
         ) {
-            ForEach(items, id: \.self) {
-                Text($0).font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.white.opacity(0.85))
+            ForEach(read + edit, id: \.self) { t in
+                let isRead = read.contains(t)
+                Text(t).font(.system(size: 11.5, design: .monospaced))
+                    .foregroundStyle(isRead ? Color(hex: "#3F38C8") : Color(hex: "#8A5A00"))
                     .lineLimit(1).fixedSize()
-                    .padding(.horizontal, 7).padding(.vertical, 3)
-                    .background(RoundedRectangle(cornerRadius: 5).fill(Color.white.opacity(0.1)))
+                    .padding(.horizontal, 8).padding(.vertical, 3)
+                    .background(
+                        RoundedRectangle(cornerRadius: 5).fill(isRead ? Color(hex: "#ECEBFF") : Color(hex: "#FFF1D6")))
             }
         }
     }

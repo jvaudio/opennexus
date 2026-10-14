@@ -15,6 +15,11 @@ let package = Package(
                 "NexusCanvas",
             ]
         ),
+        // For the light extensions (Share, Spotlight, Widgets): the model and file format only.
+        .library(name: "NexusShared", targets: ["NexusCore", "NexusFormat"]),
+        .library(name: "NexusWidgetsKit", targets: ["NexusWidgetsUI"]),
+        // The CLI's code, for the app's embedded `nexus` tool target.
+        .library(name: "NexusAgentKit", targets: ["NexusAgent"]),
         .executable(name: "nexus", targets: ["nexus"]),
     ],
     targets: [
@@ -45,9 +50,18 @@ let package = Package(
             dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI", "NexusFormat", "NexusInterchange"],
             swiftSettings: strict
         ),
+        // The `nexus` CLI and MCP server (M9): commands, map tools, permissions. Uses the
+        // canvas offscreen for exports so they match the app exactly.
+        .target(
+            name: "NexusAgent",
+            dependencies: ["NexusCore", "NexusFormat", "NexusInterchange", "NexusCanvas"],
+            swiftSettings: strict
+        ),
+        // The widgets' SwiftUI content (the extension adds WidgetKit's container).
+        .target(name: "NexusWidgetsUI", dependencies: ["NexusFormat"], swiftSettings: strict),
         .executableTarget(
             name: "nexus",
-            dependencies: ["NexusCore", "NexusFormat", "NexusInterchange"],
+            dependencies: ["NexusAgent"],
             swiftSettings: strict
         ),
 
@@ -60,8 +74,9 @@ let package = Package(
         ),
         .testTarget(name: "NexusThemeTests", dependencies: ["NexusTheme", "NexusCore"]),
         .testTarget(name: "NexusKeysTests", dependencies: ["NexusKeys"]),
-        .testTarget(name: "NexusCanvasTests", dependencies: ["NexusCanvas", "NexusFormat"]),
+        .testTarget(name: "NexusCanvasTests", dependencies: ["NexusCanvas", "NexusFormat", "NexusWidgetsUI"]),
         .testTarget(name: "NexusAITests", dependencies: ["NexusAI", "NexusCore"]),
+        .testTarget(name: "NexusAgentTests", dependencies: ["NexusAgent", "NexusCanvas", "NexusFormat", "NexusCore"]),
         .testTarget(
             name: "NexusInterchangeTests",
             dependencies: ["NexusInterchange", "NexusFormat", "NexusCore"],

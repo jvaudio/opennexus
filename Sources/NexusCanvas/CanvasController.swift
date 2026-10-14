@@ -116,6 +116,9 @@ public final class CanvasController {
     @ObservationIgnored var zenStarted: Date?
     /// Forces the system appearance for "Follow system light / dark" (tests).
     @ObservationIgnored public var systemIsDark: Bool?
+    /// Offscreen exports and previews draw the canvas's own theme, whatever the
+    /// appearance of the Mac that made them (D119).
+    @ObservationIgnored public var rendersThemeAsNamed = false
     /// Set by the first key press; the empty-canvas hints fade then.
     public internal(set) var hasPressedKey = false
     /// The clipboard (tests use a private pasteboard).

@@ -320,6 +320,11 @@ extension CanvasController {
     }
 
     public func storeAsset(_ data: Data, ext: String) -> String {
+        Self.storeAsset(data, ext: ext, in: store)
+    }
+
+    /// Content-hashed asset names, so the same image is stored once.
+    public static func storeAsset(_ data: Data, ext: String, in store: DocumentStore) -> String {
         let digest = SHA256.hash(data: data).map { String(format: "%02x", $0) }.joined().prefix(20)
         let name = "\(digest).\(ext.lowercased())"
         if store.model.assets[name] == nil { store.updateDocument { $0.assets[name] = data } }

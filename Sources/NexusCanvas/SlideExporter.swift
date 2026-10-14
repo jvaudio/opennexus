@@ -14,6 +14,7 @@ public enum SlideExporter {
     public static func renderSlides(_ model: DocumentModel, canvas id: CanvasID, size: CGSize = size) -> [CGImage] {
         let store = DocumentStore(model: model)
         let controller = CanvasController(store: store)
+        controller.rendersThemeAsNamed = true
         controller.switchCanvas(to: id)
         let view = CanvasView(controller: controller)
         view.reduceMotionOverride = true

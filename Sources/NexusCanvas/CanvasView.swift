@@ -198,7 +198,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         controller.onMorph = { [weak self] in self?.morphNextUpdate = true }
         popovers = CanvasPopovers(view: self)
         controller.onRequest = { [weak self] r in self?.popovers?.handle(r) }
-        controller.onOpenURL = { NSWorkspace.shared.open($0) }
+        // Code files open in the editor chosen in Settings › Integrations (M9).
+        controller.onOpenURL = { [weak controller] url in CodeLinks.open(url, prefs: controller?.prefs ?? .shared) }
         registerForDraggedTypes([.fileURL])
     }
 

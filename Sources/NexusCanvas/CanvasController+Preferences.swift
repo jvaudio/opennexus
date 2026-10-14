@@ -87,7 +87,8 @@ extension CanvasController {
     /// Settings › Appearance › Follow system light / dark: themes with a paired variant
     /// switch with the system appearance (outside Present, which has its own setting).
     func followSystemTheme(_ theme: Theme) -> Theme {
-        guard present == nil, prefs.bool("appearance.followSystem"), let pair = theme.counterpart else { return theme }
+        guard present == nil, !rendersThemeAsNamed, prefs.bool("appearance.followSystem"), let pair = theme.counterpart
+        else { return theme }
         let dark = systemIsDark ?? (NSApp?.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua)
         return dark != theme.isDark ? Theme.named(pair, custom: library.themes) : theme
     }

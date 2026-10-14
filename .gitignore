@@ -5,3 +5,6 @@ DerivedData/
 xcuserdata/
 .DS_Store
 /Benchmarks/*.nexus
+
+# Local signing (your team ID); see App/Config/Base.xcconfig.
+App/Config/Signing.local.xcconfig

@@ -66,6 +66,24 @@ public final class DocumentStore {
         return patch
     }
 
+    /// The file changed on disk (an agent, the CLI, Git): merges it with this copy as one
+    /// undo step. `base` is what was last read or saved. Returns what kept this copy's
+    /// version because both sides changed it.
+    @discardableResult
+    public func mergeExternal(
+        _ disk: DocumentModel, base: DocumentModel, focus: CanvasID, actionName: String = "Change on Disk"
+    ) -> [String] {
+        let merge = DocumentMerge(base: base, current: model, disk: disk)
+        let target = merge.model.canvases[focus] != nil ? focus : (merge.model.canvasOrder.first ?? focus)
+        commitDocument(actionName, focus: target) { m in
+            m.canvases = merge.model.canvases
+            m.canvasOrder = merge.model.canvasOrder
+            m.theme = merge.model.theme
+            m.assets = merge.model.assets
+        }
+        return merge.conflicts
+    }
+
     /// Document-level changes outside undo (chats, assets).
     public func updateDocument(_ body: (inout DocumentModel) -> Void) {
         body(&model)

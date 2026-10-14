@@ -213,6 +213,16 @@ struct SectionView: View {
 // MARK: Rows
 
 struct RowView: View {
+    /// Details that describe the current value (Allowed folders: "2 folders").
+    static func liveDetail(_ row: SettingRow, _ prefs: Preferences) -> String? {
+        switch row.key {
+        case "integrations.folders":
+            let n = AgentFolders.list(prefs).count
+            return n == 0 ? nil : n == 1 ? "1 folder" : "\(n) folders"
+        default: return nil
+        }
+    }
+
     let row: SettingRow
     var prefs: Preferences
     var availability: AIAvailability
@@ -226,7 +236,7 @@ struct RowView: View {
             HStack(alignment: .center, spacing: 12) {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(row.title).font(.system(size: 13.5))
-                    if let d = row.detail {
+                    if let d = Self.liveDetail(row, prefs) ?? row.detail {
                         Text(d)
                             .font(.system(size: 11.5))
                             .foregroundStyle(.secondary)

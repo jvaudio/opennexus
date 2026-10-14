@@ -57,6 +57,7 @@ public enum ImageExporter {
         var m = model
         if let t = o.theme { m.canvases[id]?.style.theme = t }
         let controller = CanvasController(store: DocumentStore(model: m))
+        controller.rendersThemeAsNamed = true
         controller.switchCanvas(to: id)
         controller.isolate = keep(controller.canvas, o)
         controller.rebuildScene()

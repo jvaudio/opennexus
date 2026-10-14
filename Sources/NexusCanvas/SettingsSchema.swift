@@ -625,13 +625,16 @@ public enum SettingsSchema {
                     T("integrations.spotlight", "Spotlight indexing of node text", true),
                     M(
                         "integrations.codeLinks", "Open code links in",
-                        [("xcode", "Xcode"), ("vscode", "Visual Studio Code"), ("default", "Default app")], "xcode"),
+                        [
+                            ("xcode", "Xcode"), ("vscode", "Visual Studio Code"), ("cursor", "Cursor"), ("zed", "Zed"),
+                            ("default", "Default app"),
+                        ], "xcode"),
                 ]),
             sec(
                 "Agents · MCP & CLI", 1,
                 [
                     T("integrations.mcp", "Local MCP server", false, "Off by default. No network port; stdio only"),
-                    B("integrations.folders", "Allowed folders", "Edit…"),
+                    B("integrations.folders", "Allowed folders", "Edit…", "No folders yet"),
                     S(
                         "integrations.mcpRead", "Read maps", [("allow", "Allow"), ("ask", "Ask"), ("block", "Block")],
                         "allow"),
@@ -644,11 +647,15 @@ public enum SettingsSchema {
                     B("integrations.cli", "Command-line tool", "Install…", "Installs /usr/local/bin/nexus"),
                 ],
                 footnote:
-                    "Every agent edit is one undo step and is marked with the ✦ provenance sparkle. Quick Capture, Services, Share, Spotlight, the MCP server and the CLI arrive with the integrations release; these choices are kept for them."
+                    "Every agent edit is one undo step and is marked with the ✦ provenance sparkle."
             ),
             sec(
-                "Connect an agent", 1,
-                [G("integrations.agentCard", "", "agentCard", nil, ["claude", "codex", "cursor", "mcp client"])]),
+                "", 1,
+                [
+                    G(
+                        "integrations.agentCard", "Connect an agent", "agentCard", nil,
+                        ["claude", "codex", "cursor", "mcp client", "connect an agent"])
+                ]),
         ])
 
     // MARK: 9 Privacy & Data (artboard 41)

@@ -1,38 +1,35 @@
 import Foundation
-import NexusCore
-import NexusFormat
+import NexusAgent
+import Security
 
-/// `nexus` command-line tool. M0 ships `validate`; `export` and `mcp` arrive in M9.
-let args = Array(CommandLine.arguments.dropFirst())
+/// `nexus`: validate, export, new, import, and the MCP server (`nexus mcp`). The work is
+/// in NexusAgent, so it's tested in-process; this file only wires up the real process.
 
-func usage() -> Never {
-    FileHandle.standardError.write(Data("usage: nexus validate <file.nexus>\n".utf8))
-    exit(64)
+/// The team that signed this binary: it shares OpenNexus's App Group, where the app
+/// keeps the agent settings.
+func signingTeam() -> String? {
+    var code: SecCode?
+    guard SecCodeCopySelf([], &code) == errSecSuccess, let code else { return nil }
+    var staticCode: SecStaticCode?
+    guard SecCodeCopyStaticCode(code, [], &staticCode) == errSecSuccess, let staticCode else { return nil }
+    var info: CFDictionary?
+    guard
+        SecCodeCopySigningInformation(staticCode, SecCSFlags(rawValue: kSecCSSigningInformation), &info)
+            == errSecSuccess
+    else { return nil }
+    return (info as? [String: Any])?[kSecCodeInfoTeamIdentifier as String] as? String
 }
 
-guard let command = args.first else { usage() }
-
-switch command {
-case "validate":
-    guard args.count == 2 else { usage() }
-    let url = URL(fileURLWithPath: args[1])
-    do {
-        let wrapper = try FileWrapper(url: url, options: [.immediate])
-        let doc = try NexusPackage.read(from: wrapper)
-        var issues = SchemaValidator.bundled.validate(package: NexusPackage.files(for: doc)).map(\.description)
-        for canvas in doc.orderedCanvases {
-            issues += canvas.validate().map { "canvases/\(canvas.id).json: \($0)" }
-        }
-        if issues.isEmpty {
-            print("\(url.lastPathComponent): valid (\(doc.canvases.count) canvases, \(doc.topicCount) topics)")
-        } else {
-            issues.forEach { print($0) }
-            exit(1)
-        }
-    } catch {
-        FileHandle.standardError.write(Data("\(url.lastPathComponent): \(error)\n".utf8))
-        exit(1)
-    }
-default:
-    usage()
-}
+setvbuf(stdout, nil, _IOLBF, 0)
+let io = NexusCLI.IO(
+    out: { FileHandle.standardOutput.write($0) },
+    err: { FileHandle.standardError.write(Data($0.utf8)) },
+    readLine: { Swift.readLine(strippingNewline: true) },
+    stdoutIsTerminal: isatty(STDOUT_FILENO) == 1)
+let env = NexusCLI.Environment(
+    cwd: URL(fileURLWithPath: FileManager.default.currentDirectoryPath),
+    home: FileManager.default.homeDirectoryForCurrentUser,
+    variables: ProcessInfo.processInfo.environment,
+    team: signingTeam())
+let status = MainActor.assumeIsolated { NexusCLI.run(Array(CommandLine.arguments.dropFirst()), io: io, env: env) }
+exit(status)

@@ -18,6 +18,9 @@ final class NexusDocument: NSDocument {
     nonisolated(unsafe) var lockedFiles: [String: Data]?
     private var snapshotTimer: Timer?
     private var lastSnapshotRevision = -1
+    /// What's on disk as far as this document knows (last read or written): the base for
+    /// merging changes made elsewhere (M9).
+    private(set) var diskBase: DocumentModel?
 
     override init() {
         super.init()
@@ -76,11 +79,94 @@ final class NexusDocument: NSDocument {
                 modelForSaving(), pretty: prefs.string("files.jsonLayout") != "compact", assets: true)
             return FileWrapper(regularFileWithContents: Data(json.utf8))
         }
-        let files = packageFiles()
+        var files = packageFiles()
+        diskBase = store.model
         if let key = cryptoKey {
             return NexusPackage.directoryWrapper(from: try PackageCrypto.encrypt(files, with: key))
         }
+        // Quick Look's thumbnail and preview (never for encrypted documents).
+        if let png = HeadlessExport.previewPNG(store.model) { files[NexusPackage.previewName] = png }
         return NexusPackage.directoryWrapper(from: files)
+    }
+
+    override func save(
+        to url: URL, ofType typeName: String, for saveOperation: NSDocument.SaveOperationType,
+        completionHandler: @escaping ((any Error)?) -> Void
+    ) {
+        super.save(to: url, ofType: typeName, for: saveOperation) { [weak self] error in
+            if error == nil, let self { Integrations.shared.documentSaved(self) }
+            completionHandler(error)
+        }
+    }
+
+    // MARK: Handoff
+
+    /// iCloud Drive documents continue on another Mac at the same canvas and topic
+    /// (NSDocument publishes the activity; Info.plist names its type).
+    override func updateUserActivityState(_ activity: NSUserActivity) {
+        super.updateUserActivityState(activity)
+        guard let c = (windowControllers.first as? DocumentWindowController)?.controller else { return }
+        activity.addUserInfoEntries(from: ["canvas": c.canvasID.rawValue, "node": c.selection.primary.rawValue])
+    }
+
+    override func restoreUserActivityState(_ activity: NSUserActivity) {
+        super.restoreUserActivityState(activity)
+        guard let c = (windowControllers.first as? DocumentWindowController)?.controller else { return }
+        if let canvas = (activity.userInfo?["canvas"] as? String).map(CanvasID.init(rawValue:)),
+            c.store.model.canvases[canvas] != nil, canvas != c.canvasID
+        {
+            c.switchCanvas(to: canvas)
+        }
+        if let node = (activity.userInfo?["node"] as? String).map(NodeID.init(rawValue:)), c.canvas.nodes[node] != nil {
+            c.select(node)
+            c.onReveal?(node)
+        }
+    }
+
+    // MARK: Changes made elsewhere
+
+    /// The file changed on disk: an agent (`nexus mcp`), the CLI, Git or another Mac.
+    /// NSDocument would silently revert, losing undo; instead the change is merged with
+    /// any unsaved edits and arrives as one undo step (D114).
+    nonisolated override func presentedItemDidChange() {
+        nonisolated(unsafe) let me = self
+        DispatchQueue.main.async { MainActor.assumeIsolated { me.mergeFromDisk() } }
+    }
+
+    func mergeFromDisk() {
+        guard let url = fileURL, lockedFiles == nil, let base = diskBase else { return }
+        var disk: DocumentModel?
+        var coordError: NSError?
+        let key = cryptoKey
+        NSFileCoordinator(filePresenter: self).coordinate(readingItemAt: url, options: [], error: &coordError) { u in
+            if u.pathExtension.lowercased() == "nexusjson" {
+                disk = (try? Data(contentsOf: u)).flatMap { try? DocumentJSON.parse($0, name: u.lastPathComponent) }
+                return
+            }
+            guard let w = try? FileWrapper(url: u, options: [.immediate]) else { return }
+            var files = NexusPackage.flatten(w)
+            if PackageCrypto.isEncrypted(files) {
+                guard let key, let opened = try? PackageCrypto.decrypt(files, with: key) else { return }
+                files = opened
+            }
+            disk = try? NexusPackage.read(files: files)
+        }
+        guard let disk,
+            disk.canvases != base.canvases || disk.canvasOrder != base.canvasOrder || disk.theme != base.theme
+        else { return }
+        let wasClean = !isDocumentEdited
+        let controller = (windowControllers.first as? DocumentWindowController)?.controller
+        let conflicts = store.mergeExternal(disk, base: base, focus: controller?.canvasID ?? "c1")
+        diskBase = disk
+        if let date = try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate {
+            fileModificationDate = date
+        }
+        if wasClean && conflicts.isEmpty { updateChangeCount(.changeCleared) }
+        controller?.showToast(
+            conflicts.isEmpty
+                ? "Updated from disk · ⌘Z undoes"
+                : "Updated from disk · kept your version of \(conflicts.prefix(3).joined(separator: ", "))\(conflicts.count > 3 ? "…" : "")"
+        )
     }
 
     nonisolated override func read(from fileWrapper: FileWrapper, ofType typeName: String) throws {
@@ -89,6 +175,7 @@ final class NexusDocument: NSDocument {
             MainActor.assumeIsolated {
                 isFreshBlank = false
                 store.replace(with: doc)
+                diskBase = doc
                 loadChatsFromMac()
             }
             return
@@ -106,6 +193,7 @@ final class NexusDocument: NSDocument {
                     cryptoKey = PackageCrypto.derive(password: pw, info: info)
                     isFreshBlank = false
                     store.replace(with: doc)
+                    diskBase = doc
                 }
                 return
             }
@@ -120,7 +208,9 @@ final class NexusDocument: NSDocument {
         MainActor.assumeIsolated {
             isFreshBlank = false
             store.replace(with: doc)
+            diskBase = doc
             loadChatsFromMac()
+            Integrations.shared.documentOpened(self)
         }
     }
 
@@ -198,6 +288,7 @@ final class NexusDocument: NSDocument {
         cryptoKey = key
         lockedFiles = nil
         store.replace(with: doc)
+        diskBase = doc
         if remember && prefs.bool("files.keychain") { Keychain.setPassword(password, account: info.keychainAccount) }
         lastActivity = Date()
     }
@@ -251,6 +342,7 @@ final class NexusDocument: NSDocument {
         if store.revision != seenRevision {
             seenRevision = store.revision
             lastActivity = Date()
+            userActivity?.needsSave = true
         }
         if Date().timeIntervalSince(lastSnapshotAt) >= every - 1 {
             lastSnapshotAt = Date()

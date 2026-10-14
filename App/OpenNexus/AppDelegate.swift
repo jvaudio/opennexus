@@ -23,19 +23,34 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         app.run()
     }
 
+    /// Opened by macOS at login (Settings › Quick Capture › Start at login): stay in the
+    /// menu bar with no windows.
+    private var launchedAtLogin = false
+
     func applicationWillFinishLaunching(_ notification: Notification) {
+        launchedAtLogin = QuickCapture.launchedAtLogin
         NSApp.mainMenu = MainMenu.build(registry: .standard, profile: .openNexus)
         AppPreferences.shared.start()
+        Integrations.shared.start()
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
-        Onboarding.launch()
+        if !launchedAtLogin { Onboarding.launch() }
+    }
+
+    /// Spotlight results open straight to the topic; Handoff for iCloud documents is
+    /// handled by NSDocument (and lands on the topic through restoreUserActivityState).
+    func application(
+        _ application: NSApplication, continue userActivity: NSUserActivity,
+        restorationHandler: @escaping ([any NSUserActivityRestoring]) -> Void
+    ) -> Bool {
+        Integrations.shared.continueActivity(userActivity)
     }
 
     /// Settings › General › At launch: a new document only when that's the choice (Home
     /// and the first-run welcome handle the rest).
     func applicationShouldOpenUntitledFile(_ sender: NSApplication) -> Bool {
-        Onboarding.done && Preferences.shared.string("general.launch") == "new"
+        !launchedAtLogin && Onboarding.done && Preferences.shared.string("general.launch") == "new"
     }
 
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows flag: Bool) -> Bool {

@@ -9,13 +9,17 @@ import NexusCore
 /// ├── canvases/c1.json     one canonical JSON file per canvas
 /// ├── theme.json           document theme, custom colour themes, quick styles
 /// ├── assets/              images, audio, stickers (content-hashed names)
+/// ├── preview.png          Quick Look's rendered first canvas (written by the app; never
+/// │                        for encrypted documents; ignored by Git and by reading)
 /// ├── snapshots/           recovery snapshots (ignored by Git)
-/// └── .gitignore           generated: `snapshots/`
+/// └── .gitignore           generated: `snapshots/` and `preview.png`
 /// ```
 public enum NexusPackage {
     public static let fileExtension = "nexus"
     public static let typeIdentifier = "com.opennexus.document"
     public static let appVersion = "1.0"
+    /// Quick Look's rendered snapshot inside the package.
+    public static let previewName = "preview.png"
 
     public enum ReadError: Error, CustomStringConvertible, Equatable {
         case missingFile(String)
@@ -58,7 +62,7 @@ public enum NexusPackage {
         for (name, data) in doc.assets {
             files["assets/\(name)"] = data
         }
-        files[".gitignore"] = Data("snapshots/\n".utf8)
+        files[".gitignore"] = Data("snapshots/\npreview.png\n".utf8)
         return files
     }
 
