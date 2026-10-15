@@ -79,6 +79,21 @@ public final class CanvasHostView: NSView {
         let tourFinish = NSHostingView(rootView: TourOverlay(controller: controller, part: .finish))
         let tipHost = NSHostingView(rootView: TipView(controller: controller))
         let onboarding: [NSView] = [tourBar, tourPill, tourFinish, tipHost]
+        // Each overlay is a named group for assistive apps (M10 audit: unnamed hosting views
+        // are "missing useful accessibility information").
+        let named: [(NSView, String)] = [
+            (status, "Mode and keys"), (toast, "Notification"), (cheat, "Shortcut cheat sheet"),
+            (dfd, "Data flow levels"), (crumb, "Level breadcrumb"), (violation, "Data flow rule check"),
+            (threatCard, "Threat suggestions"), (table, "Threat table"), (icons, "Icon library"),
+            (convert, "Convert diagram type"), (nav, "Navigation"), (filter, "Filter"), (focus, "Focus breadcrumb"),
+            (counts, "Zoom and topic count"), (zenCount, "Focus timer"), (palette, "Command palette"),
+            (jump, "Quick jump"), (present, "Presentation"), (aiPanel, "AI panel"), (aiSheet, "AI"),
+            (exportSheet, "Export"), (printSheet, "Print"), (mergeSheet, "Merge documents"),
+            (passwordSheet, "Password"), (reportSheet, "Import report"), (snapshotSheet, "Recovery snapshots"),
+            (shotBar, "Map Shot"), (shotHint, "Map Shot hint"), (tourBar, "Tutorial"), (tourPill, "Tutorial paused"),
+            (tourFinish, "Tutorial finished"), (tipHost, "Tip"),
+        ]
+        for (v, name) in named { v.setAccessibilityLabel(Loc.t(name)) }
         aiSheet.sizingOptions = [.intrinsicContentSize]
         present.isHidden = true
         // Pinned to all edges: its (often empty) content must not size the host.

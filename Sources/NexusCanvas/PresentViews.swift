@@ -87,7 +87,7 @@ struct SlideStripView: View {
                 HStack(spacing: 12) {
                     ForEach(Array(slides.enumerated()), id: \.element.id) { i, s in
                         thumb(s, i)
-                            .onTapGesture { controller.goToSlide(i) }
+                            .accessibleTap { controller.goToSlide(i) }
                             .draggable(s.id)
                             .dropDestination(for: String.self) { ids, _ in
                                 guard let moved = ids.first else { return false }
@@ -99,6 +99,7 @@ struct SlideStripView: View {
                     }
                 }
             }
+            .accessibilityLabel(Loc.t("Slides"))
             HStack(spacing: 14) {
                 key("→", "next step")
                 key("S", "skip")
@@ -257,6 +258,7 @@ public struct PresenterView: View {
                         .font(.chrome(16))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
+                .accessibilityLabel(Loc.t("Speaker note"))
                 .padding(14)
                 .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.08)))
                 HStack {

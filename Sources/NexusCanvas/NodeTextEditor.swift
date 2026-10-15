@@ -37,6 +37,7 @@ final class NodeTextView: NSTextView {
         isContinuousSpellCheckingEnabled = false
         usesFindBar = false
         setAccessibilityIdentifier("node-editor")
+        setAccessibilityLabel(Loc.t("Topic text"))
     }
 
     override var undoManager: UndoManager? { sessionUndo }

@@ -57,6 +57,7 @@ public struct FormatPanel: View {
                 .padding(.bottom, 24)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
+            .accessibilityLabel(Loc.t("Format options"))
         }
         .frame(minWidth: 300, idealWidth: 320, maxWidth: 360)
         .background(.background)
@@ -135,8 +136,10 @@ struct StyleTab: View {
                     .buttonStyle(.plain)
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Quick style")
             Text("Xmind’s four (Very Important, Important, Cross Out, Default) plus four for technical work.")
-                .font(.chrome(11)).foregroundStyle(.secondary)
+                .font(.chrome(11)).foregroundStyle(Color(nsColor: .secondaryLabelColor))
         }
     }
 
@@ -152,9 +155,10 @@ struct StyleTab: View {
                 Menu {
                     updateStyleItems
                 } label: {
-                    Text("Update style").font(.chrome(13))
+                    Text("Update style").font(.chrome(13)).accessibilityHidden(true)
                 }
                 .menuStyle(.borderlessButton)
+                .accessibilityLabel("Update style")
                 .padding(.vertical, 4)
                 actionRow("Save as Quick Style…", "") { askingQuickName = true }
                 actionRow("Select topics with this style", "") { controller.selectTopicsWithSameStyle() }
@@ -234,6 +238,8 @@ struct StyleTab: View {
                     .accessibilityLabel(sh.name)
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Shape")
         }
     }
 
@@ -264,10 +270,11 @@ struct StyleTab: View {
                     }
                 )
                 .labelsHidden()
+                .accessibilityLabel("Custom colour")
                 .frame(width: 34)
                 Spacer(minLength: 0)
             }
-            Menu("Branch colour") {
+            LabeledMenu("Branch colour") {
                 Button("Follow branch colour") { set("Fill Colour") { $0.fillColor = "branch" } }
                 Button("Branch tint") { set("Fill Colour") { $0.fillColor = "branch@0.16" } }
                 Button("Theme default") { set("Fill Colour") { $0.fillColor = nil } }
@@ -306,6 +313,7 @@ struct StyleTab: View {
                     }
                 )
                 .labelsHidden()
+                .accessibilityLabel("Custom colour")
                 .frame(width: 34)
             }
             Segments(
@@ -484,6 +492,8 @@ struct StyleTab: View {
                     }
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Numbering")
             PanelToggle(label: "Tiered (2.1, 2.2…)", isOn: current?.tiered ?? false) { v in
                 controller.select(target)
                 controller.updateSelectionStyle("Numbering") {
@@ -564,6 +574,8 @@ struct StyleTab: View {
                     }
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Branch line")
             HStack {
                 Toggle(
                     isOn: Binding(
@@ -614,6 +626,7 @@ struct StyleTab: View {
                         set: { v in set("Sibling Gap") { $0.siblingGap = v.rounded() } }), in: 0...80
                 )
                 .frame(width: 150)
+                .accessibilityLabel(Loc.t("Sibling gap"))
             }
             PanelRow(label: "Level gap") {
                 Slider(
@@ -622,6 +635,7 @@ struct StyleTab: View {
                     in: 8...160
                 )
                 .frame(width: 150)
+                .accessibilityLabel(Loc.t("Level gap"))
             }
             Divider().padding(.vertical, 4)
             Text("UPDATE STYLE").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)

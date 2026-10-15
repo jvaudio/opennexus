@@ -60,7 +60,7 @@ struct PaletteView: View {
                                 }
                                 paletteRow(row, on: i == p.highlighted, details: p.showDetails && i == p.highlighted)
                                     .id(i)
-                                    .onTapGesture { controller.runPaletteRow(row) }
+                                    .accessibleTap { controller.runPaletteRow(row) }
                             }
                             if rows.isEmpty {
                                 Text("No command matches “\(p.query)”").foregroundStyle(.secondary).padding(16)
@@ -68,6 +68,7 @@ struct PaletteView: View {
                         }
                         .padding(.bottom, 8)
                     }
+                    .accessibilityLabel(Loc.t("Commands"))
                     .frame(maxHeight: 460)
                     .onChange(of: p.highlighted) { _, i in proxy.scrollTo(i) }
                 }
@@ -177,11 +178,12 @@ struct JumpView: View {
                             )
                             .padding(.horizontal, 6)
                             .contentShape(Rectangle())
-                            .onTapGesture { controller.goTo(row) }
+                            .accessibleTap { controller.goTo(row) }
                         }
                     }
                     .padding(.vertical, 6)
                 }
+                .accessibilityLabel(Loc.t("Topics"))
                 .frame(maxHeight: 420)
                 Divider()
                 Text("↩ flies the camera there and selects the node · ⇧↩ adds to selection")
@@ -288,7 +290,7 @@ struct FocusBreadcrumbView: View {
                     if i > 0 { Text("›").foregroundStyle(.secondary) }
                     Text(controller.canvas.nodes[id]?.text ?? "")
                         .font(.chrome(13, weight: i == path.count - 1 ? .semibold : .regular))
-                        .onTapGesture {
+                        .accessibleTap {
                             if i == 0 {
                                 controller.exitFocus()
                             } else {
@@ -322,7 +324,7 @@ struct CountsControl: View {
                 Text("\(Int((controller.zoom * 100).rounded()))%").font(.chrome(12.5, design: .monospaced))
                 Button("+") { _ = controller.perform(.zoomIn) }.buttonStyle(.plain).accessibilityLabel("Zoom in")
                 Divider().frame(height: 14)
-                Button("\(all.topics) topics") { controller.countsVisible.toggle() }
+                Button("\(all.topics) \(all.topics == 1 ? "topic" : "topics")") { controller.countsVisible.toggle() }
                     .buttonStyle(.plain)
                     .foregroundStyle(Color.accentColor)
                     .popover(
@@ -384,13 +386,17 @@ struct ZenCountView: View {
                     Text(
                         [
                             timer ? "Today \(mins / 60):\(String(format: "%02d", mins % 60))" : nil,
-                            count ? "\(n.topics) topics · \(n.words) words" : nil,
+                            count
+                                ? "\(n.topics) \(n.topics == 1 ? "topic" : "topics") · \(n.words) \(n.words == 1 ? "word" : "words")"
+                                : nil,
                         ]
                         .compactMap { $0 }.joined(separator: " · ")
                     )
                     .font(.chrome(12, design: .monospaced))
                     .foregroundStyle(.secondary.opacity(0.6))
-                    .accessibilityLabel("\(n.topics) topics, \(n.words) words")
+                    .accessibilityLabel(
+                        "\(n.topics) \(n.topics == 1 ? "topic" : "topics"), \(n.words) \(n.words == 1 ? "word" : "words")"
+                    )
                 }
             }
         }
@@ -512,10 +518,11 @@ struct SearchTab: View {
                 VStack(alignment: .leading, spacing: 0) {
                     ForEach(Array(s.matches.enumerated()), id: \.element.id) { i, m in
                         resultRow(m, current: i == s.current)
-                            .onTapGesture { controller.stepSearch(i - s.current) }
+                            .accessibleTap { controller.stepSearch(i - s.current) }
                     }
                 }
             }
+            .accessibilityLabel(Loc.t("Matches"))
             Text("↩ next · ⇧↩ previous · matches glow on canvas · esc closes")
                 .font(.chrome(11)).foregroundStyle(.secondary)
         }
@@ -591,7 +598,7 @@ struct OutlineTab: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(controller.selection.nodes.contains(id) ? Color.accentColor.opacity(0.14) : .clear)
                         .contentShape(Rectangle())
-                        .onTapGesture {
+                        .accessibleTap {
                             controller.select(id)
                             controller.onReveal?(id)
                         }
@@ -599,6 +606,7 @@ struct OutlineTab: View {
             }
             .padding(12)
         }
+        .accessibilityLabel(Loc.t("Outline"))
     }
 
     func rows(_ c: NexusCore.Canvas) -> [(NodeID, Int)] {
@@ -637,7 +645,7 @@ struct NotesTab: View {
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .contentShape(Rectangle())
-                    .onTapGesture {
+                    .accessibleTap {
                         controller.select(id)
                         controller.onReveal?(id)
                     }
@@ -645,6 +653,7 @@ struct NotesTab: View {
                 }
             }
         }
+        .accessibilityLabel(Loc.t("Notes"))
     }
 }
 
@@ -672,7 +681,7 @@ struct TagsTab: View {
                                     ? Color.primary
                                     : Color(nsColor: NSColor(cgColor: t.color.alpha(0.12).cgColor) ?? .gray))
                         )
-                        .onTapGesture {
+                        .accessibleTap {
                             controller.toggleTag(t.key, combine: NSEvent.modifierFlags.contains(.shift))
                         }
                 }
@@ -712,7 +721,7 @@ struct TodosTab: View {
                         .padding(.vertical, 5)
                         .foregroundStyle(which == k ? Color(nsColor: .textBackgroundColor) : .primary)
                         .background(Capsule().fill(which == k ? Color.primary : Color.secondary.opacity(0.12)))
-                        .onTapGesture { which = k }
+                        .accessibleTap { which = k }
                 }
             }
             ScrollView {
@@ -734,7 +743,7 @@ struct TodosTab: View {
                         }
                         .padding(.vertical, 7)
                         .contentShape(Rectangle())
-                        .onTapGesture {
+                        .accessibleTap {
                             controller.select(id)
                             controller.onReveal?(id)
                         }
@@ -742,6 +751,7 @@ struct TodosTab: View {
                     }
                 }
             }
+            .accessibilityLabel(Loc.t("To-dos"))
         }
         .padding(12)
     }

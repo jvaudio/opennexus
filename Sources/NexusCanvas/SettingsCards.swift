@@ -208,6 +208,8 @@ private struct ThemeGrid: View {
                 .accessibilityAddTraits(selected == id ? .isSelected : [])
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Themes")
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator.opacity(0.6)))
@@ -328,6 +330,8 @@ private struct FramePicker: View {
                 .accessibilityAddTraits(selected == id ? .isSelected : [])
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Frames")
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
     }
@@ -391,6 +395,7 @@ private struct MatColorRow: View {
                     })
             )
             .labelsHidden()
+            .accessibilityLabel("Custom colour")
         }
         .padding(.horizontal, 18).padding(.vertical, 11)
         .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
@@ -467,6 +472,8 @@ private struct FlowChips: View {
                         RoundedRectangle(cornerRadius: 5).fill(isRead ? Color(hex: "#ECEBFF") : Color(hex: "#FFF1D6")))
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("MCP tools")
     }
 }
 

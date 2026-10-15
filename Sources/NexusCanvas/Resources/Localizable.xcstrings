@@ -797,6 +797,10 @@
       "comment" : "UI text (DocumentWindowController.swift)",
       "extractionState" : "migrated"
     },
+    "Canvas tabs" : {
+      "comment" : "UI text (DocumentWindowController.swift)",
+      "extractionState" : "migrated"
+    },
     "Canvas text never smaller than" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -1077,6 +1081,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Custom colour" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Custom patterns" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -1175,6 +1183,10 @@
     },
     "Diagram font" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Diagram types" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
     "Dim" : {
@@ -1581,6 +1593,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Frames" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
     "Français" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -1715,10 +1731,6 @@
     },
     "How keys, the pointer and the layout engine behave while you build." : {
       "comment" : "Settings pane subtitle",
-      "extractionState" : "migrated"
-    },
-    "http:\/\/localhost:11434" : {
-      "comment" : "UI text (AISettingsView.swift)",
       "extractionState" : "migrated"
     },
     "https:\/\/" : {
@@ -1925,6 +1937,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Keys you learned" : {
+      "comment" : "UI text (TourViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Label" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -2119,6 +2135,10 @@
     },
     "Matches glow on canvas and list" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "MCP tools" : {
+      "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
     "Meaning · technical canvases" : {
@@ -2565,6 +2585,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Page previews" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Page size" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -2801,6 +2825,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Quick style" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Quick Style 1" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -2923,6 +2951,10 @@
     },
     "Relationship (Connect Mode)" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Relationship \/ edge" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Release notes" : {
@@ -3277,6 +3309,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Settings" : {
+      "comment" : "UI text (AppPreferences.swift)",
+      "extractionState" : "migrated"
+    },
     "SF Mono" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -3291,6 +3327,10 @@
     },
     "Shadow" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Shape" : {
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Share anonymous usage statistics" : {
@@ -3327,6 +3367,10 @@
     },
     "Size" : {
       "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Skeleton" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Skeletons" : {
@@ -3835,6 +3879,10 @@
     },
     "Ways in and out of OpenNexus without leaving the Mac." : {
       "comment" : "Settings pane subtitle",
+      "extractionState" : "migrated"
+    },
+    "Welcome to OpenNexus" : {
+      "comment" : "UI text (Onboarding.swift)",
       "extractionState" : "migrated"
     },
     "WELCOME TO OPENNEXUS" : {

@@ -178,6 +178,7 @@ private struct ExportSheet: View {
             }
             .padding(10)
         }
+        .accessibilityLabel(Loc.t("Formats"))
         .background(Color(nsColor: .underPageBackgroundColor).opacity(0.5))
     }
 
@@ -190,6 +191,7 @@ private struct ExportSheet: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(18)
                 }
+                .accessibilityLabel(Loc.t("Preview"))
                 .background(RoundedRectangle(cornerRadius: 12).fill(Color(red: 0.11, green: 0.11, blue: 0.13)))
             } else {
                 ZStack {
@@ -255,6 +257,7 @@ private struct ExportSheet: View {
                         in: 0.3...1
                     )
                     .frame(width: 260)
+                    .accessibilityLabel(Loc.t("Quality"))
                     Text("\(Int(state.jpegQuality * 100))%").font(.chrome(12.5, design: .monospaced))
                 }
             }
@@ -543,6 +546,8 @@ private struct PrintSheet: View {
                                 }
                         }
                     }
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel("Page previews")
                     .frame(maxWidth: 340)
                     Text(
                         "\(count) page\(count == 1 ? "" : "s")\(count > 1 && options.tile && !options.fitPage ? " · cut marks on" : "")"
@@ -586,7 +591,7 @@ private struct PrintSheet: View {
             }
             Divider()
             HStack {
-                Menu("PDF") {
+                LabeledMenu("PDF") {
                     Button("Save as PDF…") { controller.runPrint(options, savePDF: true) }
                 }
                 .frame(width: 90)
@@ -894,6 +899,7 @@ struct SnapshotsSheetView: View {
                             }
                         }
                     }
+                    .accessibilityLabel(Loc.t("Snapshots"))
                     .frame(maxHeight: 380)
                 }
                 HStack {

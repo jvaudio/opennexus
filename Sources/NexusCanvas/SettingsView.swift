@@ -47,6 +47,8 @@ public struct SettingsView: View {
                 .onChange(of: highlight) { _, h in
                     if let h { withAnimation(UIMotion.animation(.default)) { proxy.scrollTo(h, anchor: .center) } }
                 }
+                .accessibilityLabel(
+                    query.isEmpty ? Loc.t(SettingsSchema.pane(pane)?.title ?? "Shortcuts") : Loc.t("Search results"))
             }
             .background(Color(nsColor: .windowBackgroundColor))
         }
@@ -253,8 +255,14 @@ struct RowView: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .accessibilityElement(children: .combine)
+            .accessibilityElement(children: combines ? .combine : .contain)
         }
+    }
+
+    /// Rows read as one control, except multi-line text, which stays a field of its own.
+    var combines: Bool {
+        if case .text = row.kind { return false }
+        return true
     }
 
     var titleBlock: some View {
@@ -284,7 +292,7 @@ struct RowView: View {
                 .toggleStyle(.switch)
                 .tint(.green)
                 .labelsHidden()
-                .accessibilityLabel(row.title)
+                .accessibilityLabel(Loc.t(row.title))
         case .segmented(let options):
             SettingSegments(
                 options: options, selection: Binding(get: { prefs.string(row.key) }, set: { prefs.set(row.key, $0) }))
@@ -304,7 +312,7 @@ struct RowView: View {
                     in: lo...hi
                 )
                 .frame(width: 120)
-                .accessibilityLabel(row.title)
+                .accessibilityLabel(Loc.t(row.title))
                 Text("\(prefs.number(row.key), format: .number.precision(.fractionLength(step < 1 ? 1 : 0))) \(unit)")
                     .font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary).frame(
                         minWidth: 44, alignment: .trailing)
@@ -319,7 +327,7 @@ struct RowView: View {
                 .textFieldStyle(.roundedBorder)
                 .frame(width: 64)
                 .multilineTextAlignment(.trailing)
-                .accessibilityLabel(row.title)
+                .accessibilityLabel(Loc.t(row.title))
                 Text(unit).foregroundStyle(.secondary)
                 Stepper(
                     "",
@@ -336,7 +344,7 @@ struct RowView: View {
             .font(.chrome(13, design: .monospaced))
             .lineLimit(1...4)
             .frame(width: 240)
-            .accessibilityLabel(row.title)
+            .accessibilityLabel(Loc.t(row.title))
         case .button(let title):
             Button(title) { onAction(row.key) }
         case .keycaps(let keys):

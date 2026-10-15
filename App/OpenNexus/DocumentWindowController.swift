@@ -30,6 +30,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         controller = CanvasController(store: document.store)
         host = CanvasHostView(controller: controller)
         panel = NSHostingView(rootView: FormatPanel(controller: controller))
+        panel.setAccessibilityLabel("Format panel")
         outline = OutlineView(controller: controller)
 
         let window = NSWindow(
@@ -45,6 +46,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         wireDiagramHooks()
 
         let tabs = NSHostingView(rootView: CanvasTabsView(store: document.store, controller: controller))
+        tabs.setAccessibilityLabel("Canvas tabs")
         tabs.translatesAutoresizingMaskIntoConstraints = false
         host.translatesAutoresizingMaskIntoConstraints = false
         let content = NSView()

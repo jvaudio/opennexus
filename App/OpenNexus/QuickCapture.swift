@@ -78,6 +78,8 @@ final class QuickCapture: NSObject, NSMenuDelegate {
         model = m
         let p = panel ?? CapturePanel()
         p.contentView = NSHostingView(rootView: QuickCaptureView(model: m).padding(24))
+        p.title = "Quick Capture"
+        p.contentView?.setAccessibilityLabel("Quick Capture")
         p.setContentSize(p.contentView!.fittingSize)
         // Upper third of the screen the pointer is on, like Spotlight.
         let screen = NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main

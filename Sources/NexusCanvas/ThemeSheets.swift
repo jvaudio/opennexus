@@ -72,6 +72,7 @@ struct ThemeBuilder: View {
                             set: { theme.palette[min(selectedColor, theme.palette.count - 1)] = RGBA(color: $0) }))
                     Spacer()
                     ColorPicker("", selection: $accent).labelsHidden()
+                        .accessibilityLabel("Custom colour")
                     Button("Generate from one accent…") {
                         let g = ColorPalette.generated(from: RGBA(color: accent))
                         theme.palette = g.colors + Array(g.colors.prefix(2))
@@ -85,6 +86,7 @@ struct ThemeBuilder: View {
                         "", selection: Binding(get: { theme.canvas.color }, set: { theme.canvas = RGBA(color: $0) })
                     )
                     .labelsHidden()
+                    .accessibilityLabel("Custom colour")
                     Picker("", selection: Binding(get: { gridName }, set: { setGrid($0) })) {
                         Text("Plain").tag("plain")
                         Text("Dots").tag("dots")
@@ -100,6 +102,7 @@ struct ThemeBuilder: View {
                             get: { theme.root.background.color }, set: { theme.root.background = RGBA(color: $0) })
                     )
                     .labelsHidden()
+                    .accessibilityLabel("Custom colour")
                     Picker(
                         "",
                         selection: Binding(
@@ -261,6 +264,7 @@ struct ColourThemeEditor: View {
                         })
                 )
                 .labelsHidden()
+                .accessibilityLabel("Custom colour")
                 TextField("#RRGGBB", text: $hex)
                     .textFieldStyle(.roundedBorder)
                     .font(.chrome(12, design: .monospaced))
@@ -274,6 +278,7 @@ struct ColourThemeEditor: View {
                         set: { palette.root = RGBA(color: $0) })
                 )
                 .labelsHidden()
+                .accessibilityLabel("Custom colour")
             }
             PanelRow(label: "Contrast check") {
                 let ok = check.passing == check.total

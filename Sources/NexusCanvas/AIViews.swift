@@ -188,7 +188,7 @@ struct AIPanelView: View {
                 Divider()
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        Menu("Chat: \(chat?.title ?? "New chat")") {
+                        LabeledMenu("Chat: \(chat?.title ?? "New chat")") {
                             ForEach(controller.chats) { c in Button(c.title) { controller.selectChat(c.id) } }
                         }
                         .menuStyle(.borderlessButton)
@@ -236,6 +236,7 @@ struct AIPanelView: View {
                         }
                         .padding(16)
                     }
+                    .accessibilityLabel(Loc.t("Conversation"))
                     .onChange(of: chat?.messages.count) { _, _ in proxy.scrollTo("end") }
                 }
                 Divider()
@@ -584,6 +585,7 @@ struct MaskSheet: View {
                     }
                 }
             }
+            .accessibilityLabel(Loc.t("Masked items"))
             .frame(maxHeight: 220)
             Text("Makes a masked copy for export, Present or sharing. You review each hit before anything is written.")
                 .font(.chrome(12)).foregroundStyle(.secondary)

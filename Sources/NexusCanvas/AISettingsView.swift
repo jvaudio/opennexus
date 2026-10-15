@@ -33,7 +33,7 @@ struct AISettingsPane: View {
                 status: nil
             ) {
                 HStack(spacing: 10) {
-                    Text("http://localhost:11434").font(.chrome(13, design: .monospaced))
+                    Text(verbatim: "http://localhost:11434").font(.chrome(13, design: .monospaced))
                         .padding(.horizontal, 10).padding(.vertical, 5)
                         .background(RoundedRectangle(cornerRadius: 6).stroke(.separator))
                     Text("Test connection").foregroundStyle(.secondary)

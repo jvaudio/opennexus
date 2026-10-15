@@ -1821,7 +1821,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         assistiveAppOverride ?? (NSWorkspace.shared.isVoiceOverEnabled || NSWorkspace.shared.isSwitchControlEnabled)
     }
 
-    public override func accessibilityChildren() -> [Any]? { accessibilityTree.roots() }
+    /// The topic tree, then the canvas's real subviews (the text editor while typing, the
+    /// Add Topic buttons, the floating toolbar), so each one's parent lists it as a child.
+    public override func accessibilityChildren() -> [Any]? {
+        accessibilityTree.roots() + (super.accessibilityChildren() ?? [])
+    }
     /// The canvas is always usable (otherwise VoiceOver reads it as dimmed).
     public override func isAccessibilityEnabled() -> Bool { true }
     public override func accessibilityCustomRotors() -> [NSAccessibilityCustomRotor] { accessibilityTree.rotors() }

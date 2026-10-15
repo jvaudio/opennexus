@@ -117,7 +117,7 @@ struct TourOverlay: View {
         // Shapes make no accessibility element of their own: this one is explicit.
         .accessibilityElement()
         .accessibilityLabel("Lesson \(t.lesson + 1) of \(t.lessons.count)")
-        .accessibilityAddTraits(.updatesFrequently)
+        .accessibilityAddTraits([.isStaticText, .updatesFrequently])
     }
 
     func pill(_ t: TourController) -> some View {
@@ -158,6 +158,8 @@ struct TourOverlay: View {
                     }
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Keys you learned")
             HStack(alignment: .bottom) {
                 Text("Hold ⌘ any time to see these again. Your tutorial map stays as your first document.")
                     .font(.chrome(15)).foregroundStyle(.white.opacity(0.75)).fixedSize(

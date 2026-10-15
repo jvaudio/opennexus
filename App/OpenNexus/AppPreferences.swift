@@ -146,6 +146,7 @@ final class AppPreferences {
                 [weak self] action in
                 self?.run(action)
             })
+        settingsWindow?.contentView?.setAccessibilityLabel("Settings")
         settingsWindow?.center()
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
@@ -242,7 +243,8 @@ final class AppPreferences {
                 Text(.init(body)).font(.chrome(14)).textSelection(.enabled).frame(
                     maxWidth: .infinity, alignment: .leading
                 ).padding(24)
-            })
+            }
+            .accessibilityLabel(title))
         w.center()
         w.makeKeyAndOrderFront(nil)
         infoWindow = w

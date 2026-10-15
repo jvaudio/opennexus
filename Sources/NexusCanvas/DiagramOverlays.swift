@@ -44,7 +44,7 @@ struct SlashMenuView: View {
                     .padding(.vertical, 6)
                     .background(i == s.highlighted ? Color.accentColor.opacity(0.16) : .clear)
                     .contentShape(Rectangle())
-                    .onTapGesture { controller.applySlash(item) }
+                    .accessibleTap { controller.applySlash(item) }
                 }
             }
             .frame(width: 300)
@@ -134,6 +134,8 @@ struct ConvertSheetView: View {
                     tile(t, number: (CanvasController.featuredTypes.firstIndex(of: t) ?? 0) + 1, s: s)
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Diagram types")
             if !more.isEmpty {
                 HStack(spacing: 6) {
                     Text("More").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
@@ -183,7 +185,7 @@ struct ConvertSheetView: View {
         )
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(on ? Color.accentColor : .clear, lineWidth: 2))
         .contentShape(Rectangle())
-        .onTapGesture { controller.chooseConvertType(t) }
+        .accessibleTap { controller.chooseConvertType(t) }
         .accessibilityLabel("\(t.displayName), \(number)")
         .accessibilityAddTraits(on ? .isSelected : [])
     }
@@ -321,7 +323,7 @@ struct DFDPanelView: View {
                             RoundedRectangle(cornerRadius: 6).fill(
                                 l.id == c.id ? Color.accentColor.opacity(0.14) : .clear)
                         )
-                        .onTapGesture { controller.switchCanvas(to: l.id) }
+                        .accessibleTap { controller.switchCanvas(to: l.id) }
                 }
                 let numbers = DFDRules.numbers(c)
                 ForEach(
@@ -331,7 +333,7 @@ struct DFDPanelView: View {
                         .font(.chrome(12.5))
                         .padding(.leading, 18)
                         .foregroundStyle(c.nodes[p]?.subCanvas != nil ? .primary : .secondary)
-                        .onTapGesture { controller.select(p) }
+                        .accessibleTap { controller.select(p) }
                 }
                 Text("RULE CHECKS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary).padding(
                     .top, 10)
@@ -341,7 +343,7 @@ struct DFDPanelView: View {
                         Text(row.text).font(.chrome(12.5)).foregroundStyle(
                             row.ok ? Color.green : controller.theme.critical.color)
                     }
-                    .onTapGesture {
+                    .accessibleTap {
                         if let v = controller.violations.first(where: { $0.rule == row.rule }) {
                             controller.focusViolation(v.id)
                         }
@@ -408,7 +410,7 @@ struct LevelBreadcrumbView: View {
                     if i > 0 { Text("›").foregroundStyle(.secondary) }
                     Text(l.title)
                         .font(.chrome(12.5, weight: i == path.count - 1 ? .semibold : .regular))
-                        .onTapGesture { controller.switchCanvas(to: l.id) }
+                        .accessibleTap { controller.switchCanvas(to: l.id) }
                 }
                 Keycap(text: "⌘[")
             }
@@ -548,10 +550,13 @@ struct IconLibraryView: View {
                                         .accessibilityLabel(info.name)
                                     }
                                 }
+                                .accessibilityElement(children: .contain)
+                                .accessibilityLabel("Icon library")
                             }
                         }
                     }
                 }
+                .accessibilityLabel(Loc.t("Icons"))
                 Text("Click to insert as a child of the selection. Icon packs install from file or URL.")
                     .font(.chrome(11)).foregroundStyle(.secondary)
             }

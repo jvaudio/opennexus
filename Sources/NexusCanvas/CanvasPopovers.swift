@@ -278,6 +278,7 @@ struct LabelPopover: View {
                     }
                 }
             }
+            .accessibilityLabel(Loc.t("Label suggestions"))
             Toggle("Auto sort A–Z", isOn: $sort).toggleStyle(.checkbox)
             HStack {
                 Spacer()
@@ -353,6 +354,7 @@ struct MarkerPopover: View {
                             .font(.chrome(11)).foregroundStyle(.secondary)
                     }
                 }
+                .accessibilityLabel(Loc.t("Markers"))
             } else {
                 Picker("", selection: $category) {
                     ForEach(StickerLibrary.categories, id: \.0) { Text($0.0).tag($0.0) }
@@ -371,6 +373,8 @@ struct MarkerPopover: View {
                         .buttonStyle(.plain)
                     }
                 }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Stickers")
                 if controller.canvas.nodes[node]?.sticker != nil {
                     Button("Remove Sticker") {
                         controller.setSticker(nil, on: node)

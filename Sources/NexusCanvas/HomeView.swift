@@ -167,6 +167,9 @@ public struct HomeView: View {
                 .padding(.horizontal, 34)
                 .padding(.vertical, 26)
             }
+            .accessibilityLabel(
+                Loc.t(model.section == "recents" ? "Recents" : model.section == "templates" ? "Templates" : "Home")
+            )
             .overlay(alignment: .bottomTrailing) {
                 if model.tourMap != nil && model.section == "home" { emptyState.padding(24) }
             }
@@ -400,6 +403,8 @@ public struct HomeView: View {
                     .buttonStyle(.plain)
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Recents")
         }
     }
 
@@ -516,7 +521,10 @@ public struct HomeView: View {
     }
 
     func keycap(_ s: String) -> some View {
-        Text(s).font(.chrome(11, weight: .medium, design: .monospaced)).padding(.horizontal, 5).frame(height: 20)
+        // Explicit colours: the audit measured the inherited ones at 2.2:1 in dark mode.
+        Text(s).font(.chrome(11, weight: .medium, design: .monospaced)).foregroundStyle(Color.primary)
+            .padding(.horizontal, 5).frame(height: 20)
+            .background(RoundedRectangle(cornerRadius: 4).fill(Color(nsColor: .controlBackgroundColor)))
             .overlay(RoundedRectangle(cornerRadius: 4).stroke(.separator))
     }
 }

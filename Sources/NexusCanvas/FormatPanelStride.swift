@@ -96,7 +96,7 @@ struct StrideTab: View {
             }
             Spacer()
             if let threat {
-                Menu(threat.risk) {
+                LabeledMenu(threat.risk) {
                     ForEach(Stride.risks, id: \.self) { r in
                         Button(r) { controller.setThreatField(threat.node, Stride.riskKey, r) }
                     }

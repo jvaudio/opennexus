@@ -146,7 +146,8 @@ struct MapTab: View {
                     VStack(alignment: .leading) {
                         Text("Skeletons").font(.title2.bold())
                         Text("Structure + node style + branch line.").foregroundStyle(.secondary)
-                        ScrollView { skeletonGrid(Skeleton.gallery, labels: true) }
+                        ScrollView { skeletonGrid(Skeleton.gallery, labels: true) }.accessibilityLabel(
+                            Loc.t("Skeletons"))
                         HStack {
                             Spacer()
                             Button("Done") { showingGallery = false }.keyboardShortcut(.defaultAction)
@@ -174,6 +175,8 @@ struct MapTab: View {
                 .accessibilityLabel(s.name)
             }
         }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Skeleton")
     }
 
     var nodeStyles: some View {
@@ -197,6 +200,8 @@ struct MapTab: View {
                     .help(ns.summary)
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Node style")
         }
     }
 
@@ -222,6 +227,8 @@ struct MapTab: View {
                     .accessibilityAddTraits(style.theme == t.id ? .isSelected : [])
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Themes")
             if !lib.themes.isEmpty {
                 Text("CUSTOM THEMES").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary).padding(
                     .top, 6)
@@ -399,6 +406,7 @@ struct MapTab: View {
                         }
                     )
                     .labelsHidden()
+                    .accessibilityLabel("Custom colour")
                 }
             }
             PanelRow(label: "Pattern") {

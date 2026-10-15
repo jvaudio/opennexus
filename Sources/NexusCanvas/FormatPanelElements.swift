@@ -88,6 +88,8 @@ struct RelationshipSection: View {
                     }
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Relationship / edge")
             HStack {
                 Text("START / END CAPS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
                 Spacer()
@@ -120,6 +122,7 @@ struct RelationshipSection: View {
                     }
                 )
                 .labelsHidden()
+                .accessibilityLabel("Custom colour")
                 .frame(width: 34)
             }
             PanelToggle(label: "Colour follows source topic", isOn: rel.color == "source") { v in
@@ -218,6 +221,8 @@ struct BoundarySection: View {
                     }
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Boundary")
             PanelRow(label: "Title") {
                 TextField("Title", text: Binding(get: { boundary.title }, set: { v in set { $0.title = v } }))
                     .textFieldStyle(.roundedBorder)
@@ -249,6 +254,7 @@ struct BoundarySection: View {
                     in: 0...0.3
                 )
                 .frame(maxWidth: 140)
+                .accessibilityLabel(Loc.t("Tint"))
                 Text("\(Int(boundary.fillOpacity * 100))%").font(.chrome(12, design: .monospaced))
             }
             HStack {
@@ -275,6 +281,7 @@ struct BoundarySection: View {
                     }
                 )
                 .labelsHidden()
+                .accessibilityLabel("Custom colour")
                 .frame(width: 34)
             }
             PanelToggle(label: "Hatch pattern by trust level", isOn: boundary.hatch) { v in set { $0.hatch = v } }
@@ -354,6 +361,8 @@ struct SummarySection: View {
                     .accessibilityLabel("\(id) bracket")
                 }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Summary")
             HStack {
                 Picker("", selection: Binding(get: { summary.width }, set: { v in set { $0.width = v } })) {
                     ForEach([1, 1.5, 2, 3] as [Double], id: \.self) { Text(CanvasPanelFormat.points($0)).tag($0) }

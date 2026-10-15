@@ -74,3 +74,34 @@ public enum UIMotion {
     /// `animation`, or none when motion is reduced (changes then happen at once).
     public static func animation(_ a: Animation) -> Animation? { reduce ? nil : a }
 }
+
+extension View {
+    /// A tap target that assistive apps can press too: a button role and a default action
+    /// (M10 audit: "Action is missing" for bare tap gestures).
+    public func accessibleTap(perform action: @escaping () -> Void) -> some View {
+        onTapGesture(perform: action)
+            .accessibilityAddTraits(.isButton)
+            .accessibilityAction(.default) { action() }
+    }
+}
+
+/// A pop-up menu whose title is its accessibility label. The title view inside a SwiftUI
+/// menu is otherwise exposed as a separate element with no action (M10 audit).
+public struct LabeledMenu<Content: View>: View {
+    let title: String
+    let content: Content
+
+    public init(_ title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    public var body: some View {
+        Menu {
+            content
+        } label: {
+            Text(title).accessibilityHidden(true)
+        }
+        .accessibilityLabel(title)
+    }
+}
