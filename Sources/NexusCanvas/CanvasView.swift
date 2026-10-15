@@ -639,9 +639,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     /// How many topic layers the last cull left on screen.
     private(set) var visibleNodeLayers = 0
 
-    func setCamera(_ c: Camera, animated: Bool) {
+    func setCamera(_ c: Camera, animated: Bool, via: Camera? = nil) {
         if animated && !reduceMotion && window != nil {
-            cameraTween = CameraTween(from: camera, to: c, start: CACurrentMediaTime(), duration: Motion.focus)
+            cameraTween = CameraTween(
+                from: camera, to: c, start: CACurrentMediaTime(), duration: Motion.focus * (via == nil ? 1 : 2.5),
+                via: via)
             startTicking()
             return
         }
@@ -738,8 +740,10 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         let z = min(1.4, max(0.1, min(target.width / max(b.width, 1), target.height / max(b.height, 1))))
         let cam = Camera(
             offset: CGPoint(x: target.midX - b.midX * z, y: target.midY - b.midY * z), zoom: z)
-        let cut = controller.present != nil && controller.canvas.presentation.transition == "cut"
-        setCamera(cam, animated: !cut)
+        let transition = controller.present == nil ? "glide" : controller.canvas.presentation.transition
+        // Zoom pulls out to show both slides, then pushes in; Glide flies straight; Cut jumps.
+        let via = transition == "zoom" ? CameraTween.overview(from: camera, to: cam, in: bounds) : nil
+        setCamera(cam, animated: transition != "cut", via: via)
     }
 
     /// Zooms to `z` around the view's centre (Settings › Editing › Default zoom).

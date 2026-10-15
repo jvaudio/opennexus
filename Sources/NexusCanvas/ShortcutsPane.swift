@@ -7,6 +7,8 @@ import UniformTypeIdentifiers
 /// command, and a recorder that checks conflicts against OpenNexus, the menu bar and macOS.
 struct ShortcutsPane: View {
     var prefs: Preferences
+    /// Opened from the palette: show this command and start recording its new key.
+    var record: CommandID?
     @State private var query = ""
     @State private var scope: Scope?
     @State private var recording: CommandID?
@@ -57,6 +59,11 @@ struct ShortcutsPane: View {
                 .frame(width: 150)
             }
             table
+        }
+        .onAppear {
+            guard let record, let cmd = customization.apply(to: .standard)[record] else { return }
+            query = cmd.title
+            startRecording(record)
         }
         .onDisappear { stopRecording() }
     }

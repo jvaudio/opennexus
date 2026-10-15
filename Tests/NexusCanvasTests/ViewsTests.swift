@@ -49,6 +49,20 @@ import Testing
         #expect(h.controller.palette == nil)
     }
 
+    /// The "Shortcuts › …" row opens Settings › Shortcuts recording the top command's key.
+    @Test func paletteRebindRowOpensShortcuts() {
+        UserDefaults.standard.removeObject(forKey: CanvasController.recentKey)
+        let h = CanvasHarness(model: launchPlanDocument())
+        var rebound: CommandID?
+        h.controller.onRebind = { rebound = $0 }
+        h.press("cmd+k")
+        h.type("conv")
+        let row = h.controller.paletteRows.first { $0.id.hasPrefix("rebind:") }
+        #expect(row?.title == "Shortcuts › Convert Diagram Type…")
+        h.controller.runPaletteRow(row!)
+        #expect(rebound == .convert && h.controller.palette == nil && h.controller.toast == nil)
+    }
+
     @Test func paletteSelectsByType() {
         let h = CanvasHarness(model: DocumentModel(canvases: [TechSamples.architecture()]))
         h.press("cmd+k")
@@ -213,6 +227,27 @@ import Testing
     }
 
     /// F6: auto slides, → steps, S skips, M merges, H hides, Esc ends.
+    /// Present's Zoom transition pulls out to show both slides, then pushes in; slides
+    /// that are close together just glide.
+    @Test func zoomTransitionFliesOutThenIn() {
+        let view = CGRect(x: 0, y: 0, width: 1000, height: 800)
+        let a = Camera(offset: .zero, zoom: 1)
+        let far = Camera(offset: CGPoint(x: -2000, y: 0), zoom: 1)
+        let via = CameraTween.overview(from: a, to: far, in: view)
+        #expect(via != nil && abs(via!.zoom - 0.3) < 0.001, "both 1000-wide views fit at 90%")
+        // The overview shows everything both slides show.
+        let both = CGRect(x: 0, y: 0, width: 3000, height: 800)
+        #expect(view.contains(via!.toView(both).insetBy(dx: 1, dy: 1)))
+        #expect(CameraTween.overview(from: a, to: Camera(offset: CGPoint(x: -100, y: 0), zoom: 1), in: view) == nil)
+        #expect(CameraTween.overview(from: a, to: a, in: view) == nil)
+
+        let tween = CameraTween(from: a, to: far, start: 0, duration: 1, via: via)
+        #expect(tween.value(at: 0.5).0 == via, "halfway is the overview")
+        #expect(tween.value(at: 0.25).0.zoom < 1 && tween.value(at: 0.75).0.zoom < 1)
+        let end = tween.value(at: 1)
+        #expect(end.0 == far && end.done)
+    }
+
     @Test func presentKeys() {
         let h = CanvasHarness(model: DocumentModel(canvases: [TechSamples.dfd()]))
         h.press("shift+cmd+p")

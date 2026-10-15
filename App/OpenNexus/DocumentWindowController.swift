@@ -256,7 +256,8 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     /// DFD drill-down inserts its level canvas undoably; CSV exports go through a save panel.
     private func wireDiagramHooks() {
         controller.onViewMode = { [weak self] m in self?.applyViewMode(m) }
-        controller.onOpenAISettings = { NSApp.sendAction(#selector(AppDelegate.showSettings(_:)), to: nil, from: nil) }
+        controller.onOpenAISettings = { AppPreferences.shared.showSettings(pane: "ai") }
+        controller.onRebind = { AppPreferences.shared.showSettings(pane: "shortcuts", record: $0) }
         controller.externalCommands.insert(.inspector)
         controller.onZen = { [weak self] on in self?.setImmersive(on) }
         host.onPresentChange = { [weak self] on in

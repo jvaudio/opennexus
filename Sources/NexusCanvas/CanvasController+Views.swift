@@ -319,8 +319,8 @@ extension CanvasController {
                 setSelection(Selection(primary: first, nodes: ids))
                 onFrame?(ids, nil)
             }
-        case .rebind:
-            showToast(Loc.t("Rebinding opens in Settings › Shortcuts (M8)"))
+        case .rebind(let id):
+            onRebind?(id)
         }
     }
 

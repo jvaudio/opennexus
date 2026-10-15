@@ -6541,10 +6541,6 @@
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
-    "Rebinding opens in Settings › Shortcuts (M8)" : {
-      "comment" : "UI text (CanvasController+Views.swift)",
-      "extractionState" : "migrated"
-    },
     "Recent first, then fuzzy match" : {
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"

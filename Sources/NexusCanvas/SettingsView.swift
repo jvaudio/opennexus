@@ -12,6 +12,8 @@ public struct SettingsView: View {
     var prefs: Preferences
     var availability: AIAvailability
     var onAction: (String) -> Void
+    /// A command to start recording a key for when Settings opens on Shortcuts.
+    var record: CommandID?
     @State private var pane: String
     @State private var query = ""
     @State private var highlight: String?
@@ -19,10 +21,11 @@ public struct SettingsView: View {
 
     public init(
         prefs: Preferences = .shared, availability: AIAvailability, pane: String = "general",
-        onAction: @escaping (String) -> Void = { _ in }
+        record: CommandID? = nil, onAction: @escaping (String) -> Void = { _ in }
     ) {
         self.prefs = prefs
         self.availability = availability
+        self.record = record
         self.onAction = onAction
         _pane = State(initialValue: pane)
     }
@@ -36,7 +39,7 @@ public struct SettingsView: View {
                     if !query.isEmpty {
                         results
                     } else if pane == "shortcuts" {
-                        ShortcutsPane(prefs: prefs).padding(.horizontal, 36).padding(.vertical, 30)
+                        ShortcutsPane(prefs: prefs, record: record).padding(.horizontal, 36).padding(.vertical, 30)
                     } else if let p = SettingsSchema.pane(pane) {
                         PaneView(
                             pane: p, prefs: prefs, availability: availability, highlight: highlight, onAction: onAction

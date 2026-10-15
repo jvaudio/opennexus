@@ -146,6 +146,9 @@ public final class CanvasController {
     @ObservationIgnored public var onSaveDocument: ((DocumentModel, String) -> Void)?
     /// "Use a local model" and ⌘, open Settings › AI.
     @ObservationIgnored public var onOpenAISettings: (() -> Void)?
+    /// Opens Settings › Shortcuts, recording a new key for the command (the palette's
+    /// "Shortcuts › …" row).
+    @ObservationIgnored public var onRebind: ((CommandID) -> Void)?
     /// Give keyboard focus back to the canvas (after the prompt bar or a panel field).
     @ObservationIgnored public var onRestoreFocus: (() -> Void)?
 

@@ -135,11 +135,31 @@ struct CameraTween {
     var to: Camera
     var start: CFTimeInterval
     var duration: CFTimeInterval
+    /// Present's Zoom transition: out to `via` in the first half, then in to `to`.
+    var via: Camera? = nil
     let ease = Bezier(c: Motion.glide)
 
     func value(at t: CFTimeInterval) -> (Camera, done: Bool) {
         let p = duration <= 0 ? 1 : (t - start) / duration
         if p >= 1 { return (to, true) }
-        return (from.interpolated(to: to, ease(p)), false)
+        guard let via else { return (from.interpolated(to: to, ease(p)), false) }
+        return p < 0.5
+            ? (from.interpolated(to: via, ease(p * 2)), false) : (via.interpolated(to: to, ease((p - 0.5) * 2)), false)
+    }
+
+    /// The camera that shows what both `from` and `to` show, in a view of `bounds`, or nil
+    /// when that's under 20% further out than either (neighbouring slides just glide).
+    static func overview(from: Camera, to: Camera, in bounds: CGRect) -> Camera? {
+        func seen(_ c: Camera) -> CGRect {
+            let a = c.toWorld(CGPoint(x: bounds.minX, y: bounds.minY))
+            let b = c.toWorld(CGPoint(x: bounds.maxX, y: bounds.maxY))
+            return CGRect(x: min(a.x, b.x), y: min(a.y, b.y), width: abs(b.x - a.x), height: abs(b.y - a.y))
+        }
+        let both = seen(from).union(seen(to))
+        guard bounds.width > 0, bounds.height > 0, both.width > 0, both.height > 0 else { return nil }
+        let fit = min(bounds.width / both.width, bounds.height / both.height)
+        guard fit < min(from.zoom, to.zoom) * 0.8 else { return nil }
+        let z = fit * 0.9  // a margin around both
+        return Camera(offset: CGPoint(x: bounds.midX - both.midX * z, y: bounds.midY - both.midY * z), zoom: z)
     }
 }

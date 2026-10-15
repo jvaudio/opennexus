@@ -131,7 +131,7 @@ final class AppPreferences {
 
     // MARK: Settings window
 
-    func showSettings(pane: String = "general") {
+    func showSettings(pane: String = "general", record: CommandID? = nil) {
         if settingsWindow == nil {
             let w = NSWindow(
                 contentRect: CGRect(x: 0, y: 0, width: 1240, height: 820),
@@ -144,7 +144,9 @@ final class AppPreferences {
             settingsWindow = w
         }
         settingsWindow?.contentView = NSHostingView(
-            rootView: SettingsView(prefs: prefs, availability: AppleEngine().availability, pane: pane) {
+            rootView: SettingsView(
+                prefs: prefs, availability: AppleEngine().availability, pane: pane, record: record
+            ) {
                 [weak self] action in
                 self?.run(action)
             })
