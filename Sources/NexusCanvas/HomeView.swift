@@ -414,9 +414,9 @@ public struct HomeView: View {
 
     static func relative(_ d: Date) -> String {
         let s = Date().timeIntervalSince(d)
-        if s < 3600 { return "\(max(1, Int(s / 60))) min ago" }
+        if s < 3600 { return Loc.f("%lld min ago", max(1, Int(s / 60))) }
         if Calendar.current.isDateInToday(d) { return d.formatted(date: .omitted, time: .shortened) }
-        if Calendar.current.isDateInYesterday(d) { return "Yesterday" }
+        if Calendar.current.isDateInYesterday(d) { return Loc.t("Yesterday") }
         if s < 6 * 86_400 { return d.formatted(.dateTime.weekday(.abbreviated)) }
         return d.formatted(.dateTime.month(.abbreviated).day())
     }

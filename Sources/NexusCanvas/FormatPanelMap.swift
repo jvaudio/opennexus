@@ -397,7 +397,7 @@ struct MapTab: View {
                                         lineWidth: style.background == hex ? 2 : 1))
                         }
                         .buttonStyle(.plain)
-                        .accessibilityLabel(hex == nil ? "Theme background" : "Background \(hex!)")
+                        .accessibilityLabel(hex.map { Loc.f("Background %@", $0) } ?? Loc.t("Theme background"))
                     }
                     ColorPicker(
                         "",

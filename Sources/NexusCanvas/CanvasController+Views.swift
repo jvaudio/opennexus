@@ -227,7 +227,7 @@ extension CanvasController {
         }
         for (t, n) in typeCount.sorted(by: { $0.key.rawValue < $1.key.rawValue }) {
             let name = DiagramCatalog.info(t, in: c.type)?.name ?? t.rawValue
-            let title = "Select by type · \(name)"
+            let title = Loc.f("Select by type · %@", name)
             let row = PaletteRow(
                 id: "type:\(t.rawValue)", section: "COMMANDS", title: title,
                 subtitle: Loc.n("%lld node on this canvas", "%lld nodes on this canvas", n), glyph: "◎", keys: nil,
@@ -246,7 +246,8 @@ extension CanvasController {
         if !q.isEmpty, let top = out.first, case .command(let id) = top.action {
             out.append(
                 PaletteRow(
-                    id: "rebind:\(id.rawValue)", section: "SETTINGS", title: "Shortcuts › \(top.title)", subtitle: "",
+                    id: "rebind:\(id.rawValue)", section: "SETTINGS", title: Loc.f("Shortcuts › %@", top.title),
+                    subtitle: "",
                     glyph: "⚙", keys: nil, hyper: nil, action: .rebind(id)))
         }
         // Sections in order; the top row overall is what ↩ runs.
@@ -319,7 +320,7 @@ extension CanvasController {
                 onFrame?(ids, nil)
             }
         case .rebind:
-            showToast("Rebinding opens in Settings › Shortcuts (M8)")
+            showToast(Loc.t("Rebinding opens in Settings › Shortcuts (M8)"))
         }
     }
 
@@ -377,7 +378,8 @@ extension CanvasController {
                         (
                             es - 2,
                             JumpRow(
-                                id: "e:\(cid.rawValue)/\(id.rawValue)", title: l, path: "\(path) › flow", badge: "EDGE",
+                                id: "e:\(cid.rawValue)/\(id.rawValue)", title: l, path: Loc.f("%@ › flow", path),
+                                badge: "EDGE",
                                 color: theme.ink2, canvas: cid, node: id, matched: ei)
                         ))
                 }
@@ -388,7 +390,8 @@ extension CanvasController {
                     (
                         score - 2,
                         JumpRow(
-                            id: "r:\(cid.rawValue)/\(r.id)", title: r.label, path: "\(canvasTitle) › relationship",
+                            id: "r:\(cid.rawValue)/\(r.id)", title: r.label,
+                            path: Loc.f("%@ › relationship", canvasTitle),
                             badge: "EDGE", color: theme.ink2, canvas: cid, node: r.to, matched: idx)
                     ))
             }
@@ -528,7 +531,7 @@ extension CanvasController {
 
     /// "Open threats · High" from the clause values.
     public var suggestedFilterName: String {
-        let vals = filterClauses.map { c in c.op == .notEquals ? "not \(c.value)" : c.value }
+        let vals = filterClauses.map { c in c.op == .notEquals ? Loc.f("not %@", c.value) : c.value }
         guard !vals.isEmpty else { return "Filter" }
         if filterClauses.contains(where: { $0.field == "type" && $0.value.lowercased() == "threat" }),
             filterClauses.contains(where: { $0.field == "status" && $0.op == .notEquals })
@@ -547,7 +550,7 @@ extension CanvasController {
                 $0.filters.removeAll { $0.name == f.name }; $0.filters.append(f)
             }
         }
-        showToast("Saved “\(f.name)”")
+        showToast(Loc.f("Saved “%@”", f.name))
     }
 
     // MARK: Tags (navigation panel)

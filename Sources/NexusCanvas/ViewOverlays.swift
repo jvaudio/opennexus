@@ -480,7 +480,7 @@ struct SearchTab: View {
                         controller.navTab = nil; controller.refreshView()
                     }
                 if !s.query.isEmpty {
-                    Text(s.matches.isEmpty ? "0 of 0" : "\(s.current + 1) of \(s.matches.count)")
+                    Text(Loc.f("%lld of %lld", s.matches.isEmpty ? 0 : s.current + 1, s.matches.count))
                         .font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
                 }
             }

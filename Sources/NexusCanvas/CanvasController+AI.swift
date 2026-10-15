@@ -88,7 +88,7 @@ extension CanvasController {
                 self?.ghosts?.loading = false
                 if self?.ghosts?.ideas.isEmpty == true {
                     self?.ghosts = nil
-                    self?.showToast("No new ideas for this topic")
+                    self?.showToast(Loc.t("No new ideas for this topic"))
                 }
             } catch {
                 self?.ghosts = nil
@@ -363,7 +363,8 @@ extension CanvasController {
                 if !(error is CancellationError) {
                     self?.updateChat(chatID) {
                         $0.messages.append(
-                            AIMessage(role: "assistant", text: "Couldn’t answer: \(error.localizedDescription)"))
+                            AIMessage(role: "assistant", text: Loc.f("Couldn’t answer: %@", error.localizedDescription))
+                        )
                     }
                 }
             }

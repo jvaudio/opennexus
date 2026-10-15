@@ -323,8 +323,8 @@ extension CanvasController {
     /// One undoable step; the view morphs over 600 ms (artboard 10).
     public func performConvert(_ t: DiagramType, nodeTypes: [NodeID: NodeType]) {
         morphSerial += 1
-        perform("Convert to \(t.displayName)") { $0.convert(to: t, nodeTypes: nodeTypes) }
-        showToast("Converted to \(t.displayName) · ⌘Z returns")
+        perform(Loc.f("Convert to %@", t.displayName)) { $0.convert(to: t, nodeTypes: nodeTypes) }
+        showToast(Loc.f("Converted to %@ · ⌘Z returns", t.displayName))
         onReveal?(selection.primary)
     }
 
@@ -509,7 +509,7 @@ extension CanvasController {
         let text = canvas.type == .sequence ? Mermaid.sequence(canvas) : Mermaid.flowchart(canvas)
         pasteboard.clearContents()
         pasteboard.setString(text, forType: .string)
-        showToast("Copied as Mermaid")
+        showToast(Loc.t("Copied as Mermaid"))
     }
 
     // MARK: DFD
@@ -594,7 +594,7 @@ extension CanvasController {
             d.canvases[here]?.nodes[id]?.subCanvas = newID
         }
         switchCanvas(to: newID)
-        showToast("Level \(prefix) · ⌘[ climbs back")
+        showToast(Loc.f("Level %@ · ⌘[ climbs back", prefix))
         return true
     }
 
@@ -654,7 +654,10 @@ extension CanvasController {
                 }
             }
         }
-        showToast(added == 0 ? "Every element is covered" : "✦ \(added) threats suggested")
+        showToast(
+            added == 0
+                ? Loc.t("Every element is covered")
+                : Loc.n("✦ %lld threat suggested", "✦ %lld threats suggested", added))
     }
 
     public func setThreatField(_ id: NodeID, _ key: String, _ value: String) {
@@ -674,7 +677,7 @@ extension CanvasController {
     public func copyThreatsMarkdown(_ rows: [Stride.Threat]) {
         pasteboard.clearContents()
         pasteboard.setString(Stride.markdown(rows), forType: .string)
-        showToast("Copied threat table as Markdown")
+        showToast(Loc.t("Copied threat table as Markdown"))
     }
 
     // MARK: Icon library (⇧⌘Y)
@@ -685,7 +688,7 @@ extension CanvasController {
         let label = canvas.type == .architecture ? DiagramCatalog.defaultProtocol(for: info.id) : nil
         let c = canvas
         if let id = perform(
-            "Insert \(info.name)", selectionAfter: { Selection($0) },
+            Loc.f("Insert %@", info.name), selectionAfter: { Selection($0) },
             { e -> NodeID in
                 let n = try e.addChild(of: parent, text: info.name.lowercased())
                 e.update(n) {

@@ -213,7 +213,7 @@ struct ConnectFieldView: View {
             .padding(.horizontal, 12)
             .padding(.vertical, 9)
             if state.offersCreate {
-                row(hint: "↩", text: "Create new node “\(state.query)”", on: true)
+                row(hint: "↩", text: Loc.f("Create new node “%@”", state.query), on: true)
             } else {
                 ForEach(Array(state.matches.prefix(5).enumerated()), id: \.offset) { i, m in
                     row(hint: m.hint, text: texts[m.node] ?? "", on: i == state.highlighted)
@@ -230,9 +230,9 @@ struct ConnectFieldView: View {
     }
 
     var accessibility: String {
-        if state.offersCreate { return "Connect to new node \(state.query)" }
+        if state.offersCreate { return Loc.f("Connect to new node %@", state.query) }
         let names = state.matches.prefix(5).map { "\($0.hint), \(texts[$0.node] ?? "")" }
-        return "Connect to. \(names.joined(separator: "; "))"
+        return Loc.f("Connect to. %@", names.joined(separator: "; "))
     }
 
     func row(hint: String, text: String, on: Bool) -> some View {

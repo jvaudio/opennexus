@@ -453,7 +453,9 @@ final class ElementRenderer {
             shape.lineDashPattern = z.zone.frame == "dashed" ? [5, 4] : nil
             let caret = z.zone.collapsed ? "▸" : "▾"
             var t = "\(caret) \(z.zone.title)"
-            let detail = z.zone.collapsed ? " · \(z.hidden) hidden" : z.zone.autoResize ? " · auto-size" : ""
+            let detail =
+                z.zone.collapsed
+                ? " · " + Loc.f("%lld hidden", z.hidden) : z.zone.autoResize ? " · " + Loc.t("auto-size") : ""
             let s = NSMutableAttributedString(
                 string: t,
                 attributes: [

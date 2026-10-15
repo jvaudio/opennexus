@@ -59,8 +59,8 @@ public struct AllowedFoldersView: View {
         p.canChooseDirectories = true
         p.canChooseFiles = false
         p.allowsMultipleSelection = true
-        p.prompt = "Allow"
-        p.message = "Agents can read and edit maps only in the folders you allow."
+        p.prompt = Loc.t("Allow")
+        p.message = Loc.t("Agents can read and edit maps only in the folders you allow.")
         guard p.runModal() == .OK else { return }
         save(folders + p.urls.map(\.path))
     }

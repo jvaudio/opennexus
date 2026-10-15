@@ -33,7 +33,7 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
             if let a = c.canvas.nodes[id]?.audio, let data = c.store.model.assets[a.asset] {
                 player = try? AVAudioPlayer(data: data)
                 player?.play()
-                c.showToast("Playing audio note · \(Int(a.duration)) s")
+                c.showToast(Loc.f("Playing audio note · %lld s", Int(a.duration)))
             } else {
                 show(AudioPopover(controller: c, node: id, close: close), at: id, size: CGSize(width: 300, height: 170))
             }

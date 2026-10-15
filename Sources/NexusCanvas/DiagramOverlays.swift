@@ -195,7 +195,9 @@ struct ConvertSheetView: View {
         return VStack(alignment: .leading, spacing: 12) {
             Text("Confirm node types").font(.chrome(17, weight: .semibold))
             Text(
-                "\(s.highlighted.displayName) needs to know what each first-level branch is. Suggestions (✦) are made on this Mac."
+                Loc.f(
+                    "%@ needs to know what each first-level branch is. Suggestions (✦) are made on this Mac.",
+                    s.highlighted.displayName)
             )
             .font(.chrome(12))
             .foregroundStyle(.secondary)
@@ -376,10 +378,12 @@ struct ViolationCardView: View {
                     ForEach(Array(v.fixes.enumerated()), id: \.offset) { i, f in
                         let title: String =
                             switch f {
-                            case .insertProcess: "Insert process"
+                            case .insertProcess: Loc.t("Insert process")
                             case .rerouteVia(_, let p):
-                                "Reroute via \(DFDRules.numbers(controller.canvas)[p] ?? controller.canvas.nodes[p]?.text ?? "")"
-                            case .ignore: "Ignore"
+                                Loc.f(
+                                    "Reroute via %@",
+                                    DFDRules.numbers(controller.canvas)[p] ?? controller.canvas.nodes[p]?.text ?? "")
+                            case .ignore: Loc.t("Ignore")
                             }
                         if i == 0 {
                             Button(title + " ↩") { controller.applyFix(f, violation: v.id) }.buttonStyle(

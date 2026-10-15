@@ -328,7 +328,7 @@ public final class CanvasController {
         } catch let refusal as TreeOperationRefusal {
             showToast(refusal.description)
         } catch {
-            showToast("\(error)")
+            showToast(String(describing: error))
         }
         return nil
     }

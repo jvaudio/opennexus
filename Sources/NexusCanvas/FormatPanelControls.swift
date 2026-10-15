@@ -226,6 +226,6 @@ struct PointField: View {
 
 enum CanvasPanelFormat {
     static func points(_ v: Double) -> String {
-        v == v.rounded() ? "\(Int(v)) pt" : String(format: "%.1f pt", v)
+        v == v.rounded() ? Loc.f("%lld pt", Int(v)) : Loc.f("%.1f pt", v)
     }
 }

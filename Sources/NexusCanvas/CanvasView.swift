@@ -1530,7 +1530,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                             (CGPoint(x: c.x, y: min(c.y, moved.y) - 40), CGPoint(x: c.x, y: max(c.y, moved.y) + 40)))
                         let gap = abs(c.y - moved.y) - (n.frame.size.height + f.size.height) / 2
                         if gap > 0 {
-                            guideLabel = ("\(Int(gap.rounded())) pt", CGPoint(x: c.x + 24, y: (c.y + moved.y) / 2))
+                            guideLabel = (
+                                Loc.f("%lld pt", Int(gap.rounded())), CGPoint(x: c.x + 24, y: (c.y + moved.y) / 2)
+                            )
                         }
                     }
                     if abs(c.y - moved.y) < snap {
@@ -1661,7 +1663,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             dropIndicator.fillColor = theme.ringSoft.alpha(0.3).cgColor
             if floatingLabel {
                 let text = controller.canvas.nodes[id]?.text ?? ""
-                showDropHint("Drop to attach under \(text)", below: r)
+                showDropHint(Loc.f("Drop to attach under %@", text), below: r)
             }
         case .before(let id), .after(let id):
             guard let f = controller.scene.nodes[id]?.frame.rect else { return }

@@ -175,8 +175,10 @@ final class NexusDocument: NSDocument {
         if wasClean && conflicts.isEmpty { updateChangeCount(.changeCleared) }
         controller?.showToast(
             conflicts.isEmpty
-                ? "Updated from disk · ⌘Z undoes"
-                : "Updated from disk · kept your version of \(conflicts.prefix(3).joined(separator: ", "))\(conflicts.count > 3 ? "…" : "")"
+                ? Loc.t("Updated from disk · ⌘Z undoes")
+                : Loc.f(
+                    "Updated from disk · kept your version of %@",
+                    conflicts.prefix(3).joined(separator: ", ") + (conflicts.count > 3 ? "…" : ""))
         )
     }
 
@@ -396,9 +398,11 @@ final class NexusDocument: NSDocument {
                 for (k, v) in restored.assets where d.assets[k] == nil { d.assets[k] = v }
             }
             controller.showToast(
-                "Restored the snapshot from \(s.date.formatted(date: .abbreviated, time: .shortened)) · ⌘Z undoes")
+                Loc.f(
+                    "Restored the snapshot from %@ · ⌘Z undoes", s.date.formatted(date: .abbreviated, time: .shortened))
+            )
         } catch {
-            controller.showToast("Couldn’t restore: \(error)")
+            controller.showToast(Loc.f("Couldn’t restore: %@", "\(error)"))
         }
     }
 
@@ -418,7 +422,7 @@ final class DocumentUndoRegistrar: UndoRegistrar {
     func register(_ patch: Patch, store: DocumentStore) {
         guard let um = document?.undoManager else { return }
         registerInverse(of: patch, undoManager: um, store: store)
-        um.setActionName(patch.actionName)
+        um.setActionName(Loc.t(patch.actionName))
     }
 
     private func registerInverse(of patch: Patch, undoManager um: UndoManager, store: DocumentStore) {
@@ -427,7 +431,7 @@ final class DocumentUndoRegistrar: UndoRegistrar {
             MainActor.assumeIsolated {
                 store.applyFromUndo(inverse, kind: um.isUndoing ? .undone : .redone)
                 self?.registerInverse(of: inverse, undoManager: um, store: store)
-                um.setActionName(patch.actionName)
+                um.setActionName(Loc.t(patch.actionName))
             }
         }
     }

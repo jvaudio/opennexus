@@ -36,7 +36,7 @@ struct ThemeBuilder: View {
                     )
                     .help(
                         report.passes
-                            ? Loc.f("Every node style meets the target") : Loc.f("Lowest: %@", report.worst)
+                            ? Loc.t("Every node style meets the target") : Loc.f("Lowest: %@", report.worst)
                     )
                     .accessibilityLabel(Loc.f("Contrast %@", report.badge))
             }
@@ -285,11 +285,13 @@ struct ColourThemeEditor: View {
             }
             PanelRow(label: "Contrast check") {
                 let ok = check.passing == check.total
-                Text(ok ? "AA on all \(check.total)" : "AA on \(check.passing) of \(check.total)")
-                    .font(.chrome(11, weight: .semibold, design: .monospaced))
-                    .padding(.horizontal, 8).padding(.vertical, 3)
-                    .foregroundStyle(ok ? Color.green : Color.orange)
-                    .background((ok ? Color.green : Color.orange).opacity(0.12), in: RoundedRectangle(cornerRadius: 5))
+                Text(
+                    ok ? Loc.f("AA on all %lld", check.total) : Loc.f("AA on %lld of %lld", check.passing, check.total)
+                )
+                .font(.chrome(11, weight: .semibold, design: .monospaced))
+                .padding(.horizontal, 8).padding(.vertical, 3)
+                .foregroundStyle(ok ? Color.green : Color.orange)
+                .background((ok ? Color.green : Color.orange).opacity(0.12), in: RoundedRectangle(cornerRadius: 5))
             }
             Spacer()
             HStack {

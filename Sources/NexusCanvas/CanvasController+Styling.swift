@@ -43,12 +43,12 @@ extension CanvasController {
     public func copyStyle() {
         let n = canvas.nodes[selection.primary]
         styleClipboard = (n?.style ?? TopicStyle(), n?.quickStyle)
-        showToast("Style copied")
+        showToast(Loc.t("Style copied"))
     }
 
     public func pasteStyle() {
         guard let clip = styleClipboard else {
-            showToast("Copy a style first (⌥⌘C)")
+            showToast(Loc.t("Copy a style first (⌥⌘C)"))
             return
         }
         let targets = selection.nodes
@@ -111,7 +111,7 @@ extension CanvasController {
             }
         case .sameLevel:
             let depth = c.depth(of: id)
-            perform("Apply Style to Level \(depth + 1)") { e in
+            perform(Loc.f("Apply Style to Level %lld", depth + 1)) { e in
                 e.updateMeta { $0.style.levels[depth] = style ?? TopicStyle() }
                 // The level style now carries it; clear per-topic copies at this level.
                 let parents = e.canvas.parentMap()
@@ -175,7 +175,7 @@ extension CanvasController {
     public func setNodeStyle(_ style: NodeStyle) {
         guard canvas.style.nodeStyle != style.rawValue else { return }
         updateCanvasStyle("Node Style", morph: true) { $0.nodeStyle = style.rawValue }
-        showToast("Node style: \(style.name)")
+        showToast(Loc.f("Node style: %@", style.name))
     }
 
     /// ⌥⌘S: the next of the nine node styles, with a 300 ms morph.

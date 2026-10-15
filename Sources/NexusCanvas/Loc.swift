@@ -12,6 +12,8 @@ import Foundation
 public enum Loc {
     nonisolated(unsafe) public static var pseudo = UserDefaults.standard.bool(forKey: "NexusPseudoLanguage")
 
+    /// A string with no values in it: `Loc.t("Copied as Markdown")`. Keys passed as literals
+    /// are scanned into the catalog; other strings (data, undo names) fall back to themselves.
     public static func t(_ s: String) -> String {
         guard !s.isEmpty else { return s }
         let v = Bundle.module.localizedString(forKey: s, value: s, table: nil)
@@ -45,6 +47,7 @@ public enum Loc {
 
     /// "Add Child Topic" → "⟦Ådd Çhíld Töpíç ······⟧". Keys, glyphs and placeholders stay.
     public static func pseudolocalize(_ s: String) -> String {
+        guard !s.hasPrefix("⟦") else { return s }  // already looked up once
         var out = ""
         var inPlaceholder = false
         for ch in s {

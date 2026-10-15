@@ -43,10 +43,12 @@ extension CanvasController {
             let copy = MapTranslator.translatedCopy(
                 c, options, translations: table, id: store.model.makeCanvasID(), language: name)
             addCanvas(copy)
-            showToast("Translated to \(name) · new canvas")
+            showToast(Loc.f("Translated to %@ · new canvas", name))
         } catch {
             showToast(
-                "Translation needs the language pair installed: System Settings › General › Language & Region › Translation Languages."
+                Loc.t(
+                    "Translation needs the language pair installed: System Settings › General › Language & Region › Translation Languages."
+                )
             )
         }
     }
@@ -92,7 +94,7 @@ extension CanvasController {
 
     public func removeBackground(_ id: NodeID, replace: Bool) async {
         guard let asset = canvas.nodes[id]?.image?.asset, let data = store.model.assets[asset] else {
-            showToast("This topic has no image")
+            showToast(Loc.t("This topic has no image"))
             return
         }
         do {

@@ -243,15 +243,20 @@ extension CanvasController {
             let size = ImageExporter.pixelSize(exportModel, canvas: canvasID, s.image)
             let bytes = Int(size.width * size.height * (s.format == .png ? 0.33 : 0.12))
             return
-                "\(Int(size.width)) × \(Int(size.height)) px · ~\(ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file))"
+                Loc.f(
+                    "%lld × %lld px · ~%@", Int(size.width), Int(size.height),
+                    ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file))
         case .pdf:
             let r = ImageExporter.contentRect(exportModel, canvas: canvasID, s.image)
             return
-                "\(Int(r.width)) × \(Int(r.height)) pt · \(s.pdfScope == "all" ? exportModel.canvases.count : 1) page\(s.pdfScope == "all" && exportModel.canvases.count > 1 ? "s" : "")"
+                Loc.f(
+                    "%lld × %lld pt · %@", Int(r.width), Int(r.height),
+                    Loc.n("%lld page", "%lld pages", s.pdfScope == "all" ? exportModel.canvases.count : 1))
         default:
             if let t = exportText(s) {
                 return
-                    "\(t.split(separator: "\n").count) lines · \(ByteCountFormatter.string(fromByteCount: Int64(t.utf8.count), countStyle: .file))"
+                    Loc.n("%lld line", "%lld lines", t.split(separator: "\n").count) + " · "
+                    + ByteCountFormatter.string(fromByteCount: Int64(t.utf8.count), countStyle: .file)
             }
             return ""
         }
@@ -326,7 +331,7 @@ extension CanvasController {
             return
         }
         guard let data = exportData(s) else {
-            showToast("Nothing to export")
+            showToast(Loc.t("Nothing to export"))
             return
         }
         let name =
@@ -335,7 +340,7 @@ extension CanvasController {
                 ? " – " + (canvas.nodes[s.image.selection.first ?? canvas.root]?.text ?? "") : "")
         exportState = nil
         onSaveFile?(data, name + "." + (s.format == .json && s.yaml ? "yaml" : s.format.fileExt))
-        if s.format == .keynote { showToast("Keynote opens this .pptx directly") }
+        if s.format == .keynote { showToast(Loc.t("Keynote opens this .pptx directly")) }
     }
 
     /// Copy (the sheet's left button): an image or text on the clipboard.
@@ -346,11 +351,11 @@ extension CanvasController {
         if s.format.isVisual, s.format != .svg {
             if let img = ImageExporter.image(exportModel, canvas: canvasID, s.image) {
                 pb.setData(ImageExporter.png(img), forType: .png)
-                showToast("Copied image")
+                showToast(Loc.t("Copied image"))
             }
         } else if let t = exportText(s) {
             pb.setString(t, forType: .string)
-            showToast("Copied \(s.format.title)")
+            showToast(Loc.f("Copied %@", s.format.title))
         }
     }
 
@@ -361,7 +366,7 @@ extension CanvasController {
         o.scale = max(o.scale, 2)
         let files = ImageExporter.splitByBranch(exportModel, canvas: canvasID, o)
         guard !files.isEmpty else {
-            showToast("This canvas has no branches")
+            showToast(Loc.t("This canvas has no branches"))
             return
         }
         onSaveFolder?(files.map { ($0.name, $0.png) })
@@ -383,7 +388,7 @@ extension CanvasController {
         let pb = pasteboard
         pb.clearContents()
         pb.setData(ImageExporter.png(img), forType: .png)
-        showToast("Copied as image")
+        showToast(Loc.t("Copied as image"))
     }
 
     public func copyAsMarkdown() {
@@ -391,7 +396,7 @@ extension CanvasController {
         pb.clearContents()
         let top = selection.primary == canvas.root ? nil : selection.primary
         pb.setString(MarkdownFormat.export(canvas, from: top), forType: .string)
-        showToast("Copied as Markdown")
+        showToast(Loc.t("Copied as Markdown"))
     }
 
     // MARK: Copy, cut and paste topics
@@ -589,7 +594,7 @@ extension CanvasController {
         mapShot = nil
         onRestoreFocus?()
         if copyOnly {
-            showToast("Map Shot copied")
+            showToast(Loc.t("Map Shot copied"))
         } else {
             let f = DateFormatter()
             f.dateFormat = "yyyy-MM-dd 'at' HH.mm.ss"
@@ -680,7 +685,7 @@ extension CanvasController {
             mergeState?.sources.append(
                 MergeSource(name: name, kind: kind, detail: detail, canvases: im.canvases, assets: im.assets))
         } catch {
-            showToast("\(url.lastPathComponent): \(error)")
+            showToast(url.lastPathComponent + ": " + String(describing: error))
         }
     }
 
@@ -795,7 +800,7 @@ extension CanvasController {
     public func deleteCanvas(_ id: CanvasID? = nil) {
         let id = id ?? canvasID
         guard store.model.canvases.count > 1 else {
-            showToast("A document keeps at least one canvas")
+            showToast(Loc.t("A document keeps at least one canvas"))
             return
         }
         let order = store.model.canvasOrder
@@ -814,7 +819,7 @@ extension CanvasController {
         pb.clearContents()
         pb.setData(CanonicalJSON.data(canvas.json), forType: .nexusCanvas)
         pb.setString(MarkdownFormat.export(canvas), forType: .string)
-        showToast("Canvas copied")
+        showToast(Loc.t("Canvas copied"))
     }
 
     public var canPasteCanvas: Bool { pasteboard.data(forType: .nexusCanvas) != nil }

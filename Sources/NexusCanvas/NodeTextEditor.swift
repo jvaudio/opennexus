@@ -148,15 +148,15 @@ final class NodeTextView: NSTextView {
             return
         }
         let alert = NSAlert()
-        alert.messageText = "Link"
-        alert.informativeText = "Web address for the selected text."
+        alert.messageText = Loc.t("Link")
+        alert.informativeText = Loc.t("Web address for the selected text.")
         let field = NSTextField(frame: CGRect(x: 0, y: 0, width: 280, height: 24))
         field.placeholderString = "https://"
         field.stringValue = (storage.attribute(.link, at: range.location, effectiveRange: nil) as? String) ?? ""
         alert.accessoryView = field
-        alert.addButton(withTitle: "Link")
-        alert.addButton(withTitle: "Remove Link")
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: Loc.t("Link"))
+        alert.addButton(withTitle: Loc.t("Remove Link"))
+        alert.addButton(withTitle: Loc.t("Cancel"))
         let r = alert.runModal()
         if r == .alertFirstButtonReturn, !field.stringValue.isEmpty {
             storage.addAttribute(.link, value: field.stringValue, range: range)

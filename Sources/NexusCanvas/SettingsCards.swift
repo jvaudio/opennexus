@@ -101,11 +101,16 @@ private struct AboutCard: View {
                     AppMark(size: 54)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(
-                            "OpenNexus \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")"
+                            Loc.f(
+                                "OpenNexus %@",
+                                Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+                                    ?? "1.0")
                         )
                         .font(.chrome(18, weight: .semibold))
                         Text(
-                            "Build \(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1") · Open source · MIT"
+                            Loc.f(
+                                "Build %@ · Open source · MIT",
+                                Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1")
                         )
                         .foregroundStyle(.secondary)
                     }
@@ -591,12 +596,13 @@ public enum Spoken {
             depth = d.depths[id] ?? c.depth(of: id)
             maxDepth = d.max
         }
-        var parts: [String] = [n.text.isEmpty ? "Topic" : n.text]
+        var parts: [String] = [n.text.isEmpty ? Loc.t("Topic") : n.text]
         let role =
             id == c.root
-            ? "Central topic" : c.floating.contains(id) ? "Floating topic" : depth == 1 ? "Main topic" : "Subtopic"
+            ? Loc.t("Central topic")
+            : c.floating.contains(id) ? Loc.t("Floating topic") : depth == 1 ? Loc.t("Main topic") : Loc.t("Subtopic")
         if prefs.bool("accessibility.announceLevel") {
-            parts.append("\(role), level \(depth + 1) of \(maxDepth + 1)")
+            parts.append(Loc.f("%@, level %lld of %lld", role, depth + 1, maxDepth + 1))
             parts.append(
                 n.folded
                     ? Loc.n("%lld child, collapsed", "%lld children, collapsed", n.children.count)
@@ -605,17 +611,19 @@ public enum Spoken {
             parts.append(role)
         }
         if let t = n.nodeType, let info = DiagramCatalog.info(t, in: c.type) { parts.append(info.name) }
-        if let b = branchColor { parts.append("Branch colour \(b)") }
-        if let todo = n.todo { parts.append(todo.done ? "Done" : "To do") }
-        if n.note != nil { parts.append("Has note") }
+        if let b = branchColor { parts.append(Loc.f("Branch colour %@", b)) }
+        if let todo = n.todo { parts.append(todo.done ? Loc.t("Done") : Loc.t("To do")) }
+        if n.note != nil { parts.append(Loc.t("Has note")) }
         if prefs.string("accessibility.readEdges") == "source" {
             for r in c.relationships where r.from == id || r.to == id {
                 let other = r.from == id ? r.to : r.from
-                let label = r.label.isEmpty ? "" : " by ‘\(r.label)’"
-                parts.append("Connected to \(c.nodes[other]?.text ?? "a topic")\(label)")
+                let name = c.nodes[other]?.text ?? Loc.t("a topic")
+                parts.append(
+                    r.label.isEmpty
+                        ? Loc.f("Connected to %@", name) : Loc.f("Connected to %@ by ‘%@’", name, r.label))
             }
         }
-        if prefs.bool("accessibility.speakHints") { parts.append("Tab adds a child") }
+        if prefs.bool("accessibility.speakHints") { parts.append(Loc.t("Tab adds a child")) }
         return parts.joined(separator: ". ") + "."
     }
 

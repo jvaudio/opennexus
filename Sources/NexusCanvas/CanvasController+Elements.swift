@@ -248,7 +248,7 @@ extension CanvasController {
         }
         let id = selection.primary
         guard canvas.floating.contains(id) else {
-            showToast("Arrange works on zones and floating topics")
+            showToast(Loc.t("Arrange works on zones and floating topics"))
             return
         }
         perform("Arrange") { $0.reorderFloating(id, order) }
@@ -338,7 +338,9 @@ extension CanvasController {
         if limit > 0, Double(data.count) > limit, let source {
             perform("Link Image") { e in e.update(id) { $0.link = source.absoluteString } }
             showToast(
-                "\(source.lastPathComponent) is larger than \(prefs.string("files.embedLimit")) MB, so it’s linked, not copied"
+                Loc.f(
+                    "%@ is larger than %@ MB, so it’s linked, not copied", source.lastPathComponent,
+                    prefs.string("files.embedLimit"))
             )
             return
         }
@@ -376,7 +378,7 @@ extension CanvasController {
         guard !todos.isEmpty else { return }
         let allDone = todos.allSatisfy { canvas.nodes[$0]?.todo?.done == true }
         perform("To-Dos") { e in for t in todos { e.update(t) { $0.todo = Todo(done: !allDone) } } }
-        if !allDone { showToast("Branch complete ✦") }
+        if !allDone { showToast(Loc.t("Branch complete ✦")) }
     }
 
     // MARK: Links
@@ -400,7 +402,7 @@ extension CanvasController {
         if let t = TopicLink.parse(link) {
             linkHistory.append((canvasID, id))
             if t.canvas != canvasID { switchCanvas(to: t.canvas) }
-            if canvas.nodes[t.node] != nil { select(t.node) } else { showToast("That topic no longer exists") }
+            if canvas.nodes[t.node] != nil { select(t.node) } else { showToast(Loc.t("That topic no longer exists")) }
         } else if let url = URL(string: link) {
             onOpenURL?(url)
         }
@@ -408,7 +410,7 @@ extension CanvasController {
 
     public func flyBack() {
         guard let (c, n) = linkHistory.popLast() else {
-            showToast("Nothing to fly back to")
+            showToast(Loc.t("Nothing to fly back to"))
             return
         }
         if c != canvasID { switchCanvas(to: c) }

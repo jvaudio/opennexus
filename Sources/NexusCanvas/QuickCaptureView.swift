@@ -20,7 +20,7 @@ public final class QuickCaptureModel {
         let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return onClose() }
         onSave(t, targets.current)
-        saved = "Saved to \(targets.current.title)"
+        saved = Loc.f("Saved to %@", targets.current.title)
         text = ""
     }
 }

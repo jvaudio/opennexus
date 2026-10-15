@@ -91,7 +91,7 @@ public final class TourController {
                 steps: [
                     Step(
                         keys: ["⌥⌘T"],
-                        prompt: "Option-Command-T turns your map into a \(role.conversionTitle.lowercased())",
+                        prompt: Loc.f("Option-Command-T turns your map into a %@", role.conversionTitle.lowercased()),
                         expects: [.convert])
                 ]),
             Lesson(
@@ -145,8 +145,8 @@ public final class TourController {
         if s.expects.contains(id) {
             advance()
         } else if Self.structural.contains(id), s.check == nil {
-            let title = controller?.registry[id]?.title ?? "that"
-            coach = .wrong("That was \(title) · ⌘Z undoes it")
+            let title = controller?.registry[id]?.title ?? Loc.t("that")
+            coach = .wrong(Loc.f("That was %@ · ⌘Z undoes it", title))
             streak = 0
         }
         // Lesson 4 counts edges from when Connect opened.

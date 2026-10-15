@@ -77,11 +77,11 @@ extension DocumentWindowController {
         controller.onChooseMergeFiles = { [weak self] in self?.chooseMergeFiles() }
         controller.onSetPassword = { [weak self] pw, hint, remember in
             self?.document_.setPassword(pw, hint: hint, remember: remember)
-            self?.controller.showToast("Encrypted · recovery snapshots use the same key")
+            self?.controller.showToast(Loc.t("Encrypted · recovery snapshots use the same key"))
         }
         controller.onRemovePassword = { [weak self] in
             self?.document_.removePassword()
-            self?.controller.showToast("Password removed")
+            self?.controller.showToast(Loc.t("Password removed"))
         }
         controller.onRestoreSnapshot = { [weak self] s in
             guard let self else { return }
@@ -104,9 +104,10 @@ extension DocumentWindowController {
             MainActor.assumeIsolated {
                 do {
                     try data.write(to: url, options: .atomic)
-                    self?.controller.showToast("Exported \(url.lastPathComponent)")
+                    self?.controller.showToast(Loc.f("Exported %@", url.lastPathComponent))
                 } catch {
-                    self?.controller.showToast("Couldn’t write \(url.lastPathComponent): \(error.localizedDescription)")
+                    self?.controller.showToast(
+                        Loc.f("Couldn’t write %@: %@", url.lastPathComponent, error.localizedDescription))
                 }
             }
         }
@@ -118,13 +119,14 @@ extension DocumentWindowController {
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
-        panel.prompt = "Export \(files.count) Files"
-        panel.message = "One PNG per main branch, named after it."
+        panel.prompt = Loc.n("Export %lld File", "Export %lld Files", files.count)
+        panel.message = Loc.t("One PNG per main branch, named after it.")
         panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let dir = panel.url else { return }
             MainActor.assumeIsolated {
                 for (name, data) in files { try? data.write(to: dir.appending(path: name), options: .atomic) }
-                self?.controller.showToast("Exported \(files.count) branch images")
+                self?.controller.showToast(
+                    Loc.n("Exported %lld branch image", "Exported %lld branch images", files.count))
             }
         }
     }
@@ -139,9 +141,9 @@ extension DocumentWindowController {
             MainActor.assumeIsolated {
                 do {
                     try NexusPackage.write(doc, to: url)
-                    self?.controller.showToast("Saved \(url.lastPathComponent)")
+                    self?.controller.showToast(Loc.f("Saved %@", url.lastPathComponent))
                 } catch {
-                    self?.controller.showToast("Couldn’t save: \(error.localizedDescription)")
+                    self?.controller.showToast(Loc.f("Couldn’t save: %@", error.localizedDescription))
                 }
             }
         }
@@ -154,7 +156,7 @@ extension DocumentWindowController {
         panel.canChooseDirectories = true
         panel.treatsFilePackagesAsDirectories = false
         panel.allowedContentTypes = Self.importTypes
-        panel.message = "Choose .nexus, .xmind, OPML, Markdown or other maps to merge."
+        panel.message = Loc.t("Choose .nexus, .xmind, OPML, Markdown or other maps to merge.")
         panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK else { return }
             MainActor.assumeIsolated {
@@ -190,7 +192,7 @@ extension DocumentWindowController {
             defer { if ok { folder.stopAccessingSecurityScopedResource() } }
             do {
                 try data.write(to: folder.appending(path: name), options: .atomic)
-                controller.showToast("Map Shot copied and saved to \(folder.lastPathComponent)")
+                controller.showToast(Loc.f("Map Shot copied and saved to %@", folder.lastPathComponent))
                 return
             } catch {}
         }
@@ -201,12 +203,12 @@ extension DocumentWindowController {
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
         panel.directoryURL = FileManager.default.urls(for: .desktopDirectory, in: .userDomainMask).first
-        panel.prompt = "Save Map Shots Here"
-        panel.message =
-            "Map Shots are copied to the clipboard and saved in this folder. Change it in Settings › Export."
+        panel.prompt = Loc.t("Save Map Shots Here")
+        panel.message = Loc.t(
+            "Map Shots are copied to the clipboard and saved in this folder. Change it in Settings › Export.")
         panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let url = panel.url else {
-                MainActor.assumeIsolated { self?.controller.showToast("Map Shot copied") }
+                MainActor.assumeIsolated { self?.controller.showToast(Loc.t("Map Shot copied")) }
                 return
             }
             MainActor.assumeIsolated {
@@ -216,7 +218,7 @@ extension DocumentWindowController {
                     UserDefaults.standard.set(b, forKey: Self.mapShotFolderKey)
                 }
                 try? data.write(to: url.appending(path: name), options: .atomic)
-                self?.controller.showToast("Map Shot copied and saved to \(url.lastPathComponent)")
+                self?.controller.showToast(Loc.f("Map Shot copied and saved to %@", url.lastPathComponent))
             }
         }
     }
@@ -233,12 +235,12 @@ extension DocumentWindowController {
     func renameCanvas() {
         guard let window else { return }
         let alert = NSAlert()
-        alert.messageText = "Rename Canvas"
+        alert.messageText = Loc.t("Rename Canvas")
         let field = NSTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
         field.stringValue = controller.canvas.title
         alert.accessoryView = field
-        alert.addButton(withTitle: "Rename")
-        alert.addButton(withTitle: "Cancel")
+        alert.addButton(withTitle: Loc.t("Rename"))
+        alert.addButton(withTitle: Loc.t("Cancel"))
         alert.window.initialFirstResponder = field
         alert.beginSheetModal(for: window) { [weak self] r in
             guard r == .alertFirstButtonReturn else { return }
@@ -252,10 +254,11 @@ extension DocumentWindowController {
     func confirmDeleteCanvas() {
         guard let window else { return }
         let alert = NSAlert()
-        alert.messageText = "Delete “\(controller.canvas.title.isEmpty ? "this canvas" : controller.canvas.title)”?"
-        alert.informativeText = "You can undo this."
-        alert.addButton(withTitle: "Delete")
-        alert.addButton(withTitle: "Cancel")
+        alert.messageText = Loc.f(
+            "Delete “%@”?", controller.canvas.title.isEmpty ? Loc.t("this canvas") : controller.canvas.title)
+        alert.informativeText = Loc.t("You can undo this.")
+        alert.addButton(withTitle: Loc.t("Delete"))
+        alert.addButton(withTitle: Loc.t("Cancel"))
         alert.buttons[0].hasDestructiveAction = true
         alert.beginSheetModal(for: window) { [weak self] r in
             guard r == .alertFirstButtonReturn else { return }
@@ -297,8 +300,8 @@ extension DocumentWindowController {
         guard let window, let files = document_.lockedFiles else { return }
         let hint = PackageCrypto.info(files)?.hint
         let alert = NSAlert()
-        alert.messageText = "“\(document_.displayName ?? "This document")” is password-protected"
-        alert.informativeText = hint.map { "Hint: \($0)" } ?? "Enter its password to open it."
+        alert.messageText = Loc.f("“%@” is password-protected", document_.displayName ?? Loc.t("This document"))
+        alert.informativeText = hint.map { Loc.f("Hint: %@", $0) } ?? Loc.t("Enter its password to open it.")
         let stack = NSStackView()
         stack.orientation = .vertical
         stack.alignment = .leading
@@ -310,8 +313,8 @@ extension DocumentWindowController {
         stack.addArrangedSubview(remember)
         stack.frame = NSRect(x: 0, y: 0, width: 260, height: 56)
         alert.accessoryView = stack
-        alert.addButton(withTitle: "Open")
-        alert.addButton(withTitle: "Close Document")
+        alert.addButton(withTitle: Loc.t("Open"))
+        alert.addButton(withTitle: Loc.t("Close Document"))
         alert.window.initialFirstResponder = field
         alert.beginSheetModal(for: window) { [weak self] r in
             MainActor.assumeIsolated {
@@ -324,7 +327,7 @@ extension DocumentWindowController {
                     try self.document_.unlock(password: field.stringValue, remember: remember.state == .on)
                     self.controller.switchCanvas(to: self.document_.store.model.canvasOrder.first!)
                 } catch {
-                    self.controller.showToast("\(error)")
+                    self.controller.showToast(String(describing: error))
                     DispatchQueue.main.async { self.promptUnlock() }
                 }
             }

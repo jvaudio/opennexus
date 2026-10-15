@@ -44,6 +44,7 @@ import Testing
         }
         for (literal, file) in literals() { out[literal] = out[literal] ?? "UI text (\(file))" }
         for k in formatKeys() { out[k.key] = out[k.key] ?? k.comment }
+        for (key, comment) in messageKeys() { out[key] = out[key] ?? comment }
         out[""] = nil
         return out
     }
@@ -65,7 +66,15 @@ import Testing
     }
 
     nonisolated(unsafe) static let uiLiteral =
-        /(?:Text|Button|Label|Toggle|TextField|Picker|Menu|Section|\.help|\.accessibilityLabel|\.accessibilityHint|\.accessibilityValue|\.navigationTitle)\("((?:[^"\\]|\\.)*)"/
+        /(?:Text|Button|Label|Toggle|TextField|Picker|Menu|Section|\.help|\.accessibilityLabel|\.accessibilityHint|\.accessibilityValue|\.navigationTitle)\(\s*"((?:[^"\\]|\\.)*)"/
+
+    /// Text handed to a toast, an alert, a panel or the tour coach must already be localised.
+    nonisolated(unsafe) static let messageLiteral =
+        /(?:(?:showToast|showInfo|showDropHint|\.wrong)\(|addButton\(withTitle:|(?:messageText|informativeText|\.prompt|\.message|self\.error) =)\s*"((?:[^"\\]|\\.)*)"/
+
+    /// Undo action names: `perform("Add Child Topic")`, looked up when the undo menu shows them.
+    nonisolated(unsafe) static let undoName =
+        /(?:perform|commitDocument|patch)\(\s*(?:actionName:\s*)?"((?:[^"\\]|\\.)*)"/
 
     /// A `Loc.f` or `Loc.n` key; `one` is the English singular of a count phrase.
     struct FormatKey: Hashable {
@@ -113,6 +122,20 @@ import Testing
         return out
     }
 
+    /// `Loc.t("…")` keys and undo action names.
+    static func messageKeys() -> [(String, String)] {
+        var out: [(String, String)] = []
+        for (name, text) in sources() {
+            for m in text.matches(of: /Loc\.t\(\s*"((?:[^"\\]|\\.)*)"/) {
+                out.append((unescape(m.output.1), "UI text (\(name))"))
+            }
+            for m in text.matches(of: undoName) where !m.output.1.contains("\\(") {
+                out.append((unescape(m.output.1), "Undo action name (\(name))"))
+            }
+        }
+        return out
+    }
+
     static func catalogKeys() throws -> Set<String> {
         let json = try JSONSerialization.jsonObject(with: Data(contentsOf: catalogURL)) as? [String: Any]
         return Set((json?["strings"] as? [String: Any])?.keys.map { $0 } ?? [])
@@ -146,7 +169,8 @@ import Testing
     }
 
     /// SwiftUI would look an interpolated literal up by a format key that no catalog
-    /// holds, and a hand-written `n == 1 ? "topic" : "topics"` only knows English.
+    /// holds, a hand-written `n == 1 ? "topic" : "topics"` only knows English, and a
+    /// toast or alert shows its `String` as given.
     @Test func chromeTextWithValuesGoesThroughLoc() {
         var found: [String] = []
         for (name, text) in Self.sources() {
@@ -156,6 +180,10 @@ import Testing
                 }
             }
             for m in text.matches(of: /\\\([^"\n]*== 1 \? "/) { found.append("\(name): \(m.output)") }
+            for m in text.matches(of: Self.messageLiteral) { found.append("\(name): \(m.output.0)") }
+            for m in text.matches(of: Self.undoName) where m.output.1.contains("\\(") {
+                found.append("\(name): \(m.output.0)")
+            }
         }
         #expect(found.isEmpty, "use Loc.f / Loc.n: \(found.prefix(5))")
     }

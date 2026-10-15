@@ -239,15 +239,15 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
                     Task { @MainActor in
                         do {
                             try await SlideExporter.video(images, to: url)
-                            self?.controller.showToast("Video exported")
+                            self?.controller.showToast(Loc.t("Video exported"))
                         } catch {
-                            self?.controller.showToast("Video export failed: \(error.localizedDescription)")
+                            self?.controller.showToast(Loc.f("Video export failed: %@", error.localizedDescription))
                         }
                     }
                     return
                 default: try? SlideExporter.pptx(images, titles: titles).write(to: url, options: .atomic)
                 }
-                self?.controller.showToast("Exported \(images.count) slides")
+                self?.controller.showToast(Loc.n("Exported %lld slide", "Exported %lld slides", images.count))
             }
         }
     }

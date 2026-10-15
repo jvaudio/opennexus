@@ -85,14 +85,15 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
     func label(_ id: NodeID) -> String {
         guard let c = controller, let s = c.scene.nodes[id] else { return "" }
         if let i = CanvasController.ghostIndex(id) {
-            return
-                "Suggested topic: \(s.displayText). \(i == (c.ghosts?.highlighted ?? -1) ? "Highlighted. " : "")Control-Return accepts it."
+            return i == c.ghosts?.highlighted
+                ? Loc.f("Suggested topic: %@. Highlighted. Control-Return accepts it.", s.displayText)
+                : Loc.f("Suggested topic: %@. Control-Return accepts it.", s.displayText)
         }
         var text = Spoken.describe(
             id, in: c.canvas, prefs: c.prefs, branchColor: Spoken.colorName(s.branchColor), depth: depths[id],
             maxDepth: maxDepth)
         if let k = c.connect, let cand = k.candidates.first(where: { $0.node == id }) {
-            text = "Hint \(cand.hint.uppercased()). " + text
+            text = Loc.f("Hint %@. ", cand.hint.uppercased()) + text
         }
         return text
     }
@@ -143,9 +144,12 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
             let id = r.relationship.id
             let e = edges[id] ?? ElementItem(ref: .relationship(id), tree: self)
             edges[id] = e
-            let from = c.canvas.nodes[r.relationship.from]?.text ?? "a topic"
-            let to = c.canvas.nodes[r.relationship.to]?.text ?? "a topic"
-            e.text = "\(from) to \(to)\(r.relationship.label.isEmpty ? "" : ", \(r.relationship.label)"). Relationship."
+            let from = c.canvas.nodes[r.relationship.from]?.text ?? Loc.t("a topic")
+            let to = c.canvas.nodes[r.relationship.to]?.text ?? Loc.t("a topic")
+            e.text =
+                r.relationship.label.isEmpty
+                ? Loc.f("%@ to %@. Relationship.", from, to)
+                : Loc.f("%@ to %@, %@. Relationship.", from, to, r.relationship.label)
             let a = c.scene.nodes[r.relationship.from]?.frame.rect ?? .null
             let b = c.scene.nodes[r.relationship.to]?.frame.rect ?? .null
             e.world = a.union(b)

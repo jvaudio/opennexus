@@ -129,7 +129,11 @@ struct ShortcutsPane: View {
                     .accessibilityLabel("Hyper key")
                 }
                 Text(
-                    "\(prefs.string("shortcuts.hyperKey") == "rightOption" ? "Right Option" : "Caps Lock") acts as ⌃⌥⇧⌘ pressed together, giving OpenNexus a clash-free namespace. Tap alone: \(prefs.string("shortcuts.hyperTap") == "esc" ? "Esc" : "nothing")."
+                    Loc.f(
+                        "%@ acts as ⌃⌥⇧⌘ pressed together, giving OpenNexus a clash-free namespace. Tap alone: %@.",
+                        prefs.string("shortcuts.hyperKey") == "rightOption"
+                            ? Loc.t("Right Option") : Loc.t("Caps Lock"),
+                        prefs.string("shortcuts.hyperTap") == "esc" ? Loc.t("Esc") : Loc.t("nothing"))
                 )
                 .font(.chrome(13)).foregroundStyle(.white.opacity(0.7)).fixedSize(
                     horizontal: false, vertical: true)
@@ -232,7 +236,7 @@ struct ShortcutsPane: View {
                                 .accessibilityLabel(
                                     Loc.f(
                                         "%@ shortcut %@. Record", cmd.title,
-                                        standard.first?.glyphs ?? Loc.f("none")))
+                                        standard.first?.glyphs ?? Loc.t("none")))
                                 if c.chords[cmd.id.rawValue] != nil || c.scopes[cmd.id.rawValue] != nil {
                                     Button("Reset") {
                                         var x = c
@@ -291,8 +295,11 @@ struct ShortcutsPane: View {
                     cap(p.chord.glyphs, hyper: false)
                     Text("is already taken").font(.chrome(15, weight: .semibold))
                 }
-                Text(
-                    "OpenNexus uses it for **\(other.title)** (\(Self.scopeName(other.scope)) scope). You’re assigning it to **\(mine?.title ?? "")**."
+                Text(  // a String key renders its **bold** as Markdown
+                    LocalizedStringKey(
+                        Loc.f(
+                            "OpenNexus uses it for **%@** (%@ scope). You’re assigning it to **%@**.", other.title,
+                            Self.scopeName(other.scope), mine?.title ?? ""))
                 )
                 .font(.chrome(13.5)).fixedSize(horizontal: false, vertical: true)
                 HStack {
@@ -339,7 +346,7 @@ struct ShortcutsPane: View {
     func record(_ id: CommandID, _ chord: KeyChord) {
         stopRecording()
         if let name = SystemShortcuts.reserved[chord] {
-            systemClash = "\(chord.glyphs) is a macOS shortcut (\(name)); choose another."
+            systemClash = Loc.f("%@ is a macOS shortcut (%@); choose another.", chord.glyphs, name)
             return
         }
         var c = customization

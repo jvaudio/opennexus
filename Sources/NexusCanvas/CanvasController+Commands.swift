@@ -289,7 +289,7 @@ extension CanvasController {
 
     func toggleMarker(_ n: Int) {
         let targets = selection.nodes
-        perform(n == 0 ? "To-Do" : "Priority \(n)") { e in
+        perform(n == 0 ? Loc.t("To-Do") : Loc.f("Priority %lld", n)) { e in
             for t in targets { e.toggleMarker(t, priority: n) }
         }
     }
@@ -301,7 +301,7 @@ extension CanvasController {
 
     func reshuffleColors() {
         perform("Smart Color") { e in e.updateMeta { $0.style.paletteShift += 1 } }
-        showToast("Smart color reshuffled")
+        showToast(Loc.t("Smart color reshuffled"))
     }
 
     /// ⌥⌘1…9: the root changes the canvas structure; any other node overrides its branch.

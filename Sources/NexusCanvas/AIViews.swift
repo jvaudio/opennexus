@@ -191,7 +191,7 @@ struct AIPanelView: View {
                 Divider()
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        LabeledMenu(Loc.f("Chat: %@", chat?.title ?? Loc.f("New chat"))) {
+                        LabeledMenu(Loc.f("Chat: %@", chat?.title ?? Loc.t("New chat"))) {
                             ForEach(controller.chats) { c in Button(c.title) { controller.selectChat(c.id) } }
                         }
                         .menuStyle(.borderlessButton)
@@ -721,7 +721,7 @@ struct StickerSheet: View {
             do {
                 images = try await StickerMaker.make(prompt, style: style)
             } catch {
-                self.error = "Image Playground isn’t available: \(error.localizedDescription)"
+                self.error = Loc.f("Image Playground isn’t available: %@", error.localizedDescription)
             }
             busy = false
         }
@@ -790,7 +790,7 @@ struct RecordSheet: View {
             do {
                 try await recorder.start()
             } catch {
-                self.error = "Couldn’t start recording: \(error.localizedDescription)"
+                self.error = Loc.f("Couldn’t start recording: %@", error.localizedDescription)
                 running = false
             }
         }

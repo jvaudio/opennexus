@@ -114,13 +114,15 @@ final class AppPreferences {
         let tool = Bundle.main.bundleURL.appending(path: "Contents/Helpers/nexus")
         let command = "sudo mkdir -p /usr/local/bin && sudo ln -sf '\(tool.path)' /usr/local/bin/nexus"
         let a = NSAlert()
-        a.messageText = "Install the nexus command-line tool"
+        a.messageText = Loc.t("Install the nexus command-line tool")
         a.informativeText =
             FileManager.default.isExecutableFile(atPath: tool.path)
-            ? "Run this in Terminal to link the tool into your PATH (it asks for your password):\n\n\(command)\n\nThen MCP clients can use { \"command\": \"nexus\", \"args\": [\"mcp\"] }."
-            : "This build doesn't include the tool. Build it with:\n\nswift build -c release --product nexus"
-        a.addButton(withTitle: "Copy Command")
-        a.addButton(withTitle: "Done")
+            ? Loc.f(
+                "Run this in Terminal to link the tool into your PATH (it asks for your password):\n\n%@\n\nThen MCP clients can use { \"command\": \"nexus\", \"args\": [\"mcp\"] }.",
+                command)
+            : Loc.t("This build doesn't include the tool. Build it with:\n\nswift build -c release --product nexus")
+        a.addButton(withTitle: Loc.t("Copy Command"))
+        a.addButton(withTitle: Loc.t("Done"))
         if a.runModal() == .alertFirstButtonReturn {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(command, forType: .string)
@@ -167,9 +169,9 @@ final class AppPreferences {
         case "general.replayTour":
             (NSApp.delegate as? AppDelegate)?.showWelcome(nil)
         case "general.whatsNew", "about.notes":
-            showInfo("What’s new in OpenNexus 1.0", WhatsNew.text)
+            showInfo(Loc.t("What’s new in OpenNexus 1.0"), WhatsNew.text)
         case "about.source":
-            showInfo("OpenNexus is open source", Self.licence)
+            showInfo(Loc.t("OpenNexus is open source"), Self.licence)
         case "about.issue":
             let info = """
                 OpenNexus \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"))
@@ -179,23 +181,25 @@ final class AppPreferences {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(info, forType: .string)
             showInfo(
-                "Report an issue",
-                "Version details are on the clipboard. Paste them into your report so it’s easy to reproduce. OpenNexus never sends anything itself.\n\n\(info)"
+                Loc.t("Report an issue"),
+                Loc.f(
+                    "Version details are on the clipboard. Paste them into your report so it’s easy to reproduce. OpenNexus never sends anything itself.\n\n%@",
+                    info)
             )
         case "files.openRecovery":
             if let (doc, wc) = frontDocument {
                 wc.controller.snapshots = doc.snapshots
                 wc.window?.makeKeyAndOrderFront(nil)
             } else {
-                showInfo("Recovery", "Open a document to browse its recovery snapshots.")
+                showInfo(Loc.t("Recovery"), Loc.t("Open a document to browse its recovery snapshots."))
             }
         case "files.deleteSnapshots":
             let a = NSAlert()
-            a.messageText = "Delete all recovery snapshots?"
+            a.messageText = Loc.t("Delete all recovery snapshots?")
             a.informativeText =
-                "Snapshots of every document are removed. Your documents and their versions are not affected."
-            a.addButton(withTitle: "Delete")
-            a.addButton(withTitle: "Cancel")
+                Loc.t("Snapshots of every document are removed. Your documents and their versions are not affected.")
+            a.addButton(withTitle: Loc.t("Delete"))
+            a.addButton(withTitle: Loc.t("Cancel"))
             a.buttons[0].hasDestructiveAction = true
             if a.runModal() == .alertFirstButtonReturn { SnapshotStore.deleteAll() }
             prefs.set("files.lastCleared", Date().timeIntervalSince1970)
@@ -205,10 +209,10 @@ final class AppPreferences {
             installCLI()
         case "privacy.clearChats":
             let a = NSAlert()
-            a.messageText = "Clear all AI chats?"
-            a.informativeText = "Chats in open documents and those kept on this Mac are removed."
-            a.addButton(withTitle: "Clear")
-            a.addButton(withTitle: "Cancel")
+            a.messageText = Loc.t("Clear all AI chats?")
+            a.informativeText = Loc.t("Chats in open documents and those kept on this Mac are removed.")
+            a.addButton(withTitle: Loc.t("Clear"))
+            a.addButton(withTitle: Loc.t("Cancel"))
             if a.runModal() == .alertFirstButtonReturn {
                 for d in NSDocumentController.shared.documents {
                     if let nx = d as? NexusDocument {
@@ -220,8 +224,10 @@ final class AppPreferences {
             }
         case "privacy.log":
             showInfo(
-                "Network activity",
-                "No outbound requests. OpenNexus has no network entitlement, so macOS blocks any connection it might try."
+                Loc.t("Network activity"),
+                Loc.t(
+                    "No outbound requests. OpenNexus has no network entitlement, so macOS blocks any connection it might try."
+                )
             )
         default:
             if action.hasPrefix("snapshot.copy:") || action.hasPrefix("snapshot.compare:") {

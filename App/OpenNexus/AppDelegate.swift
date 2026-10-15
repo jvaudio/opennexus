@@ -90,8 +90,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         } catch {
             let a = NSAlert()
-            a.messageText = "Couldn’t open the snapshot"
-            a.informativeText = "\(error)"
+            a.messageText = Loc.t("Couldn’t open the snapshot")
+            a.informativeText = String(describing: error)
             a.runModal()
         }
     }
@@ -104,7 +104,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.canChooseDirectories = true
         panel.allowedContentTypes = DocumentWindowController.importTypes
         panel.message =
-            "Import .xmind, OPML, Markdown, Mermaid, PlantUML, draw.io, FreeMind, MindManager, MindNode, Word or text."
+            Loc.t(
+                "Import .xmind, OPML, Markdown, Mermaid, PlantUML, draw.io, FreeMind, MindManager, MindNode, Word or text."
+            )
         guard panel.runModal() == .OK else { return }
         for url in panel.urls { importFile(url) }
     }
@@ -133,8 +135,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             }
         } catch {
             let alert = NSAlert()
-            alert.messageText = "Couldn’t import “\(url.lastPathComponent)”"
-            alert.informativeText = "\(error)"
+            alert.messageText = Loc.f("Couldn’t import “%@”", url.lastPathComponent)
+            alert.informativeText = String(describing: error)
             alert.runModal()
         }
     }

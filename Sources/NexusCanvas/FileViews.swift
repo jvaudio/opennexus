@@ -823,7 +823,7 @@ struct ImportReportView: View {
                     tile(
                         "\(r.canvases)",
                         r.format == "Xmind"
-                            ? Loc.f("sheets → canvases") : r.canvases == 1 ? Loc.f("canvas") : Loc.f("canvases"),
+                            ? Loc.t("sheets → canvases") : r.canvases == 1 ? Loc.t("canvas") : Loc.t("canvases"),
                         ok: true)
                     tile("\(r.topics + r.markers + r.notes)", "topics, markers, notes", ok: true)
                     tile("\(r.notConverted)", "not converted", ok: r.notConverted == 0)

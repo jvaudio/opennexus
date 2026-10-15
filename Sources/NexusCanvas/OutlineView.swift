@@ -197,10 +197,12 @@ final class OutlineDocumentView: NSView, NSTextViewDelegate {
                         textRect: CGRect(x: x, y: y - 6, width: maxW, height: lh), text: la))
                 y += lh + 6
             }
-            if let note = n.note?.text, !note.isEmpty || noteNode == id { line("Note · " + note, .note) }
+            if let note = n.note?.text, !note.isEmpty || noteNode == id { line(Loc.f("Note · %@", note), .note) }
             for r in c.relationships where r.from == id {
                 let target = c.nodes[r.to]?.text ?? ""
-                line("→ links to \(target)" + (r.label.isEmpty ? "" : " (“\(r.label)”)"), .link)
+                line(
+                    r.label.isEmpty
+                        ? Loc.f("→ links to %@", target) : Loc.f("→ links to %@ (“%@”)", target, r.label), .link)
             }
             if n.folded, !n.children.isEmpty {
                 let hidden = c.subtree(id).count - 1

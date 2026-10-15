@@ -227,7 +227,7 @@ struct RowView: View {
         switch row.key {
         case "integrations.folders":
             let n = AgentFolders.list(prefs).count
-            return n == 0 ? nil : n == 1 ? "1 folder" : "\(n) folders"
+            return n == 0 ? nil : Loc.n("%lld folder", "%lld folders", n)
         default: return nil
         }
     }

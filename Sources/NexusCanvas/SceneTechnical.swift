@@ -247,7 +247,7 @@ extension SceneBuilder {
             out.frames = r.frames
             let laneColors = [env.theme.entityLine, env.theme.ai, env.theme.storeLine, env.theme.amber]
             for (i, band) in r.bands.enumerated() {
-                let title = i < canvas.diagram.lanes.count ? canvas.diagram.lanes[i].title : "Lane \(i + 1)"
+                let title = i < canvas.diagram.lanes.count ? canvas.diagram.lanes[i].title : Loc.f("Lane %lld", i + 1)
                 out.decor.append(.band(rect: band, title: title.uppercased(), color: laneColors[i % laneColors.count]))
             }
         }
