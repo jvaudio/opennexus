@@ -198,7 +198,7 @@ final class Integrations: NSObject {
                 doc.map {
                     "\($0.orderedCanvases.first.map { HomeView.typeName($0.type) } ?? "Map") · \(Loc.n("%lld topic", "%lld topics", $0.topicCount))"
                 }
-                ?? "Locked"
+                ?? Loc.t("Locked")
             recents.append(
                 .init(
                     token: token, title: url.deletingPathExtension().lastPathComponent, detail: detail, thumbnail: thumb
@@ -291,7 +291,7 @@ final class Integrations: NSObject {
 
     /// Adds captured topics to a map (nil: Settings › Send captures to) as one undo step,
     /// or opens a new map. A map that wasn't open is saved and closed again.
-    func add(_ result: CaptureComposer.Result, to target: URL?, image: Data? = nil, title: String = "Capture") {
+    func add(_ result: CaptureComposer.Result, to target: URL?, image: Data? = nil, title: String = Loc.t("Capture")) {
         if case .map(let doc) = result {
             NewDocument.make(model: doc)
             return
@@ -341,7 +341,7 @@ extension Integrations {
         _ pb: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>
     ) {
         guard prefs.bool("integrations.services") else {
-            error.pointee = "Services are turned off in OpenNexus › Settings › Integrations." as NSString
+            error.pointee = Loc.t("Services are turned off in OpenNexus › Settings › Integrations.") as NSString
             return
         }
         guard let text = pb.string(forType: .string), !text.isEmpty else { return }
@@ -361,7 +361,7 @@ extension Integrations {
         _ pb: NSPasteboard, userData: String?, error: AutoreleasingUnsafeMutablePointer<NSString?>
     ) {
         guard prefs.bool("integrations.services") else {
-            error.pointee = "Services are turned off in OpenNexus › Settings › Integrations." as NSString
+            error.pointee = Loc.t("Services are turned off in OpenNexus › Settings › Integrations.") as NSString
             return
         }
         guard let text = pb.string(forType: .string), let r = CaptureComposer.compose(text) else { return }

@@ -283,7 +283,7 @@ final class NexusDocument: NSDocument {
         let ctx = LAContext()
         var err: NSError?
         guard ctx.canEvaluatePolicy(.deviceOwnerAuthentication, error: &err) else { return done(false) }
-        ctx.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: "open an encrypted document") { ok, _ in
+        ctx.evaluatePolicy(.deviceOwnerAuthentication, localizedReason: Loc.t("open an encrypted document")) { ok, _ in
             DispatchQueue.main.async {
                 MainActor.assumeIsolated {
                     guard ok, (try? self.unlock(password: pw, remember: false)) != nil else { return done(false) }
@@ -391,7 +391,7 @@ final class NexusDocument: NSDocument {
         do {
             let restored = try NexusPackage.read(files: try SnapshotStore.read(s, key: cryptoKey))
             let focus = restored.canvasOrder.first ?? controller.canvasID
-            store.commitDocument("Restore Snapshot", focus: focus) { d in
+            store.commitDocument(Loc.t("Restore Snapshot"), focus: focus) { d in
                 d.canvases = restored.canvases
                 d.canvasOrder = restored.canvasOrder
                 d.theme = restored.theme

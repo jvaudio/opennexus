@@ -202,7 +202,7 @@ extension CanvasController {
         for d in registry.commands where canRun(d.id) {
             let keys = bindings(for: d.id).first?.glyphs
             let hyper = d.hyper.map { "✦ " + $0.glyphs.replacingOccurrences(of: "✦", with: "") }
-            let section = d.category == .ai ? "AI · ON-DEVICE" : "COMMANDS"
+            let section = d.category == .ai ? Loc.t("AI · ON-DEVICE") : "COMMANDS"
             let rank = recent.firstIndex(of: d.id.rawValue).map { 2000 - $0 * 10 } ?? 0
             let base = PaletteRow(
                 id: d.id.rawValue, section: section, title: Loc.t(d.title),
@@ -251,7 +251,7 @@ extension CanvasController {
                     glyph: "⚙", keys: nil, hyper: nil, action: .rebind(id)))
         }
         // Sections in order; the top row overall is what ↩ runs.
-        let order = ["COMMANDS", "AI · ON-DEVICE", "SETTINGS"]
+        let order = ["COMMANDS", Loc.t("AI · ON-DEVICE"), "SETTINGS"]
         return Array(order.flatMap { s in out.filter { $0.section == s } }.prefix(40))
     }
 
@@ -341,13 +341,13 @@ extension CanvasController {
         for cid in store.model.canvasOrder {
             guard let c = store.model.canvases[cid] else { continue }
             let parents = c.parentMap()
-            let canvasTitle = c.title.isEmpty ? (c.nodes[c.root]?.text ?? "Canvas") : c.title
+            let canvasTitle = c.title.isEmpty ? (c.nodes[c.root]?.text ?? Loc.t("Canvas")) : c.title
             if let (score, idx) = Fuzzy.match(q, in: canvasTitle) {
                 rows.append(
                     (
                         score + 5,
                         JumpRow(
-                            id: "c:\(cid.rawValue)", title: canvasTitle, path: "Canvas", badge: "CANVAS",
+                            id: "c:\(cid.rawValue)", title: canvasTitle, path: Loc.t("Canvas"), badge: "CANVAS",
                             color: theme.critical, canvas: cid, node: nil, matched: idx)
                     ))
             }
@@ -532,12 +532,12 @@ extension CanvasController {
     /// "Open threats · High" from the clause values.
     public var suggestedFilterName: String {
         let vals = filterClauses.map { c in c.op == .notEquals ? Loc.f("not %@", c.value) : c.value }
-        guard !vals.isEmpty else { return "Filter" }
+        guard !vals.isEmpty else { return Loc.t("Filter") }
         if filterClauses.contains(where: { $0.field == "type" && $0.value.lowercased() == "threat" }),
             filterClauses.contains(where: { $0.field == "status" && $0.op == .notEquals })
         {
             let risk = filterClauses.first { $0.field == "risk" }?.value
-            return "Open threats" + (risk.map { " · \($0)" } ?? "")
+            return Loc.t("Open threats") + (risk.map { " · \($0)" } ?? "")
         }
         return vals.joined(separator: " · ")
     }
@@ -545,7 +545,7 @@ extension CanvasController {
     public func saveFilter(named name: String? = nil) {
         guard !filterClauses.isEmpty else { return }
         let f = NodeFilter(name: name ?? suggestedFilterName, clauses: filterClauses, hide: filterHides)
-        perform("Save Filter") { e in
+        perform(Loc.t("Save Filter")) { e in
             e.updateMeta {
                 $0.filters.removeAll { $0.name == f.name }; $0.filters.append(f)
             }
@@ -635,11 +635,11 @@ extension CanvasController {
         for cid in Set(matches.map(\.canvas)) {
             let mine = matches.filter { $0.canvas == cid }
             if cid == canvasID {
-                perform("Replace") { e in _ = TextSearch.replace(mine, query: q, with: r, o, in: &e) }
+                perform(Loc.t("Replace")) { e in _ = TextSearch.replace(mine, query: q, with: r, o, in: &e) }
             } else if let c = store.canvas(cid) {
                 var e = CanvasEditor(c)
                 _ = TextSearch.replace(mine, query: q, with: r, o, in: &e)
-                let patch = e.patch(actionName: "Replace")
+                let patch = e.patch(actionName: Loc.t("Replace"))
                 if !patch.isEmpty { store.commit(patch) }
             }
         }
@@ -726,12 +726,12 @@ extension CanvasController {
         case (.left, _), (.up, _): stepSlide(-1)
         case (_, "s"?):
             if let slide {
-                perform(slide.skipped ? "Include Slide" : "Skip Slide") { $0.toggleSkip(slide.id) }
+                perform(slide.skipped ? Loc.t("Include Slide") : Loc.t("Skip Slide")) { $0.toggleSkip(slide.id) }
                 showSlide()
             }
         case (_, "m"?):
             if let slide, p.index + 1 < s.count {
-                perform("Merge Slides") { $0.toggleMerge(slide.id) }
+                perform(Loc.t("Merge Slides")) { $0.toggleMerge(slide.id) }
                 showSlide()
             }
         case (_, "h"?):
@@ -740,7 +740,7 @@ extension CanvasController {
                 slide?.highlight.contains(selection.primary) == true
                 ? selection.primary : (slide?.highlight.last ?? selection.primary)
             if target != canvas.root {
-                perform("Hide from Slides") { $0.update(target) { $0.presentHidden.toggle() } }
+                perform(Loc.t("Hide from Slides")) { $0.update(target) { $0.presentHidden.toggle() } }
                 present?.index = min(p.index, max(slides.count - 1, 0))
                 showSlide()
             }
@@ -785,7 +785,7 @@ extension CanvasController {
     func outlineCollapse() {
         let id = selection.primary
         if let n = canvas.nodes[id], !n.children.isEmpty, !n.folded {
-            restructure("Fold") { try $0.toggleFold(id) }
+            restructure(Loc.t("Fold")) { try $0.toggleFold(id) }
         } else if let p = canvas.parent(of: id) {
             select(p)
         }
@@ -795,7 +795,7 @@ extension CanvasController {
         let id = selection.primary
         guard let n = canvas.nodes[id], let first = n.children.first else { return }
         if n.folded {
-            restructure("Unfold") { try $0.toggleFold(id) }
+            restructure(Loc.t("Unfold")) { try $0.toggleFold(id) }
         } else {
             select(first)
         }

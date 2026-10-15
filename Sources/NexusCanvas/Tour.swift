@@ -58,36 +58,39 @@ public final class TourController {
     public static func lessons(_ role: Role) -> [Lesson] {
         [
             Lesson(
-                title: "Type", seconds: 20,
-                steps: [Step(keys: ["↩"], prompt: "Name your idea, then ↩", expects: [], check: .rootNamed)]),
+                title: Loc.t("Type"), seconds: 20,
+                steps: [Step(keys: ["↩"], prompt: Loc.t("Name your idea, then ↩"), expects: [], check: .rootNamed)]),
             Lesson(
-                title: "Tab and Return", seconds: 40,
+                title: Loc.t("Tab and Return"), seconds: 40,
                 steps: [
-                    Step(keys: ["⇥"], prompt: "Tab adds a child", expects: [.addChild, .commitAndAddChild]),
-                    Step(keys: ["↩"], prompt: "Return adds a sibling", expects: [.addSiblingAfter]),
-                    Step(keys: ["⇧", "↩"], prompt: "Shift-Return adds one before", expects: [.addSiblingBefore]),
+                    Step(keys: ["⇥"], prompt: Loc.t("Tab adds a child"), expects: [.addChild, .commitAndAddChild]),
+                    Step(keys: ["↩"], prompt: Loc.t("Return adds a sibling"), expects: [.addSiblingAfter]),
                     Step(
-                        keys: ["⌘", "↩"], prompt: "Command-Return adds a parent",
+                        keys: ["⇧", "↩"], prompt: Loc.t("Shift-Return adds one before"), expects: [.addSiblingBefore]),
+                    Step(
+                        keys: ["⌘", "↩"], prompt: Loc.t("Command-Return adds a parent"),
                         expects: [.addParent, .commitAndAddParent]),
                 ]),
             Lesson(
-                title: "Move around", seconds: 30,
+                title: Loc.t("Move around"), seconds: 30,
                 steps: [
                     Step(
-                        keys: ["↑", "↓"], prompt: "Use the arrows to move",
+                        keys: ["↑", "↓"], prompt: Loc.t("Use the arrows to move"),
                         expects: [.selectUp, .selectDown, .selectLeft, .selectRight]),
-                    Step(keys: ["⌥⌘↑↓"], prompt: "Option-Command-Up or Down reorders", expects: [.moveUp, .moveDown]),
-                    Step(keys: ["⌘/"], prompt: "Command-/ folds a branch", expects: [.fold]),
+                    Step(
+                        keys: ["⌥⌘↑↓"], prompt: Loc.t("Option-Command-Up or Down reorders"),
+                        expects: [.moveUp, .moveDown]),
+                    Step(keys: ["⌘/"], prompt: Loc.t("Command-/ folds a branch"), expects: [.fold]),
                 ]),
             Lesson(
-                title: "Connect", seconds: 30,
+                title: Loc.t("Connect"), seconds: 30,
                 steps: [
-                    Step(keys: ["⇧⌘L"], prompt: "Shift-Command-L opens Connect mode", expects: [.connect]),
-                    Step(keys: ["A"], prompt: "Pick a hint letter, then ↩", expects: [], check: .edgeDrawn),
-                    Step(keys: ["↩"], prompt: "Name the edge, then ↩", expects: [], check: .edgeLabelled),
+                    Step(keys: ["⇧⌘L"], prompt: Loc.t("Shift-Command-L opens Connect mode"), expects: [.connect]),
+                    Step(keys: ["A"], prompt: Loc.t("Pick a hint letter, then ↩"), expects: [], check: .edgeDrawn),
+                    Step(keys: ["↩"], prompt: Loc.t("Name the edge, then ↩"), expects: [], check: .edgeLabelled),
                 ]),
             Lesson(
-                title: "Transform", seconds: 40,
+                title: Loc.t("Transform"), seconds: 40,
                 steps: [
                     Step(
                         keys: ["⌥⌘T"],
@@ -95,12 +98,15 @@ public final class TourController {
                         expects: [.convert])
                 ]),
             Lesson(
-                title: "Ask AI", seconds: 30,
+                title: Loc.t("Ask AI"), seconds: 30,
                 steps: [
                     Step(
-                        keys: ["⌥", "Space"], prompt: "Option-Space suggests ideas on this branch", expects: [.aiGhosts]
+                        keys: ["⌥", Loc.t("Space")], prompt: Loc.t("Option-Space suggests ideas on this branch"),
+                        expects: [.aiGhosts]
                     ),
-                    Step(keys: ["⌃", "↩"], prompt: "Control-Return accepts one", expects: [.aiAccept, .aiAcceptAll]),
+                    Step(
+                        keys: ["⌃", "↩"], prompt: Loc.t("Control-Return accepts one"),
+                        expects: [.aiAccept, .aiAcceptAll]),
                 ]),
         ]
     }

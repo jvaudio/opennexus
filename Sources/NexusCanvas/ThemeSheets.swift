@@ -24,7 +24,7 @@ struct ThemeBuilder: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text(theme.id.isEmpty ? "New Theme" : "Edit Theme").font(.title3.bold())
+                Text(theme.id.isEmpty ? Loc.t("New Theme") : Loc.t("Edit Theme")).font(.title3.bold())
                 Spacer()
                 Text(report.badge)
                     .font(.chrome(11, weight: .semibold, design: .monospaced))
@@ -69,7 +69,7 @@ struct ThemeBuilder: View {
                 }
                 HStack {
                     ColorPicker(
-                        "Selected colour",
+                        Loc.t("Selected colour"),
                         selection: Binding(
                             get: { theme.palette[min(selectedColor, theme.palette.count - 1)].color },
                             set: { theme.palette[min(selectedColor, theme.palette.count - 1)] = RGBA(color: $0) }))
@@ -122,8 +122,9 @@ struct ThemeBuilder: View {
                 Text("Branch line").font(.chrome(13))
                 Segments(
                     options: [
-                        ("curved", "Curved"), ("straight", "Straight"), ("elbow", "Elbow"), ("rounded", "Rounded"),
-                        ("zigzag", "Zigzag"),
+                        ("curved", Loc.t("Curved")), ("straight", Loc.t("Straight")), ("elbow", Loc.t("Elbow")),
+                        ("rounded", Loc.t("Rounded")),
+                        ("zigzag", Loc.t("Zigzag")),
                     ],
                     selection: theme.lineShape
                 ) { theme.lineShape = $0 }
@@ -131,9 +132,13 @@ struct ThemeBuilder: View {
             GroupBox {
                 VStack(alignment: .leading, spacing: 6) {
                     Text("Per diagram type").font(.chrome(13, weight: .semibold))
-                    modeRow("Mind maps", "mindmap", ["branch": "Colour by branch"])
-                    modeRow("DFD · Architecture", "dfd", ["type": "Colour by node type", "branch": "Colour by branch"])
-                    modeRow("Threat model", "threatModel", ["risk": "Colour by risk", "type": "Colour by node type"])
+                    modeRow(Loc.t("Mind maps"), "mindmap", ["branch": Loc.t("Colour by branch")])
+                    modeRow(
+                        Loc.t("DFD · Architecture"), "dfd",
+                        ["type": Loc.t("Colour by node type"), "branch": Loc.t("Colour by branch")])
+                    modeRow(
+                        Loc.t("Threat model"), "threatModel",
+                        ["risk": Loc.t("Colour by risk"), "type": Loc.t("Colour by node type")])
                 }
                 .font(.chrome(12))
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -233,7 +238,7 @@ struct ColourThemeEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Text(palette.id.isEmpty ? "New colour theme" : "Edit colour theme").font(.title3.bold())
+            Text(palette.id.isEmpty ? Loc.t("New colour theme") : Loc.t("Edit colour theme")).font(.title3.bold())
             Divider()
             LabeledContent("Name") { TextField("Name", text: $palette.name).textFieldStyle(.roundedBorder) }
             Text("6 BRANCH COLOURS · REORDER WITH THE ARROWS").font(.chrome(11, weight: .semibold))
@@ -273,7 +278,7 @@ struct ColourThemeEditor: View {
                     .font(.chrome(12, design: .monospaced))
                     .onSubmit { if let c = RGBA(hexString: hex) { palette.colors[selected] = c } }
             }
-            PanelRow(label: "Root colour") {
+            PanelRow(label: Loc.t("Root colour")) {
                 ColorPicker(
                     "",
                     selection: Binding(
@@ -283,7 +288,7 @@ struct ColourThemeEditor: View {
                 .labelsHidden()
                 .accessibilityLabel("Custom colour")
             }
-            PanelRow(label: "Contrast check") {
+            PanelRow(label: Loc.t("Contrast check")) {
                 let ok = check.passing == check.total
                 Text(
                     ok ? Loc.f("AA on all %lld", check.total) : Loc.f("AA on %lld of %lld", check.passing, check.total)

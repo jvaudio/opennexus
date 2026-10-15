@@ -18,7 +18,7 @@ public struct FormatPanel: View {
         VStack(spacing: 0) {
             HStack(spacing: 18) {
                 ForEach(
-                    [("style", "Style"), ("map", "Map"), ("data", "Data")]
+                    [("style", Loc.t("Style")), ("map", Loc.t("Map")), ("data", Loc.t("Data"))]
                         + (controller.canvas.type == .threatModel ? [("stride", "STRIDE")] : []), id: \.0
                 ) { id, title in
                     Button {
@@ -110,7 +110,7 @@ struct StyleTab: View {
 
     var quickStyles: some View {
         PanelSection(
-            "Quick style", key: "quick",
+            Loc.t("Quick style"), key: "quick",
             accessory: {
                 Text("⌃⌥1–8").font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
             }
@@ -147,11 +147,11 @@ struct StyleTab: View {
     @State private var askingQuickName = false
 
     var actions: some View {
-        PanelSection("Style actions", key: "actions") {
+        PanelSection(Loc.t("Style actions"), key: "actions") {
             VStack(alignment: .leading, spacing: 2) {
-                actionRow("Copy style", key(.copyStyle)) { controller.copyStyle() }
-                actionRow("Paste style", key(.pasteStyle)) { controller.pasteStyle() }
-                actionRow("Reset style", key(.resetStyle)) { controller.resetStyle() }
+                actionRow(Loc.t("Copy style"), key(.copyStyle)) { controller.copyStyle() }
+                actionRow(Loc.t("Paste style"), key(.pasteStyle)) { controller.pasteStyle() }
+                actionRow(Loc.t("Reset style"), key(.resetStyle)) { controller.resetStyle() }
                 Menu {
                     updateStyleItems
                 } label: {
@@ -160,8 +160,8 @@ struct StyleTab: View {
                 .menuStyle(.borderlessButton)
                 .accessibilityLabel("Update style")
                 .padding(.vertical, 4)
-                actionRow("Save as Quick Style…", "") { askingQuickName = true }
-                actionRow("Select topics with this style", "") { controller.selectTopicsWithSameStyle() }
+                actionRow(Loc.t("Save as Quick Style…"), "") { askingQuickName = true }
+                actionRow(Loc.t("Select topics with this style"), "") { controller.selectTopicsWithSameStyle() }
             }
             .alert("Save as Quick Style", isPresented: $askingQuickName) {
                 TextField("Name", text: $quickName)
@@ -198,14 +198,15 @@ struct StyleTab: View {
     }
 
     static let structureNames = [
-        "Mind Map", "Logic Chart → right", "Brace Map", "Org Chart", "Tree Chart", "Timeline", "Fishbone", "Matrix",
-        "Tree Table",
+        Loc.t("Mind Map"), Loc.t("Logic Chart → right"), Loc.t("Brace Map"), Loc.t("Org Chart"), Loc.t("Tree Chart"),
+        Loc.t("Timeline"), Loc.t("Fishbone"), Loc.t("Matrix"),
+        Loc.t("Tree Table"),
     ]
 
     var structure: some View {
         let current = node?.structure ?? controller.canvas.layout.structure
         let i = CanvasController.structureCycle.firstIndex(of: current) ?? 0
-        return PanelSection("Structure · this branch", key: "structure") {
+        return PanelSection(Loc.t("Structure · this branch"), key: "structure") {
             HStack {
                 Picker(
                     "",
@@ -222,7 +223,7 @@ struct StyleTab: View {
 
     var shapes: some View {
         PanelSection(
-            "Shape", key: "shape",
+            Loc.t("Shape"), key: "shape",
             accessory: {
                 Text("\(ShapeLibrary.all.count)").font(.chrome(11)).foregroundStyle(.secondary)
             }
@@ -230,7 +231,7 @@ struct StyleTab: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 8), spacing: 6) {
                 ForEach(ShapeLibrary.all) { sh in
                     Tile(selected: (style.shape ?? "rounded") == sh.id, height: 30) {
-                        set("Shape") { $0.shape = sh.id }
+                        set(Loc.t("Shape")) { $0.shape = sh.id }
                     } content: {
                         PathIcon(d: sh.icon, lineWidth: 1.3).padding(4)
                     }
@@ -249,15 +250,18 @@ struct StyleTab: View {
     }
 
     var fill: some View {
-        PanelSection("Fill", key: "fill") {
+        PanelSection(Loc.t("Fill"), key: "fill") {
             Segments(
-                options: [("none", "None"), ("solid", "Solid"), ("tint", "Tint"), ("gradient", "Gradient")],
+                options: [
+                    ("none", Loc.t("None")), ("solid", Loc.t("Solid")), ("tint", Loc.t("Tint")),
+                    ("gradient", Loc.t("Gradient")),
+                ],
                 selection: style.fill ?? "solid"
-            ) { v in set("Fill") { $0.fill = v } }
+            ) { v in set(Loc.t("Fill")) { $0.fill = v } }
             HStack(spacing: 7) {
                 ForEach(palette, id: \.self) { c in
                     Swatch(color: c, selected: override.fillColor == c.hex) {
-                        set("Fill Colour") {
+                        set(Loc.t("Fill Colour")) {
                             $0.fillColor = c.hex
                             if $0.fill == nil || $0.fill == "none" { $0.fill = "solid" }
                         }
@@ -266,7 +270,7 @@ struct StyleTab: View {
                 ColorPicker(
                     "",
                     selection: hexBinding(override.fillColor, fallback: branch) { hex in
-                        set("Fill Colour") { $0.fillColor = hex }
+                        set(Loc.t("Fill Colour")) { $0.fillColor = hex }
                     }
                 )
                 .labelsHidden()
@@ -274,21 +278,22 @@ struct StyleTab: View {
                 .frame(width: 34)
                 Spacer(minLength: 0)
             }
-            LabeledMenu("Branch colour") {
-                Button("Follow branch colour") { set("Fill Colour") { $0.fillColor = "branch" } }
-                Button("Branch tint") { set("Fill Colour") { $0.fillColor = "branch@0.16" } }
-                Button("Theme default") { set("Fill Colour") { $0.fillColor = nil } }
+            LabeledMenu(Loc.t("Branch colour")) {
+                Button("Follow branch colour") { set(Loc.t("Fill Colour")) { $0.fillColor = "branch" } }
+                Button("Branch tint") { set(Loc.t("Fill Colour")) { $0.fillColor = "branch@0.16" } }
+                Button("Theme default") { set(Loc.t("Fill Colour")) { $0.fillColor = nil } }
             }
             .fixedSize()
         }
     }
 
     var border: some View {
-        PanelSection("Border", key: "border") {
+        PanelSection(Loc.t("Border"), key: "border") {
             HStack {
                 Picker(
                     "",
-                    selection: Binding(get: { style.border ?? "none" }, set: { v in set("Border") { $0.border = v } })
+                    selection: Binding(
+                        get: { style.border ?? "none" }, set: { v in set(Loc.t("Border")) { $0.border = v } })
                 ) {
                     ForEach(NodeAppearance.BorderPattern.allCases, id: \.rawValue) { b in
                         Text(b.rawValue.capitalized).tag(b.rawValue)
@@ -298,7 +303,8 @@ struct StyleTab: View {
                 Picker(
                     "",
                     selection: Binding(
-                        get: { style.borderWidth ?? 0 }, set: { v in set("Border Width") { $0.borderWidth = v } })
+                        get: { style.borderWidth ?? 0 }, set: { v in set(Loc.t("Border Width")) { $0.borderWidth = v } }
+                    )
                 ) {
                     ForEach([0, 0.5, 1, 1.5, 2, 2.5, 3, 4, 6] as [Double], id: \.self) { w in
                         Text(CanvasPanelFormat.points(w)).tag(w)
@@ -309,7 +315,7 @@ struct StyleTab: View {
                 ColorPicker(
                     "",
                     selection: hexBinding(override.borderColor, fallback: branch) { hex in
-                        set("Border Colour") { $0.borderColor = hex }
+                        set(Loc.t("Border Colour")) { $0.borderColor = hex }
                     }
                 )
                 .labelsHidden()
@@ -318,24 +324,25 @@ struct StyleTab: View {
             }
             Segments(
                 options: [
-                    ("solid", "——"), ("dashed", "- - -"), ("dotted", "· · ·"), ("hand", "≈ hand"),
-                    ("double", "═ double"),
+                    ("solid", "——"), ("dashed", "- - -"), ("dotted", "· · ·"), ("hand", Loc.t("≈ hand")),
+                    ("double", Loc.t("═ double")),
                 ],
                 selection: style.border
             ) { v in
-                set("Border") {
+                set(Loc.t("Border")) {
                     $0.border = v
                     if ($0.borderWidth ?? 0) == 0 { $0.borderWidth = 2 }
                 }
             }
-            PanelRow(label: "Corner radius") {
-                PointField(value: style.cornerRadius) { v in set("Corner Radius") { $0.cornerRadius = v } }
+            PanelRow(label: Loc.t("Corner radius")) {
+                PointField(value: style.cornerRadius) { v in set(Loc.t("Corner Radius")) { $0.cornerRadius = v } }
             }
-            PanelRow(label: "Shadow") {
+            PanelRow(label: Loc.t("Shadow")) {
                 Segments(
-                    options: [("none", "None"), ("soft", "Soft"), ("hard", "Hard")], selection: style.shadow ?? "none"
+                    options: [("none", Loc.t("None")), ("soft", Loc.t("Soft")), ("hard", Loc.t("Hard"))],
+                    selection: style.shadow ?? "none"
                 ) {
-                    v in set("Shadow") { $0.shadow = v }
+                    v in set(Loc.t("Shadow")) { $0.shadow = v }
                 }
                 .frame(maxWidth: 170)
             }
@@ -343,15 +350,18 @@ struct StyleTab: View {
     }
 
     static let fonts: [(String, String)] = [
-        ("system", "SF Pro"), ("serif", "New York"), ("mono", "SF Mono"), ("rounded", "SF Pro Rounded"),
-        ("hand", "Handwriting"),
+        ("system", Loc.t("SF Pro")), ("serif", Loc.t("New York")), ("mono", Loc.t("SF Mono")),
+        ("rounded", Loc.t("SF Pro Rounded")),
+        ("hand", Loc.t("Handwriting")),
     ]
 
     var text: some View {
-        PanelSection("Text · applies to selected characters while editing", key: "text") {
+        PanelSection(Loc.t("Text · applies to selected characters while editing"), key: "text") {
             HStack {
                 Picker(
-                    "", selection: Binding(get: { style.font ?? "system" }, set: { v in set("Font") { $0.font = v } })
+                    "",
+                    selection: Binding(
+                        get: { style.font ?? "system" }, set: { v in set(Loc.t("Font")) { $0.font = v } })
                 ) {
                     ForEach(Self.fonts, id: \.0) { Text($0.1).tag($0.0) }
                     Divider()
@@ -361,7 +371,8 @@ struct StyleTab: View {
                 Picker(
                     "",
                     selection: Binding(
-                        get: { style.fontSize ?? 0 }, set: { v in set("Font Size") { $0.fontSize = v == 0 ? nil : v } })
+                        get: { style.fontSize ?? 0 },
+                        set: { v in set(Loc.t("Font Size")) { $0.fontSize = v == 0 ? nil : v } })
                 ) {
                     Text("Auto").tag(0.0)
                     ForEach([12, 13, 14, 15, 16, 18, 20, 24, 28, 32] as [Double], id: \.self) {
@@ -375,7 +386,8 @@ struct StyleTab: View {
                 Picker(
                     "",
                     selection: Binding(
-                        get: { style.fontWeight ?? "medium" }, set: { v in set("Font Weight") { $0.fontWeight = v } })
+                        get: { style.fontWeight ?? "medium" },
+                        set: { v in set(Loc.t("Font Weight")) { $0.fontWeight = v } })
                 ) {
                     ForEach(["regular", "medium", "semibold", "bold", "heavy"], id: \.self) {
                         Text($0.capitalized).tag($0)
@@ -385,50 +397,53 @@ struct StyleTab: View {
                 Toggle(
                     "Auto contrast",
                     isOn: Binding(
-                        get: { style.autoContrast ?? true }, set: { v in set("Auto Contrast") { $0.autoContrast = v } })
+                        get: { style.autoContrast ?? true },
+                        set: { v in set(Loc.t("Auto Contrast")) { $0.autoContrast = v } })
                 )
                 .toggleStyle(.checkbox)
                 .font(.chrome(13))
             }
             HStack(spacing: 0) {
                 textToggle("B", .bold, style.fontWeight == "bold" || style.fontWeight == "heavy") {
-                    set("Bold") { $0.fontWeight = ($0.fontWeight == "bold") ? "medium" : "bold" }
+                    set(Loc.t("Bold")) { $0.fontWeight = ($0.fontWeight == "bold") ? "medium" : "bold" }
                 }
                 textToggle("I", .regular, style.italic == true, italic: true) {
-                    set("Italic") { $0.italic = !(style.italic ?? false) }
+                    set(Loc.t("Italic")) { $0.italic = !(style.italic ?? false) }
                 }
                 textToggle("U", .regular, style.underline == true, underline: true) {
-                    set("Underline") { $0.underline = !(style.underline ?? false) }
+                    set(Loc.t("Underline")) { $0.underline = !(style.underline ?? false) }
                 }
                 textToggle("S", .regular, style.strikethrough == true, strike: true) {
-                    set("Strikethrough") { $0.strikethrough = !(style.strikethrough ?? false) }
+                    set(Loc.t("Strikethrough")) { $0.strikethrough = !(style.strikethrough ?? false) }
                 }
-                textToggle("</>", .regular, style.code == true) { set("Code") { $0.code = !(style.code ?? false) } }
+                textToggle("</>", .regular, style.code == true) {
+                    set(Loc.t("Code")) { $0.code = !(style.code ?? false) }
+                }
             }
             .overlay(RoundedRectangle(cornerRadius: 7).strokeBorder(.separator))
-            PanelRow(label: "Case") {
+            PanelRow(label: Loc.t("Case")) {
                 Segments(
-                    options: [("none", "Aa"), ("upper", "AA"), ("lower", "aa"), ("title", "Title")],
+                    options: [("none", Loc.t("Aa")), ("upper", "AA"), ("lower", "aa"), ("title", Loc.t("Title"))],
                     selection: style.textCase ?? "none"
                 ) {
-                    v in set("Case") { $0.textCase = v }
+                    v in set(Loc.t("Case")) { $0.textCase = v }
                 }
                 .frame(maxWidth: 190)
             }
-            PanelRow(label: "Align") {
+            PanelRow(label: Loc.t("Align")) {
                 Segments(
                     options: [("leading", "⟸"), ("center", "≡"), ("trailing", "⟹")], selection: style.align ?? "center"
                 ) {
-                    v in set("Align") { $0.align = v }
+                    v in set(Loc.t("Align")) { $0.align = v }
                 }
                 .frame(maxWidth: 130)
             }
-            PanelRow(label: "Line spacing") {
+            PanelRow(label: Loc.t("Line spacing")) {
                 Picker(
                     "",
                     selection: Binding(
                         get: { style.lineSpacing ?? 0 },
-                        set: { v in set("Line Spacing") { $0.lineSpacing = v == 0 ? nil : v } })
+                        set: { v in set(Loc.t("Line Spacing")) { $0.lineSpacing = v == 0 ? nil : v } })
                 ) {
                     Text("Auto").tag(0.0)
                     ForEach([1.0, 1.15, 1.25, 1.5, 2.0], id: \.self) { Text(String(format: "%.2g", $0)).tag($0) }
@@ -459,7 +474,8 @@ struct StyleTab: View {
     }
 
     static let numberFormats: [(String, String)] = [
-        ("none", "None"), ("decimal", "1 2 3"), ("tiered", "1.1 1.2"), ("roman", "I II"), ("upper", "A B C"),
+        ("none", Loc.t("None")), ("decimal", "1 2 3"), ("tiered", "1.1 1.2"), ("roman", Loc.t("I II")),
+        ("upper", "A B C"),
         ("lower", "a b c"), ("circled", "① ②"), ("cjk", "一 二"),
     ]
 
@@ -476,12 +492,12 @@ struct StyleTab: View {
     var numbering: some View {
         let target = numberingTarget
         let current = controller.canvas.nodes[target]?.style?.numbering
-        return PanelSection("Numbering", key: "numbering") {
+        return PanelSection(Loc.t("Numbering"), key: "numbering") {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
                 ForEach(Self.numberFormats, id: \.0) { id, label in
                     Tile(selected: (current?.format ?? "none") == id, height: 30) {
                         controller.select(target)
-                        controller.updateSelectionStyle("Numbering") {
+                        controller.updateSelectionStyle(Loc.t("Numbering")) {
                             var n = $0.numbering ?? NumberingStyle()
                             n.format = id
                             if id == "tiered" { n.tiered = true }
@@ -496,16 +512,16 @@ struct StyleTab: View {
             .accessibilityLabel("Numbering")
             PanelToggle(label: "Tiered (2.1, 2.2…)", isOn: current?.tiered ?? false) { v in
                 controller.select(target)
-                controller.updateSelectionStyle("Numbering") {
+                controller.updateSelectionStyle(Loc.t("Numbering")) {
                     var n = $0.numbering ?? NumberingStyle(format: "decimal")
                     n.tiered = v
                     $0.numbering = n
                 }
             }
-            PanelToggle(label: "Apply to siblings", isOn: numberingSiblings) { numberingSiblings = $0 }
-            PanelToggle(label: "Restart from this topic", isOn: current?.restart ?? false) { v in
+            PanelToggle(label: Loc.t("Apply to siblings"), isOn: numberingSiblings) { numberingSiblings = $0 }
+            PanelToggle(label: Loc.t("Restart from this topic"), isOn: current?.restart ?? false) { v in
                 controller.select(target)
-                controller.updateSelectionStyle("Numbering") {
+                controller.updateSelectionStyle(Loc.t("Numbering")) {
                     var n = $0.numbering ?? NumberingStyle(format: "decimal")
                     n.restart = v
                     $0.numbering = n
@@ -515,19 +531,22 @@ struct StyleTab: View {
     }
 
     var size: some View {
-        PanelSection("Size", key: "size") {
-            PanelRow(label: "Width") {
-                PointField(value: style.width) { v in set("Width") { $0.width = v } }
-                Button("Fit") { set("Width") { $0.width = nil } }
+        PanelSection(Loc.t("Size"), key: "size") {
+            PanelRow(label: Loc.t("Width")) {
+                PointField(value: style.width) { v in set(Loc.t("Width")) { $0.width = v } }
+                Button("Fit") { set(Loc.t("Width")) { $0.width = nil } }
                     .buttonStyle(.bordered)
                     .controlSize(.small)
             }
-            PanelRow(label: "Image position") {
+            PanelRow(label: Loc.t("Image position")) {
                 Segments(
-                    options: [("top", "Top"), ("left", "Left"), ("right", "Right"), ("bottom", "Bottom")],
+                    options: [
+                        ("top", Loc.t("Top")), ("left", Loc.t("Left")), ("right", Loc.t("Right")),
+                        ("bottom", Loc.t("Bottom")),
+                    ],
                     selection: style.imagePosition ?? "top"
                 ) {
-                    v in set("Image Position") { $0.imagePosition = v }
+                    v in set(Loc.t("Image Position")) { $0.imagePosition = v }
                 }
                 .frame(maxWidth: 190)
             }
@@ -535,10 +554,11 @@ struct StyleTab: View {
     }
 
     static let lineShapes: [(String, String, String)] = [
-        ("curved", "Curved", "M2 16 C 22 16, 22 2, 42 2"), ("straight", "Straight", "M2 16 L 42 2"),
-        ("elbow", "Elbow", "M2 16 H 22 V 2 H 42"),
-        ("rounded", "Rounded", "M2 16 H 16 Q 22 16 22 10 V 8 Q 22 2 28 2 H 42"),
-        ("tapered", "Tapered", "M2 16 C 22 16, 22 2, 42 2"), ("zigzag", "Zigzag", "M2 16 L 12 6 L 22 14 L 32 4 L 42 2"),
+        ("curved", Loc.t("Curved"), "M2 16 C 22 16, 22 2, 42 2"), ("straight", Loc.t("Straight"), "M2 16 L 42 2"),
+        ("elbow", Loc.t("Elbow"), "M2 16 H 22 V 2 H 42"),
+        ("rounded", Loc.t("Rounded"), "M2 16 H 16 Q 22 16 22 10 V 8 Q 22 2 28 2 H 42"),
+        ("tapered", Loc.t("Tapered"), "M2 16 C 22 16, 22 2, 42 2"),
+        ("zigzag", Loc.t("Zigzag"), "M2 16 L 12 6 L 22 14 L 32 4 L 42 2"),
     ]
 
     var line: LineStyle { override.line ?? LineStyle() }
@@ -553,11 +573,11 @@ struct StyleTab: View {
 
     var branchLine: some View {
         let shape = line.taper == true ? "tapered" : (line.shape ?? controller.theme.lineShape)
-        return PanelSection("Branch line", key: "line") {
+        return PanelSection(Loc.t("Branch line"), key: "line") {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3), spacing: 6) {
                 ForEach(Self.lineShapes, id: \.0) { id, name, d in
                     Tile(selected: shape == id, height: 52) {
-                        setLine("Branch Line") {
+                        setLine(Loc.t("Branch Line")) {
                             if id == "tapered" {
                                 $0.taper = true
                                 $0.shape = "curved"
@@ -580,7 +600,7 @@ struct StyleTab: View {
                 Toggle(
                     isOn: Binding(
                         get: { (line.color ?? "branch") == "branch" },
-                        set: { v in setLine("Line Colour") { $0.color = v ? nil : controller.theme.ink2.hex } })
+                        set: { v in setLine(Loc.t("Line Colour")) { $0.color = v ? nil : controller.theme.ink2.hex } })
                 ) {
                     HStack(spacing: 6) {
                         RoundedRectangle(cornerRadius: 3).fill(branch.color).frame(width: 12, height: 12)
@@ -592,7 +612,8 @@ struct StyleTab: View {
                 Picker(
                     "",
                     selection: Binding(
-                        get: { line.width ?? 0 }, set: { v in setLine("Line Width") { $0.width = v == 0 ? nil : v } })
+                        get: { line.width ?? 0 },
+                        set: { v in setLine(Loc.t("Line Width")) { $0.width = v == 0 ? nil : v } })
                 ) {
                     Text("Auto").tag(0.0)
                     ForEach([1, 1.5, 2, 3, 4, 6] as [Double], id: \.self) { Text(CanvasPanelFormat.points($0)).tag($0) }
@@ -600,38 +621,43 @@ struct StyleTab: View {
                 .labelsHidden()
                 .frame(width: 84)
             }
-            PanelRow(label: "End cap") {
+            PanelRow(label: Loc.t("End cap")) {
                 Segments(
-                    options: [("none", "None"), ("arrow", "Arrow"), ("dot", "Dot"), ("bar", "Bar")],
+                    options: [
+                        ("none", Loc.t("None")), ("arrow", Loc.t("Arrow")), ("dot", Loc.t("Dot")),
+                        ("bar", Loc.t("Bar")),
+                    ],
                     selection: line.endCap ?? "none"
                 ) {
-                    v in setLine("End Cap") { $0.endCap = v }
+                    v in setLine(Loc.t("End Cap")) { $0.endCap = v }
                 }
                 .frame(maxWidth: 190)
             }
-            PanelToggle(label: "Taper thick → thin", isOn: line.taper ?? false) { v in setLine("Taper") { $0.taper = v }
+            PanelToggle(label: Loc.t("Taper thick → thin"), isOn: line.taper ?? false) { v in
+                setLine(Loc.t("Taper")) { $0.taper = v }
             }
-            PanelToggle(label: "Children’s lines inherit", isOn: line.inherit ?? true) { v in
-                setLine("Inherit") { $0.inherit = v }
+            PanelToggle(label: Loc.t("Children’s lines inherit"), isOn: line.inherit ?? true) { v in
+                setLine(Loc.t("Inherit")) { $0.inherit = v }
             }
         }
     }
 
     var spacing: some View {
-        PanelSection("Spacing · this branch", key: "spacing") {
-            PanelRow(label: "Sibling gap") {
+        PanelSection(Loc.t("Spacing · this branch"), key: "spacing") {
+            PanelRow(label: Loc.t("Sibling gap")) {
                 Slider(
                     value: Binding(
                         get: { style.siblingGap ?? 20 },
-                        set: { v in set("Sibling Gap") { $0.siblingGap = v.rounded() } }), in: 0...80
+                        set: { v in set(Loc.t("Sibling Gap")) { $0.siblingGap = v.rounded() } }), in: 0...80
                 )
                 .frame(width: 150)
                 .accessibilityLabel(Loc.t("Sibling gap"))
             }
-            PanelRow(label: "Level gap") {
+            PanelRow(label: Loc.t("Level gap")) {
                 Slider(
                     value: Binding(
-                        get: { style.levelGap ?? 40 }, set: { v in set("Level Gap") { $0.levelGap = v.rounded() } }),
+                        get: { style.levelGap ?? 40 },
+                        set: { v in set(Loc.t("Level Gap")) { $0.levelGap = v.rounded() } }),
                     in: 8...160
                 )
                 .frame(width: 150)
@@ -641,11 +667,11 @@ struct StyleTab: View {
             Text("UPDATE STYLE").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 2) {
                 let depth = controller.canvas.depth(of: controller.selection.primary)
-                actionRow("Apply to siblings", "") { controller.updateStyle(.siblings) }
+                actionRow(Loc.t("Apply to siblings"), "") { controller.updateStyle(.siblings) }
                 actionRow(Loc.f("Apply to all level-%lld topics", depth + 1), "") { controller.updateStyle(.sameLevel) }
-                actionRow("Apply to all subtopics of this branch", "") { controller.updateStyle(.subtopics) }
-                actionRow("Save as Quick Style…", "") { askingQuickName = true }
-                actionRow("Save into this theme", "") { controller.updateStyle(.sameLevel) }
+                actionRow(Loc.t("Apply to all subtopics of this branch"), "") { controller.updateStyle(.subtopics) }
+                actionRow(Loc.t("Save as Quick Style…"), "") { askingQuickName = true }
+                actionRow(Loc.t("Save into this theme"), "") { controller.updateStyle(.sameLevel) }
             }
         }
     }

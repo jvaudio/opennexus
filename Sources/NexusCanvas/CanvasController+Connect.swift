@@ -153,7 +153,7 @@ extension CanvasController {
         connect = nil
         mode = .select
         let root = canvas.root
-        let result = perform("Relationship", selectionAfter: { (r: (NodeID, String)) in Selection(r.0) }) { e in
+        let result = perform(Loc.t("Relationship"), selectionAfter: { (r: (NodeID, String)) in Selection(r.0) }) { e in
             let to = try target ?? e.addChild(of: root, text: newText)
             let rid = e.connect(source, to: to)
             return (to, rid)

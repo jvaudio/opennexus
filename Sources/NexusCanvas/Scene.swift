@@ -21,13 +21,13 @@ public enum Indicator: String, Sendable, CaseIterable {
 
     public var label: String {
         switch self {
-        case .note: "Note"
-        case .link: "Web link"
-        case .topicLink: "Topic link"
-        case .file: "File link"
-        case .attachment: "Attachment"
-        case .audio: "Audio note"
-        case .ai: "Created by AI"
+        case .note: Loc.t("Note")
+        case .link: Loc.t("Web link")
+        case .topicLink: Loc.t("Topic link")
+        case .file: Loc.t("File link")
+        case .attachment: Loc.t("Attachment")
+        case .audio: Loc.t("Audio note")
+        case .ai: Loc.t("Created by AI")
         }
     }
 }

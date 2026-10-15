@@ -36,7 +36,7 @@ struct PaletteView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                    Text(p.query.isEmpty ? "Type a command…" : p.query)
+                    Text(p.query.isEmpty ? Loc.t("Type a command…") : p.query)
                         .font(.chrome(20))
                         .foregroundStyle(p.query.isEmpty ? .tertiary : .primary)
                     Spacer()
@@ -145,7 +145,7 @@ struct JumpView: View {
                         .padding(.horizontal, 7)
                         .padding(.vertical, 4)
                         .background(RoundedRectangle(cornerRadius: 6).fill(Color.black))
-                    Text(j.query.isEmpty ? "Jump to a topic, edge or canvas" : j.query)
+                    Text(j.query.isEmpty ? Loc.t("Jump to a topic, edge or canvas") : j.query)
                         .font(.chrome(20))
                         .foregroundStyle(j.query.isEmpty ? .tertiary : .primary)
                     Spacer()
@@ -355,10 +355,10 @@ struct CountsCard: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("THIS CANVAS · SELECTION").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
             Grid(alignment: .leading, horizontalSpacing: 28, verticalSpacing: 6) {
-                row("Topics", "\(all.topics) · \(sel.topics)")
-                row("Words", "\(all.words.formatted()) · \(sel.words.formatted())")
-                row("Characters", "\(all.characters.formatted()) · \(sel.characters.formatted())")
-                row("Notes", "\(all.notes)")
+                row(Loc.t("Topics"), "\(all.topics) · \(sel.topics)")
+                row(Loc.t("Words"), "\(all.words.formatted()) · \(sel.words.formatted())")
+                row(Loc.t("Characters"), "\(all.characters.formatted()) · \(sel.characters.formatted())")
+                row(Loc.t("Notes"), "\(all.notes)")
                 row("AI-created", "\(all.aiCreated)")
             }
         }
@@ -413,8 +413,9 @@ struct NavigationPanelView: View {
     var controller: CanvasController
 
     static let tabs: [(Int, String, String)] = [
-        (1, "magnifyingglass", "Search"), (2, "list.bullet", "Outline"), (3, "text.alignleft", "Notes"),
-        (4, "diamond.fill", "Tags"), (5, "square", "To-dos"),
+        (1, "magnifyingglass", Loc.t("Search")), (2, "list.bullet", Loc.t("Outline")),
+        (3, "text.alignleft", Loc.t("Notes")),
+        (4, "diamond.fill", Loc.t("Tags")), (5, "square", "To-dos"),
     ]
 
     var body: some View {
@@ -497,15 +498,15 @@ struct SearchTab: View {
             .padding(9)
             .background(RoundedRectangle(cornerRadius: 8).stroke(.separator))
             HStack(spacing: 6) {
-                toggle("Aa Match case", s.options.matchCase) { $0.matchCase.toggle() }
-                toggle("Whole words", s.options.wholeWords) { $0.wholeWords.toggle() }
-                toggle(".* Regex", s.options.regex) { $0.regex.toggle() }
+                toggle(Loc.t("Aa Match case"), s.options.matchCase) { $0.matchCase.toggle() }
+                toggle(Loc.t("Whole words"), s.options.wholeWords) { $0.wholeWords.toggle() }
+                toggle(Loc.t(".* Regex"), s.options.regex) { $0.regex.toggle() }
             }
             HStack(spacing: 6) {
-                toggle("This canvas", !s.options.allCanvases) { $0.allCanvases = false }
-                toggle("All canvases", s.options.allCanvases) { $0.allCanvases = true }
-                toggle("+ Notes", s.options.notes) { $0.notes.toggle() }
-                toggle("+ Labels", s.options.labels) { $0.labels.toggle() }
+                toggle(Loc.t("This canvas"), !s.options.allCanvases) { $0.allCanvases = false }
+                toggle(Loc.t("All canvases"), s.options.allCanvases) { $0.allCanvases = true }
+                toggle(Loc.t("+ Notes"), s.options.notes) { $0.notes.toggle() }
+                toggle(Loc.t("+ Labels"), s.options.labels) { $0.labels.toggle() }
             }
             HStack {
                 Button("Replace ⌥↩") { controller.replaceCurrent() }
@@ -557,7 +558,7 @@ struct SearchTab: View {
         let source: String =
             switch m.field {
             case .text: n?.text ?? ""
-            case .note: "Note: “" + (n?.note?.text ?? "") + "”"
+            case .note: Loc.t("Note: “") + (n?.note?.text ?? "") + "”"
             case .label: n?.labels[safe: m.index] ?? ""
             }
         let offset = m.field == .note ? 7 : 0
@@ -566,7 +567,7 @@ struct SearchTab: View {
         let path =
             ([c?.title ?? ""]
             + (c.map { cv in cv.path(to: m.node).dropFirst().compactMap { cv.nodes[$0]?.text } } ?? []))
-            .joined(separator: " › ") + (m.field == .note ? " › note" : "")
+            .joined(separator: " › ") + (m.field == .note ? Loc.t(" › note") : "")
         return HStack(alignment: .top, spacing: 10) {
             RoundedRectangle(cornerRadius: 2).fill(Color.accentColor.opacity(0.7)).frame(width: 8, height: 8).padding(
                 .top, 5)
@@ -718,8 +719,13 @@ struct TodosTab: View {
         let shown = which == "Open" ? open : which == "Done" ? done : all
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 6) {
-                ForEach([("Open", open.count), ("Done", done.count), ("All", all.count)], id: \.0) { k, n in
-                    Text("\(k) · \(n)")
+                ForEach(
+                    [
+                        ("Open", Loc.t("Open"), open.count), ("Done", Loc.t("Done"), done.count),
+                        ("All", Loc.t("All"), all.count),
+                    ], id: \.0
+                ) { k, title, n in
+                    Text(verbatim: "\(title) · \(n)")
                         .font(.chrome(12.5))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)

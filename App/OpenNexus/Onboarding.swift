@@ -31,14 +31,14 @@ enum Onboarding {
                 contentRect: CGRect(origin: .zero, size: size), styleMask: [.titled, .closable, .fullSizeContentView],
                 backing: .buffered, defer: false)
         // Hidden, but VoiceOver's window list reads it.
-        w.title = "Welcome to OpenNexus"
+        w.title = Loc.t("Welcome to OpenNexus")
         w.titlebarAppearsTransparent = true
         w.titleVisibility = .hidden
         w.isReleasedWhenClosed = false
         w.isMovableByWindowBackground = true
         w.setContentSize(size)
         w.contentView = NSHostingView(rootView: view)
-        w.contentView?.setAccessibilityLabel("Welcome to OpenNexus")
+        w.contentView?.setAccessibilityLabel(Loc.t("Welcome to OpenNexus"))
         w.center()
         w.makeKeyAndOrderFront(nil)
         window = w
@@ -144,12 +144,12 @@ final class HomeWindow {
                 styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
                 backing: .buffered, defer: false)
             w.titlebarAppearsTransparent = true
-            w.title = "Home"
+            w.title = Loc.t("Home")
             w.titleVisibility = .hidden
             w.isReleasedWhenClosed = false
             w.setFrameAutosaveName("OpenNexusHome")
             w.contentView = NSHostingView(rootView: HomeView(model: model))
-            w.contentView?.setAccessibilityLabel("Home")
+            w.contentView?.setAccessibilityLabel(Loc.t("Home"))
             w.center()
             window = w
             wire()

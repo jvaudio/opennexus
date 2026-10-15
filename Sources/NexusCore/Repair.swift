@@ -19,20 +19,29 @@ extension Canvas {
         let summaryCount = summaries.count
         summaries.removeAll { s in [s.parent, s.from, s.to, s.topic].contains { nodes[$0] == nil } || s.topic == root }
         if summaries.count < summaryCount {
-            fixes.append("\(summaryCount - summaries.count) summaries without their topics")
+            fixes.append(
+                CoreText.n(
+                    "%lld summary without its topic", "%lld summaries without their topics",
+                    summaryCount - summaries.count))
         }
         let calloutCount = callouts.count
         callouts.removeAll { c in nodes[c.host] == nil || nodes[c.topic] == nil || c.topic == root || c.topic == c.host
         }
         if callouts.count < calloutCount {
-            fixes.append("\(calloutCount - callouts.count) callouts without their topics")
+            fixes.append(
+                CoreText.n(
+                    "%lld callout without its topic", "%lld callouts without their topics",
+                    calloutCount - callouts.count))
         }
         var seenTops = Set<NodeID>([root])
         let floatingCount = floating.count
         floating = floating.filter { nodes[$0] != nil && seenTops.insert($0).inserted }
-        if floating.count < floatingCount { fixes.append("\(floatingCount - floating.count) floating topic entries") }
+        if floating.count < floatingCount {
+            fixes.append(
+                CoreText.n("%lld floating topic entry", "%lld floating topic entries", floatingCount - floating.count))
+        }
         for s in summaries where !seenTops.insert(s.topic).inserted {
-            fixes.append("summary \(s.id) reuses a topic")
+            fixes.append(CoreText.f("summary %@ reuses a topic", s.id))
         }
         summaries.removeAll { s in floating.contains(s.topic) }
         var used = Set([root] + floating)
@@ -59,7 +68,10 @@ extension Canvas {
             }
         }
         for t in tops { walk(from: t) }
-        if dropped > 0 { fixes.append("\(dropped) broken or repeated child links") }
+        if dropped > 0 {
+            fixes.append(
+                CoreText.n("%lld broken or repeated child link", "%lld broken or repeated child links", dropped))
+        }
 
         // Unreached topics become floating, starting with those no other unreached topic lists.
         var orphans = 0
@@ -74,7 +86,13 @@ extension Canvas {
             orphans += 1
             walk(from: next)
         }
-        if orphans > 0 { fixes.append("\(orphans) unreachable topics kept as floating topics") }
+        if orphans > 0 {
+            fixes.append(
+                CoreText.n(
+                    "%lld unreachable topic kept as a floating topic",
+                    "%lld unreachable topics kept as floating topics",
+                    orphans))
+        }
 
         // Branches nested deeper than maxDepth become floating topics (each piece keeps
         // its own subtree, up to the limit again).
@@ -98,13 +116,19 @@ extension Canvas {
             }
         }
         if lifted > 0 {
-            fixes.append("\(lifted) branches nested over \(Canvas.maxDepth) levels moved to floating topics")
+            fixes.append(
+                CoreText.f(
+                    "%@ nested over %lld levels moved to floating topics",
+                    CoreText.n("%lld branch", "%lld branches", lifted), Canvas.maxDepth))
         }
 
         let relCount = relationships.count
         relationships.removeAll { nodes[$0.from] == nil || nodes[$0.to] == nil }
         if relationships.count < relCount {
-            fixes.append("\(relCount - relationships.count) relationships to missing topics")
+            fixes.append(
+                CoreText.n(
+                    "%lld relationship to a missing topic", "%lld relationships to missing topics",
+                    relCount - relationships.count))
         }
         var trimmed = 0
         for i in boundaries.indices {
@@ -118,7 +142,12 @@ extension Canvas {
             zones[i].members.removeAll { !floating.contains($0) }
             trimmed += before - zones[i].members.count
         }
-        if trimmed > 0 { fixes.append("\(trimmed) boundary or zone members that are missing") }
+        if trimmed > 0 {
+            fixes.append(
+                CoreText.n(
+                    "%lld boundary or zone member that is missing", "%lld boundary or zone members that are missing",
+                    trimmed))
+        }
         return fixes
     }
 }

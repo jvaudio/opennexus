@@ -82,16 +82,22 @@ public final class CanvasHostView: NSView {
         // Each overlay is a named group for assistive apps (M10 audit: unnamed hosting views
         // are "missing useful accessibility information").
         let named: [(NSView, String)] = [
-            (status, "Mode and keys"), (toast, "Notification"), (cheat, "Shortcut cheat sheet"),
-            (dfd, "Data flow levels"), (crumb, "Level breadcrumb"), (violation, "Data flow rule check"),
-            (threatCard, "Threat suggestions"), (table, "Threat table"), (icons, "Icon library"),
-            (convert, "Convert diagram type"), (nav, "Navigation"), (filter, "Filter"), (focus, "Focus breadcrumb"),
-            (counts, "Zoom and topic count"), (zenCount, "Focus timer"), (palette, "Command palette"),
-            (jump, "Quick jump"), (present, "Presentation"), (aiPanel, "AI panel"), (aiSheet, "AI"),
-            (exportSheet, "Export"), (printSheet, "Print"), (mergeSheet, "Merge documents"),
-            (passwordSheet, "Password"), (reportSheet, "Import report"), (snapshotSheet, "Recovery snapshots"),
-            (shotBar, "Map Shot"), (shotHint, "Map Shot hint"), (tourBar, "Tutorial"), (tourPill, "Tutorial paused"),
-            (tourFinish, "Tutorial finished"), (tipHost, "Tip"),
+            (status, Loc.t("Mode and keys")), (toast, Loc.t("Notification")), (cheat, Loc.t("Shortcut cheat sheet")),
+            (dfd, Loc.t("Data flow levels")), (crumb, Loc.t("Level breadcrumb")),
+            (violation, Loc.t("Data flow rule check")),
+            (threatCard, Loc.t("Threat suggestions")), (table, Loc.t("Threat table")), (icons, Loc.t("Icon library")),
+            (convert, Loc.t("Convert diagram type")), (nav, Loc.t("Navigation")), (filter, Loc.t("Filter")),
+            (focus, Loc.t("Focus breadcrumb")),
+            (counts, Loc.t("Zoom and topic count")), (zenCount, Loc.t("Focus timer")),
+            (palette, Loc.t("Command palette")),
+            (jump, Loc.t("Quick jump")), (present, Loc.t("Presentation")), (aiPanel, Loc.t("AI panel")),
+            (aiSheet, "AI"),
+            (exportSheet, Loc.t("Export")), (printSheet, Loc.t("Print")), (mergeSheet, Loc.t("Merge documents")),
+            (passwordSheet, Loc.t("Password")), (reportSheet, Loc.t("Import report")),
+            (snapshotSheet, Loc.t("Recovery snapshots")),
+            (shotBar, Loc.t("Map Shot")), (shotHint, Loc.t("Map Shot hint")), (tourBar, Loc.t("Tutorial")),
+            (tourPill, Loc.t("Tutorial paused")),
+            (tourFinish, Loc.t("Tutorial finished")), (tipHost, Loc.t("Tip")),
         ]
         for (v, name) in named { v.setAccessibilityLabel(Loc.t(name)) }
         aiSheet.sizingOptions = [.intrinsicContentSize]

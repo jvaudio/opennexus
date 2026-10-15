@@ -36,7 +36,7 @@ public final class OutlineView: NSView {
             hints.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
         ])
         setAccessibilityRole(.outline)
-        setAccessibilityLabel("Outline")
+        setAccessibilityLabel(Loc.t("Outline"))
         syncAppearance(controller)
     }
 

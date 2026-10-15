@@ -34,16 +34,16 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
         case .jpeg: "JPEG"
         case .svg: "SVG"
         case .pdf: "PDF"
-        case .mermaid: "Mermaid"
+        case .mermaid: Loc.t("Mermaid")
         case .plantuml: "PlantUML"
         case .drawio: "draw.io"
-        case .json: "JSON · YAML"
+        case .json: Loc.t("JSON · YAML")
         case .opml: "OPML"
-        case .markdown: "Markdown"
-        case .word: "Word"
+        case .markdown: Loc.t("Markdown")
+        case .word: Loc.t("Word")
         case .powerpoint: "PowerPoint"
-        case .keynote: "Keynote"
-        case .csv: "CSV · threats"
+        case .keynote: Loc.t("Keynote")
+        case .csv: Loc.t("CSV · threats")
         }
     }
 
@@ -417,7 +417,7 @@ extension CanvasController {
         copySelection()
         let ids = selection.nodes.filter { $0 != canvas.root }
         guard !ids.isEmpty else { return }
-        perform("Cut", selectionAfter: { Selection($0) }) { e in try e.delete(ids) }
+        perform(Loc.t("Cut"), selectionAfter: { Selection($0) }) { e in try e.delete(ids) }
     }
 
     /// ⌘V: copied topics, Markdown, indented text, OPML or Mermaid become a branch under
@@ -429,8 +429,10 @@ extension CanvasController {
         if let data = pb.data(forType: .nexusFragment), let v = try? CanonicalJSON.parse(data),
             let f = try? Canvas(json: v, path: "clipboard")
         {
-            perform("Paste", selectionAfter: { (ids: [NodeID]) in Selection(primary: ids.first ?? parent, nodes: ids) })
-            { e in
+            perform(
+                Loc.t("Paste"),
+                selectionAfter: { (ids: [NodeID]) in Selection(primary: ids.first ?? parent, nodes: ids) }
+            ) { e in
                 try e.paste(f, under: parent)
             }
             return
@@ -441,14 +443,15 @@ extension CanvasController {
                 let c = CanvasBuilder.build(ic, id: canvasID, report: &report)
                 let f = ic.synthesizedRoot ? c.fragment(c.nodes[c.root]?.children ?? []) : c.fragment([c.root])
                 perform(
-                    "Paste Outline",
+                    Loc.t("Paste Outline"),
                     selectionAfter: { (ids: [NodeID]) in Selection(primary: ids.first ?? parent, nodes: ids) }
                 ) { e in
                     try e.paste(f, under: parent)
                 }
             } else {
                 let line = text.trimmingCharacters(in: .whitespacesAndNewlines)
-                perform("Paste", selectionAfter: { Selection($0) }) { e in try e.addChild(of: parent, text: line) }
+                perform(Loc.t("Paste"), selectionAfter: { Selection($0) }) { e in try e.addChild(of: parent, text: line)
+                }
             }
             return
         }
@@ -715,7 +718,7 @@ extension CanvasController {
                 for (k, v) in s.assets where store.model.assets[k] == nil { store.updateDocument { $0.assets[k] = v } }
             }
             perform(
-                "Merge Documents",
+                Loc.t("Merge Documents"),
                 selectionAfter: { (ids: [NodeID]) in Selection(primary: ids.first ?? target, nodes: ids) }
             ) { e in
                 var out: [NodeID] = []
@@ -763,11 +766,11 @@ extension CanvasController {
         guard let n = canvas.nodes[id] else { return }
         let src = canvas
         var target = CanvasID("")
-        store.commitDocument("New Canvas from Topic", focus: canvasID) { d in
+        store.commitDocument(Loc.t("New Canvas from Topic"), focus: canvasID) { d in
             var c = Canvas(id: "tmp", title: n.text, type: src.type, rootText: n.text)
             c.style = src.style
             var undo = UndoStack()
-            c.edit("Copy", undo: &undo) { e in
+            c.edit(Loc.t("Copy"), undo: &undo) { e in
                 for ch in n.children { _ = try? e.graft(src, top: ch, under: e.canvas.root) }
                 e.update(e.canvas.root) {
                     $0.note = n.note
@@ -793,7 +796,7 @@ extension CanvasController {
     }
 
     public func renameCanvas(_ title: String) {
-        perform("Rename Canvas") { e in e.updateMeta { $0.title = title } }
+        perform(Loc.t("Rename Canvas")) { e in e.updateMeta { $0.title = title } }
     }
 
     /// Delete canvas…: one undo; the last canvas can't go.
@@ -807,7 +810,7 @@ extension CanvasController {
         let next =
             order.firstIndex(of: id).flatMap { i in i + 1 < order.count ? order[i + 1] : i > 0 ? order[i - 1] : nil }
             ?? order.first!
-        store.commitDocument("Delete Canvas", focus: next) { d in
+        store.commitDocument(Loc.t("Delete Canvas"), focus: next) { d in
             d.canvases[id] = nil
             d.canvasOrder.removeAll { $0 == id }
         }
@@ -829,7 +832,7 @@ extension CanvasController {
             let c = try? Canvas(json: v, path: "clipboard")
         else { return }
         var target = CanvasID("")
-        store.commitDocument("Paste Canvas", focus: canvasID) { d in
+        store.commitDocument(Loc.t("Paste Canvas"), focus: canvasID) { d in
             target = d.add([c], after: d.canvasOrder.firstIndex(of: canvasID))[0]
         }
         switchCanvas(to: target)

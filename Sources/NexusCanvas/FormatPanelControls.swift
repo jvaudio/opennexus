@@ -206,7 +206,7 @@ func hexBinding(_ hex: String?, fallback: RGBA, set: @escaping (String) -> Void)
 /// A small numeric field with a unit (pt).
 struct PointField: View {
     let value: Double?
-    var placeholder = "Auto"
+    var placeholder = Loc.t("Auto")
     let set: (Double?) -> Void
     @State private var text = ""
 

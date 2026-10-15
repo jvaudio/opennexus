@@ -179,7 +179,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
 
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
-        setAccessibilityLabel("Canvas")
+        setAccessibilityLabel(Loc.t("Canvas"))
         setAccessibilityIdentifier("canvas")
 
         controller.onSceneChange = { [weak self] animated in self?.update(animated: animated) }
@@ -1539,7 +1539,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                         offset.height += c.y - moved.y
                         guideLines.append(
                             (CGPoint(x: min(c.x, moved.x) - 40, y: c.y), CGPoint(x: max(c.x, moved.x) + 40, y: c.y)))
-                        guideLabel = guideLabel ?? ("aligned centre", CGPoint(x: (c.x + moved.x) / 2, y: c.y - 12))
+                        guideLabel =
+                            guideLabel ?? (Loc.t("aligned centre"), CGPoint(x: (c.x + moved.x) / 2, y: c.y - 12))
                     }
                 }
                 // Snap to grid (Settings › Editing) when no guide caught the topic.
@@ -1863,7 +1864,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                 NSAccessibility.post(
                     element: self, notification: .announcementRequested,
                     userInfo: [
-                        .announcement: "Connect mode. " + targets.joined(separator: "; "),
+                        .announcement: Loc.t("Connect mode. ") + targets.joined(separator: "; "),
                         .priority: NSAccessibilityPriorityLevel.high.rawValue,
                     ])
             }

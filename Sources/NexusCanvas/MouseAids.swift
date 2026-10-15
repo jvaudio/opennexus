@@ -10,13 +10,15 @@ struct FloatingToolbarView: View {
 
     var body: some View {
         HStack(spacing: 2) {
-            button("✦ Ideas", "Suggest ideas (⌥Space)", .aiGhosts, accent: true) { controller.requestGhosts() }
-            button("⇢", "Connect", .connect) { _ = controller.perform(.connect) }
-            button("↗", "Link", nil) { controller.onRequest?(.link(controller.selection.primary)) }
-            button("▣", "Image", nil) { controller.onRequest?(.image(controller.selection.primary)) }
-            button("≡", "Note", .note) { controller.onRequest?(.note(controller.selection.primary)) }
+            button(Loc.t("✦ Ideas"), Loc.t("Suggest ideas (⌥Space)"), .aiGhosts, accent: true) {
+                controller.requestGhosts()
+            }
+            button("⇢", Loc.t("Connect"), .connect) { _ = controller.perform(.connect) }
+            button("↗", Loc.t("Link"), nil) { controller.onRequest?(.link(controller.selection.primary)) }
+            button("▣", Loc.t("Image"), nil) { controller.onRequest?(.image(controller.selection.primary)) }
+            button("≡", Loc.t("Note"), .note) { controller.onRequest?(.note(controller.selection.primary)) }
             button("☐", "To-do", .toggleTodo) { _ = controller.perform(.toggleTodo) }
-            button("Aa", "Style (⌘I)", .inspector) { controller.onExternalCommand?(.inspector) }
+            button(Loc.t("Aa"), Loc.t("Style (⌘I)"), .inspector) { controller.onExternalCommand?(.inspector) }
         }
         .padding(.horizontal, 6).frame(height: 32)
         .background(
@@ -58,7 +60,7 @@ struct AddTopicButton: View {
                 .frame(width: 20, height: 20).background(Circle().fill(Color(hex: "#5850EC")))
         }
         .buttonStyle(.plain)
-        .help(child ? "Add a child (⇥)" : "Add a sibling (↩)")
-        .accessibilityLabel(child ? "Add child topic" : "Add sibling topic")
+        .help(child ? Loc.t("Add a child (⇥)") : Loc.t("Add a sibling (↩)"))
+        .accessibilityLabel(child ? Loc.t("Add child topic") : Loc.t("Add sibling topic"))
     }
 }

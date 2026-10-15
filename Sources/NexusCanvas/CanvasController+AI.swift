@@ -160,7 +160,8 @@ extension CanvasController {
         let markAI = markAI
         let ideas = g.ideas
         var created: [Int: NodeID] = [:]
-        let made = perform(ideas.count == indices.count ? "Accept Suggestions" : "Accept Suggestion") { e -> [NodeID] in
+        let made = perform(ideas.count == indices.count ? Loc.t("Accept Suggestions") : Loc.t("Accept Suggestion")) {
+            e -> [NodeID] in
             var out: [NodeID] = []
             for i in indices.sorted() {
                 let idea = ideas[i]
@@ -229,8 +230,9 @@ extension CanvasController {
     }
 
     public static let promptChips: [(String, AIAction)] = [
-        ("Expand into a sprint plan", .sprintPlan), ("Find gaps", .findGaps), ("Rewrite shorter", .rewrite),
-        ("Summarize", .summarize),
+        (Loc.t("Expand into a sprint plan"), .sprintPlan), (Loc.t("Find gaps"), .findGaps),
+        (Loc.t("Rewrite shorter"), .rewrite),
+        (Loc.t("Summarize"), .summarize),
     ]
 
     /// Runs the prompt bar's text (or a chip). Results arrive as ghosts or a plan in the
@@ -249,7 +251,8 @@ extension CanvasController {
         }
         let a = action ?? .ideas
         switch a.output {
-        case .ghosts: requestGhosts(a, prompt: t, label: a == .breakdown || a == .sprintPlan ? "Breaking down…" : nil)
+        case .ghosts:
+            requestGhosts(a, prompt: t, label: a == .breakdown || a == .sprintPlan ? Loc.t("Breaking down…") : nil)
         case .plan, .text:
             aiPanelVisible = true
             ask(t.isEmpty ? a.title : t, action: a)
@@ -332,7 +335,7 @@ extension CanvasController {
         req.discussion = chat.discussion
         req.history = chat.messages
         let engine = ai
-        aiBusy = action?.title ?? "Thinking"
+        aiBusy = action?.title ?? Loc.t("Thinking")
         aiAvailability = .working
         aiTask?.cancel()
         aiTask = Task { @MainActor [weak self] in
@@ -374,7 +377,7 @@ extension CanvasController {
     /// The panel's question in `ask` form for a non-chat action chip.
     public func runAction(_ a: AIAction) {
         switch a.output {
-        case .ghosts: requestGhosts(a, label: a == .breakdown ? "Breaking down…" : nil)
+        case .ghosts: requestGhosts(a, label: a == .breakdown ? Loc.t("Breaking down…") : nil)
         default:
             aiPanelVisible = true
             ask(a.title, action: a)
@@ -390,7 +393,7 @@ extension CanvasController {
     /// Apply · one undo.
     public func applyPlan(_ plan: ChangePlan, chat: String? = nil, message: Int? = nil) {
         let markAI = markAI
-        let added = perform("Apply AI Changes") { e in try plan.apply(in: &e, markAI: markAI) }
+        let added = perform(Loc.t("Apply AI Changes")) { e in try plan.apply(in: &e, markAI: markAI) }
         previewPlan = nil
         if let chat, let message {
             updateChat(chat) { c in if message < c.messages.count { c.messages[message].applied = true } }

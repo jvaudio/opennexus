@@ -307,7 +307,7 @@ extension DocumentWindowController {
         stack.alignment = .leading
         let field = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 24))
         field.widthAnchor.constraint(equalToConstant: 260).isActive = true
-        let remember = NSButton(checkboxWithTitle: "Remember in Keychain", target: nil, action: nil)
+        let remember = NSButton(checkboxWithTitle: Loc.t("Remember in Keychain"), target: nil, action: nil)
         remember.state = .on
         stack.addArrangedSubview(field)
         stack.addArrangedSubview(remember)
@@ -376,12 +376,13 @@ extension DocumentWindowController {
     /// the Format panel. Hidden ones are skipped.
     var focusRegions: [(name: String, view: NSView)] {
         var out: [(String, NSView)] = []
-        if let t = tabsView, !t.isHiddenOrHasHiddenAncestor { out.append(("Canvas tabs", t)) }
-        out.append(outline.isHiddenOrHasHiddenAncestor ? ("Canvas", host.canvasView) : ("Outline", outline))
+        if let t = tabsView, !t.isHiddenOrHasHiddenAncestor { out.append((Loc.t("Canvas tabs"), t)) }
+        out.append(
+            outline.isHiddenOrHasHiddenAncestor ? (Loc.t("Canvas"), host.canvasView) : (Loc.t("Outline"), outline))
         if let ai = host.aiPanelView, !ai.isHiddenOrHasHiddenAncestor, ai.frame.width > 0 {
-            out.append(("AI panel", ai))
+            out.append((Loc.t("AI panel"), ai))
         }
-        if !panel.isHiddenOrHasHiddenAncestor { out.append(("Format panel", panel)) }
+        if !panel.isHiddenOrHasHiddenAncestor { out.append((Loc.t("Format panel"), panel)) }
         return out
     }
 

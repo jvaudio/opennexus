@@ -66,20 +66,20 @@ public struct CanvasStatusBar: View {
         case .edit:
             [
                 Hint(key: key(.commitEdit), label: "commit"),
-                Hint(key: key(.commitAndAddChild), label: "commit + child"),
-                Hint(key: key(.lineBreak), label: "line break"),
+                Hint(key: key(.commitAndAddChild), label: Loc.t("commit + child")),
+                Hint(key: key(.lineBreak), label: Loc.t("line break")),
             ]
         case .connect:
             [
-                Hint(key: "A S D", label: "pick target"), Hint(key: "abc", label: "filter by text"),
+                Hint(key: "A S D", label: Loc.t("pick target")), Hint(key: "abc", label: Loc.t("filter by text")),
                 Hint(key: "↑↓", label: "move"), Hint(key: "↩", label: "connect"), Hint(key: "esc", label: "cancel"),
             ]
         case .select:
             [
                 Hint(key: key(.addChild), label: "child"), Hint(key: key(.addSiblingAfter), label: "sibling"),
                 Hint(key: key(.editKeepText), label: "edit"), Hint(key: key(.connect), label: "connect"),
-                Hint(key: key(.convert), label: "convert"), Hint(key: key(.aiGhosts), label: "AI ideas"),
-                Hint(key: key(.undo), label: "undo"), Hint(key: "hold ⌘", label: "all keys"),
+                Hint(key: key(.convert), label: "convert"), Hint(key: key(.aiGhosts), label: Loc.t("AI ideas")),
+                Hint(key: key(.undo), label: "undo"), Hint(key: Loc.t("hold ⌘"), label: Loc.t("all keys")),
             ]
         }
     }
@@ -154,15 +154,21 @@ public struct CheatSheetView: View {
 
     static let groups: [(String, [CommandID])] = [
         ("CREATE", [.addChild, .addSiblingAfter, .addSiblingBefore, .addParent, .addFloating, .duplicate]),
-        ("MOVE & SELECT", [.selectRight, .extendRight, .selectRoot, .selectSiblings, .moveUp, .promote, .demote]),
         (
-            "EDIT & STRUCTURE",
+            Loc.t("MOVE & SELECT"),
+            [.selectRight, .extendRight, .selectRoot, .selectSiblings, .moveUp, .promote, .demote]
+        ),
+        (
+            Loc.t("EDIT & STRUCTURE"),
             [
                 .editKeepText, .fold, .foldAll, .delete, .deleteKeepChildren, .priority(1), .toggleTodo,
                 .structure(2),
             ]
         ),
-        ("CONNECT · CONVERT · AI", [.connect, .convert, .aiGhosts, .aiAccept, .cycleNodeStyle, .smartColor, .undo]),
+        (
+            Loc.t("CONNECT · CONVERT · AI"),
+            [.connect, .convert, .aiGhosts, .aiAccept, .cycleNodeStyle, .smartColor, .undo]
+        ),
     ]
 
     public var body: some View {

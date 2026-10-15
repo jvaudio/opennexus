@@ -240,7 +240,7 @@ private struct ExportSheet: View {
             if state.format == .svg {
                 HStack(spacing: 18) {
                     FileSegments(
-                        items: [(false, "Embed fonts"), (true, "Outline text")],
+                        items: [(false, Loc.t("Embed fonts")), (true, Loc.t("Outline text"))],
                         selection: Binding(get: { state.svg.outlineText }, set: { v in set { $0.svg.outlineText = v } })
                     )
                     .frame(width: 300)
@@ -264,9 +264,12 @@ private struct ExportSheet: View {
                 }
             }
             if state.format == .pdf {
-                labelled("Pages") {
+                labelled(Loc.t("Pages")) {
                     FileSegments(
-                        items: [("canvas", "This canvas"), ("all", "All canvases"), ("presentation", "Presentation")],
+                        items: [
+                            ("canvas", Loc.t("This canvas")), ("all", Loc.t("All canvases")),
+                            ("presentation", Loc.t("Presentation")),
+                        ],
                         selection: Binding(get: { state.pdfScope }, set: { v in set { $0.pdfScope = v } })
                     )
                     .frame(width: 440)
@@ -274,7 +277,7 @@ private struct ExportSheet: View {
             }
         case .structural:
             if state.format == .mermaid {
-                labelled("Flavour · auto-chosen from type") {
+                labelled(Loc.t("Flavour · auto-chosen from type")) {
                     FileSegments(
                         items: MermaidFormat.Flavour.allCases.map { ($0, $0.title) },
                         selection: Binding(
@@ -310,7 +313,7 @@ private struct ExportSheet: View {
             if state.format == .markdown {
                 HStack(spacing: 18) {
                     FileSegments(
-                        items: [(true, "Headings"), (false, "Nested bullets")],
+                        items: [(true, Loc.t("Headings")), (false, Loc.t("Nested bullets"))],
                         selection: Binding(
                             get: { state.markdown.headings }, set: { v in set { $0.markdown.headings = v } })
                     )
@@ -329,17 +332,17 @@ private struct ExportSheet: View {
             } else if state.format == .csv {
                 Text(
                     controller.canvas.type == .threatModel || !Stride.threats(controller.canvas).isEmpty
-                        ? "Threat table: element, STRIDE category, risk, mitigation, status."
-                        : "Task list: topic, path, status, priority, labels, note."
+                        ? Loc.t("Threat table: element, STRIDE category, risk, mitigation, status.")
+                        : Loc.t("Task list: topic, path, status, priority, labels, note.")
                 )
                 .font(.chrome(13)).foregroundStyle(.secondary)
             } else {
                 Text(
                     state.format == .word
-                        ? "The outline as headings, notes as paragraphs, each canvas's diagram as an image."
+                        ? Loc.t("The outline as headings, notes as paragraphs, each canvas's diagram as an image.")
                         : state.format == .keynote
-                            ? "A PowerPoint deck Keynote opens directly, one slide per step."
-                            : "One slide per step, as in Present."
+                            ? Loc.t("A PowerPoint deck Keynote opens directly, one slide per step.")
+                            : Loc.t("One slide per step, as in Present.")
                 )
                 .font(.chrome(13)).foregroundStyle(.secondary)
             }
@@ -347,9 +350,9 @@ private struct ExportSheet: View {
     }
 
     var scopeOnly: some View {
-        labelled("Scope") {
+        labelled(Loc.t("Scope")) {
             FileSegments(
-                items: [(ImageExporter.Scope.canvas, "Canvas"), (.branch, "Branch")],
+                items: [(ImageExporter.Scope.canvas, Loc.t("Canvas")), (.branch, Loc.t("Branch"))],
                 selection: Binding(
                     get: { state.image.scope == .selection ? .branch : state.image.scope },
                     set: { v in set { $0.image.scope = v } })
@@ -582,7 +585,8 @@ private struct PrintSheet: View {
                         .accessibilityLabel("Orientation")
                     }
                     section("SCALE")
-                    FileSegments(items: [(true, "Fit page"), (false, "Actual size")], selection: $options.fitPage)
+                    FileSegments(
+                        items: [(true, Loc.t("Fit page")), (false, Loc.t("Actual size"))], selection: $options.fitPage)
                     Toggle("Tile across pages", isOn: $options.tile).disabled(options.fitPage)
                     Toggle("Background colour", isOn: $options.background)
                     Toggle("Notes as appendix", isOn: $options.notesAppendix)
@@ -648,7 +652,7 @@ struct MergeSheetView: View {
                 Divider()
                 VStack(alignment: .leading, spacing: 14) {
                     FileSegments(
-                        items: [(false, "As canvases"), (true, "Into this canvas")],
+                        items: [(false, Loc.t("As canvases")), (true, Loc.t("Into this canvas"))],
                         selection: Binding(
                             get: { m.intoThisCanvas }, set: { controller.mergeState?.intoThisCanvas = $0 }))
                     Text(Loc.f("DOCUMENTS · %lld", m.sources.count)).font(.chrome(13, weight: .semibold))
@@ -688,7 +692,7 @@ struct MergeSheetView: View {
                     .disabled(m.intoThisCanvas)
                     Text(
                         m.intoThisCanvas
-                            ? "Each document’s central topic becomes a branch of this canvas’s central topic."
+                            ? Loc.t("Each document’s central topic becomes a branch of this canvas’s central topic.")
                             : "Each root becomes a branch on a new index canvas, with topic links to the merged canvases. Styles keep their source theme. .xmind, OPML and Markdown are accepted too."
                     )
                     .font(.chrome(13.5)).foregroundStyle(.secondary)
@@ -729,7 +733,7 @@ struct PasswordSheetView: View {
         if controller.passwordSheet {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Text(controller.documentEncrypted ? "Change password" : "Encrypt document").font(
+                    Text(controller.documentEncrypted ? Loc.t("Change password") : Loc.t("Encrypt document")).font(
                         .chrome(18, weight: .semibold))
                     Spacer()
                     Text("File › Set Password…").font(.chrome(12, design: .monospaced)).foregroundStyle(

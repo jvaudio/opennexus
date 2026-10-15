@@ -168,7 +168,7 @@ struct LinkPopover: View {
                 }
                 .frame(minHeight: 160)
             case "file", "folder":
-                Button(kind == "file" ? "Choose File…" : "Choose Folder…") {
+                Button(kind == "file" ? Loc.t("Choose File…") : Loc.t("Choose Folder…")) {
                     let p = NSOpenPanel()
                     p.canChooseFiles = kind == "file"
                     p.canChooseDirectories = kind == "folder"
@@ -312,7 +312,7 @@ struct MarkerPopover: View {
     let node: NodeID
     var close: () -> Void
     @State private var tab = "markers"
-    @State private var category = "Tech"
+    @State private var category = Loc.t("Tech")
 
     var markers: [String] { controller.canvas.nodes[node]?.markers ?? [] }
 
@@ -437,7 +437,7 @@ struct AudioPopover: View {
             Text("Audio note").font(.headline)
             Text(String(format: "%02d:%02d", Int(model.elapsed) / 60, Int(model.elapsed) % 60))
                 .font(.chrome(28, weight: .semibold, design: .monospaced))
-            Button(model.recording ? "Stop and Save" : "Record") {
+            Button(model.recording ? Loc.t("Stop and Save") : Loc.t("Record")) {
                 if model.recording {
                     if let (data, d) = model.stop() { controller.setAudio(data, duration: d, on: node) }
                     close()

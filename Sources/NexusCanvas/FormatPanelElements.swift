@@ -32,10 +32,10 @@ struct ElementStyleTab: View {
             }
         }
         Divider()
-        PanelSection("Actions", key: "element.actions") {
+        PanelSection(Loc.t("Actions"), key: "element.actions") {
             Button("Reset style") { controller.resetElementStyle(ref) }.buttonStyle(.plain)
             Button("Delete", role: .destructive) {
-                controller.perform("Delete") { $0.removeElement(ref) }
+                controller.perform(Loc.t("Delete")) { $0.removeElement(ref) }
                 controller.selectElement(nil)
             }
             .buttonStyle(.plain)
@@ -64,13 +64,14 @@ struct RelationshipSection: View {
     ]
 
     static let kinds: [(String, String)] = [
-        ("relationship", "Relationship"), ("dataflow", "Data flow"), ("call", "Call"), ("return", "Return message"),
-        ("message", "Message"), ("association", "Association"), ("inheritance", "Inheritance"),
+        ("relationship", Loc.t("Relationship")), ("dataflow", Loc.t("Data flow")), ("call", Loc.t("Call")),
+        ("return", Loc.t("Return message")),
+        ("message", Loc.t("Message")), ("association", Loc.t("Association")), ("inheritance", Loc.t("Inheritance")),
     ]
 
     var body: some View {
         PanelSection(
-            "Relationship / edge", key: "rel.shape",
+            Loc.t("Relationship / edge"), key: "rel.shape",
             accessory: {
                 Keycap(text: controller.bindings(for: .connect).first?.glyphs ?? "⇧⌘L")
             }
@@ -100,7 +101,7 @@ struct RelationshipSection: View {
             capGrid(index: 1)
         }
         Divider()
-        PanelSection("Stroke", key: "rel.stroke") {
+        PanelSection(Loc.t("Stroke"), key: "rel.stroke") {
             HStack {
                 Picker("", selection: Binding(get: { rel.dash }, set: { v in set { $0.dash = v } })) {
                     Text("Solid").tag("solid")
@@ -125,32 +126,34 @@ struct RelationshipSection: View {
                 .accessibilityLabel("Custom colour")
                 .frame(width: 34)
             }
-            PanelToggle(label: "Colour follows source topic", isOn: rel.color == "source") { v in
+            PanelToggle(label: Loc.t("Colour follows source topic"), isOn: rel.color == "source") { v in
                 set { $0.color = v ? "source" : "theme" }
             }
-            PanelToggle(label: "Endpoints auto-slide to best edge", isOn: rel.bend == nil) { v in
+            PanelToggle(label: Loc.t("Endpoints auto-slide to best edge"), isOn: rel.bend == nil) { v in
                 if v { set { $0.bend = nil } }
             }
         }
         Divider()
-        PanelSection("Label", key: "rel.label") {
-            PanelRow(label: "Position") {
+        PanelSection(Loc.t("Label"), key: "rel.label") {
+            PanelRow(label: Loc.t("Position")) {
                 Segments(
-                    options: [("start", "Start"), ("middle", "Middle"), ("end", "End")], selection: rel.labelPosition
+                    options: [("start", Loc.t("Start")), ("middle", Loc.t("Middle")), ("end", Loc.t("End"))],
+                    selection: rel.labelPosition
                 ) { v in
                     set { $0.labelPosition = v }
                 }
                 .frame(maxWidth: 180)
             }
-            PanelRow(label: "Style") {
+            PanelRow(label: Loc.t("Style")) {
                 Segments(
-                    options: [("pill", "Pill"), ("plain", "Plain"), ("boxed", "Boxed")], selection: rel.labelStyle
+                    options: [("pill", Loc.t("Pill")), ("plain", Loc.t("Plain")), ("boxed", Loc.t("Boxed"))],
+                    selection: rel.labelStyle
                 ) { v in
                     set { $0.labelStyle = v }
                 }
                 .frame(maxWidth: 180)
             }
-            PanelRow(label: "Technical type") {
+            PanelRow(label: Loc.t("Technical type")) {
                 Picker(
                     "",
                     selection: Binding(
@@ -167,7 +170,7 @@ struct RelationshipSection: View {
 
     func capGrid(index: Int) -> some View {
         HStack(spacing: 4) {
-            Text(index == 0 ? "Start" : "End").font(.chrome(11)).foregroundStyle(.secondary).frame(
+            Text(index == 0 ? Loc.t("Start") : Loc.t("End")).font(.chrome(11)).foregroundStyle(.secondary).frame(
                 width: 30, alignment: .leading)
             ForEach(Self.caps, id: \.0) { id, d, filled in
                 Tile(selected: rel.ends[index] == id, height: 24) {
@@ -204,7 +207,7 @@ struct BoundarySection: View {
 
     var body: some View {
         PanelSection(
-            "Boundary", key: "boundary.shape",
+            Loc.t("Boundary"), key: "boundary.shape",
             accessory: {
                 Keycap(text: controller.bindings(for: .boundary).first?.glyphs ?? "⇧⌘B")
             }
@@ -223,22 +226,26 @@ struct BoundarySection: View {
             }
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Boundary")
-            PanelRow(label: "Title") {
+            PanelRow(label: Loc.t("Title")) {
                 TextField("Title", text: Binding(get: { boundary.title }, set: { v in set { $0.title = v } }))
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: 170)
             }
         }
         Divider()
-        PanelSection("Meaning · technical canvases", key: "boundary.meaning") {
+        PanelSection(Loc.t("Meaning · technical canvases"), key: "boundary.meaning") {
             Segments(
                 options: [
-                    ("group", "Group"), ("zone", "Zone"), ("vpc", "VPC"), ("subnet", "Subnet"), ("trust", "Trust"),
+                    ("group", Loc.t("Group")), ("zone", Loc.t("Zone")), ("vpc", "VPC"), ("subnet", Loc.t("Subnet")),
+                    ("trust", Loc.t("Trust")),
                 ],
                 selection: boundary.meaning
             ) { v in set { $0.meaning = v } }
-            PanelRow(label: "Trust level") {
-                Segments(options: [("high", "High"), ("medium", "Medium"), ("low", "Low")], selection: boundary.trust) {
+            PanelRow(label: Loc.t("Trust level")) {
+                Segments(
+                    options: [("high", Loc.t("High")), ("medium", Loc.t("Medium")), ("low", Loc.t("Low"))],
+                    selection: boundary.trust
+                ) {
                     v in
                     set { $0.trust = v }
                 }
@@ -246,8 +253,8 @@ struct BoundarySection: View {
             }
         }
         Divider()
-        PanelSection("Fill · border · title", key: "boundary.fill") {
-            PanelRow(label: "Tint") {
+        PanelSection(Loc.t("Fill · border · title"), key: "boundary.fill") {
+            PanelRow(label: Loc.t("Tint")) {
                 Slider(
                     value: Binding(
                         get: { boundary.fillOpacity }, set: { v in set { $0.fillOpacity = (v * 100).rounded() / 100 } }),
@@ -284,7 +291,8 @@ struct BoundarySection: View {
                 .accessibilityLabel("Custom colour")
                 .frame(width: 34)
             }
-            PanelToggle(label: "Hatch pattern by trust level", isOn: boundary.hatch) { v in set { $0.hatch = v } }
+            PanelToggle(label: Loc.t("Hatch pattern by trust level"), isOn: boundary.hatch) { v in set { $0.hatch = v }
+            }
         }
     }
 }
@@ -297,27 +305,32 @@ struct CalloutSection: View {
 
     var body: some View {
         PanelSection(
-            "Callout", key: "callout",
+            Loc.t("Callout"), key: "callout",
             accessory: {
                 Keycap(text: controller.bindings(for: .callout).first?.glyphs ?? "⇧⌘C")
             }
         ) {
-            PanelRow(label: "Shape") {
+            PanelRow(label: Loc.t("Shape")) {
                 Segments(
-                    options: [("rounded", "Rounded"), ("ellipse", "Ellipse"), ("rectangle", "Rectangle")],
+                    options: [
+                        ("rounded", Loc.t("Rounded")), ("ellipse", Loc.t("Ellipse")), ("rectangle", Loc.t("Rectangle")),
+                    ],
                     selection: callout.shape
                 ) { v in
                     set { $0.shape = v }
                     controller.select(callout.topic)
-                    controller.updateSelectionStyle("Callout Shape") {
+                    controller.updateSelectionStyle(Loc.t("Callout Shape")) {
                         $0.shape = v == "rectangle" ? "rectangle" : v == "ellipse" ? "ellipse" : "rounded"
                     }
                 }
                 .frame(maxWidth: 200)
             }
-            PanelRow(label: "Pointer side") {
+            PanelRow(label: Loc.t("Pointer side")) {
                 Segments(
-                    options: [("auto", "Auto"), ("top", "Top"), ("right", "Right"), ("below", "Below")],
+                    options: [
+                        ("auto", Loc.t("Auto")), ("top", Loc.t("Top")), ("right", Loc.t("Right")),
+                        ("below", Loc.t("Below")),
+                    ],
                     selection: callout.side
                 ) { v in
                     set { $0.side = v }
@@ -344,7 +357,7 @@ struct SummarySection: View {
 
     var body: some View {
         PanelSection(
-            "Summary", key: "summary",
+            Loc.t("Summary"), key: "summary",
             accessory: {
                 Keycap(text: controller.bindings(for: .summary).first?.glyphs ?? "⇧⌘]")
             }
@@ -370,12 +383,12 @@ struct SummarySection: View {
                 .labelsHidden()
                 .frame(width: 80)
                 ColorPicker(
-                    "Ink",
+                    Loc.t("Ink"),
                     selection: hexBinding(summary.color, fallback: controller.theme.ink2) { hex in
                         set { $0.color = hex }
                     })
             }
-            PanelRow(label: "Range") {
+            PanelRow(label: Loc.t("Range")) {
                 Button("Extend ↓") { controller.extendSummary(summary.id, by: 1) }
                 Button("Shrink ↑") { controller.extendSummary(summary.id, by: -1) }
             }
@@ -392,12 +405,12 @@ struct ZoneSection: View {
 
     var body: some View {
         PanelSection(
-            "Zone", key: "zone",
+            Loc.t("Zone"), key: "zone",
             accessory: {
                 Keycap(text: controller.bindings(for: .zone).first?.glyphs ?? "⌥⌘Z")
             }
         ) {
-            PanelRow(label: "Title") {
+            PanelRow(label: Loc.t("Title")) {
                 TextField("Title", text: Binding(get: { zone.title }, set: { v in set { $0.title = v } }))
                     .textFieldStyle(.roundedBorder)
                     .frame(maxWidth: 170)
@@ -409,29 +422,34 @@ struct ZoneSection: View {
                 PointField(value: zone.height) { v in if let v { set { $0.height = max(Zone.minimumSize, v) } } }
             }
             .font(.chrome(12))
-            PanelToggle(label: "Auto resize to content", isOn: zone.autoResize) { v in set { $0.autoResize = v } }
-            PanelToggle(label: "Collapsed", isOn: zone.collapsed) { v in set { $0.collapsed = v } }
-            PanelRow(label: "Frame") {
+            PanelToggle(label: Loc.t("Auto resize to content"), isOn: zone.autoResize) { v in set { $0.autoResize = v }
+            }
+            PanelToggle(label: Loc.t("Collapsed"), isOn: zone.collapsed) { v in set { $0.collapsed = v } }
+            PanelRow(label: Loc.t("Frame")) {
                 Segments(
-                    options: [("rounded", "Rounded"), ("square", "Square"), ("dashed", "Dashed")], selection: zone.frame
+                    options: [("rounded", Loc.t("Rounded")), ("square", Loc.t("Square")), ("dashed", Loc.t("Dashed"))],
+                    selection: zone.frame
                 ) { v in
                     set { $0.frame = v }
                 }
                 .frame(maxWidth: 200)
             }
-            PanelRow(label: "Order") {
+            PanelRow(label: Loc.t("Order")) {
                 Segments(
-                    options: [("front", "Front"), ("forward", "Fwd"), ("backward", "Back"), ("back", "Rear")],
+                    options: [
+                        ("front", Loc.t("Front")), ("forward", Loc.t("Fwd")), ("backward", Loc.t("Back")),
+                        ("back", Loc.t("Rear")),
+                    ],
                     selection: nil
                 ) { v in
                     let order: CanvasEditor.ZOrder =
                         v == "front" ? .front : v == "forward" ? .forward : v == "backward" ? .backward : .back
-                    controller.perform("Arrange") { $0.reorderZone(zone.id, order) }
+                    controller.perform(Loc.t("Arrange")) { $0.reorderZone(zone.id, order) }
                 }
                 .frame(maxWidth: 200)
             }
             Button("Remove zone (keep content)") {
-                controller.perform("Remove Zone") { $0.removeZone(zone.id) }
+                controller.perform(Loc.t("Remove Zone")) { $0.removeZone(zone.id) }
                 controller.selectElement(nil)
             }
         }

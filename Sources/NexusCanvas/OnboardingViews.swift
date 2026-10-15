@@ -22,7 +22,7 @@ public struct WelcomeView: View {
                 AppMark(size: 84).padding(.bottom, 26)
                 Text("WELCOME TO OPENNEXUS").font(.chrome(13, weight: .medium, design: .monospaced)).kerning(2)
                     .foregroundStyle(.white.opacity(0.6)).padding(.bottom, 10)
-                Text("Think at the speed\nof your keyboard.").font(.chrome(44, weight: .heavy)).kerning(-1.3)
+                Text(Loc.t("Think at the speed\nof your keyboard.")).font(.chrome(44, weight: .heavy)).kerning(-1.3)
                     .multilineTextAlignment(.center).foregroundStyle(.white).padding(.bottom, 36)
                 Button(action: onTour) {
                     HStack(spacing: 12) {
@@ -39,8 +39,8 @@ public struct WelcomeView: View {
                 .buttonStyle(.plain)
                 .keyboardShortcut(.defaultAction)
                 HStack(spacing: 12) {
-                    secondary("Skip to a blank map", onSkip)
-                    secondary("Import from Xmind…", onImport)
+                    secondary(Loc.t("Skip to a blank map"), onSkip)
+                    secondary(Loc.t("Import from Xmind…"), onImport)
                 }
                 .padding(.top, 12)
                 HStack(spacing: 18) {
@@ -251,9 +251,9 @@ public struct RolePickerView: View {
                 Text(r.blurb).font(.chrome(13.5)).foregroundStyle(.secondary).fixedSize(
                     horizontal: false, vertical: true)
                 Divider().padding(.vertical, 6)
-                detail("Tour example", r.tourExample)
-                detail("Lesson 5 converts to", r.conversionTitle)
-                detail("Shelf", r.shelfSummary)
+                detail(Loc.t("Tour example"), r.tourExample)
+                detail(Loc.t("Lesson 5 converts to"), r.conversionTitle)
+                detail(Loc.t("Shelf"), r.shelfSummary)
             }
             .padding(22)
             .frame(maxWidth: .infinity, minHeight: 340, alignment: .topLeading)

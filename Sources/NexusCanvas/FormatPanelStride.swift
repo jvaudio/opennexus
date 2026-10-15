@@ -45,9 +45,12 @@ struct StrideTab: View {
                 }
             }
             Divider()
-            ForEach(["Owner", "Data class.", "Protocol"], id: \.self) { key in
+            ForEach(
+                [("Owner", Loc.t("Owner")), ("Data class.", Loc.t("Data class.")), ("Protocol", Loc.t("Protocol"))],
+                id: \.0
+            ) { key, title in
                 HStack {
-                    Text(key).font(.chrome(12.5)).foregroundStyle(.secondary).frame(
+                    Text(title).font(.chrome(12.5)).foregroundStyle(.secondary).frame(
                         width: 82, alignment: .leading)
                     TextField(
                         "—",
@@ -84,7 +87,7 @@ struct StrideTab: View {
                 .frame(width: 24, height: 24)
                 .background(RoundedRectangle(cornerRadius: 5).fill(Color.primary.opacity(applies ? 0.85 : 0.25)))
             VStack(alignment: .leading, spacing: 1) {
-                Text(s.name).font(.chrome(13, weight: .medium))
+                Text(Loc.t(s.name)).font(.chrome(13, weight: .medium))
                 if let threat {
                     Text(threat.title).font(.chrome(11.5)).foregroundStyle(.secondary).lineLimit(1)
                 } else if let suggestion {
@@ -92,15 +95,16 @@ struct StrideTab: View {
                         Color(nsColor: NSColor(cgColor: controller.theme.ai.cgColor) ?? .systemTeal)
                     ).lineLimit(1)
                 } else {
-                    Text(applies ? "No threat recorded" : "Not applicable").font(.chrome(11.5)).foregroundStyle(
-                        .tertiary)
+                    Text(applies ? Loc.t("No threat recorded") : Loc.t("Not applicable")).font(.chrome(11.5))
+                        .foregroundStyle(
+                            .tertiary)
                 }
             }
             Spacer()
             if let threat {
-                LabeledMenu(threat.risk) {
+                LabeledMenu(Loc.t(threat.risk)) {
                     ForEach(Stride.risks, id: \.self) { r in
-                        Button(r) { controller.setThreatField(threat.node, Stride.riskKey, r) }
+                        Button(Loc.t(r)) { controller.setThreatField(threat.node, Stride.riskKey, r) }
                     }
                 }
                 .menuStyle(.borderlessButton)

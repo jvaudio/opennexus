@@ -54,7 +54,7 @@ extension CanvasController {
     }
 
     /// Adds a canvas after the current one, as one undo step, and shows it.
-    func addCanvas(_ c: Canvas, actionName: String = "New Canvas") {
+    func addCanvas(_ c: Canvas, actionName: String = Loc.t("New Canvas")) {
         var target = c.id
         store.commitDocument(actionName, focus: canvasID) { d in
             target = d.add([c], after: d.canvasOrder.firstIndex(of: canvasID))[0]
@@ -100,7 +100,7 @@ extension CanvasController {
         do {
             let png = try await SubjectLift.removeBackground(data)
             let name = storeAsset(png, ext: "png")
-            perform(replace ? "Remove Background" : "Add Cut-out") { e in
+            perform(replace ? Loc.t("Remove Background") : Loc.t("Add Cut-out")) { e in
                 e.update(id) { n in
                     if replace {
                         n.image?.asset = name
@@ -120,7 +120,7 @@ extension CanvasController {
     public func applySticker(_ png: Data, to id: NodeID) async {
         let cut = (try? await SubjectLift.removeBackground(png)) ?? png
         let name = storeAsset(cut, ext: "png")
-        perform("Make Sticker") { e in e.update(id) { $0.sticker = AssetRef(asset: name) } }
+        perform(Loc.t("Make Sticker")) { e in e.update(id) { $0.sticker = AssetRef(asset: name) } }
     }
 
     // MARK: Record to map (SpeechAnalyzer)
@@ -130,7 +130,7 @@ extension CanvasController {
         let t = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { return }
         let root = canvas.root
-        perform("Record to Map") { e in
+        perform(Loc.t("Record to Map")) { e in
             e.update(root) { n in
                 let before = n.note?.text ?? ""
                 n.note = Note(text: before.isEmpty ? t : before + "\n\n" + t)

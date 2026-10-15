@@ -1,6 +1,14 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    " · skipped" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    " › note" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     " to start fresh or drop an .xmind file anywhere." : {
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
@@ -9,12 +17,24 @@
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
+    "? keys" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    ".* Regex" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     ".xmind, OPML, Markdown, Mermaid, draw.io …" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "· · Dotted" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "“%@”" : {
+      "comment" : "Text with values filled in (DFD.swift)",
       "extractionState" : "migrated"
     },
     "“%@” is password-protected" : {
@@ -73,6 +93,14 @@
       "comment" : "Text with values filled in (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
+    "%@ goes from %@ straight to %@. %@" : {
+      "comment" : "Text with values filled in (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ has no incoming flow, so nothing ever writes to it." : {
+      "comment" : "Text with values filled in (DFD.swift)",
+      "extractionState" : "migrated"
+    },
     "%@ is a macOS shortcut (%@); choose another." : {
       "comment" : "Text with values filled in (ShortcutsPane.swift)",
       "extractionState" : "migrated"
@@ -87,6 +115,18 @@
     },
     "%@ needs to know what each first-level branch is. Suggestions (✦) are made on this Mac." : {
       "comment" : "Text with values filled in (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ nested over %lld levels moved to floating topics" : {
+      "comment" : "Text with values filled in (Repair.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ receives data but sends none on (a black hole)." : {
+      "comment" : "Text with values filled in (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ sends data it never receives (a miracle)." : {
+      "comment" : "Text with values filled in (DFD.swift)",
       "extractionState" : "migrated"
     },
     "%@ shortcut %@. Record" : {
@@ -113,6 +153,10 @@
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
+    "%@’s next level has %@." : {
+      "comment" : "Text with values filled in (DFD.swift)",
+      "extractionState" : "migrated"
+    },
     "%lld × %lld pt · %@" : {
       "comment" : "Text with values filled in (CanvasController+Files.swift)",
       "extractionState" : "migrated"
@@ -120,6 +164,102 @@
     "%lld × %lld px · ~%@" : {
       "comment" : "Text with values filled in (CanvasController+Files.swift)",
       "extractionState" : "migrated"
+    },
+    "%lld boundary or zone members that are missing" : {
+      "comment" : "Count phrase with plural variants (Repair.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld boundary or zone member that is missing"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld boundary or zone members that are missing"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld branches" : {
+      "comment" : "Count phrase with plural variants (Repair.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld branch"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld branches"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld broken or repeated child links" : {
+      "comment" : "Count phrase with plural variants (Repair.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld broken or repeated child link"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld broken or repeated child links"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld callouts without their topics" : {
+      "comment" : "Count phrase with plural variants (Repair.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld callout without its topic"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld callouts without their topics"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld canvases" : {
       "comment" : "Count phrase with plural variants (ViewOverlays.swift)",
@@ -186,6 +326,54 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld children, collapsed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld floating topic entries" : {
+      "comment" : "Count phrase with plural variants (Repair.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld floating topic entry"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld floating topic entries"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld flows skip a process" : {
+      "comment" : "Count phrase with plural variants (DFD.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld flow skips a process"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld flows skip a process"
                 }
               }
             }
@@ -286,6 +474,30 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld items not converted"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld levels unbalanced" : {
+      "comment" : "Count phrase with plural variants (DFD.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld level unbalanced"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld levels unbalanced"
                 }
               }
             }
@@ -473,9 +685,57 @@
         }
       }
     },
+    "%lld processes missing a flow" : {
+      "comment" : "Count phrase with plural variants (DFD.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld process missing a flow"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld processes missing a flow"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld pt" : {
       "comment" : "Text with values filled in (CanvasView.swift)",
       "extractionState" : "migrated"
+    },
+    "%lld relationships to missing topics" : {
+      "comment" : "Count phrase with plural variants (Repair.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld relationship to a missing topic"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld relationships to missing topics"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "%lld results" : {
       "comment" : "Count phrase with plural variants (SettingsView.swift)",
@@ -518,6 +778,30 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld snapshots"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld stores never written" : {
+      "comment" : "Count phrase with plural variants (DFD.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld store never written"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld stores never written"
                 }
               }
             }
@@ -597,6 +881,30 @@
         }
       }
     },
+    "%lld summaries without their topics" : {
+      "comment" : "Count phrase with plural variants (Repair.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld summary without its topic"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld summaries without their topics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld topics" : {
       "comment" : "Count phrase with plural variants (CanvasAccessibility.swift)",
       "extractionState" : "migrated",
@@ -645,6 +953,54 @@
         }
       }
     },
+    "%lld unlabelled flows" : {
+      "comment" : "Count phrase with plural variants (DFD.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unlabelled flow"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unlabelled flows"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld unreachable topics kept as floating topics" : {
+      "comment" : "Count phrase with plural variants (Repair.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unreachable topic kept as a floating topic"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld unreachable topics kept as floating topics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld words" : {
       "comment" : "Count phrase with plural variants (ViewOverlays.swift)",
       "extractionState" : "migrated",
@@ -671,6 +1027,10 @@
     },
     "••••" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "→ \/ Space" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "→ links to %@" : {
@@ -713,6 +1073,10 @@
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
     },
+    "⇥ indents · ⌥↩ child" : {
+      "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
     "⇥ show actions" : {
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
@@ -737,6 +1101,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "+ Labels" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "+ marker, label, text…" : {
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
@@ -745,8 +1113,16 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "+ Notes" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "+ Save current as theme" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "≈ hand" : {
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "⌃⌘M" : {
@@ -765,6 +1141,18 @@
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "⌘K › Mask" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "⌘K › Record" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "⌘K › Translate" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
     "⌘N" : {
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
@@ -775,6 +1163,10 @@
     },
     "⌥⌘T" : {
       "comment" : "UI text (DocumentWindowController.swift)",
+      "extractionState" : "migrated"
+    },
+    "═ double" : {
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "████" : {
@@ -843,6 +1235,10 @@
     },
     "✦ Ideas" : {
       "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "✦ is primary everywhere" : {
+      "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
     "✦ Make a sticker with Image Playground arrives with on-device AI." : {
@@ -1025,8 +1421,20 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "A data flow must touch a process" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "A data store is never written" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
     "A document keeps at least one canvas" : {
       "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
+    "A flow" : {
+      "comment" : "UI text (DFD.swift)",
       "extractionState" : "migrated"
     },
     "A forgotten password cannot be recovered. Recovery snapshots of this document are encrypted with the same key." : {
@@ -1049,6 +1457,18 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "A PowerPoint deck Keynote opens directly, one slide per step." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "A process with no input" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "A process with no output" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
     "a topic" : {
       "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
@@ -1061,12 +1481,24 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Aa" : {
+      "comment" : "UI text (MouseAids.swift)",
+      "extractionState" : "migrated"
+    },
+    "Aa Match case" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "AA on %lld of %lld" : {
       "comment" : "Text with values filled in (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
     "AA on all %lld" : {
       "comment" : "Text with values filled in (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "About OpenNexus" : {
+      "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "accept all" : {
@@ -1082,11 +1514,23 @@
       "extractionState" : "migrated"
     },
     "Accept Suggested Threats" : {
-      "comment" : "Undo action name (CanvasController+Diagrams.swift)",
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
     "Accept Suggestion" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Accept Suggestions" : {
+      "comment" : "UI text (CanvasController+AI.swift)",
+      "extractionState" : "migrated"
+    },
+    "Accepted" : {
+      "comment" : "Threat risk or status",
+      "extractionState" : "migrated"
+    },
+    "Access review" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Accessibility" : {
@@ -1101,12 +1545,20 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "Actual size" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Actual Size" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Adapt text colour to background" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Add a child (⇥)" : {
+      "comment" : "UI text (MouseAids.swift)",
       "extractionState" : "migrated"
     },
     "Add a hyperlink with ⇧⌘K or drop a file on the topic." : {
@@ -1117,12 +1569,28 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Add a sibling (↩)" : {
+      "comment" : "UI text (MouseAids.swift)",
+      "extractionState" : "migrated"
+    },
     "Add Branch" : {
-      "comment" : "Undo action name (CanvasController+Diagrams.swift)",
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
+      "extractionState" : "migrated"
+    },
+    "Add child" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "Add child topic" : {
+      "comment" : "UI text (MouseAids.swift)",
       "extractionState" : "migrated"
     },
     "Add Child Topic" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Add Cut-out" : {
+      "comment" : "UI text (CanvasController+AIMedia.swift)",
       "extractionState" : "migrated"
     },
     "Add elements" : {
@@ -1141,6 +1609,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Add sibling" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Add Sibling" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -1153,12 +1625,20 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Add sibling topic" : {
+      "comment" : "UI text (MouseAids.swift)",
+      "extractionState" : "migrated"
+    },
     "Add this threat" : {
       "comment" : "UI text (FormatPanelStride.swift)",
       "extractionState" : "migrated"
     },
     "Add Threat" : {
-      "comment" : "Undo action name (CanvasController+Diagrams.swift)",
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
+      "extractionState" : "migrated"
+    },
+    "Add Topic" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
     "Add Topic + buttons" : {
@@ -1177,6 +1657,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Agenda, decisions, actions" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Agents · MCP & CLI" : {
       "comment" : "Settings section",
       "extractionState" : "migrated"
@@ -1193,8 +1677,20 @@
       "comment" : "Command category",
       "extractionState" : "migrated"
     },
+    "AI · ON-DEVICE" : {
+      "comment" : "UI text (CanvasController+Views.swift)",
+      "extractionState" : "migrated"
+    },
     "AI data" : {
       "comment" : "Settings section",
+      "extractionState" : "migrated"
+    },
+    "AI ideas" : {
+      "comment" : "UI text (Overlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "AI panel" : {
+      "comment" : "UI text (CanvasHostView.swift)",
       "extractionState" : "migrated"
     },
     "AI Panel" : {
@@ -1205,6 +1701,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "AI suggestions" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "AI that runs on this Mac, no credits" : {
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
@@ -1213,8 +1713,28 @@
       "comment" : "Text with values filled in (DocumentWindowController.swift)",
       "extractionState" : "migrated"
     },
+    "Align" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "aligned centre" : {
+      "comment" : "UI text (CanvasView.swift)",
+      "extractionState" : "migrated"
+    },
+    "All" : {
+      "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
     "All %lld ›" : {
       "comment" : "Text with values filled in (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "All canvases" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "all keys" : {
+      "comment" : "UI text (Overlays.swift)",
       "extractionState" : "migrated"
     },
     "All scopes" : {
@@ -1225,8 +1745,28 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Allow Overlap" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Allow topic overlap" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Allowed folders" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Allowed Folders" : {
+      "comment" : "UI text (AppPreferences.swift)",
+      "extractionState" : "migrated"
+    },
+    "Already a main topic" : {
+      "comment" : "UI text (TreeOperations.swift)",
+      "extractionState" : "migrated"
+    },
+    "Already at the end" : {
+      "comment" : "UI text (TreeOperations.swift)",
       "extractionState" : "migrated"
     },
     "Also imports MindNode, Word (.docx), TextBundle, OPML, Markdown, Mermaid, PlantUML subset, draw.io, FreeMind and MindManager (best effort), and indented text." : {
@@ -1243,6 +1783,10 @@
     },
     "Always show alignment guides" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "An OpenAI-compatible endpoint on localhost, such as Ollama or LM Studio. Needs a network permission OpenNexus doesn’t request in v1." : {
+      "comment" : "UI text (AISettingsView.swift)",
       "extractionState" : "migrated"
     },
     "Animate reflow" : {
@@ -1269,8 +1813,16 @@
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "API Gateway" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
     "API keys, tokens and secrets" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "API request flow" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "App" : {
@@ -1293,6 +1845,14 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Apple Intelligence off" : {
+      "comment" : "UI text (AISettingsView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Apple on-device model" : {
+      "comment" : "UI text (AISettingsView.swift)",
+      "extractionState" : "migrated"
+    },
     "Apple SD Gothic Neo" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -1306,7 +1866,7 @@
       "extractionState" : "migrated"
     },
     "Apply AI Changes" : {
-      "comment" : "Undo action name (CanvasController+AI.swift)",
+      "comment" : "UI text (CanvasController+AI.swift)",
       "extractionState" : "migrated"
     },
     "Apply Style to Level %lld" : {
@@ -1314,11 +1874,11 @@
       "extractionState" : "migrated"
     },
     "Apply Style to Siblings" : {
-      "comment" : "Undo action name (CanvasController+Styling.swift)",
+      "comment" : "UI text (CanvasController+Styling.swift)",
       "extractionState" : "migrated"
     },
     "Apply Style to Subtopics" : {
-      "comment" : "Undo action name (CanvasController+Styling.swift)",
+      "comment" : "UI text (CanvasController+Styling.swift)",
       "extractionState" : "migrated"
     },
     "Apply to all level-%lld topics" : {
@@ -1337,16 +1897,32 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Architecture" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "Architecture decision record" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Architecture icons; ↩ inserts a child" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "Arrange" : {
-      "comment" : "Undo action name (FormatPanelElements.swift)",
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Arrange works on zones and floating topics" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Arrow" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "As canvases" : {
+      "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "As canvases or into this canvas" : {
@@ -1359,6 +1935,10 @@
     },
     "Ask about this document" : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Ask AI" : {
+      "comment" : "UI text (Tour.swift)",
       "extractionState" : "migrated"
     },
     "Ask AI to change this branch…" : {
@@ -1381,8 +1961,20 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "Aspect" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Aspect ratio" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Asset" : {
+      "comment" : "Node type (Threat Model)",
+      "extractionState" : "migrated"
+    },
+    "Association" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "At launch, open" : {
@@ -1390,7 +1982,15 @@
       "extractionState" : "migrated"
     },
     "Attach File" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Attachment" : {
+      "comment" : "UI text (Scene.swift)",
+      "extractionState" : "migrated"
+    },
+    "Attack tree" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Audio note" : {
@@ -1398,19 +1998,35 @@
       "extractionState" : "migrated"
     },
     "Audio Note" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Auto" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Auto Balance" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Auto balance map" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Auto contrast" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Auto Contrast" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Auto from type" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Auto resize to content" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Auto sort A–Z" : {
@@ -1461,8 +2077,16 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Bar" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Before anything leaves" : {
       "comment" : "Settings section",
+      "extractionState" : "migrated"
+    },
+    "Below" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Beta" : {
@@ -1481,7 +2105,19 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Book notes" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Border" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Border Colour" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Border Width" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
@@ -1489,20 +2125,44 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "Bottom" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Boundaries" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Boundary" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Boundary Style" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Boundary Title" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Boxed" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Brace" : {
+      "comment" : "UI text (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Brace Map" : {
+      "comment" : "Diagram type",
       "extractionState" : "migrated"
     },
     "BRACKET" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Branch" : {
+      "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "Branch colour" : {
@@ -1517,6 +2177,14 @@
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
+    "Branch free-positioning" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Branch Free-Positioning" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Branch Free-Positioning, Flexible Floating Topics and Topic Overlap are per-canvas, in Format › Map." : {
       "comment" : "Settings footnote",
       "extractionState" : "migrated"
@@ -1525,8 +2193,24 @@
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
+    "Branch Line" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Branch line width" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Branch Line Width" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Branch palette" : {
       "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Branch Structure" : {
+      "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "Branch Structure 1" : {
@@ -1573,12 +2257,24 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Breaking down…" : {
+      "comment" : "UI text (CanvasController+AI.swift)",
+      "extractionState" : "migrated"
+    },
+    "Bring All to Front" : {
+      "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
     "Bring to Front" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "browse ·" : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Browse All Versions…" : {
+      "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "Browse Recovery Snapshots…" : {
@@ -1593,16 +2289,40 @@
       "comment" : "Text with values filled in (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "Business" : {
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Business capabilities by level" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "By type" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "C4, API flow, retro" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Cache" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Call" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Callout" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Callout Shape" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
     "Callout Style" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Cancel" : {
@@ -1645,6 +2365,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Capability map" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Caps Lock" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -1657,24 +2381,60 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Capture" : {
+      "comment" : "UI text (IntegrationSupport.swift)",
+      "extractionState" : "migrated"
+    },
     "Caret at end" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Case" : {
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Central topic" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "Change Layout" : {
+      "comment" : "UI text (CanvasController+Styling.swift)",
+      "extractionState" : "migrated"
+    },
+    "Change Map Style" : {
+      "comment" : "UI text (CanvasController+Styling.swift)",
+      "extractionState" : "migrated"
+    },
+    "Change on Disk" : {
+      "comment" : "UI text (DocumentStore.swift)",
+      "extractionState" : "migrated"
+    },
+    "Change password" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Change Password…" : {
+      "comment" : "UI text (DocumentWindowController.swift)",
+      "extractionState" : "migrated"
+    },
     "Change Structure" : {
-      "comment" : "Undo action name (CanvasController+Commands.swift)",
+      "comment" : "UI text (CanvasController+Commands.swift)",
+      "extractionState" : "migrated"
+    },
+    "Change Style" : {
+      "comment" : "UI text (CanvasController+Styling.swift)",
       "extractionState" : "migrated"
     },
     "Change Theme" : {
-      "comment" : "Undo action name (CanvasController+Commands.swift)",
+      "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
     "Channel" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Characters" : {
+      "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
     "Chat: %@" : {
@@ -1701,8 +2461,20 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "Children’s lines inherit" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Choose .nexus, .xmind, OPML, Markdown or other maps to merge." : {
       "comment" : "UI text (DocumentFiles.swift)",
+      "extractionState" : "migrated"
+    },
+    "Choose File…" : {
+      "comment" : "UI text (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
+    "Choose Folder…" : {
+      "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
     "Choose model folder…" : {
@@ -1721,8 +2493,16 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "CJK Font" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "class" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Class" : {
+      "comment" : "Node type (Sequence)",
       "extractionState" : "migrated"
     },
     "Clear" : {
@@ -1735,6 +2515,10 @@
     },
     "Clear all AI chats?" : {
       "comment" : "UI text (AppPreferences.swift)",
+      "extractionState" : "migrated"
+    },
+    "Clear Menu" : {
+      "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "Click again" : {
@@ -1757,6 +2541,18 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Client" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Client → gateway → services" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Clients" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "climbs out" : {
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
@@ -1773,16 +2569,60 @@
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "Cloud" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Cloud migration" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Cluster" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Code" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Code block" : {
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
+      "extractionState" : "migrated"
+    },
+    "Code Block" : {
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
+      "extractionState" : "migrated"
+    },
     "Collapse \/ Parent" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Collapse Zone" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Collapsed" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Colored branch" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Colored Branch" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Colour %@" : {
       "comment" : "Text with values filled in (FormatPanelControls.swift)",
+      "extractionState" : "migrated"
+    },
+    "Colour by branch" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Colour by node type" : {
+      "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
     "Colour by risk" : {
@@ -1790,7 +2630,11 @@
       "extractionState" : "migrated"
     },
     "Colour by Risk" : {
-      "comment" : "Undo action name (CanvasController+Diagrams.swift)",
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
+      "extractionState" : "migrated"
+    },
+    "Colour follows source topic" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Colour profile" : {
@@ -1799,6 +2643,10 @@
     },
     "Colour theme" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Colour Theme" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Comma separates labels" : {
@@ -1817,8 +2665,16 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Command-\/ folds a branch" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
     "Command-line tool" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Command-Return adds a parent" : {
+      "comment" : "UI text (Tour.swift)",
       "extractionState" : "migrated"
     },
     "Commands" : {
@@ -1827,6 +2683,10 @@
     },
     "Commit" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "commit + child" : {
+      "comment" : "UI text (Overlays.swift)",
       "extractionState" : "migrated"
     },
     "Commit and Add Child" : {
@@ -1845,8 +2705,24 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Compact map" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Compact Map" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Compare" : {
       "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "Compute" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Concept map" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Confirm" : {
@@ -1881,6 +2757,18 @@
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "Connect from here" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "Connect mode. " : {
+      "comment" : "UI text (CanvasView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Connect targets" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Connect to" : {
       "comment" : "UI text (Overlays.swift)",
       "extractionState" : "migrated"
@@ -1905,8 +2793,16 @@
       "comment" : "Text with values filled in (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "Container" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
     "Content" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Context, options, decision, consequences" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Continue as %@" : {
@@ -1915,6 +2811,14 @@
     },
     "Contrast %@" : {
       "comment" : "Text with values filled in (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Contrast check" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Control-Return accepts one" : {
+      "comment" : "UI text (Tour.swift)",
       "extractionState" : "migrated"
     },
     "Control-Return accepts this suggestion" : {
@@ -1931,6 +2835,10 @@
     },
     "Convert “%@” to…" : {
       "comment" : "Text with values filled in (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Convert diagram type" : {
+      "comment" : "UI text (CanvasHostView.swift)",
       "extractionState" : "migrated"
     },
     "Convert diagram type (⌥⌘T)" : {
@@ -2009,8 +2917,20 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "Copy style" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Copy Style" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Corner radius" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Corner Radius" : {
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Correct spelling automatically" : {
@@ -2043,6 +2963,10 @@
     },
     "Couldn’t write %@: %@" : {
       "comment" : "Text with values filled in (DocumentFiles.swift)",
+      "extractionState" : "migrated"
+    },
+    "Course outline" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Crash recovery · %lld topics" : {
@@ -2125,12 +3049,24 @@
       "comment" : "Text with values filled in (Overlays.swift)",
       "extractionState" : "migrated"
     },
+    "Created by AI" : {
+      "comment" : "UI text (Scene.swift)",
+      "extractionState" : "migrated"
+    },
+    "CSV · threats" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
     "current" : {
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
     "Cursor" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Curved" : {
+      "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
     "Custom colour" : {
@@ -2157,6 +3093,34 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Dark mat" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "Dashed" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Data" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Data class." : {
+      "comment" : "UI text (FormatPanelStride.swift)",
+      "extractionState" : "migrated"
+    },
+    "Data flow" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Data Flow" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "DATA FLOW" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Data Flow · %lld canvases" : {
       "comment" : "Count phrase with plural variants (HomeView.swift)",
       "extractionState" : "migrated",
@@ -2181,6 +3145,26 @@
         }
       }
     },
+    "Data Flow + STRIDE" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Data flow diagram" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Data flow levels" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Data flow rule check" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Data flow with STRIDE per element" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Data masking" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -2189,8 +3173,32 @@
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
+    "Data store" : {
+      "comment" : "Node type (Data Flow)",
+      "extractionState" : "migrated"
+    },
+    "Data Store" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "DATA STORE" : {
+      "comment" : "UI text (SceneTechnical.swift)",
+      "extractionState" : "migrated"
+    },
+    "Database" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Decision" : {
+      "comment" : "Node type (Flowchart)",
+      "extractionState" : "migrated"
+    },
     "Deep" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Default" : {
+      "comment" : "UI text (AISettingsView.swift)",
       "extractionState" : "migrated"
     },
     "Default app" : {
@@ -2238,11 +3246,15 @@
       "extractionState" : "migrated"
     },
     "Delete Canvas" : {
-      "comment" : "Undo action name (CanvasController+Files.swift)",
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Delete Canvas…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Delete Theme" : {
+      "comment" : "UI text (CanvasController+Styling.swift)",
       "extractionState" : "migrated"
     },
     "Delete, Keep Children" : {
@@ -2251,6 +3263,10 @@
     },
     "Demote" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Denial of service" : {
+      "comment" : "STRIDE category",
       "extractionState" : "migrated"
     },
     "Depth parallax when zoomed out" : {
@@ -2262,7 +3278,11 @@
       "extractionState" : "migrated"
     },
     "Detach" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Detect, mitigate, resolve" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Detected on-device with the Natural Language framework plus your patterns. Masking applies to the export copy; your document is unchanged." : {
@@ -2273,12 +3293,24 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "DFD · Architecture" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
     "Diagnostics" : {
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
+    "Diagram" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "Diagram font" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Diagram type" : {
+      "comment" : "UI text (DocumentWindowController.swift)",
       "extractionState" : "migrated"
     },
     "Diagram types" : {
@@ -2299,6 +3331,10 @@
     },
     "Display P3" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Document" : {
+      "comment" : "Node type (Flowchart)",
       "extractionState" : "migrated"
     },
     "Documents" : {
@@ -2337,12 +3373,20 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Dot" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Dots" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
     "Double-click empty canvas" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "downloading" : {
+      "comment" : "UI text (AISettingsView.swift)",
       "extractionState" : "migrated"
     },
     "Drag a node off its branch to float it" : {
@@ -2358,7 +3402,7 @@
       "extractionState" : "migrated"
     },
     "Drill Into Process" : {
-      "comment" : "Undo action name (CanvasController+Diagrams.swift)",
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
     "Drop to attach under %@" : {
@@ -2377,12 +3421,28 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Duplicate works on branches, not the root" : {
+      "comment" : "UI text (TreeOperations.swift)",
+      "extractionState" : "migrated"
+    },
     "Dynamic Type for sidebars, panels and menus" : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
     "e.g. “Tab adds a child”" : {
       "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
+    "Each document’s central topic becomes a branch of this canvas’s central topic." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edge, services, data, observability" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edges" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
     "Edit" : {
@@ -2393,8 +3453,12 @@
       "comment" : "Cheat sheet column",
       "extractionState" : "migrated"
     },
+    "Edit colour theme" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
     "Edit Fields" : {
-      "comment" : "Undo action name (FormatPanelMap.swift)",
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Edit maps" : {
@@ -2409,6 +3473,10 @@
       "comment" : "Command category",
       "extractionState" : "migrated"
     },
+    "Edit Theme" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
     "Edit Topic" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -2421,12 +3489,32 @@
       "comment" : "Settings pane",
       "extractionState" : "migrated"
     },
+    "Elbow" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Element" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Elevation" : {
+      "comment" : "STRIDE category",
+      "extractionState" : "migrated"
+    },
+    "Ellipse" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
     "Email addresses" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
     "Emails, keys, names, phones; review each hit" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Embed fonts" : {
+      "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "Embed images up to" : {
@@ -2445,6 +3533,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Encrypt document" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Encrypted · recovery snapshots use the same key" : {
       "comment" : "UI text (DocumentFiles.swift)",
       "extractionState" : "migrated"
@@ -2453,20 +3545,68 @@
       "comment" : "Settings footnote",
       "extractionState" : "migrated"
     },
+    "End" : {
+      "comment" : "Node type (Flowchart)",
+      "extractionState" : "migrated"
+    },
+    "End cap" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "End Cap" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "End cap %@" : {
       "comment" : "Text with values filled in (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "End of deck" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Endpoints auto-slide to best edge" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Engineer" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Engineering" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "English" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Enter Full Screen" : {
+      "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
     "Enter its password to open it." : {
       "comment" : "UI text (DocumentFiles.swift)",
+      "extractionState" : "migrated"
+    },
+    "Entities can’t read stores directly." : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "Entities can’t write to stores directly." : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "Entities exchange data through a process." : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "Entities, processes and stores" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Equation" : {
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
     "Esc" : {
@@ -2479,6 +3619,14 @@
     },
     "Español" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Essay plan" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Event Stream" : {
+      "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
     },
     "Every action, with its key" : {
@@ -2515,6 +3663,10 @@
     },
     "Expand Branch" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Expand into a sprint plan" : {
+      "comment" : "UI text (CanvasController+AI.swift)",
       "extractionState" : "migrated"
     },
     "Export" : {
@@ -2653,6 +3805,26 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "External entity" : {
+      "comment" : "Node type (Data Flow)",
+      "extractionState" : "migrated"
+    },
+    "External Entity" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "EXTERNAL ENTITY" : {
+      "comment" : "UI text (SceneTechnical.swift)",
+      "extractionState" : "migrated"
+    },
+    "External SaaS" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "extra %@" : {
+      "comment" : "Text with values filled in (DFD.swift)",
+      "extractionState" : "migrated"
+    },
     "Faster:" : {
       "comment" : "UI text (TourViews.swift)",
       "extractionState" : "migrated"
@@ -2677,6 +3849,10 @@
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
+    "File link" : {
+      "comment" : "UI text (Scene.swift)",
+      "extractionState" : "migrated"
+    },
     "Files & Backup" : {
       "comment" : "Settings pane",
       "extractionState" : "migrated"
@@ -2693,12 +3869,28 @@
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
+    "Fill Colour" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Filled · Pill" : {
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
     "Filled · Rounded" : {
       "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Filter" : {
+      "comment" : "UI text (CanvasController+Views.swift)",
+      "extractionState" : "migrated"
+    },
+    "filter by text" : {
+      "comment" : "UI text (Overlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Filter types" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
     "Filter…" : {
@@ -2711,6 +3903,10 @@
     },
     "Find and Replace…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Find gaps" : {
+      "comment" : "UI text (CanvasController+AI.swift)",
       "extractionState" : "migrated"
     },
     "Find Gaps" : {
@@ -2729,8 +3925,20 @@
       "comment" : "UI text (TourViews.swift)",
       "extractionState" : "migrated"
     },
+    "Firewall" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
     "First-run tour" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Fishbone" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "Fishbone · Brutal" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Fit" : {
@@ -2745,8 +3953,32 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Fit page" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Fit to page" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Fix Flow" : {
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
+      "extractionState" : "migrated"
+    },
+    "Flags" : {
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Flavour · auto-chosen from type" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Flexible floating topics" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Flexible Floating Topics" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Floating toolbar" : {
@@ -2765,12 +3997,36 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Flowchart" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "Flows all labelled" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "Flows all touch a process" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
     "Fly Back" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Focus breadcrumb" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
     "Focus on Branch" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Focus timer" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Fold" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
     "Fold \/ Unfold All" : {
@@ -2779,6 +4035,10 @@
     },
     "Fold \/ Unfold Branch" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Fold All" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
     "Follow branch" : {
@@ -2801,6 +4061,22 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Font" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Font Size" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Font Weight" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Format" : {
+      "comment" : "UI text (DocumentWindowController.swift)",
+      "extractionState" : "migrated"
+    },
     "Format options" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
@@ -2813,8 +4089,16 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Format panel (⌘I)" : {
+      "comment" : "UI text (DocumentWindowController.swift)",
+      "extractionState" : "migrated"
+    },
     "Formats" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Foundation Models framework. Text and images, tool calling for diagram actions. No download." : {
+      "comment" : "UI text (AISettingsView.swift)",
       "extractionState" : "migrated"
     },
     "Frame" : {
@@ -2837,6 +4121,18 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Free Layout" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Free layout for this canvas" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Front" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
     "Full" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -2845,8 +4141,16 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Function" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
     "Fuzzy node search; ↩ flies there" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Fwd" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "General" : {
@@ -2869,6 +4173,18 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Glide" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Global font" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Global Font" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Global shortcut" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -2881,16 +4197,44 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Goals, paths and mitigations" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Good afternoon" : {
+      "comment" : "UI text (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Good evening" : {
+      "comment" : "UI text (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Good morning" : {
+      "comment" : "UI text (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
     "Gradient" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Gradient mat" : {
+      "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
     "Grid size" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Group" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
     "H" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "h j k l · o \/ O · dd" : {
+      "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
     "Hand" : {
@@ -2901,8 +4245,16 @@
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
+    "Hard" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Has note" : {
       "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "Hatch pattern by trust level" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Header: title · date" : {
@@ -2915,6 +4267,10 @@
     },
     "HEIC → JPEG, strip location metadata" : {
       "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
+    "Help" : {
+      "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "Help & tips" : {
@@ -2930,11 +4286,35 @@
       "extractionState" : "migrated"
     },
     "Hide from Slides" : {
-      "comment" : "Undo action name (CanvasController+Views.swift)",
+      "comment" : "UI text (CanvasController+Views.swift)",
+      "extractionState" : "migrated"
+    },
+    "Hide OpenNexus" : {
+      "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
+    "Hide Others" : {
+      "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
+    "Hide preview" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Hide the topic from slides" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "hide topic from slides" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Hides emails, keys and names in the export" : {
       "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
+    "High" : {
+      "comment" : "Threat risk or status",
       "extractionState" : "migrated"
     },
     "Hint" : {
@@ -2963,6 +4343,10 @@
     },
     "Hold ⌘ any time to see these again. Your tutorial map stays as your first document." : {
       "comment" : "UI text (TourViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "hold ⌘" : {
+      "comment" : "UI text (Overlays.swift)",
       "extractionState" : "migrated"
     },
     "Hold ⌘ cheat sheet" : {
@@ -3009,6 +4393,14 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "I II" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "iCloud Drive › " : {
+      "comment" : "UI text (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
     "iCloud Drive › OpenNexus" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -3029,12 +4421,24 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "ID" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Ideas, quotes and questions" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Ignore" : {
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "Ignore Rule" : {
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
+      "extractionState" : "migrated"
+    },
     "Image" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (MouseAids.swift)",
       "extractionState" : "migrated"
     },
     "Image frame · PNG & JPEG" : {
@@ -3053,6 +4457,14 @@
       "comment" : "Text with values filled in (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "Image position" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Image Position" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Image…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -3063,6 +4475,10 @@
     },
     "Import .xmind, OPML, Markdown, Mermaid, PlantUML, draw.io, FreeMind, MindManager, MindNode, Word or text." : {
       "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
+    "Import from Xmind…" : {
+      "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
     },
     "Import profile…" : {
@@ -3097,6 +4513,10 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "In review" : {
+      "comment" : "Threat risk or status",
+      "extractionState" : "migrated"
+    },
     "In the AI panel" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
@@ -3109,12 +4529,24 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Incident response runbook" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Incident timeline" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Include metadata (types, fields)" : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "Include notes" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Include Slide" : {
+      "comment" : "UI text (CanvasController+Views.swift)",
       "extractionState" : "migrated"
     },
     "Indent" : {
@@ -3125,8 +4557,28 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Info disclosure" : {
+      "comment" : "STRIDE category",
+      "extractionState" : "migrated"
+    },
+    "Inherit" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Inheritance" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
     "Ink" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Input \/ output" : {
+      "comment" : "Node type (Flowchart)",
+      "extractionState" : "migrated"
+    },
+    "Insert" : {
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
     "Insert %@" : {
@@ -3169,6 +4621,10 @@
       "comment" : "Settings pane",
       "extractionState" : "migrated"
     },
+    "Into this canvas" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "is already taken" : {
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
@@ -3185,6 +4641,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "JSON · YAML" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
     "JSON layout" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -3193,8 +4653,20 @@
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "Jump to a topic, edge or canvas" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "Jump to Central Topic" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Justify" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Justify topic alignment" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Keep %@" : {
@@ -3239,6 +4711,10 @@
     },
     "Keycap coach size" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Keynote" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Keynote opens this .pptx directly" : {
@@ -3289,12 +4765,24 @@
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
+    "Learning" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Left" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Legal" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
     "Lesson %lld of %lld" : {
       "comment" : "Text with values filled in (TourViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Lesson 5 converts to" : {
+      "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
     },
     "Let AI read notes and attachments" : {
@@ -3313,7 +4801,15 @@
       "comment" : "Text with values filled in (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
+    "Level breadcrumb" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
     "Level gap" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Level Gap" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
@@ -3321,16 +4817,48 @@
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "Levels aren’t balanced" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "Levels balanced" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "Lifelines with return messages" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Light" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "line break" : {
+      "comment" : "UI text (Overlays.swift)",
       "extractionState" : "migrated"
     },
     "Line Break" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Line Colour" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "LINE SHAPE" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Line spacing" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Line Spacing" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Line Width" : {
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Lines" : {
@@ -3342,7 +4870,7 @@
       "extractionState" : "migrated"
     },
     "Link Image" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "LINKED FROM %lld TOPICS" : {
@@ -3381,6 +4909,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Listening…" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Live preview of theme + node style + colour theme. Documents keep their own look once created." : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -3401,6 +4933,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Load Balancer" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
     "Local by default. Everything that could leave the Mac is listed here and is off unless you turn it on." : {
       "comment" : "Settings pane subtitle",
       "extractionState" : "migrated"
@@ -3409,12 +4945,56 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Local model via MLX \/ Core AI" : {
+      "comment" : "UI text (AISettingsView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Local server on this Mac" : {
+      "comment" : "UI text (AISettingsView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Lock · Auth" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
     "Lock encrypted documents after" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Locked" : {
+      "comment" : "UI text (Integrations.swift)",
+      "extractionState" : "migrated"
+    },
+    "Logic · Brutal" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Logic · Outline" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Logic · Underline" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Logic chart" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Logic Chart" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "Logic Chart → right" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Logic Left · Solid" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Low" : {
+      "comment" : "Threat risk or status",
       "extractionState" : "migrated"
     },
     "Lowest: %@" : {
@@ -3437,6 +5017,14 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Make" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Make a sticker" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Make a Sticker…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -3445,8 +5033,12 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "Make more" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Make Sticker" : {
-      "comment" : "Undo action name (CanvasController+AIMedia.swift)",
+      "comment" : "UI text (CanvasController+AIMedia.swift)",
       "extractionState" : "migrated"
     },
     "Make To-dos" : {
@@ -3461,6 +5053,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Map" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Map Shot" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -3471,6 +5067,10 @@
     },
     "Map Shot copied and saved to %@" : {
       "comment" : "Text with values filled in (DocumentFiles.swift)",
+      "extractionState" : "migrated"
+    },
+    "Map Shot hint" : {
+      "comment" : "UI text (CanvasHostView.swift)",
       "extractionState" : "migrated"
     },
     "Map Shots are copied to the clipboard and saved in this folder. Change it in Settings › Export." : {
@@ -3498,7 +5098,7 @@
       "extractionState" : "migrated"
     },
     "Marker" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Markers" : {
@@ -3577,12 +5177,28 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "Matrix" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
     "MCP tools" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
     "Meaning · technical canvases" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Med" : {
+      "comment" : "Threat risk or status",
+      "extractionState" : "migrated"
+    },
+    "Medium" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Meeting notes" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Merge · one undo" : {
@@ -3594,7 +5210,7 @@
       "extractionState" : "migrated"
     },
     "Merge Documents" : {
-      "comment" : "Undo action name (CanvasController+Files.swift)",
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Merge Documents…" : {
@@ -3602,7 +5218,15 @@
       "extractionState" : "migrated"
     },
     "Merge Slides" : {
-      "comment" : "Undo action name (CanvasController+Views.swift)",
+      "comment" : "UI text (CanvasController+Views.swift)",
+      "extractionState" : "migrated"
+    },
+    "merge with next" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Merge with the next slide" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Merged %lld documents · one undo" : {
@@ -3653,6 +5277,10 @@
         }
       }
     },
+    "Mermaid" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
     "Mermaid \/ PlantUML flavour" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -3669,12 +5297,48 @@
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
+    "Middle" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Mind Map" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "MIND MAP" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Mind Map · balanced" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Mind Map · Glow" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Mind Map · Minimal" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Mind Map · right" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Mind Map · Sketch" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Mind Map · Soft" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Mind Map · Underline" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Mind maps" : {
+      "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
     "mindmap" : {
@@ -3689,16 +5353,48 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Minimize" : {
+      "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
     "Minimum text at 100%" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "missing %@" : {
+      "comment" : "Text with values filled in (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "Mitigated" : {
+      "comment" : "Threat risk or status",
+      "extractionState" : "migrated"
+    },
+    "Mitigation" : {
+      "comment" : "Node type (Threat Model)",
       "extractionState" : "migrated"
     },
     "mm" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Mobile" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Mode and keys" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
     "Model" : {
       "comment" : "Settings section",
+      "extractionState" : "migrated"
+    },
+    "Modules and lessons" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Monitoring" : {
+      "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
     },
     "Mono" : {
@@ -3730,11 +5426,15 @@
       "extractionState" : "migrated"
     },
     "Move" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "MOVE & SELECT" : {
       "comment" : "Cheat sheet column",
+      "extractionState" : "migrated"
+    },
+    "Move around" : {
+      "comment" : "UI text (Tour.swift)",
       "extractionState" : "migrated"
     },
     "Move Canvas to New Window" : {
@@ -3754,7 +5454,7 @@
       "extractionState" : "migrated"
     },
     "Move to Lane" : {
-      "comment" : "Undo action name (CanvasController+Diagrams.swift)",
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
     "Move to Lane Above" : {
@@ -3769,12 +5469,16 @@
       "comment" : "UI text (DocumentFiles.swift)",
       "extractionState" : "migrated"
     },
+    "Move To…" : {
+      "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
     "Move Up" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Move Zone" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Multi-colour" : {
@@ -3794,15 +5498,43 @@
       "extractionState" : "migrated"
     },
     "N\/A" : {
-      "comment" : "UI text (FormatPanelStride.swift)",
+      "comment" : "Threat risk or status",
       "extractionState" : "migrated"
     },
     "Name" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
+    "Name every data flow" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "Name the edge, then ↩" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
+    "Name your idea, then ↩" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
+    "Natural Language" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Nature" : {
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
     "Navigate & select" : {
       "comment" : "Command category",
+      "extractionState" : "migrated"
+    },
+    "Navigation" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Navigation Panel" : {
+      "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "Navigation: Notes" : {
@@ -3825,8 +5557,16 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Neon" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
     "Nested bullets" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Network" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
     "Network activity" : {
@@ -3889,6 +5629,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "New Theme" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
     "New topics start with" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -3911,6 +5655,14 @@
     },
     "Next Row" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "next step" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Next step" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "No command matches “%@”" : {
@@ -3937,12 +5689,20 @@
       "comment" : "UI text (CanvasController+AI.swift)",
       "extractionState" : "migrated"
     },
+    "No note on this slide's topic." : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "No notes yet. ⇧⌘N adds one." : {
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
     "No outbound requests. OpenNexus has no network entitlement, so macOS blocks any connection it might try." : {
       "comment" : "UI text (AppPreferences.swift)",
+      "extractionState" : "migrated"
+    },
+    "No previous sibling to move under" : {
+      "comment" : "UI text (TreeOperations.swift)",
       "extractionState" : "migrated"
     },
     "No settings match “%@”" : {
@@ -3957,8 +5717,16 @@
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "No threat recorded" : {
+      "comment" : "UI text (FormatPanelStride.swift)",
+      "extractionState" : "migrated"
+    },
     "Node style" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Node Style" : {
+      "comment" : "UI text (CanvasController+Styling.swift)",
       "extractionState" : "migrated"
     },
     "Node style: %@" : {
@@ -3966,15 +5734,23 @@
       "extractionState" : "migrated"
     },
     "Node Type" : {
-      "comment" : "Undo action name (CanvasController+Diagrams.swift)",
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
     "none" : {
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "None" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
     "not %@" : {
       "comment" : "Text with values filled in (CanvasController+Views.swift)",
+      "extractionState" : "migrated"
+    },
+    "Not applicable" : {
+      "comment" : "UI text (FormatPanelStride.swift)",
       "extractionState" : "migrated"
     },
     "Note" : {
@@ -3983,6 +5759,10 @@
     },
     "Note · %@" : {
       "comment" : "Text with values filled in (OutlineView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Note: “" : {
+      "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
     "Notes" : {
@@ -4025,12 +5805,32 @@
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
+    "Nothing to fold" : {
+      "comment" : "UI text (TreeOperations.swift)",
+      "extractionState" : "migrated"
+    },
     "Nothing to mask on this canvas." : {
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "Notification" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Now, next, later" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Numbering" : {
       "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "OAuth handshake" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Object Storage" : {
+      "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
     },
     "Off" : {
@@ -4057,12 +5857,20 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "On · allow a folder first" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
     "On demand" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
     "on-device" : {
       "comment" : "Settings value",
+      "extractionState" : "migrated"
+    },
+    "On-device AI ready" : {
+      "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
     "One image per first-level branch" : {
@@ -4073,16 +5881,24 @@
       "comment" : "UI text (DocumentFiles.swift)",
       "extractionState" : "migrated"
     },
+    "One slide per step, as in Present." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Opaque chrome instead of Liquid Glass" : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
     "Open" : {
-      "comment" : "UI text (DocumentFiles.swift)",
+      "comment" : "Threat risk or status",
       "extractionState" : "migrated"
     },
     "Open a document to browse its recovery snapshots." : {
       "comment" : "UI text (AppPreferences.swift)",
+      "extractionState" : "migrated"
+    },
+    "open an encrypted document" : {
+      "comment" : "UI text (NexusDocument.swift)",
       "extractionState" : "migrated"
     },
     "Open code links in" : {
@@ -4093,8 +5909,20 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Open Inbox Map" : {
+      "comment" : "UI text (QuickCapture.swift)",
+      "extractionState" : "migrated"
+    },
     "Open log…" : {
       "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "Open OpenNexus" : {
+      "comment" : "UI text (QuickCapture.swift)",
+      "extractionState" : "migrated"
+    },
+    "Open Recent" : {
+      "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "Open Recovery…" : {
@@ -4109,6 +5937,10 @@
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "Open threats" : {
+      "comment" : "UI text (CanvasController+Views.swift)",
+      "extractionState" : "migrated"
+    },
     "OpenNexus" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -4119,6 +5951,10 @@
     },
     "OpenNexus follows macOS settings first; these refine or override them." : {
       "comment" : "Settings pane subtitle",
+      "extractionState" : "migrated"
+    },
+    "OpenNexus Help" : {
+      "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "OpenNexus is open source" : {
@@ -4153,6 +5989,14 @@
       "comment" : "Text with values filled in (Tour.swift)",
       "extractionState" : "migrated"
     },
+    "Option-Command-Up or Down reorders" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
+    "Option-Space suggests ideas on this branch" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
     "or" : {
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
@@ -4161,8 +6005,24 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "Order" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Org · Capsule" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Org · Solid" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Org chart" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Org Chart" : {
+      "comment" : "Diagram type",
       "extractionState" : "migrated"
     },
     "Orientation" : {
@@ -4179,6 +6039,18 @@
     },
     "Outline" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Outline text" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Outliner" : {
+      "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
+    "Owner" : {
+      "comment" : "UI text (FormatPanelStride.swift)",
       "extractionState" : "migrated"
     },
     "Package (.nexus)" : {
@@ -4205,8 +6077,20 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Pages" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Pans" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Paper" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "Participant" : {
+      "comment" : "Node type (Sequence)",
       "extractionState" : "migrated"
     },
     "Password" : {
@@ -4226,11 +6110,19 @@
       "extractionState" : "migrated"
     },
     "Paste Outline" : {
-      "comment" : "Undo action name (CanvasController+Files.swift)",
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
+    "Paste style" : {
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Paste Style" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Pattern" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Patterns as well as colour" : {
@@ -4253,6 +6145,18 @@
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
+    "People" : {
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "People, process, tools, environment" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "People, systems and containers" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Per diagram type" : {
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
@@ -4269,8 +6173,24 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Pick a hint letter, then ↩" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
+    "pick target" : {
+      "comment" : "UI text (Overlays.swift)",
+      "extractionState" : "migrated"
+    },
     "Picking from the same group replaces; another group adds." : {
       "comment" : "UI text (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
+    "Pill" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Pin" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "PingFang SC" : {
@@ -4301,12 +6221,40 @@
       "comment" : "Settings pane subtitle",
       "extractionState" : "migrated"
     },
+    "Plain text" : {
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
+      "extractionState" : "migrated"
+    },
+    "Plain Text" : {
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
+      "extractionState" : "migrated"
+    },
+    "Plan, pack, book" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Planner · Student" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Planning" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Platforms, migrations and decisions" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Playing audio note · %lld s" : {
       "comment" : "Text with values filled in (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
+    "Pointer side" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Position" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Present" : {
@@ -4315,6 +6263,18 @@
     },
     "Present keys" : {
       "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Presentation" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Presenter view" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Presenter View" : {
+      "comment" : "UI text (DocumentWindowController.swift)",
       "extractionState" : "migrated"
     },
     "PRESENTER VIEW" : {
@@ -4329,6 +6289,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Press Record to start." : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Pretty" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -4341,6 +6305,10 @@
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
+    "Preview on canvas" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Preview updates as options change · last used settings remembered per format" : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
@@ -4351,6 +6319,10 @@
     },
     "Previous Row" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Previous step" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Pricing" : {
@@ -4367,6 +6339,10 @@
     },
     "Print…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Priority" : {
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Priority %lld" : {
@@ -4413,12 +6389,32 @@
       "comment" : "Settings pane",
       "extractionState" : "migrated"
     },
+    "Process" : {
+      "comment" : "Node type (Flowchart)",
+      "extractionState" : "migrated"
+    },
+    "Processes have inputs and outputs" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
     "Profile" : {
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
+    "Progress" : {
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
     "Progressive tips" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Project plan" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Projects, notes and ideas" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Promote" : {
@@ -4433,6 +6429,10 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "Protocol" : {
+      "comment" : "UI text (FormatPanelStride.swift)",
+      "extractionState" : "migrated"
+    },
     "pt" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -4443,6 +6443,10 @@
     },
     "Quality" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Queue" : {
+      "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
     },
     "Quick" : {
@@ -4466,7 +6470,7 @@
       "extractionState" : "migrated"
     },
     "Quick Style" : {
-      "comment" : "Undo action name (CanvasController+Styling.swift)",
+      "comment" : "UI text (CanvasController+Styling.swift)",
       "extractionState" : "migrated"
     },
     "Quick Style 1" : {
@@ -4501,6 +6505,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Quit OpenNexus" : {
+      "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
     "Rainbow · Classic" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -4509,12 +6517,20 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Range" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
     "Read edges" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
     "Read maps" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Rear" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Reassign" : {
@@ -4541,8 +6557,12 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "Record to map" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Record to Map" : {
-      "comment" : "Undo action name (CanvasController+AIMedia.swift)",
+      "comment" : "UI text (CanvasController+AIMedia.swift)",
       "extractionState" : "migrated"
     },
     "Record to Map…" : {
@@ -4569,6 +6589,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Rectangle" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
     "Redo" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -4589,8 +6613,20 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Reference arch, ADR, capability map" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Reference architecture" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Regex, e.g. ticket or account IDs (one per line)" : {
       "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
+    "Region" : {
+      "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
     },
     "Regular" : {
@@ -4598,7 +6634,7 @@
       "extractionState" : "migrated"
     },
     "Relationship" : {
-      "comment" : "Undo action name (CanvasController+Connect.swift)",
+      "comment" : "UI text (CanvasController+Connect.swift)",
       "extractionState" : "migrated"
     },
     "Relationship (Connect Mode)" : {
@@ -4610,7 +6646,7 @@
       "extractionState" : "migrated"
     },
     "Relationship Style" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Release notes" : {
@@ -4629,6 +6665,14 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Remove background" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Remove Background" : {
+      "comment" : "UI text (CanvasController+AIMedia.swift)",
+      "extractionState" : "migrated"
+    },
     "Remove field" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
@@ -4638,7 +6682,7 @@
       "extractionState" : "migrated"
     },
     "Remove Image" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Remove Image Background" : {
@@ -4658,7 +6702,7 @@
       "extractionState" : "migrated"
     },
     "Remove Zone" : {
-      "comment" : "Undo action name (FormatPanelElements.swift)",
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Remove zone (keep content)" : {
@@ -4670,11 +6714,15 @@
       "extractionState" : "migrated"
     },
     "Rename Canvas" : {
-      "comment" : "Undo action name (CanvasController+Files.swift)",
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Rename Canvas…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Rename Theme" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Rename…" : {
@@ -4682,7 +6730,7 @@
       "extractionState" : "migrated"
     },
     "Reorder Slides" : {
-      "comment" : "Undo action name (PresentViews.swift)",
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Repaired this file: %@ · saving keeps the fix" : {
@@ -4753,6 +6801,10 @@
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "Repudiation" : {
+      "comment" : "STRIDE category",
+      "extractionState" : "migrated"
+    },
     "requests" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -4777,6 +6829,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Reshuffle" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Reshuffles branch colours" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
@@ -4787,6 +6843,10 @@
     },
     "Restart applies the change" : {
       "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
+    "Restart from this topic" : {
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Restore" : {
@@ -4806,7 +6866,7 @@
       "extractionState" : "migrated"
     },
     "Restore Snapshot" : {
-      "comment" : "Undo action name (NexusDocument.swift)",
+      "comment" : "UI text (NexusDocument.swift)",
       "extractionState" : "migrated"
     },
     "Restore windows when reopening" : {
@@ -4829,24 +6889,92 @@
       "comment" : "UI text (TourViews.swift)",
       "extractionState" : "migrated"
     },
+    "Return adds a sibling" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
+    "Return message" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Revert To Last Saved" : {
+      "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
+    "Revision tracker" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Rewrite" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Rewrite shorter" : {
+      "comment" : "UI text (CanvasController+AI.swift)",
+      "extractionState" : "migrated"
+    },
     "Rewrite Shorter" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Right" : {
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Right + adds a child (⇥), lower + a sibling (↩). The floating toolbar offers AI ideas, connect, link, image, note, to-do and style. It never appears while typing." : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "Right Map · Capsule" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Right Option" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "right-click › Make Image" : {
+      "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
     "Right-click a branch or zone › Print Branch prints only that part." : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "right-click image" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Right-drag pans the canvas" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Risk" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Roadmap" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Roadmap, SWOT, book notes" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Roles, systems and owners" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Root" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Root cause analysis" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Root colour" : {
+      "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
     "Rotor categories: Nodes, Edges, Boundaries, Notes, AI suggestions. Connect mode reads targets by hint letter." : {
@@ -4855,6 +6983,14 @@
     },
     "Round-trips: paste Mermaid back to rebuild" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Rounded" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Router" : {
+      "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
     },
     "Rule check: %@" : {
@@ -4901,6 +7037,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Save as Quick Style" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Save as Quick Style…" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
@@ -4909,8 +7049,12 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Save Colour Theme" : {
+      "comment" : "UI text (CanvasController+Styling.swift)",
+      "extractionState" : "migrated"
+    },
     "Save Filter" : {
-      "comment" : "Undo action name (CanvasController+Views.swift)",
+      "comment" : "UI text (CanvasController+Views.swift)",
       "extractionState" : "migrated"
     },
     "Save into this theme" : {
@@ -4919,6 +7063,10 @@
     },
     "Save Map Shots Here" : {
       "comment" : "UI text (DocumentFiles.swift)",
+      "extractionState" : "migrated"
+    },
+    "Save Quick Style" : {
+      "comment" : "UI text (CanvasController+Styling.swift)",
       "extractionState" : "migrated"
     },
     "Save Theme" : {
@@ -4989,6 +7137,10 @@
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
+    "Secret" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
     "Security" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -5041,6 +7193,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Select topics with this style" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Select Up" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -5077,8 +7233,36 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Sequence" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
     "Sequence and flowchart" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Server" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Server off · local only" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "Server on · local only" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "Service" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Services" : {
+      "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
+    "Services are turned off in OpenNexus › Settings › Integrations." : {
+      "comment" : "UI text (Integrations.swift)",
       "extractionState" : "migrated"
     },
     "Services menu: New Map from Selection" : {
@@ -5091,6 +7275,10 @@
     },
     "Settings" : {
       "comment" : "UI text (AppPreferences.swift)",
+      "extractionState" : "migrated"
+    },
+    "Settings…" : {
+      "comment" : "UI text (QuickCapture.swift)",
       "extractionState" : "migrated"
     },
     "SF Mono" : {
@@ -5113,6 +7301,10 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "Share" : {
+      "comment" : "UI text (DocumentWindowController.swift)",
+      "extractionState" : "migrated"
+    },
     "Share anonymous usage statistics" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -5125,6 +7317,22 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Shelf" : {
+      "comment" : "UI text (OnboardingViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Shift-Command-L opens Connect mode" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
+    "Shift-Return adds one before" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
+    "Shortcut cheat sheet" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
     "Shortcuts" : {
       "comment" : "Settings pane",
       "extractionState" : "migrated"
@@ -5135,6 +7343,10 @@
     },
     "Shortcuts & Siri actions" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Show All" : {
+      "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "Show model status chip in the toolbar" : {
@@ -5151,6 +7363,18 @@
     },
     "Sibling gap" : {
       "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Sibling Gap" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Single branch colour when off" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Single Colour" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Single JSON" : {
@@ -5177,6 +7401,18 @@
       "comment" : "UI text (TourViews.swift)",
       "extractionState" : "migrated"
     },
+    "Skip Slide" : {
+      "comment" : "UI text (CanvasController+Views.swift)",
+      "extractionState" : "migrated"
+    },
+    "Skip this slide" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Skip to a blank map" : {
+      "comment" : "UI text (OnboardingViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Skip tour" : {
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
@@ -5199,6 +7435,10 @@
     },
     "Slide %lld: %@, skipped" : {
       "comment" : "Text with values filled in (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Slide Theme" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Slides" : {
@@ -5249,6 +7489,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Soft shadow" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
     "Solid" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -5285,8 +7529,24 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Split view" : {
+      "comment" : "UI text (DocumentWindowController.swift)",
+      "extractionState" : "migrated"
+    },
+    "Spoofing" : {
+      "comment" : "STRIDE category",
+      "extractionState" : "migrated"
+    },
     "Spotlight indexing of node text" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Sprint retro" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Square" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "sRGB" : {
@@ -5301,8 +7561,24 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "stage only" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Stage only (hide the strip)" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Standard" : {
       "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
+    "Stars" : {
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Start" : {
+      "comment" : "Node type (Flowchart)",
       "extractionState" : "migrated"
     },
     "START \/ END CAPS" : {
@@ -5321,6 +7597,10 @@
       "comment" : "Text with values filled in (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
+    "Start from" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
     "Start in Edit mode on the root" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -5329,12 +7609,24 @@
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
     },
+    "Status" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "STEP 2 OF 9 · PICK YOUR WORLD" : {
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
     },
+    "Step through flow" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Step Through Flow" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Sticker" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
     "Stickers" : {
@@ -5349,12 +7641,40 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "Stop and Save" : {
+      "comment" : "UI text (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
     "Store document passwords in Keychain" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Stores all written" : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "Stores can’t move data between themselves." : {
+      "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "Straight" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Strengths, weaknesses, opportunities, threats" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "STRIDE" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "Strikes through when done" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Strikethrough" : {
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Strip AI provenance metadata" : {
@@ -5377,6 +7697,10 @@
       "comment" : "Command category",
       "extractionState" : "migrated"
     },
+    "Style (⌘I)" : {
+      "comment" : "UI text (MouseAids.swift)",
+      "extractionState" : "migrated"
+    },
     "Style actions" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
@@ -5393,6 +7717,10 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "Subnet" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
     "Subtopic" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -5403,6 +7731,10 @@
     },
     "Suggest Ideas" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Suggest ideas (⌥Space)" : {
+      "comment" : "UI text (MouseAids.swift)",
       "extractionState" : "migrated"
     },
     "Suggest ideas after a pause when creating nodes" : {
@@ -5433,16 +7765,32 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "summary %@ reuses a topic" : {
+      "comment" : "Text with values filled in (Repair.swift)",
+      "extractionState" : "migrated"
+    },
     "Summary Style" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Swap" : {
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "Swimlane" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
     "Swimlanes" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Switch" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Symbols" : {
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "System" : {
@@ -5453,8 +7801,16 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "System context" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "System-wide" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Systems, APIs, incidents and sprints" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Tab · Return · \/ fade after the first keystroke" : {
@@ -5462,19 +7818,79 @@
       "extractionState" : "migrated"
     },
     "Tab adds a child" : {
-      "comment" : "UI text (SettingsCards.swift)",
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tab and Return" : {
+      "comment" : "UI text (Tour.swift)",
       "extractionState" : "migrated"
     },
     "Tabs" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Tags" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tampering" : {
+      "comment" : "STRIDE category",
+      "extractionState" : "migrated"
+    },
     "Tap Hyper alone" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Taper" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Taper thick → thin" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tapered" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Task list: topic, path, status, priority, labels, note." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tech" : {
+      "comment" : "UI text (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
+    "Technical type" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
     "Template shelf and tour example" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Templates" : {
+      "comment" : "UI text (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Templates for architects" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Templates for engineers" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Templates for planners" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Templates for security" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Terms and how they relate" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Test connection" : {
@@ -5501,6 +7917,22 @@
       "comment" : "Text with values filled in (Tour.swift)",
       "extractionState" : "migrated"
     },
+    "The central topic can’t be deleted" : {
+      "comment" : "UI text (TreeOperations.swift)",
+      "extractionState" : "migrated"
+    },
+    "The central topic has no parent" : {
+      "comment" : "UI text (TreeOperations.swift)",
+      "extractionState" : "migrated"
+    },
+    "The flow from %@ to %@ has no label." : {
+      "comment" : "Text with values filled in (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "The outline as headings, notes as paragraphs, each canvas's diagram as an image." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "The passwords don’t match." : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
@@ -5514,6 +7946,10 @@
       "extractionState" : "migrated"
     },
     "Theme background" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Theme colours" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
@@ -5533,8 +7969,20 @@
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
     },
+    "Thesis, arguments, evidence" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Thin" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Think at the speed\nof your keyboard." : {
       "comment" : "UI text (OnboardingViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Thinking" : {
+      "comment" : "UI text (CanvasController+AI.swift)",
       "extractionState" : "migrated"
     },
     "This build doesn't include the tool. Build it with:\n\nswift build -c release --product nexus" : {
@@ -5543,6 +7991,10 @@
     },
     "this canvas" : {
       "comment" : "UI text (DocumentFiles.swift)",
+      "extractionState" : "migrated"
+    },
+    "This canvas" : {
+      "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
     "THIS CANVAS · SELECTION" : {
@@ -5555,6 +8007,10 @@
     },
     "This document" : {
       "comment" : "UI text (DocumentFiles.swift)",
+      "extractionState" : "migrated"
+    },
+    "This list" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "This Mac" : {
@@ -5570,7 +8026,19 @@
       "extractionState" : "migrated"
     },
     "Threat" : {
-      "comment" : "Undo action name (CanvasController+Diagrams.swift)",
+      "comment" : "Node type (Threat Model)",
+      "extractionState" : "migrated"
+    },
+    "Threat model" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Threat Model" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "THREAT MODEL" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Threat Model · %lld open threats" : {
@@ -5597,8 +8065,16 @@
         }
       }
     },
+    "Threat model, attack tree, IR runbook" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Threat models" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Threat suggestions" : {
+      "comment" : "UI text (CanvasHostView.swift)",
       "extractionState" : "migrated"
     },
     "Threat table" : {
@@ -5607,6 +8083,14 @@
     },
     "Threat Table" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Threat table: element, STRIDE category, risk, mitigation, status." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Threats, data and access" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Tile across pages" : {
@@ -5621,8 +8105,16 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Timeline · Solid" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Tint" : {
-      "comment" : "UI text (FormatPanelElements.swift)",
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tip" : {
+      "comment" : "UI text (CanvasHostView.swift)",
       "extractionState" : "migrated"
     },
     "Title" : {
@@ -5673,6 +8165,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Top" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
     "Topic" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -5681,16 +8177,32 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Topic link" : {
+      "comment" : "UI text (Scene.swift)",
+      "extractionState" : "migrated"
+    },
     "Topic text" : {
       "comment" : "UI text (NodeTextEditor.swift)",
       "extractionState" : "migrated"
     },
     "Topics" : {
-      "comment" : "UI text (ViewOverlays.swift)",
+      "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
     "Topics & labels" : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Topics can nest %lld levels deep" : {
+      "comment" : "Text with values filled in (TreeOperations.swift)",
+      "extractionState" : "migrated"
+    },
+    "Topics, confidence and dates" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tour example" : {
+      "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
     },
     "Tour paused · lesson %lld of %lld" : {
@@ -5701,11 +8213,19 @@
       "comment" : "Text with values filled in (TourViews.swift)",
       "extractionState" : "migrated"
     },
+    "Transform" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
     "Transition" : {
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Translate" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Translate map" : {
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
@@ -5717,6 +8237,10 @@
       "comment" : "Text with values filled in (CanvasController+AIMedia.swift)",
       "extractionState" : "migrated"
     },
+    "Translation framework" : {
+      "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Translation needs the language pair installed: System Settings › General › Language & Region › Translation Languages." : {
       "comment" : "UI text (CanvasController+AIMedia.swift)",
       "extractionState" : "migrated"
@@ -5725,8 +8249,44 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Travel" : {
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
     "Tree" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Tree · Minimal" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tree Chart" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "Tree Table" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "TREE TABLE" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Triage, contain, recover" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Trust" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "TRUST BOUNDARY" : {
+      "comment" : "UI text (ElementLayers.swift)",
+      "extractionState" : "migrated"
+    },
+    "Trust level" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Trust levels, node types and risk get shapes or hatching" : {
@@ -5739,6 +8299,26 @@
     },
     "Tutorial" : {
       "comment" : "UI text (TourViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tutorial finished" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tutorial paused" : {
+      "comment" : "UI text (CanvasHostView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Type" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
+    "Type a command…" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Type to filter" : {
+      "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
     "Typing" : {
@@ -5761,6 +8341,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "unavailable" : {
+      "comment" : "UI text (AISettingsView.swift)",
+      "extractionState" : "migrated"
+    },
     "Unavailable by design: OpenNexus v1 has no network permission." : {
       "comment" : "Settings footnote",
       "extractionState" : "migrated"
@@ -5777,8 +8361,20 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Unfold" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Units" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Unpin" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Untitled" : {
+      "comment" : "UI text (DocumentWindowController.swift)",
       "extractionState" : "migrated"
     },
     "Update style" : {
@@ -5829,6 +8425,10 @@
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "Use the arrows to move" : {
+      "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
     "used %lld×" : {
       "comment" : "Text with values filled in (CanvasPopovers.swift)",
       "extractionState" : "migrated"
@@ -5841,6 +8441,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "User" : {
+      "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
     "Using" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -5851,6 +8455,10 @@
     },
     "Version details are on the clipboard. Paste them into your report so it’s easy to reproduce. OpenNexus never sends anything itself.\n\n%@" : {
       "comment" : "Text with values filled in (AppPreferences.swift)",
+      "extractionState" : "migrated"
+    },
+    "Video" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Video export failed: %@" : {
@@ -5889,6 +8497,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Waves from assess to decommission" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Ways in and out of OpenNexus without leaving the Mac." : {
       "comment" : "Settings pane subtitle",
       "extractionState" : "migrated"
@@ -5897,12 +8509,24 @@
       "comment" : "UI text (NodeTextEditor.swift)",
       "extractionState" : "migrated"
     },
+    "Web link" : {
+      "comment" : "UI text (Scene.swift)",
+      "extractionState" : "migrated"
+    },
+    "Weekend trip" : {
+      "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
     "Welcome to OpenNexus" : {
       "comment" : "UI text (Onboarding.swift)",
       "extractionState" : "migrated"
     },
     "WELCOME TO OPENNEXUS" : {
       "comment" : "UI text (OnboardingViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Went well · to improve · actions" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "What will you map first?" : {
@@ -5933,12 +8557,40 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Whiteboard" : {
+      "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "Whole words" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Width" : {
+      "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Window" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
     "Windows" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
     "With source" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Word" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
+    "Words" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Workstreams and tasks" : {
+      "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
     "Writes a new canvas, structure and styles untouched; the original stays." : {
@@ -5963,6 +8615,10 @@
     },
     "XMIND SWITCHERS · ON .XMIND IMPORT" : {
       "comment" : "UI text (OnboardingViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Xmind-compatible · default" : {
+      "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
     "Xmind’s four (Very Important, Important, Cross Out, Default) plus four for technical work." : {
@@ -6005,16 +8661,28 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Zigzag" : {
+      "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
     "Zone" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Zone Style" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Zone Title" : {
-      "comment" : "Undo action name (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Zoom" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Zoom and topic count" : {
+      "comment" : "UI text (CanvasHostView.swift)",
       "extractionState" : "migrated"
     },
     "Zoom in" : {

@@ -78,8 +78,8 @@ final class QuickCapture: NSObject, NSMenuDelegate {
         model = m
         let p = panel ?? CapturePanel()
         p.contentView = NSHostingView(rootView: QuickCaptureView(model: m).padding(24))
-        p.title = "Quick Capture"
-        p.contentView?.setAccessibilityLabel("Quick Capture")
+        p.title = Loc.t("Quick Capture")
+        p.contentView?.setAccessibilityLabel(Loc.t("Quick Capture"))
         p.setContentSize(p.contentView!.fittingSize)
         // Upper third of the screen the pointer is on, like Spotlight.
         let screen = NSScreen.screens.first { $0.frame.contains(NSEvent.mouseLocation) } ?? NSScreen.main
@@ -115,10 +115,11 @@ final class QuickCapture: NSObject, NSMenuDelegate {
     /// Rebuilt each time it opens, so recent maps are current.
     func menuNeedsUpdate(_ menu: NSMenu) {
         menu.removeAllItems()
-        let capture = menu.addItem(withTitle: "Quick Capture", action: #selector(menuCapture), keyEquivalent: "n")
+        let capture = menu.addItem(
+            withTitle: Loc.t("Quick Capture"), action: #selector(menuCapture), keyEquivalent: "n")
         capture.keyEquivalentModifierMask = [.command, .option, .control, .shift]
         capture.target = self
-        menu.addItem(withTitle: "Open Inbox Map", action: #selector(menuInbox), keyEquivalent: "").target = self
+        menu.addItem(withTitle: Loc.t("Open Inbox Map"), action: #selector(menuInbox), keyEquivalent: "").target = self
         let recents = NSDocumentController.shared.recentDocumentURLs.prefix(5)
         if !recents.isEmpty {
             menu.addItem(.separator())
@@ -131,8 +132,9 @@ final class QuickCapture: NSObject, NSMenuDelegate {
             }
         }
         menu.addItem(.separator())
-        menu.addItem(withTitle: "Open OpenNexus", action: #selector(menuActivate), keyEquivalent: "").target = self
-        menu.addItem(withTitle: "Settings…", action: #selector(menuSettings), keyEquivalent: ",").target = self
+        menu.addItem(withTitle: Loc.t("Open OpenNexus"), action: #selector(menuActivate), keyEquivalent: "").target =
+            self
+        menu.addItem(withTitle: Loc.t("Settings…"), action: #selector(menuSettings), keyEquivalent: ",").target = self
     }
 
     @objc func menuCapture() { show() }

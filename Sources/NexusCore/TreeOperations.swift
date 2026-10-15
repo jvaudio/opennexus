@@ -14,15 +14,15 @@ public enum TreeOperationRefusal: Error, Equatable, Sendable, CustomStringConver
 
     public var description: String {
         switch self {
-        case .rootHasNoParent: "The central topic has no parent"
-        case .cannotDeleteRoot: "The central topic can’t be deleted"
-        case .alreadyMainTopic: "Already a main topic"
-        case .noPreviousSibling: "No previous sibling to move under"
-        case .nothingToFold: "Nothing to fold"
-        case .cannotDuplicateRoot: "Duplicate works on branches, not the root"
-        case .atEdge: "Already at the end"
-        case .missingNode: "That topic no longer exists"
-        case .tooDeep: "Topics can nest \(Canvas.maxDepth) levels deep"
+        case .rootHasNoParent: CoreText.t("The central topic has no parent")
+        case .cannotDeleteRoot: CoreText.t("The central topic can’t be deleted")
+        case .alreadyMainTopic: CoreText.t("Already a main topic")
+        case .noPreviousSibling: CoreText.t("No previous sibling to move under")
+        case .nothingToFold: CoreText.t("Nothing to fold")
+        case .cannotDuplicateRoot: CoreText.t("Duplicate works on branches, not the root")
+        case .atEdge: CoreText.t("Already at the end")
+        case .missingNode: CoreText.t("That topic no longer exists")
+        case .tooDeep: CoreText.f("Topics can nest %lld levels deep", Canvas.maxDepth)
         }
     }
 }

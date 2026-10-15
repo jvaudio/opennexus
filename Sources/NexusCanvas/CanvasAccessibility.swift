@@ -163,7 +163,7 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
             let id = b.boundary.id
             let e = boxes[id] ?? ElementItem(ref: .boundary(id), tree: self)
             boxes[id] = e
-            let title = b.boundary.title.isEmpty ? "Boundary" : b.boundary.title
+            let title = b.boundary.title.isEmpty ? Loc.t("Boundary") : b.boundary.title
             e.text =
                 Loc.f("%@. Boundary around %@.", title, Loc.n("%lld topic", "%lld topics", b.boundary.nodes.count))
             e.world = b.rect
@@ -176,13 +176,24 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
     enum RotorKind: String, CaseIterable {
         case topics = "Topics", notes = "Notes", edges = "Edges", boundaries = "Boundaries"
         case suggestions = "AI suggestions", connect = "Connect targets"
+
+        var title: String {
+            switch self {
+            case .topics: Loc.t("Topics")
+            case .notes: Loc.t("Notes")
+            case .edges: Loc.t("Edges")
+            case .boundaries: Loc.t("Boundaries")
+            case .suggestions: Loc.t("AI suggestions")
+            case .connect: Loc.t("Connect targets")
+            }
+        }
     }
 
     private var rotorKinds: [ObjectIdentifier: RotorKind] = [:]
 
     func rotors() -> [NSAccessibilityCustomRotor] {
         RotorKind.allCases.map { k in
-            let r = NSAccessibilityCustomRotor(label: k.rawValue, itemSearchDelegate: self)
+            let r = NSAccessibilityCustomRotor(label: k.title, itemSearchDelegate: self)
             rotorKinds[ObjectIdentifier(r)] = k
             return r
         }
@@ -281,27 +292,27 @@ final class TopicElement: NSAccessibilityElement {
         let folded = tree.controller?.canvas.nodes[id]?.folded ?? false
         let hasChildren = !(tree.controller?.canvas.nodes[id]?.children.isEmpty ?? true)
         var actions = [
-            NSAccessibilityCustomAction(name: "Edit") { [weak self] in
+            NSAccessibilityCustomAction(name: Loc.t("Edit")) { [weak self] in
                 guard let self else { return false }
                 self.tree.edit(self.id)
                 return true
             },
-            NSAccessibilityCustomAction(name: "Add child") { [weak self] in
+            NSAccessibilityCustomAction(name: Loc.t("Add child")) { [weak self] in
                 guard let self else { return false }
                 return self.tree.run(.addChild, on: self.id)
             },
-            NSAccessibilityCustomAction(name: "Add sibling") { [weak self] in
+            NSAccessibilityCustomAction(name: Loc.t("Add sibling")) { [weak self] in
                 guard let self else { return false }
                 return self.tree.run(.addSiblingAfter, on: self.id)
             },
-            NSAccessibilityCustomAction(name: "Connect from here") { [weak self] in
+            NSAccessibilityCustomAction(name: Loc.t("Connect from here")) { [weak self] in
                 guard let self else { return false }
                 return self.tree.run(.connect, on: self.id)
             },
         ]
         if hasChildren {
             actions.append(
-                NSAccessibilityCustomAction(name: folded ? "Unfold" : "Fold") { [weak self] in
+                NSAccessibilityCustomAction(name: folded ? Loc.t("Unfold") : Loc.t("Fold")) { [weak self] in
                     guard let self else { return false }
                     return self.tree.run(.fold, on: self.id)
                 })

@@ -115,12 +115,12 @@ extension SceneBuilder {
                 d.kicker = numbers[id]
                 d.tint = t.processLine
             case .store:
-                d.caption = "DATA STORE"
+                d.caption = Loc.t("DATA STORE")
                 d.leadText = numbers[id]
                 d.accent = t.storeLine
                 d.tint = t.storeLine
             case .entity:
-                d.caption = "EXTERNAL ENTITY"
+                d.caption = Loc.t("EXTERNAL ENTITY")
                 d.tint = t.entityLine
             case .threat:
                 d.icon = "threat"

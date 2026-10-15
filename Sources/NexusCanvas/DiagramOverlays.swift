@@ -14,7 +14,7 @@ struct SlashMenuView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 4) {
                     Text("/").font(.chrome(13, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
-                    Text(s.query.isEmpty ? "Type to filter" : s.query)
+                    Text(s.query.isEmpty ? Loc.t("Type to filter") : s.query)
                         .font(.chrome(13, design: .monospaced))
                         .foregroundStyle(s.query.isEmpty ? .tertiary : .primary)
                     Spacer()
@@ -121,7 +121,7 @@ struct ConvertSheetView: View {
                 Text(Loc.f("Convert “%@” to…", controller.canvas.nodes[controller.canvas.root]?.text ?? ""))
                     .font(.chrome(17, weight: .semibold))
                 Spacer()
-                Text(s.filter.isEmpty ? "Filter types" : s.filter)
+                Text(s.filter.isEmpty ? Loc.t("Filter types") : s.filter)
                     .font(.chrome(13))
                     .foregroundStyle(s.filter.isEmpty ? .tertiary : .primary)
                     .frame(width: 200, alignment: .leading)
@@ -140,7 +140,7 @@ struct ConvertSheetView: View {
                 HStack(spacing: 6) {
                     Text("More").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
                     ForEach(more, id: \.self) { t in
-                        Button(t.displayName) { controller.chooseConvertType(t) }
+                        Button(Loc.t(t.displayName)) { controller.chooseConvertType(t) }
                             .buttonStyle(.plain)
                             .font(.chrome(12))
                             .padding(.horizontal, 9)
@@ -173,7 +173,7 @@ struct ConvertSheetView: View {
                 .frame(height: 84)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(on ? 0.06 : 0.08)))
             HStack {
-                Text(t.displayName).font(.chrome(13, weight: .medium))
+                Text(Loc.t(t.displayName)).font(.chrome(13, weight: .medium))
                 if current { Text("current").font(.chrome(10)).foregroundStyle(.secondary) }
                 Spacer()
                 Keycap(text: "\(number)")
@@ -186,7 +186,7 @@ struct ConvertSheetView: View {
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(on ? Color.accentColor : .clear, lineWidth: 2))
         .contentShape(Rectangle())
         .accessibleTap { controller.chooseConvertType(t) }
-        .accessibilityLabel("\(t.displayName), \(number)")
+        .accessibilityLabel("\(Loc.t(t.displayName)), \(number)")
         .accessibilityAddTraits(on ? .isSelected : [])
     }
 
@@ -197,7 +197,7 @@ struct ConvertSheetView: View {
             Text(
                 Loc.f(
                     "%@ needs to know what each first-level branch is. Suggestions (✦) are made on this Mac.",
-                    s.highlighted.displayName)
+                    Loc.t(s.highlighted.displayName))
             )
             .font(.chrome(12))
             .foregroundStyle(.secondary)
@@ -215,7 +215,7 @@ struct ConvertSheetView: View {
                             get: { s.proposals[row] ?? options.first?.id ?? "process" },
                             set: { controller.setConvertProposal(row, $0) })
                     ) {
-                        ForEach(options, id: \.id) { Text($0.name).tag($0.id) }
+                        ForEach(options, id: \.id) { Text(Loc.t($0.name)).tag($0.id) }
                     }
                     .labelsHidden()
                     .frame(width: 150)
@@ -439,7 +439,7 @@ struct ThreatSuggestionCard: View {
                 Text(Loc.f("✦ %@ suggested for %@", Loc.n("%lld STRIDE threat", "%lld STRIDE threats", s.count), name))
                     .font(.chrome(13, weight: .semibold)).foregroundStyle(teal)
                 HStack(spacing: 6) {
-                    Text(s.map(\.0.name).joined(separator: " · ")).font(.chrome(12))
+                    Text(s.map { Loc.t($0.0.name) }.joined(separator: " · ")).font(.chrome(12))
                     Keycap(text: "⌃⇧↩")
                     Text("accept all").font(.chrome(12)).foregroundStyle(.secondary)
                 }
@@ -463,7 +463,7 @@ struct ThreatTableView: View {
                 HStack {
                     Text("Threat table").font(.chrome(14, weight: .semibold))
                     Picker("", selection: $filter) {
-                        ForEach(["All"] + Stride.statuses, id: \.self) { Text($0) }
+                        ForEach(["All"] + Stride.statuses, id: \.self) { Text(Loc.t($0)) }  // tags stay English
                     }
                     .labelsHidden()
                     .frame(width: 120)
@@ -483,10 +483,10 @@ struct ThreatTableView: View {
                 Table(rows) {
                     TableColumn("ID", value: \.id).width(52)
                     TableColumn("Element", value: \.elementName)
-                    TableColumn("STRIDE") { Text($0.category?.name ?? "—") }
+                    TableColumn("STRIDE") { Text($0.category.map { Loc.t($0.name) } ?? "—") }
                     TableColumn("Threat", value: \.title)
                     TableColumn("Risk") { t in
-                        Text(t.risk)
+                        Text(Loc.t(t.risk))
                             .font(.chrome(11, weight: .bold, design: .monospaced))
                             .padding(.horizontal, 5)
                             .background(
@@ -497,7 +497,7 @@ struct ThreatTableView: View {
                     }
                     .width(60)
                     TableColumn("Mitigation") { Text($0.mitigation ?? "—") }
-                    TableColumn("Status", value: \.status).width(80)
+                    TableColumn("Status") { Text(Loc.t($0.status)) }.width(80)
                 }
                 .frame(height: 200)
             }
@@ -531,9 +531,15 @@ struct IconLibraryView: View {
                 TextField("Search icons", text: $query).textFieldStyle(.roundedBorder)
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
-                        ForEach(["Data", "Compute", "Network", "Clients", "Security", "Diagram"], id: \.self) { cat in
+                        ForEach(
+                            [
+                                ("Data", Loc.t("Data")), ("Compute", Loc.t("Compute")), ("Network", Loc.t("Network")),
+                                ("Clients", Loc.t("Clients")), ("Security", Loc.t("Security")),
+                                ("Diagram", Loc.t("Diagram")),
+                            ], id: \.0
+                        ) { cat, title in
                             if let items = groups[cat] {
-                                Text(cat.uppercased()).font(.chrome(11, weight: .semibold)).foregroundStyle(
+                                Text(title.uppercased()).font(.chrome(11, weight: .semibold)).foregroundStyle(
                                     .secondary)
                                 LazyVGrid(
                                     columns: Array(repeating: GridItem(.fixed(62), spacing: 6), count: 4), spacing: 6
@@ -544,14 +550,14 @@ struct IconLibraryView: View {
                                         } label: {
                                             VStack(spacing: 4) {
                                                 IconGlyph(icon: info.icon ?? info.slug).frame(width: 22, height: 22)
-                                                Text(info.name).font(.chrome(10)).lineLimit(1)
+                                                Text(Loc.t(info.name)).font(.chrome(10)).lineLimit(1)
                                             }
                                             .frame(width: 62, height: 58)
                                             .background(RoundedRectangle(cornerRadius: 8).stroke(.separator))
                                         }
                                         .buttonStyle(.plain)
                                         .help("/\(info.slug)")
-                                        .accessibilityLabel(info.name)
+                                        .accessibilityLabel(Loc.t(info.name))
                                     }
                                 }
                                 .accessibilityElement(children: .contain)

@@ -103,28 +103,29 @@ public struct HomeView: View {
 
     static let accent = Color(hex: "#5850EC")
     public static let newTypes: [(DiagramType, String)] = [
-        (.mindmap, "Mind Map"), (.flowchart, "Flowchart"), (.dfd, "Data Flow"), (.architecture, "Architecture"),
-        (.threatModel, "Threat Model"), (.sequence, "Sequence"), (.whiteboard, "Whiteboard"),
+        (.mindmap, Loc.t("Mind Map")), (.flowchart, Loc.t("Flowchart")), (.dfd, Loc.t("Data Flow")),
+        (.architecture, Loc.t("Architecture")),
+        (.threatModel, Loc.t("Threat Model")), (.sequence, Loc.t("Sequence")), (.whiteboard, Loc.t("Whiteboard")),
     ]
 
     public static func typeName(_ t: DiagramType) -> String {
         switch t {
-        case .mindmap: "Mind Map"
-        case .flowchart: "Flowchart"
-        case .dfd: "Data Flow"
-        case .architecture: "Architecture"
-        case .threatModel: "Threat Model"
-        case .sequence: "Sequence"
-        case .whiteboard: "Whiteboard"
-        case .timeline: "Timeline"
-        case .org: "Org Chart"
-        case .logic: "Logic Chart"
-        case .fishbone: "Fishbone"
-        case .matrix: "Matrix"
-        case .treeTable: "Tree Table"
-        case .tree: "Tree"
-        case .brace: "Brace"
-        case .swimlane: "Swimlane"
+        case .mindmap: Loc.t("Mind Map")
+        case .flowchart: Loc.t("Flowchart")
+        case .dfd: Loc.t("Data Flow")
+        case .architecture: Loc.t("Architecture")
+        case .threatModel: Loc.t("Threat Model")
+        case .sequence: Loc.t("Sequence")
+        case .whiteboard: Loc.t("Whiteboard")
+        case .timeline: Loc.t("Timeline")
+        case .org: Loc.t("Org Chart")
+        case .logic: Loc.t("Logic Chart")
+        case .fishbone: Loc.t("Fishbone")
+        case .matrix: Loc.t("Matrix")
+        case .treeTable: Loc.t("Tree Table")
+        case .tree: Loc.t("Tree")
+        case .brace: Loc.t("Brace")
+        case .swimlane: Loc.t("Swimlane")
         default: t.rawValue.capitalized
         }
     }
@@ -141,7 +142,7 @@ public struct HomeView: View {
 
     var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
-        return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"
+        return h < 12 ? Loc.t("Good morning") : h < 18 ? Loc.t("Good afternoon") : Loc.t("Good evening")
     }
 
     public var body: some View {
@@ -158,7 +159,7 @@ public struct HomeView: View {
                     } else if model.section == "templates" {
                         ForEach(MapTemplate.Category.allCases, id: \.self) { cat in
                             VStack(alignment: .leading, spacing: 10) {
-                                Text(cat.rawValue).font(.chrome(16, weight: .semibold))
+                                Text(cat.title).font(.chrome(16, weight: .semibold))
                                 templateRow(TemplateLibrary.shelf(cat))
                             }
                         }
@@ -172,7 +173,8 @@ public struct HomeView: View {
                 .padding(.vertical, 26)
             }
             .accessibilityLabel(
-                Loc.t(model.section == "recents" ? "Recents" : model.section == "templates" ? "Templates" : "Home")
+                model.section == "recents"
+                    ? Loc.t("Recents") : model.section == "templates" ? Loc.t("Templates") : Loc.t("Home")
             )
             .overlay(alignment: .bottomTrailing) {
                 if model.tourMap != nil && model.section == "home" { emptyState.padding(24) }
@@ -199,9 +201,9 @@ public struct HomeView: View {
 
     var sidebar: some View {
         VStack(alignment: .leading, spacing: 2) {
-            sideItem("home", "Home")
-            sideItem("recents", "Recents")
-            sideItem("templates", "Templates")
+            sideItem("home", Loc.t("Home"))
+            sideItem("recents", Loc.t("Recents"))
+            sideItem("templates", Loc.t("Templates"))
             Button {
                 model.onInbox()
             } label: {
@@ -225,7 +227,7 @@ public struct HomeView: View {
                 }
             }
             if !model.savedFilters.isEmpty {
-                sideHeader("SAVED FILTERS")
+                sideHeader(Loc.t("SAVED FILTERS"))
                 ForEach(Array(model.savedFilters.enumerated()), id: \.offset) { _, f in
                     Button(f.1) { model.onFilter(f.0, f.1) }.buttonStyle(.plain).font(.chrome(13.5))
                         .padding(.horizontal, 10).frame(height: 30, alignment: .leading)
@@ -234,7 +236,7 @@ public struct HomeView: View {
             Spacer()
             HStack(spacing: 8) {
                 Circle().fill(model.aiStatus.canRun ? Color.teal : Color.orange).frame(width: 7, height: 7)
-                Text(model.aiStatus.canRun ? "On-device AI ready" : model.aiStatus.chip).font(.chrome(13))
+                Text(model.aiStatus.canRun ? Loc.t("On-device AI ready") : model.aiStatus.chip).font(.chrome(13))
                     .foregroundStyle(.secondary)
             }
             .padding(10)
@@ -247,7 +249,7 @@ public struct HomeView: View {
     static func prettyPath(_ u: URL) -> String {
         let p = u.path
         if p.contains("Mobile Documents/com~apple~CloudDocs") {
-            return "iCloud Drive › "
+            return Loc.t("iCloud Drive › ")
                 + (p.components(separatedBy: "com~apple~CloudDocs/").last ?? "").replacingOccurrences(
                     of: "/", with: " › ")
         }
@@ -281,8 +283,11 @@ public struct HomeView: View {
 
     var header: some View {
         HStack {
-            Text(model.section == "recents" ? "Recents" : model.section == "templates" ? "Templates" : greeting)
-                .font(.chrome(27, weight: .bold))
+            Text(
+                model.section == "recents"
+                    ? Loc.t("Recents") : model.section == "templates" ? Loc.t("Templates") : greeting
+            )
+            .font(.chrome(27, weight: .bold))
             Spacer()
             TextField("Search maps and nodes", text: $model.query).textFieldStyle(.roundedBorder).controlSize(.large)
                 .font(.chrome(13))
@@ -426,7 +431,7 @@ public struct HomeView: View {
             HStack(spacing: 8) {
                 Text(model.role.shelfTitle).font(.chrome(16, weight: .semibold)).padding(.trailing, 8)
                 ForEach(MapTemplate.Category.allCases, id: \.self) { cat in
-                    Button(cat.rawValue) { model.shelf = cat }
+                    Button(cat.title) { model.shelf = cat }
                         .buttonStyle(.plain)
                         .font(.chrome(13, weight: model.shelf == cat ? .semibold : .regular))
                         .foregroundStyle(model.shelf == cat ? Color.white : .primary)

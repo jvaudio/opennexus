@@ -55,7 +55,7 @@ extension CanvasController {
         for info in DiagramCatalog.nodeTypes(for: type) {
             out.append(
                 SlashItem(
-                    title: info.name, slug: info.slug, section: type.displayName, icon: info.icon,
+                    title: Loc.t(info.name), slug: info.slug, section: Loc.t(type.displayName), icon: info.icon,
                     glyph: String(info.name.prefix(1)), action: .nodeType(info.id)))
         }
         if type != .architecture {
@@ -63,21 +63,24 @@ extension CanvasController {
             for info in DiagramCatalog.icons where !out.contains(where: { $0.slug == info.slug }) {
                 out.append(
                     SlashItem(
-                        title: info.name, slug: info.slug, section: "Icons", icon: info.icon, glyph: "",
+                        title: Loc.t(info.name), slug: info.slug, section: Loc.t("Icons"), icon: info.icon, glyph: "",
                         action: .nodeType(info.id)))
             }
         }
         let content: [(String, String, String, SlashAction)] = [
-            ("Equation", "math", "∑", .textFormat("math")), ("Code block", "code", "{}", .textFormat("code")),
-            ("Plain text", "text", "T", .textFormat("plain")), ("To-do", "todo", "☐", .todo),
-            ("Note", "note", "≡", .note), ("Link", "link", "↗", .link), ("Image", "image", "▣", .image),
-            ("Audio note", "audio", "♪", .audio), ("Sticker", "sticker", "☺", .sticker),
-            ("Label", "label", "#", .label),
-            ("Boundary", "boundary", "▢", .boundary), ("Summary", "summary", "}", .summary),
-            ("Callout", "callout", "💬", .callout), ("Zone", "zone", "▭", .zone),
+            (Loc.t("Equation"), "math", "∑", .textFormat("math")),
+            (Loc.t("Code block"), "code", "{}", .textFormat("code")),
+            (Loc.t("Plain text"), "text", "T", .textFormat("plain")), ("To-do", "todo", "☐", .todo),
+            (Loc.t("Note"), "note", "≡", .note), (Loc.t("Link"), "link", "↗", .link),
+            (Loc.t("Image"), "image", "▣", .image),
+            (Loc.t("Audio note"), "audio", "♪", .audio), (Loc.t("Sticker"), "sticker", "☺", .sticker),
+            (Loc.t("Label"), "label", "#", .label),
+            (Loc.t("Boundary"), "boundary", "▢", .boundary), (Loc.t("Summary"), "summary", "}", .summary),
+            (Loc.t("Callout"), "callout", "💬", .callout), (Loc.t("Zone"), "zone", "▭", .zone),
         ]
         for (title, slug, glyph, action) in content {
-            out.append(SlashItem(title: title, slug: slug, section: "Insert", icon: nil, glyph: glyph, action: action))
+            out.append(
+                SlashItem(title: title, slug: slug, section: Loc.t("Insert"), icon: nil, glyph: glyph, action: action))
         }
         return out
     }
@@ -178,9 +181,9 @@ extension CanvasController {
         }
         switch item.action {
         case .nodeType(let t):
-            perform("Node Type") { $0.update(id) { $0.nodeType = t } }
+            perform(Loc.t("Node Type")) { $0.update(id) { $0.nodeType = t } }
         case .textFormat(let f):
-            perform(f == "math" ? "Equation" : f == "code" ? "Code Block" : "Plain Text") {
+            perform(f == "math" ? Loc.t("Equation") : f == "code" ? Loc.t("Code Block") : Loc.t("Plain Text")) {
                 $0.update(id) { $0.textFormat = f == "plain" ? nil : f }
             }
         case .todo: perform("To-do") { $0.update(id) { $0.todo = $0.todo == nil ? Todo(done: false) : nil } }
@@ -323,8 +326,8 @@ extension CanvasController {
     /// One undoable step; the view morphs over 600 ms (artboard 10).
     public func performConvert(_ t: DiagramType, nodeTypes: [NodeID: NodeType]) {
         morphSerial += 1
-        perform(Loc.f("Convert to %@", t.displayName)) { $0.convert(to: t, nodeTypes: nodeTypes) }
-        showToast(Loc.f("Converted to %@ · ⌘Z returns", t.displayName))
+        perform(Loc.f("Convert to %@", Loc.t(t.displayName))) { $0.convert(to: t, nodeTypes: nodeTypes) }
+        showToast(Loc.f("Converted to %@ · ⌘Z returns", Loc.t(t.displayName)))
         onReveal?(selection.primary)
     }
 
@@ -355,7 +358,7 @@ extension CanvasController {
             let label = count == 0 ? "Yes" : count == 1 ? "No" : ""
             guard
                 let child = perform(
-                    "Add Branch", selectionAfter: { Selection($0) },
+                    Loc.t("Add Branch"), selectionAfter: { Selection($0) },
                     { e -> NodeID in
                         let n = try e.addChild(of: id)
                         e.update(n) {
@@ -389,7 +392,7 @@ extension CanvasController {
         guard c.type == .swimlane, !c.diagram.lanes.isEmpty else { return }
         let lanes = c.diagram.lanes
         let ids = selection.nodes
-        perform("Move to Lane") { e in
+        perform(Loc.t("Move to Lane")) { e in
             for id in ids {
                 // Effective lane: own, else inherited.
                 var cur: NodeID? = id
@@ -533,7 +536,7 @@ extension CanvasController {
     }
 
     public func applyFix(_ fix: DFDRules.Fix, violation: String) {
-        let next = perform(fix == .ignore ? "Ignore Rule" : "Fix Flow") { e -> NodeID? in
+        let next = perform(fix == .ignore ? Loc.t("Ignore Rule") : Loc.t("Fix Flow")) { e -> NodeID? in
             try e.apply(fix, violation: violation)
         }
         focusedViolation = nil
@@ -588,7 +591,7 @@ extension CanvasController {
         }
         // The level canvas and the process's link to it are one undo step.
         let here = canvasID
-        store.commitDocument("Drill Into Process", focus: here) { d in
+        store.commitDocument(Loc.t("Drill Into Process"), focus: here) { d in
             d.canvases[level.id] = level
             d.canvasOrder.append(level.id)
             d.canvases[here]?.nodes[id]?.subCanvas = newID
@@ -626,7 +629,9 @@ extension CanvasController {
 
     public func acceptStride(_ s: Stride, _ title: String, _ risk: String, on element: NodeID? = nil) {
         let target = element ?? selection.primary
-        perform("Add Threat") { try $0.addThreat(on: target, category: s, title: title, risk: risk, suggested: true) }
+        perform(Loc.t("Add Threat")) {
+            try $0.addThreat(on: target, category: s, title: title, risk: risk, suggested: true)
+        }
     }
 
     /// ⌃⇧↩ on a threat-model element: accept every suggestion.
@@ -634,7 +639,7 @@ extension CanvasController {
         let all = strideSuggestionsForSelection
         guard !all.isEmpty else { return false }
         let target = selection.primary
-        perform("Accept Suggested Threats") { e in
+        perform(Loc.t("Accept Suggested Threats")) { e in
             for (s, t, r) in all { try e.addThreat(on: target, category: s, title: t, risk: r, suggested: true) }
         }
         showToast(Loc.n("%lld STRIDE threat added", "%lld STRIDE threats added", all.count))
@@ -646,7 +651,7 @@ extension CanvasController {
         let g = FlowGraph(canvas)
         var added = 0
         let c = canvas
-        perform("Suggest STRIDE Threats") { e in
+        perform(Loc.t("Suggest STRIDE Threats")) { e in
             for id in g.elements where [.process, .store, .entity].contains(g.types[id] ?? "") {
                 for (s, t, r) in Stride.suggestions(for: id, in: c) {
                     try e.addThreat(on: id, category: s, title: t, risk: r, suggested: true)
@@ -661,11 +666,11 @@ extension CanvasController {
     }
 
     public func setThreatField(_ id: NodeID, _ key: String, _ value: String) {
-        perform("Threat") { $0.setThreatField(id, key, value) }
+        perform(Loc.t("Threat")) { $0.setThreatField(id, key, value) }
     }
 
     public func toggleColorByRisk() {
-        perform("Colour by Risk") { $0.updateMeta { $0.diagram.colorByRisk.toggle() } }
+        perform(Loc.t("Colour by Risk")) { $0.updateMeta { $0.diagram.colorByRisk.toggle() } }
     }
 
     public var threats: [Stride.Threat] { Stride.threats(canvas) }
@@ -688,7 +693,7 @@ extension CanvasController {
         let label = canvas.type == .architecture ? DiagramCatalog.defaultProtocol(for: info.id) : nil
         let c = canvas
         if let id = perform(
-            Loc.f("Insert %@", info.name), selectionAfter: { Selection($0) },
+            Loc.f("Insert %@", Loc.t(info.name)), selectionAfter: { Selection($0) },
             { e -> NodeID in
                 let n = try e.addChild(of: parent, text: info.name.lowercased())
                 e.update(n) {

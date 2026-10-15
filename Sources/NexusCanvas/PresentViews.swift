@@ -59,29 +59,30 @@ struct SlideStripView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 Text("Transition").font(.chrome(12.5)).foregroundStyle(.secondary)
-                ForEach([("glide", "Glide"), ("zoom", "Zoom"), ("cut", "Cut")], id: \.0) { id, title in
+                ForEach([("glide", Loc.t("Glide")), ("zoom", Loc.t("Zoom")), ("cut", Loc.t("Cut"))], id: \.0) {
+                    id, title in
                     chip(title, on: settings.transition == id) {
-                        controller.setPresentation("Transition") { $0.transition = id }
+                        controller.setPresentation(Loc.t("Transition")) { $0.transition = id }
                     }
                 }
                 if DiagramCatalog.isTechnical(controller.canvas.type) {
-                    chip("Step through flow" + (settings.stepThroughFlow ? " ✓" : ""), on: false) {
-                        controller.setPresentation("Step Through Flow") { $0.stepThroughFlow.toggle() }
+                    chip(Loc.t("Step through flow") + (settings.stepThroughFlow ? " ✓" : ""), on: false) {
+                        controller.setPresentation(Loc.t("Step Through Flow")) { $0.stepThroughFlow.toggle() }
                     }
                 }
                 Menu(settings.aspect) {
                     ForEach(["16:9", "16:10", "4:3", "1:1"], id: \.self) { a in
-                        Button(a) { controller.setPresentation("Aspect") { $0.aspect = a } }
+                        Button(a) { controller.setPresentation(Loc.t("Aspect")) { $0.aspect = a } }
                     }
                 }
                 .fixedSize()
                 Menu(settings.theme.capitalized) {
                     ForEach(["canvas", "dark", "light"], id: \.self) { t in
-                        Button(t.capitalized) { controller.setPresentation("Slide Theme") { $0.theme = t } }
+                        Button(t.capitalized) { controller.setPresentation(Loc.t("Slide Theme")) { $0.theme = t } }
                     }
                 }
                 .fixedSize()
-                chip("? keys", on: state.showKeys) { controller.present?.showKeys.toggle() }
+                chip(Loc.t("? keys"), on: state.showKeys) { controller.present?.showKeys.toggle() }
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -91,7 +92,7 @@ struct SlideStripView: View {
                             .draggable(s.id)
                             .dropDestination(for: String.self) { ids, _ in
                                 guard let moved = ids.first else { return false }
-                                controller.perform("Reorder Slides") {
+                                controller.perform(Loc.t("Reorder Slides")) {
                                     $0.moveSlide(moved, to: i, in: slides.map(\.id))
                                 }
                                 return true
@@ -101,16 +102,16 @@ struct SlideStripView: View {
             }
             .accessibilityLabel(Loc.t("Slides"))
             HStack(spacing: 14) {
-                key("→", "next step")
+                key("→", Loc.t("next step"))
                 key("S", "skip")
-                key("M", "merge with next")
-                key("H", "hide topic from slides")
-                key("F", "stage only")
+                key("M", Loc.t("merge with next"))
+                key("H", Loc.t("hide topic from slides"))
+                key("F", Loc.t("stage only"))
                 key("esc", "end")
                 Spacer()
                 Text("Export:").foregroundStyle(.secondary)
                 ForEach(["PDF", "PowerPoint", "Keynote", "Video"], id: \.self) { f in
-                    Button(f) { controller.onExportSlides?(f) }.buttonStyle(.plain)
+                    Button(f == "Video" ? Loc.t("Video") : f) { controller.onExportSlides?(f) }.buttonStyle(.plain)
                 }
             }
             .font(.chrome(12.5))
@@ -153,7 +154,7 @@ struct SlideStripView: View {
                     RoundedRectangle(cornerRadius: 8).stroke(
                         i == state.index ? Color.accentColor : Color.secondary.opacity(0.25),
                         lineWidth: i == state.index ? 2 : 1))
-            Text(s.title + (s.skipped ? " · skipped" : ""))
+            Text(s.title + (s.skipped ? Loc.t(" · skipped") : ""))
                 .font(.chrome(12))
                 .lineLimit(1)
                 .frame(width: 170, alignment: .leading)
@@ -201,10 +202,12 @@ struct PresentKeysView: View {
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
                 ForEach(
                     [
-                        ("→ / Space", "Next step"), ("←", "Previous step"), ("S", "Skip this slide"),
-                        ("M", "Merge with the next slide"), ("H", "Hide the topic from slides"),
-                        ("F", "Stage only (hide the strip)"), ("P", "Presenter view"), ("?", "This list"),
-                        ("esc", "End"),
+                        (Loc.t("→ / Space"), Loc.t("Next step")), ("←", Loc.t("Previous step")),
+                        ("S", Loc.t("Skip this slide")),
+                        ("M", Loc.t("Merge with the next slide")), ("H", Loc.t("Hide the topic from slides")),
+                        ("F", Loc.t("Stage only (hide the strip)")), ("P", Loc.t("Presenter view")),
+                        ("?", Loc.t("This list")),
+                        ("esc", Loc.t("End")),
                     ], id: \.0
                 ) { k, v in
                     GridRow {
@@ -251,11 +254,11 @@ public struct PresenterView: View {
                     }
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Next").foregroundStyle(.secondary)
-                        Text(next?.title ?? "End of deck").font(.chrome(15))
+                        Text(next?.title ?? Loc.t("End of deck")).font(.chrome(15))
                     }
                 }
                 ScrollView {
-                    Text(current?.note ?? "No note on this slide's topic.")
+                    Text(current?.note ?? Loc.t("No note on this slide's topic."))
                         .font(.chrome(16))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }

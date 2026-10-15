@@ -48,7 +48,8 @@ public struct SettingsView: View {
                     if let h { withAnimation(UIMotion.animation(.default)) { proxy.scrollTo(h, anchor: .center) } }
                 }
                 .accessibilityLabel(
-                    query.isEmpty ? Loc.t(SettingsSchema.pane(pane)?.title ?? "Shortcuts") : Loc.t("Search results"))
+                    query.isEmpty
+                        ? Loc.t(SettingsSchema.pane(pane)?.title ?? Loc.t("Shortcuts")) : Loc.t("Search results"))
             }
             .background(Color(nsColor: .windowBackgroundColor))
         }

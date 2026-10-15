@@ -9,11 +9,12 @@ struct AISettingsPane: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             modelRow(
-                selected: true, title: "Apple on-device model", badge: "Default",
-                detail: "Foundation Models framework. Text and images, tool calling for diagram actions. No download.",
+                selected: true, title: Loc.t("Apple on-device model"), badge: Loc.t("Default"),
+                detail: Loc.t(
+                    "Foundation Models framework. Text and images, tool calling for diagram actions. No download."),
                 status: availability)
             modelRow(
-                selected: false, title: "Local model via MLX / Core AI", badge: nil,
+                selected: false, title: Loc.t("Local model via MLX / Core AI"), badge: nil,
                 detail:
                     "Bring an open-weights model. Stored in ~/Library/Application Support/OpenNexus/Models. Arrives in a later release.",
                 status: nil
@@ -27,9 +28,11 @@ struct AISettingsPane: View {
             }
             .opacity(0.55)
             modelRow(
-                selected: false, title: "Local server on this Mac", badge: nil,
+                selected: false, title: Loc.t("Local server on this Mac"), badge: nil,
                 detail:
-                    "An OpenAI-compatible endpoint on localhost, such as Ollama or LM Studio. Needs a network permission OpenNexus doesn’t request in v1.",
+                    Loc.t(
+                        "An OpenAI-compatible endpoint on localhost, such as Ollama or LM Studio. Needs a network permission OpenNexus doesn’t request in v1."
+                    ),
                 status: nil
             ) {
                 HStack(spacing: 10) {
@@ -71,7 +74,8 @@ struct AISettingsPane: View {
                         status.canRun
                             ? "ready"
                             : status == .off
-                                ? "Apple Intelligence off" : status == .downloading ? "downloading" : "unavailable"
+                                ? Loc.t("Apple Intelligence off")
+                                : status == .downloading ? Loc.t("downloading") : Loc.t("unavailable")
                     )
                     .font(.chrome(13, design: .monospaced))
                     .foregroundStyle(status.canRun ? Color.green : .orange)

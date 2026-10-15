@@ -20,8 +20,8 @@ extension CanvasController {
             .addChild: { c in if !c.techAddChild() { c.addChild() } },
             .slashMenu: { $0.openSlash() },
             .outlineSibling: { $0.addSibling(before: false) },
-            .outlineIndent: { c in c.restructure("Indent") { try $0.demote(c.selection.primary) } },
-            .outlineOutdent: { c in c.restructure("Outdent") { try $0.promote(c.selection.primary) } },
+            .outlineIndent: { c in c.restructure(Loc.t("Indent")) { try $0.demote(c.selection.primary) } },
+            .outlineOutdent: { c in c.restructure(Loc.t("Outdent")) { try $0.promote(c.selection.primary) } },
             .outlinePrevious: { $0.stepOutline(-1) },
             .outlineNext: { $0.stepOutline(1) },
             .outlineCollapse: { $0.outlineCollapse() },
@@ -100,14 +100,14 @@ extension CanvasController {
             .selectChildren: { $0.selectChildren() },
             .selectAll: { $0.selectAll() },
             .collapseSelection: { $0.setSelection(Selection($0.selection.primary)) },
-            .moveUp: { c in c.restructure("Move Up") { try $0.reorder(c.selection.primary, by: -1) } },
-            .moveDown: { c in c.restructure("Move Down") { try $0.reorder(c.selection.primary, by: 1) } },
-            .promote: { c in c.restructure("Promote") { try $0.promote(c.selection.primary) } },
-            .demote: { c in c.restructure("Demote") { try $0.demote(c.selection.primary) } },
+            .moveUp: { c in c.restructure(Loc.t("Move Up")) { try $0.reorder(c.selection.primary, by: -1) } },
+            .moveDown: { c in c.restructure(Loc.t("Move Down")) { try $0.reorder(c.selection.primary, by: 1) } },
+            .promote: { c in c.restructure(Loc.t("Promote")) { try $0.promote(c.selection.primary) } },
+            .demote: { c in c.restructure(Loc.t("Demote")) { try $0.demote(c.selection.primary) } },
             .delete: { $0.deleteSelection(keepChildren: false) },
             .deleteKeepChildren: { $0.deleteSelection(keepChildren: true) },
-            .fold: { c in c.restructure("Fold") { try $0.toggleFold(c.selection.primary) } },
-            .foldAll: { c in c.restructure("Fold All") { try $0.toggleFoldAll() } },
+            .fold: { c in c.restructure(Loc.t("Fold")) { try $0.toggleFold(c.selection.primary) } },
+            .foldAll: { c in c.restructure(Loc.t("Fold All")) { try $0.toggleFoldAll() } },
             .toggleTodo: { $0.toggleMarker(0) },
             .smartColor: { $0.reshuffleColors() },
             .cycleNodeStyle: { $0.cycleNodeStyle() },
@@ -153,7 +153,7 @@ extension CanvasController {
             },
             .commitAndPromote: { c in
                 c.commitEdit()
-                c.restructure("Promote") { try $0.promote(c.selection.primary) }
+                c.restructure(Loc.t("Promote")) { try $0.promote(c.selection.primary) }
             },
             .commitAndAddParent: { c in
                 c.commitEdit()
@@ -239,22 +239,22 @@ extension CanvasController {
 
     public func addChild() {
         let target = selection.primary
-        create("Add Topic") { try $0.addChild(of: target) }
+        create(Loc.t("Add Topic")) { try $0.addChild(of: target) }
     }
 
     public func addSibling(before: Bool) {
         let target = selection.primary
-        create("Add Topic") { try $0.addSibling(of: target, before: before) }
+        create(Loc.t("Add Topic")) { try $0.addSibling(of: target, before: before) }
     }
 
     public func addParent() {
         let target = selection.primary
-        create("Add Parent Topic") { try $0.addParent(of: target) }
+        create(Loc.t("Add Parent Topic")) { try $0.addParent(of: target) }
     }
 
     public func addFloating(at point: CGPoint?) {
         let p = point ?? floatingPlacement?() ?? defaultFloatingPoint()
-        create("Add Floating Topic") { $0.addFloating(at: CanvasPoint(x: p.x, y: p.y)) }
+        create(Loc.t("Add Floating Topic")) { $0.addFloating(at: CanvasPoint(x: p.x, y: p.y)) }
     }
 
     private func defaultFloatingPoint() -> CGPoint {
@@ -265,7 +265,7 @@ extension CanvasController {
 
     func duplicateBranch() {
         let target = selection.primary
-        perform("Duplicate", selectionAfter: { Selection($0) }) { try $0.duplicate(target) }
+        perform(Loc.t("Duplicate"), selectionAfter: { Selection($0) }) { try $0.duplicate(target) }
         onReveal?(selection.primary)
     }
 
@@ -280,9 +280,9 @@ extension CanvasController {
         let targets = selection.nodes
         if keepChildren {
             let target = selection.primary
-            perform("Delete", selectionAfter: { Selection($0) }) { try $0.deleteKeepingChildren(target) }
+            perform(Loc.t("Delete"), selectionAfter: { Selection($0) }) { try $0.deleteKeepingChildren(target) }
         } else {
-            perform("Delete", selectionAfter: { Selection($0) }) { try $0.delete(targets) }
+            perform(Loc.t("Delete"), selectionAfter: { Selection($0) }) { try $0.delete(targets) }
         }
         onReveal?(selection.primary)
     }
@@ -296,11 +296,11 @@ extension CanvasController {
 
     public func setTheme(_ id: String) {
         guard canvas.style.theme != id else { return }
-        perform("Change Theme") { e in e.updateMeta { $0.style.theme = id } }
+        perform(Loc.t("Change Theme")) { e in e.updateMeta { $0.style.theme = id } }
     }
 
     func reshuffleColors() {
-        perform("Smart Color") { e in e.updateMeta { $0.style.paletteShift += 1 } }
+        perform(Loc.t("Smart Color")) { e in e.updateMeta { $0.style.paletteShift += 1 } }
         showToast(Loc.t("Smart color reshuffled"))
     }
 
@@ -310,7 +310,7 @@ extension CanvasController {
         let root = canvas.root
         let technical = DiagramCatalog.isTechnical(canvas.type)
         morphSerial += 1
-        perform("Change Structure") { e in
+        perform(Loc.t("Change Structure")) { e in
             if target == root {
                 // The central topic's structure is the canvas's type (Mind Map ⌥⌘T in the toolbar).
                 if technical {
@@ -352,7 +352,7 @@ extension CanvasController {
     func selectChildren() {
         guard let kids = canvas.nodes[selection.primary]?.children, let first = kids.first else { return }
         if canvas.nodes[selection.primary]?.folded == true {
-            restructure("Unfold") { [primary = selection.primary] in try $0.toggleFold(primary) }
+            restructure(Loc.t("Unfold")) { [primary = selection.primary] in try $0.toggleFold(primary) }
         }
         setSelection(Selection(primary: first, nodes: kids))
     }

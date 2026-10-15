@@ -20,6 +20,6 @@ final class ImportExtension: CSImportExtension {
         attributes.keywords = text.keywords
         attributes.kind = "OpenNexus Document"
         attributes.contentDescription =
-            "\(doc.orderedCanvases.map(\.title).filter { !$0.isEmpty }.joined(separator: " · ")) · \(doc.topicCount) \(doc.topicCount == 1 ? "topic" : "topics")"
+            "\(doc.orderedCanvases.map(\.title).filter { !$0.isEmpty }.joined(separator: " · ")) · \(CoreText.n("%lld topic", "%lld topics", doc.topicCount))"
     }
 }

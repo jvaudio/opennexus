@@ -263,7 +263,8 @@ struct AIPanelView: View {
                         Circle().fill(controller.aiAvailability.canRun ? Color.green : .secondary).frame(
                             width: 7, height: 7)
                         Text(
-                            controller.aiAvailability.canRun ? "Apple on-device model" : controller.aiAvailability.chip)
+                            controller.aiAvailability.canRun
+                                ? Loc.t("Apple on-device model") : controller.aiAvailability.chip)
                         Spacer()
                         Text("Nothing leaves this Mac")
                     }
@@ -344,7 +345,7 @@ struct AIPanelView: View {
                 if applied {
                     Text("Applied · ⌘Z undoes").font(.chrome(12.5)).foregroundStyle(.secondary)
                 } else {
-                    Button(controller.previewPlan == plan ? "Hide preview" : "Preview on canvas") {
+                    Button(controller.previewPlan == plan ? Loc.t("Hide preview") : Loc.t("Preview on canvas")) {
                         controller.previewPlan(plan)
                     }
                     .buttonStyle(AIButtonStyle())
@@ -363,7 +364,7 @@ struct AIPanelView: View {
             Text("ACTIONS · ALSO IN ⌘K").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.secondary)
             FlowLayout(spacing: 6) {
                 ForEach(AIAction.panel, id: \.self) { a in
-                    Button(a.title == "Rewrite shorter" ? "Rewrite" : a.title) { controller.runAction(a) }
+                    Button(a.title == "Rewrite shorter" ? Loc.t("Rewrite") : a.title) { controller.runAction(a) }
                         .buttonStyle(.plain)
                         .font(.chrome(13))
                         .padding(.horizontal, 12)
@@ -463,7 +464,9 @@ struct TranslateSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            SheetHeader(title: "Translate map", hint: "⌘K › Translate", framework: "Translation framework") {
+            SheetHeader(
+                title: Loc.t("Translate map"), hint: Loc.t("⌘K › Translate"), framework: Loc.t("Translation framework")
+            ) {
                 controller.closeAISheet()
             }
             HStack {
@@ -555,7 +558,7 @@ struct MaskSheet: View {
     var body: some View {
         let hits = controller.maskHits
         VStack(alignment: .leading, spacing: 12) {
-            SheetHeader(title: "Data masking", hint: "⌘K › Mask", framework: "Natural Language") {
+            SheetHeader(title: Loc.t("Data masking"), hint: Loc.t("⌘K › Mask"), framework: Loc.t("Natural Language")) {
                 controller.closeAISheet()
             }
             if let h = hits.first(where: { !excluded.contains($0.id) }) { maskPreview(h) }
@@ -630,7 +633,8 @@ struct RemoveBackgroundSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            SheetHeader(title: "Remove background", hint: "right-click image", framework: "Vision") {
+            SheetHeader(title: Loc.t("Remove background"), hint: Loc.t("right-click image"), framework: Loc.t("Vision"))
+            {
                 controller.closeAISheet()
             }
             if let asset = controller.canvas.nodes[node]?.image?.asset, let data = controller.store.model.assets[asset],
@@ -672,7 +676,10 @@ struct StickerSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            SheetHeader(title: "Make a sticker", hint: "right-click › Make Image", framework: "Image Playground") {
+            SheetHeader(
+                title: Loc.t("Make a sticker"), hint: Loc.t("right-click › Make Image"),
+                framework: Loc.t("Image Playground")
+            ) {
                 controller.closeAISheet()
             }
             TextField("Describe the sticker", text: $prompt)
@@ -707,7 +714,9 @@ struct StickerSheet: View {
             .font(.chrome(12)).foregroundStyle(.secondary)
             HStack {
                 Spacer()
-                Button(images.isEmpty ? "Make" : "Make more", action: make).buttonStyle(.borderedProminent).disabled(
+                Button(images.isEmpty ? Loc.t("Make") : Loc.t("Make more"), action: make).buttonStyle(
+                    .borderedProminent
+                ).disabled(
                     busy)
             }
         }
@@ -738,7 +747,7 @@ struct RecordSheet: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            SheetHeader(title: "Record to map", hint: "⌘K › Record", framework: "SpeechAnalyzer") {
+            SheetHeader(title: Loc.t("Record to map"), hint: Loc.t("⌘K › Record"), framework: "SpeechAnalyzer") {
                 Task {
                     _ = await recorder.stop()
                     controller.closeAISheet()
@@ -753,7 +762,7 @@ struct RecordSheet: View {
                             .font(.chrome(17, weight: .semibold, design: .monospaced))
                         Spacer()
                         if running {
-                            Button(paused ? "Resume" : "Pause") {
+                            Button(paused ? Loc.t("Resume") : Loc.t("Pause")) {
                                 if paused { try? recorder.resume() } else { recorder.pause() }
                                 paused.toggle()
                             }
@@ -762,9 +771,13 @@ struct RecordSheet: View {
                             Button("Stop") { stop() }.buttonStyle(.plain)
                         }
                     }
-                    Text(text.isEmpty ? (running ? "Listening…" : "Press Record to start.") : "“…\(text.suffix(180))”")
-                        .font(.chrome(14))
-                        .frame(maxWidth: .infinity, minHeight: 60, alignment: .topLeading)
+                    Text(
+                        text.isEmpty
+                            ? (running ? Loc.t("Listening…") : Loc.t("Press Record to start."))
+                            : "“…\(text.suffix(180))”"
+                    )
+                    .font(.chrome(14))
+                    .frame(maxWidth: .infinity, minHeight: 60, alignment: .topLeading)
                 }
                 .foregroundStyle(.white)
                 .padding(16)

@@ -30,7 +30,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         controller = CanvasController(store: document.store)
         host = CanvasHostView(controller: controller)
         panel = NSHostingView(rootView: FormatPanel(controller: controller))
-        panel.setAccessibilityLabel("Format panel")
+        panel.setAccessibilityLabel(Loc.t("Format panel"))
         outline = OutlineView(controller: controller)
 
         let window = NSWindow(
@@ -46,7 +46,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         wireDiagramHooks()
 
         let tabs = NSHostingView(rootView: CanvasTabsView(store: document.store, controller: controller))
-        tabs.setAccessibilityLabel("Canvas tabs")
+        tabs.setAccessibilityLabel(Loc.t("Canvas tabs"))
         tabs.translatesAutoresizingMaskIntoConstraints = false
         host.translatesAutoresizingMaskIntoConstraints = false
         let content = NSView()
@@ -152,7 +152,8 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         NSLayoutConstraint.activate(modeConstraints[mode] ?? [])
         outline.isHidden = mode == .canvas
         host.isHidden = mode == .outline
-        window?.subtitle = mode == .split ? "Split view" : mode == .outline ? "Outline" : window?.subtitle ?? ""
+        window?.subtitle =
+            mode == .split ? Loc.t("Split view") : mode == .outline ? Loc.t("Outline") : window?.subtitle ?? ""
         if mode == .canvas { updateSubtitle() }
         (window?.toolbar?.items.first { $0.itemIdentifier == .viewSwitcher } as? NSToolbarItemGroup)?.selectedIndex =
             mode == .canvas ? 0 : mode == .outline ? 1 : 2
@@ -202,7 +203,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         let w = NSWindow(
             contentRect: CGRect(x: 0, y: 0, width: 720, height: 520), styleMask: [.titled, .resizable],
             backing: .buffered, defer: false)
-        w.title = "Presenter View"
+        w.title = Loc.t("Presenter View")
         w.contentView = NSHostingView(rootView: PresenterView(controller: controller))
         w.setFrameOrigin(CGPoint(x: other.visibleFrame.midX - 360, y: other.visibleFrame.midY - 260))
         w.level = force ? .floating : .normal
@@ -214,7 +215,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     func exportSlides(_ format: String) {
         guard let window else { return }
         let panel = NSSavePanel()
-        let base = controller.canvas.title.isEmpty ? "Slides" : controller.canvas.title
+        let base = controller.canvas.title.isEmpty ? Loc.t("Slides") : controller.canvas.title
         switch format {
         case "PDF":
             panel.allowedContentTypes = [.pdf]
@@ -296,7 +297,9 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
                 return controller.mode != .edit
             }
             if id == .pasteCanvas { return controller.canPasteCanvas }
-            if id == .setPassword { item.title = document_.cryptoKey == nil ? "Set Password…" : "Change Password…" }
+            if id == .setPassword {
+                item.title = document_.cryptoKey == nil ? Loc.t("Set Password…") : Loc.t("Change Password…")
+            }
             return Self.windowCommands.contains(id)
         }
         return true
@@ -316,7 +319,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     func addCanvas() {
         let store = document_.store
         let id = store.model.makeCanvasID()
-        store.commitDocument("New Canvas", focus: id) { d in
+        store.commitDocument(Loc.t("New Canvas"), focus: id) { d in
             var c = NexusCore.Canvas(id: id, title: "Map \(d.canvases.count + 1)")
             CanvasController.applyDefaults(&c, prefs: .shared)
             d.canvases[id] = c
@@ -343,29 +346,30 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         switch id {
         case .viewSwitcher:
             let group = NSToolbarItemGroup(
-                itemIdentifier: id, titles: ["Canvas", "Outline", "Split"], selectionMode: .selectOne,
-                labels: ["Canvas", "Outline", "Split"], target: nil, action: nil)
+                itemIdentifier: id, titles: [Loc.t("Canvas"), Loc.t("Outline"), Loc.t("Split")],
+                selectionMode: .selectOne,
+                labels: [Loc.t("Canvas"), Loc.t("Outline"), Loc.t("Split")], target: nil, action: nil)
             group.selectedIndex = 0
             group.target = self
             group.action = #selector(switchViewMode(_:))
             return group
         case .diagramType:
-            return hosted(id, label: "Diagram type", DiagramTypeButton(controller: controller))
+            return hosted(id, label: Loc.t("Diagram type"), DiagramTypeButton(controller: controller))
         case .theme:
-            return hosted(id, label: "Theme", ThemeButton(controller: controller))
+            return hosted(id, label: Loc.t("Theme"), ThemeButton(controller: controller))
         case .aiStatus:
             return hosted(id, label: "AI", AIStatusChip(controller: controller))
         case .inspector:
             let item = NSToolbarItem(itemIdentifier: id)
-            item.label = "Format"
-            item.toolTip = "Format panel (⌘I)"
-            item.image = NSImage(systemSymbolName: "sidebar.right", accessibilityDescription: "Format panel")
+            item.label = Loc.t("Format")
+            item.toolTip = Loc.t("Format panel (⌘I)")
+            item.image = NSImage(systemSymbolName: "sidebar.right", accessibilityDescription: Loc.t("Format panel"))
             item.target = self
             item.action = #selector(toggleFormatPanel)
             return item
         case .share:
             let item = NSSharingServicePickerToolbarItem(itemIdentifier: id)
-            item.label = "Share"
+            item.label = Loc.t("Share")
             return item
         default:
             return nil
@@ -401,7 +405,7 @@ struct DiagramTypeButton: View {
             controller.openConvert()
         } label: {
             HStack(spacing: 8) {
-                Text(controller.canvas.type.displayName)
+                Text(Loc.t(controller.canvas.type.displayName))
                 Text("⌥⌘T").font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
             }
         }
@@ -478,7 +482,7 @@ struct CanvasTabsView: View {
                 } label: {
                     HStack(spacing: 8) {
                         RoundedRectangle(cornerRadius: 2).fill(color(for: c.type)).frame(width: 9, height: 9)
-                        Text(c.title.isEmpty ? (c.nodes[c.root]?.text ?? "Untitled") : c.title)
+                        Text(c.title.isEmpty ? (c.nodes[c.root]?.text ?? Loc.t("Untitled")) : c.title)
                             .font(.chrome(13, weight: on ? .semibold : .regular))
                     }
                     .padding(.horizontal, 14)

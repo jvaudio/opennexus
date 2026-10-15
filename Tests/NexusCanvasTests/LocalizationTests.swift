@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import NexusCore
 import SwiftUI
 import Testing
 
@@ -42,6 +43,18 @@ import Testing
                 }
             }
         }
+        // Names that live in NexusCore's data and are looked up where they're shown.
+        let types: [DiagramType] = [
+            .mindmap, .logic, .brace, .org, .tree, .treeTable, .timeline, .fishbone, .matrix, .flowchart, .swimlane,
+            .dfd, .threatModel, .architecture, .sequence, .whiteboard,
+        ]
+        for t in types {
+            out[t.displayName] = out[t.displayName] ?? "Diagram type"
+            for i in DiagramCatalog.nodeTypes(for: t) { out[i.name] = out[i.name] ?? "Node type (\(t.displayName))" }
+        }
+        for i in DiagramCatalog.icons { out[i.name] = out[i.name] ?? "Icon name" }
+        for c in Stride.allCases { out[c.name] = out[c.name] ?? "STRIDE category" }
+        for r in Stride.risks + Stride.statuses { out[r] = out[r] ?? "Threat risk or status" }
         for (literal, file) in literals() { out[literal] = out[literal] ?? "UI text (\(file))" }
         for k in formatKeys() { out[k.key] = out[k.key] ?? k.comment }
         for (key, comment) in messageKeys() { out[key] = out[key] ?? comment }
@@ -66,11 +79,12 @@ import Testing
     }
 
     nonisolated(unsafe) static let uiLiteral =
-        /(?:Text|Button|Label|Toggle|TextField|Picker|Menu|Section|\.help|\.accessibilityLabel|\.accessibilityHint|\.accessibilityValue|\.navigationTitle)\(\s*"((?:[^"\\]|\\.)*)"/
+        /(?:Text|Button|Label|Toggle|TextField|Picker|Menu|Section|\.help|\.accessibilityLabel|\.accessibilityHint|\.accessibilityValue|\.navigationTitle|LabeledContent|TableColumn|\.alert|\.confirmationDialog)\(\s*"((?:[^"\\]|\\.)*)"/
 
-    /// Text handed to a toast, an alert, a panel or the tour coach must already be localised.
+    /// Text handed to a toast, an alert, a panel, the tour coach or AppKit chrome (menus,
+    /// accessibility labels, tooltips) must already be localised.
     nonisolated(unsafe) static let messageLiteral =
-        /(?:(?:showToast|showInfo|showDropHint|\.wrong)\(|addButton\(withTitle:|(?:messageText|informativeText|\.prompt|\.message|self\.error) =)\s*"((?:[^"\\]|\\.)*)"/
+        /(?:(?:showToast|showInfo|showDropHint|\.wrong|setAccessibilityLabel)\(|(?:addButton|addItem)\(withTitle:|NSMenu(?:Item)?\(title:|\.toolTip =|(?:messageText|informativeText|\.prompt|\.message|self\.error) =)\s*"((?:[^"\\]|\\.)*)"/
 
     /// Undo action names: `perform("Add Child Topic")`, looked up when the undo menu shows them.
     nonisolated(unsafe) static let undoName =
@@ -90,7 +104,7 @@ import Testing
         let repo = catalogURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .deletingLastPathComponent()
         var out: [(String, String)] = []
-        for dir in ["Sources/NexusCanvas", "App/OpenNexus"] {
+        for dir in ["Sources/NexusCanvas", "Sources/NexusCore", "App/OpenNexus"] {
             let urls =
                 (try? FileManager.default.contentsOfDirectory(
                     at: repo.appending(path: dir), includingPropertiesForKeys: nil)) ?? []
@@ -112,10 +126,10 @@ import Testing
     static func formatKeys() -> [FormatKey] {
         var out: [FormatKey] = []
         for (name, text) in sources() {
-            for m in text.matches(of: /Loc\.f\(\s*"((?:[^"\\]|\\.)*)"/) {
+            for m in text.matches(of: /(?:Loc|CoreText)\.f\(\s*"((?:[^"\\]|\\.)*)"/) {
                 out.append(FormatKey(key: unescape(m.output.1), file: name))
             }
-            for m in text.matches(of: /Loc\.n\(\s*"((?:[^"\\]|\\.)*)",\s*"((?:[^"\\]|\\.)*)"/) {
+            for m in text.matches(of: /(?:Loc|CoreText)\.n\(\s*"((?:[^"\\]|\\.)*)",\s*"((?:[^"\\]|\\.)*)"/) {
                 out.append(FormatKey(key: unescape(m.output.2), one: unescape(m.output.1), file: name))
             }
         }
@@ -126,7 +140,7 @@ import Testing
     static func messageKeys() -> [(String, String)] {
         var out: [(String, String)] = []
         for (name, text) in sources() {
-            for m in text.matches(of: /Loc\.t\(\s*"((?:[^"\\]|\\.)*)"/) {
+            for m in text.matches(of: /(?:Loc|CoreText)\.t\(\s*"((?:[^"\\]|\\.)*)"/) {
                 out.append((unescape(m.output.1), "UI text (\(name))"))
             }
             for m in text.matches(of: undoName) where !m.output.1.contains("\\(") {

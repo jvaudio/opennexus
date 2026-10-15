@@ -32,7 +32,7 @@ public enum MarkerLibrary {
 
     public static let groups: [Group] = [
         Group(
-            id: "priority", name: "Priority",
+            id: "priority", name: Loc.t("Priority"),
             markers: (1...9).map {
                 Marker(
                     id: "priority-\($0)", glyph: "\($0)",
@@ -42,7 +42,7 @@ public enum MarkerLibrary {
                     ][$0 - 1])
             }),
         Group(
-            id: "progress", name: "Progress",
+            id: "progress", name: Loc.t("Progress"),
             markers: [
                 Marker(id: "progress-0", glyph: "○", color: "#4A4A55"),
                 Marker(id: "progress-25", glyph: "◔", color: "#1E6FB8"),
@@ -51,7 +51,7 @@ public enum MarkerLibrary {
                 Marker(id: "progress-100", glyph: "✓", color: "#2E7D4F"),
             ]),
         Group(
-            id: "flag", name: "Flags",
+            id: "flag", name: Loc.t("Flags"),
             markers: [
                 Marker(id: "flag-red", glyph: "⚑", color: "#C62F35"),
                 Marker(id: "flag-orange", glyph: "⚑", color: "#C25E00"),
@@ -59,14 +59,14 @@ public enum MarkerLibrary {
                 Marker(id: "flag-blue", glyph: "⚑", color: "#1E6FB8"),
             ]),
         Group(
-            id: "star", name: "Stars",
+            id: "star", name: Loc.t("Stars"),
             markers: [
                 Marker(id: "star-gold", glyph: "★", color: "#C08A00"),
                 Marker(id: "star-red", glyph: "★", color: "#C62F35"),
                 Marker(id: "star-blue", glyph: "★", color: "#1E6FB8"),
             ]),
         Group(
-            id: "symbol", name: "Symbols",
+            id: "symbol", name: Loc.t("Symbols"),
             markers: [
                 Marker(id: "symbol-question", glyph: "?", color: "#1E6FB8"),
                 Marker(id: "symbol-exclaim", glyph: "!", color: "#C25E00"),
@@ -75,7 +75,7 @@ public enum MarkerLibrary {
                 Marker(id: "symbol-arrow", glyph: "→", color: "#4A4A55"),
             ]),
         Group(
-            id: "people", name: "People",
+            id: "people", name: Loc.t("People"),
             markers: [
                 Marker(id: "people-me", glyph: "◉", color: "#5850EC"),
                 Marker(id: "people-team", glyph: "◎", color: "#0F9F9A"),
@@ -93,11 +93,11 @@ public enum MarkerLibrary {
 /// Built-in stickers: an emoji starter set by category (EN). Image Playground adds more (M6).
 public enum StickerLibrary {
     public static let categories: [(String, [String])] = [
-        ("Tech", ["💻", "🖥️", "📱", "⌚️", "🔒", "🔑", "🗄️", "☁️", "🛰️", "🤖", "🧩", "⚙️", "🔌", "📡", "🧪", "🐞"]),
-        ("Business", ["📈", "📉", "💰", "💳", "🏦", "📊", "🗂️", "📝", "📌", "📎", "🤝", "🏆", "🎯", "📣", "🧾", "⏰"]),
-        ("Learning", ["📚", "🎓", "✏️", "🔬", "🧠", "💡", "🗺️", "🧭", "📐", "🔭", "🎨", "🎵", "📖", "🧮", "🔍", "🏫"]),
-        ("Travel", ["✈️", "🚆", "🚗", "🚲", "🏨", "🏖️", "🏔️", "🗽", "🧳", "🎒", "🛳️", "🚀", "🗼", "🌉", "⛺️", "🍽️"]),
-        ("Nature", ["🌱", "🌳", "🌸", "🍀", "🌻", "🌊", "🔥", "⚡️", "❄️", "🌈", "☀️", "🌙", "⭐️", "🐝", "🦋", "🐢"]),
+        (Loc.t("Tech"), ["💻", "🖥️", "📱", "⌚️", "🔒", "🔑", "🗄️", "☁️", "🛰️", "🤖", "🧩", "⚙️", "🔌", "📡", "🧪", "🐞"]),
+        (Loc.t("Business"), ["📈", "📉", "💰", "💳", "🏦", "📊", "🗂️", "📝", "📌", "📎", "🤝", "🏆", "🎯", "📣", "🧾", "⏰"]),
+        (Loc.t("Learning"), ["📚", "🎓", "✏️", "🔬", "🧠", "💡", "🗺️", "🧭", "📐", "🔭", "🎨", "🎵", "📖", "🧮", "🔍", "🏫"]),
+        (Loc.t("Travel"), ["✈️", "🚆", "🚗", "🚲", "🏨", "🏖️", "🏔️", "🗽", "🧳", "🎒", "🛳️", "🚀", "🗼", "🌉", "⛺️", "🍽️"]),
+        (Loc.t("Nature"), ["🌱", "🌳", "🌸", "🍀", "🌻", "🌊", "🔥", "⚡️", "❄️", "🌈", "☀️", "🌙", "⭐️", "🐝", "🦋", "🐢"]),
     ]
 }
 
@@ -122,7 +122,7 @@ extension CanvasController {
         else { return nil }
         switch chord.key {
         case .delete, .forwardDelete:
-            perform("Delete") { $0.removeElement(ref) }
+            perform(Loc.t("Delete")) { $0.removeElement(ref) }
             selectedElement = nil
             onSceneChange?(true)
             return .handled
@@ -134,7 +134,7 @@ extension CanvasController {
             return .handled
         case .character("/") where chord.modifiers == [.command]:
             if case .zone(let id) = ref {
-                perform("Collapse Zone") { $0.updateZone(id) { $0.collapsed.toggle() } }
+                perform(Loc.t("Collapse Zone")) { $0.updateZone(id) { $0.collapsed.toggle() } }
                 return .handled
             }
             return nil
@@ -175,10 +175,11 @@ extension CanvasController {
         case .relationship(let id) where id.hasPrefix("t:"):
             // A tree edge drawn as a flow: its label lives on the child.
             let child = NodeID(String(id.dropFirst(2)))
-            perform("Label") { $0.update(child) { $0.edgeLabel = text.isEmpty ? nil : text } }
-        case .relationship(let id): perform("Label") { $0.updateRelationship(id) { $0.label = text } }
-        case .boundary(let id): perform("Boundary Title") { $0.updateBoundary(id) { $0.title = text } }
-        case .zone(let id): perform("Zone Title") { $0.updateZone(id) { $0.title = text.isEmpty ? "Zone" : text } }
+            perform(Loc.t("Label")) { $0.update(child) { $0.edgeLabel = text.isEmpty ? nil : text } }
+        case .relationship(let id): perform(Loc.t("Label")) { $0.updateRelationship(id) { $0.label = text } }
+        case .boundary(let id): perform(Loc.t("Boundary Title")) { $0.updateBoundary(id) { $0.title = text } }
+        case .zone(let id):
+            perform(Loc.t("Zone Title")) { $0.updateZone(id) { $0.title = text.isEmpty ? Loc.t("Zone") : text } }
         default: break
         }
         selectedElement = ref
@@ -190,7 +191,7 @@ extension CanvasController {
     /// ⇧⌘B
     public func addBoundary() {
         let ids = selection.nodes
-        if let id = perform("Boundary", { try $0.addBoundary(around: ids) }) {
+        if let id = perform(Loc.t("Boundary"), { try $0.addBoundary(around: ids) }) {
             selectedElement = .boundary(id)
             onSceneChange?(false)
         }
@@ -199,13 +200,13 @@ extension CanvasController {
     /// ⇧⌘]
     public func addSummary() {
         let ids = selection.nodes
-        createElementTopic("Summary") { try $0.addSummary(over: ids) }
+        createElementTopic(Loc.t("Summary")) { try $0.addSummary(over: ids) }
     }
 
     /// ⇧⌘C
     public func addCallout() {
         let host = selection.primary
-        createElementTopic("Callout") { try $0.addCallout(on: host) }
+        createElementTopic(Loc.t("Callout")) { try $0.addCallout(on: host) }
     }
 
     private func createElementTopic(_ name: String, _ body: (inout CanvasEditor) throws -> NodeID) {
@@ -235,7 +236,8 @@ extension CanvasController {
         let h = rect.height + 68
         guard
             let id = perform(
-                "Zone", { $0.addZone(title: "Zone", origin: origin, width: w, height: h, members: floating) })
+                Loc.t("Zone"),
+                { $0.addZone(title: Loc.t("Zone"), origin: origin, width: w, height: h, members: floating) })
         else { return }
         beginEditingElement(.zone(id))
     }
@@ -243,7 +245,7 @@ extension CanvasController {
     /// ⌥⌘] / ⌥⌘[ on a zone or a floating topic.
     public func reorderSelection(_ order: CanvasEditor.ZOrder) {
         if case .zone(let id)? = selectedElement {
-            perform("Arrange") { $0.reorderZone(id, order) }
+            perform(Loc.t("Arrange")) { $0.reorderZone(id, order) }
             return
         }
         let id = selection.primary
@@ -251,7 +253,7 @@ extension CanvasController {
             showToast(Loc.t("Arrange works on zones and floating topics"))
             return
         }
-        perform("Arrange") { $0.reorderFloating(id, order) }
+        perform(Loc.t("Arrange")) { $0.reorderFloating(id, order) }
     }
 
     // MARK: Enrichments
@@ -259,7 +261,7 @@ extension CanvasController {
     public func toggleMarker(_ marker: String) {
         let targets = selection.nodes
         let group = MarkerLibrary.group(of: marker)
-        perform("Marker") { e in
+        perform(Loc.t("Marker")) { e in
             for t in targets {
                 e.update(t) { n in
                     if n.markers.contains(marker) {
@@ -276,7 +278,7 @@ extension CanvasController {
     public func setLabels(_ labels: [String], on ids: [NodeID]? = nil) {
         let targets = ids ?? selection.nodes
         let clean = labels.map { $0.trimmingCharacters(in: .whitespaces) }.filter { !$0.isEmpty }
-        perform("Labels") { e in for t in targets { e.update(t) { $0.labels = clean } } }
+        perform(Loc.t("Labels")) { e in for t in targets { e.update(t) { $0.labels = clean } } }
     }
 
     /// Every label used on this canvas, most used first (autocomplete).
@@ -287,15 +289,15 @@ extension CanvasController {
     }
 
     public func setNote(_ text: String, on id: NodeID) {
-        perform("Note") { e in e.update(id) { $0.note = text.isEmpty ? nil : Note(text: text) } }
+        perform(Loc.t("Note")) { e in e.update(id) { $0.note = text.isEmpty ? nil : Note(text: text) } }
     }
 
     public func setLink(_ link: String?, on id: NodeID) {
-        perform("Link") { e in e.update(id) { $0.link = link?.isEmpty == true ? nil : link } }
+        perform(Loc.t("Link")) { e in e.update(id) { $0.link = link?.isEmpty == true ? nil : link } }
     }
 
     public func setSticker(_ sticker: String?, on id: NodeID) {
-        perform("Sticker") { e in e.update(id) { $0.sticker = sticker.map { AssetRef(asset: $0) } } }
+        perform(Loc.t("Sticker")) { e in e.update(id) { $0.sticker = sticker.map { AssetRef(asset: $0) } } }
     }
 
     /// Stores bytes in the package's assets under a content-hashed name.
@@ -336,7 +338,7 @@ extension CanvasController {
     public func setImage(_ data: Data, ext: String, size: CGSize?, on id: NodeID, source: URL? = nil) {
         let limit = (Double(prefs.string("files.embedLimit")) ?? 10) * 1_048_576
         if limit > 0, Double(data.count) > limit, let source {
-            perform("Link Image") { e in e.update(id) { $0.link = source.absoluteString } }
+            perform(Loc.t("Link Image")) { e in e.update(id) { $0.link = source.absoluteString } }
             showToast(
                 Loc.f(
                     "%@ is larger than %@ MB, so it’s linked, not copied", source.lastPathComponent,
@@ -353,22 +355,23 @@ extension CanvasController {
         let name = storeAsset(data, ext: ext)
         let w = size.map { min(Double($0.width), 200) }
         let h = size.map { Double($0.height) * (w ?? 200) / max(Double($0.width), 1) }
-        perform("Image") { e in e.update(id) { $0.image = AssetRef(asset: name, width: w, height: h) } }
+        perform(Loc.t("Image")) { e in e.update(id) { $0.image = AssetRef(asset: name, width: w, height: h) } }
     }
 
     public func removeImage(on id: NodeID) {
-        perform("Remove Image") { e in e.update(id) { $0.image = nil } }
+        perform(Loc.t("Remove Image")) { e in e.update(id) { $0.image = nil } }
     }
 
     public func addAttachment(_ data: Data, name: String, on id: NodeID) {
         let ext = (name as NSString).pathExtension
         let asset = storeAsset(data, ext: ext.isEmpty ? "bin" : ext)
-        perform("Attach File") { e in e.update(id) { $0.attachments.append(AssetRef(asset: asset, name: name)) } }
+        perform(Loc.t("Attach File")) { e in e.update(id) { $0.attachments.append(AssetRef(asset: asset, name: name)) }
+        }
     }
 
     public func setAudio(_ data: Data, duration: Double, on id: NodeID) {
         let asset = storeAsset(data, ext: "m4a")
-        perform("Audio Note") { e in e.update(id) { $0.audio = AudioNote(asset: asset, duration: duration) } }
+        perform(Loc.t("Audio Note")) { e in e.update(id) { $0.audio = AudioNote(asset: asset, duration: duration) } }
     }
 
     /// Clicking a parent's progress ring completes (or reopens) every to-do below it.
@@ -421,29 +424,29 @@ extension CanvasController {
 
     public func moveTopic(_ id: NodeID, toParent parent: NodeID, at index: Int?, duplicate: Bool = false) {
         if duplicate {
-            perform("Duplicate", selectionAfter: { Selection($0) }) {
+            perform(Loc.t("Duplicate"), selectionAfter: { Selection($0) }) {
                 try $0.duplicate(id, toParent: parent, at: index)
             }
         } else {
-            perform("Move", selectionAfter: { Selection(id) }) { try $0.move(id, toParent: parent, at: index) }
+            perform(Loc.t("Move"), selectionAfter: { Selection(id) }) { try $0.move(id, toParent: parent, at: index) }
         }
         onReveal?(selection.primary)
     }
 
     public func detachTopic(_ id: NodeID, at point: CGPoint) {
-        perform("Detach", selectionAfter: { Selection(id) }) {
+        perform(Loc.t("Detach"), selectionAfter: { Selection(id) }) {
             try $0.detach(id, at: CanvasPoint(x: point.x, y: point.y))
         }
     }
 
     public func moveFloating(_ id: NodeID, to point: CGPoint) {
-        perform("Move", selectionAfter: { Selection(id) }) {
+        perform(Loc.t("Move"), selectionAfter: { Selection(id) }) {
             try $0.moveFloating(id, to: CanvasPoint(x: point.x, y: point.y))
         }
     }
 
     public func moveZone(_ id: String, by delta: CGSize) {
-        perform("Move Zone") { $0.moveZone(id, by: delta.width, delta.height) }
+        perform(Loc.t("Move Zone")) { $0.moveZone(id, by: delta.width, delta.height) }
     }
 
     /// Reset Style (⌥⌘R) on an element returns it to its defaults.
@@ -487,22 +490,22 @@ extension CanvasController {
     // MARK: Element styling (Format › Elements)
 
     public func updateRelationship(_ id: String, _ body: @escaping (inout Relationship) -> Void) {
-        perform("Relationship Style") { $0.updateRelationship(id, body) }
+        perform(Loc.t("Relationship Style")) { $0.updateRelationship(id, body) }
     }
 
     public func updateBoundary(_ id: String, _ body: @escaping (inout Boundary) -> Void) {
-        perform("Boundary Style") { $0.updateBoundary(id, body) }
+        perform(Loc.t("Boundary Style")) { $0.updateBoundary(id, body) }
     }
 
     public func updateSummary(_ id: String, _ body: @escaping (inout Summary) -> Void) {
-        perform("Summary Style") { $0.updateSummary(id, body) }
+        perform(Loc.t("Summary Style")) { $0.updateSummary(id, body) }
     }
 
     public func updateCallout(_ id: String, _ body: @escaping (inout Callout) -> Void) {
-        perform("Callout Style") { $0.updateCallout(id, body) }
+        perform(Loc.t("Callout Style")) { $0.updateCallout(id, body) }
     }
 
     public func updateZone(_ id: String, _ body: @escaping (inout Zone) -> Void) {
-        perform("Zone Style") { $0.updateZone(id, body) }
+        perform(Loc.t("Zone Style")) { $0.updateZone(id, body) }
     }
 }

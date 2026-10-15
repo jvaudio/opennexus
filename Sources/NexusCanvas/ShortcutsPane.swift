@@ -70,9 +70,10 @@ struct ShortcutsPane: View {
             HStack(spacing: 10) {
                 ForEach(
                     [
-                        ("opennexus", "OpenNexus", "Xmind-compatible · default"),
-                        ("hyper", "Hyper-first", "✦ is primary everywhere"),
-                        ("vim", "Vim-style", "h j k l · o / O · dd"), ("outliner", "Outliner", "⇥ indents · ⌥↩ child"),
+                        ("opennexus", "OpenNexus", Loc.t("Xmind-compatible · default")),
+                        ("hyper", "Hyper-first", Loc.t("✦ is primary everywhere")),
+                        ("vim", "Vim-style", Loc.t("h j k l · o / O · dd")),
+                        ("outliner", Loc.t("Outliner"), Loc.t("⇥ indents · ⌥↩ child")),
                     ],
                     id: \.0
                 ) { id, name, detail in
@@ -187,11 +188,11 @@ struct ShortcutsPane: View {
 
     static func scopeName(_ s: Scope) -> String {
         switch s {
-        case .global: "All"
-        case .canvas: "Select"
-        case .editor: "Edit"
-        case .outline: "Outline"
-        case .connect: "Connect"
+        case .global: Loc.t("All")
+        case .canvas: Loc.t("Select")
+        case .editor: Loc.t("Edit")
+        case .outline: Loc.t("Outline")
+        case .connect: Loc.t("Connect")
         default: s.rawValue.capitalized
         }
     }

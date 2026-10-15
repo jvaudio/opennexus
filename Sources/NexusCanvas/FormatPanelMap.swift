@@ -33,65 +33,78 @@ public struct Skeleton: Sendable, Identifiable, Equatable {
     /// FMT-3's nine, in its order.
     public static let featured: [Skeleton] = [
         Skeleton(
-            name: "Mind Map", structure: .mindmapBalanced, nodeStyle: .outline, line: "curved", icon: icons["mindmap"]!),
-        Skeleton(name: "Logic Chart", structure: .logicRight, nodeStyle: .soft, line: "curved", icon: icons["logic"]!),
-        Skeleton(name: "Org Chart", structure: .orgDown, nodeStyle: .outline, line: "elbow", icon: icons["org"]!),
+            name: Loc.t("Mind Map"), structure: .mindmapBalanced, nodeStyle: .outline, line: "curved",
+            icon: icons["mindmap"]!),
         Skeleton(
-            name: "Timeline", structure: .timelineHorizontal, nodeStyle: .capsule, line: "straight",
+            name: Loc.t("Logic Chart"), structure: .logicRight, nodeStyle: .soft, line: "curved", icon: icons["logic"]!),
+        Skeleton(
+            name: Loc.t("Org Chart"), structure: .orgDown, nodeStyle: .outline, line: "elbow", icon: icons["org"]!),
+        Skeleton(
+            name: Loc.t("Timeline"), structure: .timelineHorizontal, nodeStyle: .capsule, line: "straight",
             icon: icons["timeline"]!),
         Skeleton(
-            name: "Fishbone", structure: .fishboneLeft, nodeStyle: .outline, line: "straight", icon: icons["fishbone"]!),
-        Skeleton(name: "Matrix", structure: .matrix, nodeStyle: .solid, line: "straight", icon: icons["matrix"]!),
-        Skeleton(name: "Brace Map", structure: .braceRight, nodeStyle: .minimal, line: "curved", icon: icons["brace"]!),
-        Skeleton(name: "Tree Chart", structure: .treeDown, nodeStyle: .underline, line: "elbow", icon: icons["tree"]!),
+            name: Loc.t("Fishbone"), structure: .fishboneLeft, nodeStyle: .outline, line: "straight",
+            icon: icons["fishbone"]!),
         Skeleton(
-            name: "Tree Table", structure: .treeTable, nodeStyle: .brutal, line: "elbow", icon: icons["treeTable"]!),
+            name: Loc.t("Matrix"), structure: .matrix, nodeStyle: .solid, line: "straight", icon: icons["matrix"]!),
+        Skeleton(
+            name: Loc.t("Brace Map"), structure: .braceRight, nodeStyle: .minimal, line: "curved", icon: icons["brace"]!
+        ),
+        Skeleton(
+            name: Loc.t("Tree Chart"), structure: .treeDown, nodeStyle: .underline, line: "elbow", icon: icons["tree"]!),
+        Skeleton(
+            name: Loc.t("Tree Table"), structure: .treeTable, nodeStyle: .brutal, line: "elbow",
+            icon: icons["treeTable"]!),
     ]
 
     /// The full gallery of 24 (README §14: derived from structures × node styles × lines).
     public static let gallery: [Skeleton] =
         featured + [
             Skeleton(
-                name: "Mind Map · Soft", structure: .mindmapBalanced, nodeStyle: .soft, line: "curved",
+                name: Loc.t("Mind Map · Soft"), structure: .mindmapBalanced, nodeStyle: .soft, line: "curved",
                 icon: icons["mindmap"]!),
             Skeleton(
-                name: "Mind Map · Underline", structure: .mindmapBalanced, nodeStyle: .underline, line: "curved",
+                name: Loc.t("Mind Map · Underline"), structure: .mindmapBalanced, nodeStyle: .underline, line: "curved",
                 icon: icons["mindmap"]!),
             Skeleton(
-                name: "Mind Map · Sketch", structure: .mindmapBalanced, nodeStyle: .sketch, line: "curved",
+                name: Loc.t("Mind Map · Sketch"), structure: .mindmapBalanced, nodeStyle: .sketch, line: "curved",
                 icon: icons["mindmap"]!),
             Skeleton(
-                name: "Mind Map · Glow", structure: .mindmapBalanced, nodeStyle: .glow, line: "curved",
+                name: Loc.t("Mind Map · Glow"), structure: .mindmapBalanced, nodeStyle: .glow, line: "curved",
                 icon: icons["mindmap"]!),
             Skeleton(
-                name: "Mind Map · Minimal", structure: .mindmapBalanced, nodeStyle: .minimal, line: "curved",
+                name: Loc.t("Mind Map · Minimal"), structure: .mindmapBalanced, nodeStyle: .minimal, line: "curved",
                 icon: icons["mindmap"]!),
             Skeleton(
-                name: "Right Map · Capsule", structure: .mindmapRight, nodeStyle: .capsule, line: "curved",
+                name: Loc.t("Right Map · Capsule"), structure: .mindmapRight, nodeStyle: .capsule, line: "curved",
                 icon: icons["mindmap"]!),
             Skeleton(
-                name: "Logic · Outline", structure: .logicRight, nodeStyle: .outline, line: "rounded",
+                name: Loc.t("Logic · Outline"), structure: .logicRight, nodeStyle: .outline, line: "rounded",
                 icon: icons["logic"]!),
             Skeleton(
-                name: "Logic · Brutal", structure: .logicRight, nodeStyle: .brutal, line: "elbow", icon: icons["logic"]!
+                name: Loc.t("Logic · Brutal"), structure: .logicRight, nodeStyle: .brutal, line: "elbow",
+                icon: icons["logic"]!
             ),
             Skeleton(
-                name: "Logic · Underline", structure: .logicRight, nodeStyle: .underline, line: "curved",
+                name: Loc.t("Logic · Underline"), structure: .logicRight, nodeStyle: .underline, line: "curved",
                 icon: icons["logic"]!),
             Skeleton(
-                name: "Logic Left · Solid", structure: .logicLeft, nodeStyle: .solid, line: "curved",
+                name: Loc.t("Logic Left · Solid"), structure: .logicLeft, nodeStyle: .solid, line: "curved",
                 icon: icons["logic"]!),
-            Skeleton(name: "Org · Solid", structure: .orgDown, nodeStyle: .solid, line: "rounded", icon: icons["org"]!),
             Skeleton(
-                name: "Org · Capsule", structure: .orgDown, nodeStyle: .capsule, line: "elbow", icon: icons["org"]!),
+                name: Loc.t("Org · Solid"), structure: .orgDown, nodeStyle: .solid, line: "rounded", icon: icons["org"]!
+            ),
             Skeleton(
-                name: "Tree · Minimal", structure: .treeDown, nodeStyle: .minimal, line: "straight",
+                name: Loc.t("Org · Capsule"), structure: .orgDown, nodeStyle: .capsule, line: "elbow",
+                icon: icons["org"]!),
+            Skeleton(
+                name: Loc.t("Tree · Minimal"), structure: .treeDown, nodeStyle: .minimal, line: "straight",
                 icon: icons["tree"]!),
             Skeleton(
-                name: "Timeline · Solid", structure: .timelineHorizontal, nodeStyle: .solid, line: "straight",
+                name: Loc.t("Timeline · Solid"), structure: .timelineHorizontal, nodeStyle: .solid, line: "straight",
                 icon: icons["timeline"]!),
             Skeleton(
-                name: "Fishbone · Brutal", structure: .fishboneLeft, nodeStyle: .brutal, line: "straight",
+                name: Loc.t("Fishbone · Brutal"), structure: .fishboneLeft, nodeStyle: .brutal, line: "straight",
                 icon: icons["fishbone"]!),
         ]
 }
@@ -133,7 +146,7 @@ struct MapTab: View {
 
     var skeleton: some View {
         PanelSection(
-            "Skeleton", key: "skeleton",
+            Loc.t("Skeleton"), key: "skeleton",
             accessory: {
                 Button(Loc.f("All %lld ›", Skeleton.gallery.count)) { showingGallery = true }
                     .buttonStyle(.plain)
@@ -181,7 +194,7 @@ struct MapTab: View {
 
     var nodeStyles: some View {
         PanelSection(
-            "Node style", key: "nodestyle",
+            Loc.t("Node style"), key: "nodestyle",
             accessory: {
                 Text(Loc.f("%@ cycles", controller.bindings(for: .cycleNodeStyle).first?.glyphs ?? ""))
                     .font(.chrome(11)).foregroundStyle(.secondary)
@@ -207,7 +220,7 @@ struct MapTab: View {
 
     var themes: some View {
         let lib = controller.library
-        return PanelSection("Themes", key: "themes") {
+        return PanelSection(Loc.t("Themes"), key: "themes") {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
                 ForEach(Theme.builtIn + lib.themes) { t in
                     Button {
@@ -293,38 +306,38 @@ struct MapTab: View {
     var colourTheme: some View {
         let lib = controller.library
         let palettes = ColorPalette.builtIn + lib.palettes
-        return PanelSection("Colour theme", key: "colour") {
+        return PanelSection(Loc.t("Colour theme"), key: "colour") {
             Segments(options: ColorThemeMode.allCases.map { ($0.rawValue, $0.title) }, selection: style.colorTheme) {
                 v in
-                setStyle("Colour Theme") { $0.colorTheme = v }
+                setStyle(Loc.t("Colour Theme")) { $0.colorTheme = v }
             }
             Button {
-                setStyle("Colour Theme") { $0.palette = "theme" }
+                setStyle(Loc.t("Colour Theme")) { $0.palette = "theme" }
             } label: {
-                paletteRow(name: "Theme colours", colors: controller.theme.palette, on: style.palette == "theme")
+                paletteRow(name: Loc.t("Theme colours"), colors: controller.theme.palette, on: style.palette == "theme")
             }
             .buttonStyle(.plain)
             ForEach(palettes) { p in
                 Button {
-                    setStyle("Colour Theme") { $0.palette = p.id }
+                    setStyle(Loc.t("Colour Theme")) { $0.palette = p.id }
                 } label: {
                     paletteRow(name: p.name, colors: p.colors, on: style.palette == p.id)
                 }
                 .buttonStyle(.plain)
             }
-            PanelToggle(label: "Colored branch", isOn: style.coloredBranch) { v in
-                setStyle("Colored Branch") { $0.coloredBranch = v }
+            PanelToggle(label: Loc.t("Colored branch"), isOn: style.coloredBranch) { v in
+                setStyle(Loc.t("Colored Branch")) { $0.coloredBranch = v }
             }
-            PanelRow(label: "Single branch colour when off") {
+            PanelRow(label: Loc.t("Single branch colour when off")) {
                 ColorPicker(
-                    "Ink",
+                    Loc.t("Ink"),
                     selection: hexBinding(style.singleColor, fallback: controller.theme.ink2) { hex in
-                        setStyle("Single Colour") { $0.singleColor = hex }
+                        setStyle(Loc.t("Single Colour")) { $0.singleColor = hex }
                     }
                 )
                 .font(.chrome(12))
             }
-            PanelRow(label: "Reshuffle") {
+            PanelRow(label: Loc.t("Reshuffle")) {
                 Button {
                     controller.perform(.smartColor)
                 } label: {
@@ -388,7 +401,7 @@ struct MapTab: View {
                     ForEach(Array(Self.backgrounds.enumerated()), id: \.offset) { _, hex in
                         let c = hex.flatMap(RGBA.init(hexString:)) ?? controller.theme.canvas
                         Button {
-                            setStyle("Background") { $0.background = hex }
+                            setStyle(Loc.t("Background")) { $0.background = hex }
                         } label: {
                             Circle().fill(c.color).frame(width: 20, height: 20)
                                 .overlay(
@@ -402,51 +415,55 @@ struct MapTab: View {
                     ColorPicker(
                         "",
                         selection: hexBinding(style.background, fallback: controller.theme.canvas) { hex in
-                            setStyle("Background") { $0.background = hex }
+                            setStyle(Loc.t("Background")) { $0.background = hex }
                         }
                     )
                     .labelsHidden()
                     .accessibilityLabel("Custom colour")
                 }
             }
-            PanelRow(label: "Pattern") {
+            PanelRow(label: Loc.t("Pattern")) {
                 Segments(
-                    options: [("plain", "Plain"), ("dots", "Dots"), ("lines", "Lines")],
+                    options: [("plain", Loc.t("Plain")), ("dots", Loc.t("Dots")), ("lines", Loc.t("Lines"))],
                     selection: style.pattern ?? patternName
                 ) { v in
-                    setStyle("Pattern") { $0.pattern = v }
+                    setStyle(Loc.t("Pattern")) { $0.pattern = v }
                 }
                 .frame(maxWidth: 170)
             }
-            PanelRow(label: "Global font") {
+            PanelRow(label: Loc.t("Global font")) {
                 Picker(
                     "",
                     selection: Binding(
                         get: { style.font ?? "system" },
-                        set: { v in setStyle("Global Font") { $0.font = v == "system" ? nil : v } })
+                        set: { v in setStyle(Loc.t("Global Font")) { $0.font = v == "system" ? nil : v } })
                 ) {
                     ForEach(StyleTab.fonts, id: \.0) { Text($0.1).tag($0.0) }
                 }
                 .labelsHidden()
                 .frame(width: 140)
             }
-            PanelRow(label: "CJK font") {
+            PanelRow(label: Loc.t("CJK font")) {
                 Picker(
                     "",
                     selection: Binding(
-                        get: { style.cjkFont ?? "PingFang SC" }, set: { v in setStyle("CJK Font") { $0.cjkFont = v } })
+                        get: { style.cjkFont ?? Loc.t("PingFang SC") },
+                        set: { v in setStyle(Loc.t("CJK Font")) { $0.cjkFont = v } })
                 ) {
                     ForEach(Self.cjkFonts, id: \.self) { Text($0).tag($0) }
                 }
                 .labelsHidden()
                 .frame(width: 140)
             }
-            PanelRow(label: "Branch line width") {
+            PanelRow(label: Loc.t("Branch line width")) {
                 Segments(
-                    options: [("thin", "Thin"), ("regular", "Regular"), ("bold", "Bold"), ("taper", "Taper")],
+                    options: [
+                        ("thin", Loc.t("Thin")), ("regular", Loc.t("Regular")), ("bold", Loc.t("Bold")),
+                        ("taper", Loc.t("Taper")),
+                    ],
                     selection: style.lineWidth ?? "regular"
                 ) { v in
-                    setStyle("Branch Line Width") { $0.lineWidth = v == "regular" ? nil : v }
+                    setStyle(Loc.t("Branch Line Width")) { $0.lineWidth = v == "regular" ? nil : v }
                 }
                 .frame(maxWidth: 200)
             }
@@ -462,30 +479,32 @@ struct MapTab: View {
     }
 
     var mapStyle: some View {
-        PanelSection("Map style", key: "mapstyle") {
-            PanelToggle(label: "Auto balance map", isOn: style.autoBalance) { v in
-                setStyle("Auto Balance") { $0.autoBalance = v }
+        PanelSection(Loc.t("Map style"), key: "mapstyle") {
+            PanelToggle(label: Loc.t("Auto balance map"), isOn: style.autoBalance) { v in
+                setStyle(Loc.t("Auto Balance")) { $0.autoBalance = v }
             }
-            PanelToggle(label: "Compact map", isOn: style.compact) { v in setStyle("Compact Map") { $0.compact = v } }
-            PanelToggle(label: "Justify topic alignment", isOn: style.justify) { v in
-                setStyle("Justify") { $0.justify = v }
+            PanelToggle(label: Loc.t("Compact map"), isOn: style.compact) { v in
+                setStyle(Loc.t("Compact Map")) { $0.compact = v }
+            }
+            PanelToggle(label: Loc.t("Justify topic alignment"), isOn: style.justify) { v in
+                setStyle(Loc.t("Justify")) { $0.justify = v }
             }
         }
     }
 
     var advanced: some View {
-        PanelSection("Advanced layout", key: "advanced") {
-            PanelToggle(label: "Free layout for this canvas", isOn: layout.mode == .free) { v in
-                controller.updateLayout("Free Layout") { $0.mode = v ? .free : .auto }
+        PanelSection(Loc.t("Advanced layout"), key: "advanced") {
+            PanelToggle(label: Loc.t("Free layout for this canvas"), isOn: layout.mode == .free) { v in
+                controller.updateLayout(Loc.t("Free Layout")) { $0.mode = v ? .free : .auto }
             }
-            PanelToggle(label: "Branch free-positioning", isOn: layout.branchFreePositioning) { v in
-                controller.updateLayout("Branch Free-Positioning") { $0.branchFreePositioning = v }
+            PanelToggle(label: Loc.t("Branch free-positioning"), isOn: layout.branchFreePositioning) { v in
+                controller.updateLayout(Loc.t("Branch Free-Positioning")) { $0.branchFreePositioning = v }
             }
-            PanelToggle(label: "Flexible floating topics", isOn: layout.flexibleFloating) { v in
-                controller.updateLayout("Flexible Floating Topics") { $0.flexibleFloating = v }
+            PanelToggle(label: Loc.t("Flexible floating topics"), isOn: layout.flexibleFloating) { v in
+                controller.updateLayout(Loc.t("Flexible Floating Topics")) { $0.flexibleFloating = v }
             }
-            PanelToggle(label: "Allow topic overlap", isOn: layout.allowOverlap) { v in
-                controller.updateLayout("Allow Overlap") { $0.allowOverlap = v }
+            PanelToggle(label: Loc.t("Allow topic overlap"), isOn: layout.allowOverlap) { v in
+                controller.updateLayout(Loc.t("Allow Overlap")) { $0.allowOverlap = v }
             }
         }
     }
@@ -558,11 +577,11 @@ struct DataTab: View {
 
     func update(_ body: @escaping (inout [MetadataField]) -> Void) {
         let id = controller.selection.primary
-        controller.perform("Edit Fields") { e in e.update(id) { body(&$0.metadata) } }
+        controller.perform(Loc.t("Edit Fields")) { e in e.update(id) { body(&$0.metadata) } }
     }
 
     var body: some View {
-        PanelSection("Metadata · pin to show on node", key: "metadata") {
+        PanelSection(Loc.t("Metadata · pin to show on node"), key: "metadata") {
             ForEach(Array(fields.enumerated()), id: \.offset) { i, f in
                 HStack {
                     TextField("key", text: Binding(get: { f.key }, set: { v in update { $0[i].key = v } }))
@@ -577,7 +596,7 @@ struct DataTab: View {
                         Image(systemName: f.pinned ? "pin.fill" : "pin")
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel(f.pinned ? "Unpin" : "Pin")
+                    .accessibilityLabel(f.pinned ? Loc.t("Unpin") : Loc.t("Pin"))
                     Button {
                         update { $0.remove(at: i) }
                     } label: {
@@ -591,7 +610,7 @@ struct DataTab: View {
                 .buttonStyle(.bordered)
         }
         Divider()
-        PanelSection("Links & attachments", key: "links") {
+        PanelSection(Loc.t("Links & attachments"), key: "links") {
             let n = controller.canvas.nodes[controller.selection.primary]
             if let link = n?.link {
                 Text(link).font(.chrome(12)).lineLimit(1).truncationMode(.middle)

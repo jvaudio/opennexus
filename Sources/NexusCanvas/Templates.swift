@@ -15,6 +15,16 @@ public struct MapTemplate: Identifiable, Sendable {
     public enum Category: String, CaseIterable, Sendable {
         case engineering = "Engineering", architecture = "Architecture", security = "Security", planning = "Planning",
             learning = "Learning"
+
+        public var title: String {
+            switch self {
+            case .engineering: Loc.t("Engineering")
+            case .architecture: Loc.t("Architecture")
+            case .security: Loc.t("Security")
+            case .planning: Loc.t("Planning")
+            case .learning: Loc.t("Learning")
+            }
+        }
     }
 
     public func document() -> DocumentModel { DocumentModel(canvases: [build()]) }
@@ -26,19 +36,19 @@ public enum Role: String, CaseIterable, Sendable {
 
     public var title: String {
         switch self {
-        case .engineer: "Engineer"
-        case .architect: "Architect"
-        case .security: "Security"
+        case .engineer: Loc.t("Engineer")
+        case .architect: Loc.t("Architect")
+        case .security: Loc.t("Security")
         case .planner: "Planner · Student"
         }
     }
 
     public var blurb: String {
         switch self {
-        case .engineer: "Systems, APIs, incidents and sprints"
-        case .architect: "Platforms, migrations and decisions"
-        case .security: "Threats, data and access"
-        case .planner: "Projects, notes and ideas"
+        case .engineer: Loc.t("Systems, APIs, incidents and sprints")
+        case .architect: Loc.t("Platforms, migrations and decisions")
+        case .security: Loc.t("Threats, data and access")
+        case .planner: Loc.t("Projects, notes and ideas")
         }
     }
 
@@ -64,19 +74,19 @@ public enum Role: String, CaseIterable, Sendable {
 
     public var conversionTitle: String {
         switch self {
-        case .engineer: "Flowchart"
-        case .architect: "Architecture"
-        case .security: "Data Flow + STRIDE"
+        case .engineer: Loc.t("Flowchart")
+        case .architect: Loc.t("Architecture")
+        case .security: Loc.t("Data Flow + STRIDE")
         case .planner: "Timeline"
         }
     }
 
     public var shelfSummary: String {
         switch self {
-        case .engineer: "C4, API flow, retro"
-        case .architect: "Reference arch, ADR, capability map"
-        case .security: "Threat model, attack tree, IR runbook"
-        case .planner: "Roadmap, SWOT, book notes"
+        case .engineer: Loc.t("C4, API flow, retro")
+        case .architect: Loc.t("Reference arch, ADR, capability map")
+        case .security: Loc.t("Threat model, attack tree, IR runbook")
+        case .planner: Loc.t("Roadmap, SWOT, book notes")
         }
     }
 
@@ -92,10 +102,10 @@ public enum Role: String, CaseIterable, Sendable {
     /// "Templates for engineers".
     public var shelfTitle: String {
         switch self {
-        case .engineer: "Templates for engineers"
-        case .architect: "Templates for architects"
-        case .security: "Templates for security"
-        case .planner: "Templates for planners"
+        case .engineer: Loc.t("Templates for engineers")
+        case .architect: Loc.t("Templates for architects")
+        case .security: Loc.t("Templates for security")
+        case .planner: Loc.t("Templates for planners")
         }
     }
 }
@@ -148,7 +158,8 @@ public enum TemplateLibrary {
     public static let all: [MapTemplate] = [
         // Engineering
         MapTemplate(
-            id: "c4", kicker: "C4 · L1–L2", title: "System context", detail: "People, systems and containers",
+            id: "c4", kicker: "C4 · L1–L2", title: Loc.t("System context"),
+            detail: Loc.t("People, systems and containers"),
             category: .engineering, type: .architecture
         ) {
             outline(
@@ -165,7 +176,8 @@ public enum TemplateLibrary {
                 """)
         },
         MapTemplate(
-            id: "apiFlow", kicker: "FLOW", title: "API request flow", detail: "Client → gateway → services",
+            id: "apiFlow", kicker: "FLOW", title: Loc.t("API request flow"),
+            detail: Loc.t("Client → gateway → services"),
             category: .engineering, type: .flowchart
         ) {
             outline(
@@ -181,7 +193,8 @@ public enum TemplateLibrary {
                 """)
         },
         MapTemplate(
-            id: "incident", kicker: "TIMELINE", title: "Incident timeline", detail: "Detect, mitigate, resolve",
+            id: "incident", kicker: "TIMELINE", title: Loc.t("Incident timeline"),
+            detail: Loc.t("Detect, mitigate, resolve"),
             category: .engineering, type: .timeline
         ) {
             var c = outline(
@@ -201,7 +214,8 @@ public enum TemplateLibrary {
             return c
         },
         MapTemplate(
-            id: "retro", kicker: "MATRIX", title: "Sprint retro", detail: "Went well · to improve · actions",
+            id: "retro", kicker: "MATRIX", title: Loc.t("Sprint retro"),
+            detail: Loc.t("Went well · to improve · actions"),
             category: .engineering, type: .matrix
         ) {
             var c = outline(
@@ -219,7 +233,8 @@ public enum TemplateLibrary {
             return c
         },
         MapTemplate(
-            id: "oauth", kicker: "SEQUENCE", title: "OAuth handshake", detail: "Lifelines with return messages",
+            id: "oauth", kicker: "SEQUENCE", title: Loc.t("OAuth handshake"),
+            detail: Loc.t("Lifelines with return messages"),
             category: .engineering, type: .sequence
         ) {
             var c = outline(
@@ -245,8 +260,8 @@ public enum TemplateLibrary {
         },
         // Architecture
         MapTemplate(
-            id: "refArch", kicker: "ARCHITECTURE", title: "Reference architecture",
-            detail: "Edge, services, data, observability", category: .architecture, type: .architecture
+            id: "refArch", kicker: "ARCHITECTURE", title: Loc.t("Reference architecture"),
+            detail: Loc.t("Edge, services, data, observability"), category: .architecture, type: .architecture
         ) {
             outline(
                 "c1", "Reference architecture", .architecture,
@@ -263,8 +278,8 @@ public enum TemplateLibrary {
                 """)
         },
         MapTemplate(
-            id: "adr", kicker: "DECISION", title: "Architecture decision record",
-            detail: "Context, options, decision, consequences", category: .architecture, type: .mindmap
+            id: "adr", kicker: "DECISION", title: Loc.t("Architecture decision record"),
+            detail: Loc.t("Context, options, decision, consequences"), category: .architecture, type: .mindmap
         ) {
             outline(
                 "c1", "ADR-012 · Event bus", .mindmap,
@@ -283,7 +298,8 @@ public enum TemplateLibrary {
                 """)
         },
         MapTemplate(
-            id: "capability", kicker: "TREE", title: "Capability map", detail: "Business capabilities by level",
+            id: "capability", kicker: "TREE", title: Loc.t("Capability map"),
+            detail: Loc.t("Business capabilities by level"),
             category: .architecture, type: .org
         ) {
             var c = outline(
@@ -303,7 +319,8 @@ public enum TemplateLibrary {
             return c
         },
         MapTemplate(
-            id: "migration", kicker: "TIMELINE", title: "Cloud migration", detail: "Waves from assess to decommission",
+            id: "migration", kicker: "TIMELINE", title: Loc.t("Cloud migration"),
+            detail: Loc.t("Waves from assess to decommission"),
             category: .architecture, type: .timeline
         ) {
             var c = outline(
@@ -320,8 +337,8 @@ public enum TemplateLibrary {
             return c
         },
         MapTemplate(
-            id: "fishbone", kicker: "FISHBONE", title: "Root cause analysis",
-            detail: "People, process, tools, environment", category: .architecture, type: .fishbone
+            id: "fishbone", kicker: "FISHBONE", title: Loc.t("Root cause analysis"),
+            detail: Loc.t("People, process, tools, environment"), category: .architecture, type: .fishbone
         ) {
             var c = outline(
                 "c1", "Slow deploys", .fishbone,
@@ -341,7 +358,8 @@ public enum TemplateLibrary {
         },
         // Security
         MapTemplate(
-            id: "threat", kicker: "THREAT MODEL", title: "Threat model", detail: "Data flow with STRIDE per element",
+            id: "threat", kicker: Loc.t("THREAT MODEL"), title: Loc.t("Threat model"),
+            detail: Loc.t("Data flow with STRIDE per element"),
             category: .security, type: .threatModel
         ) {
             outline(
@@ -355,7 +373,8 @@ public enum TemplateLibrary {
                 """)
         },
         MapTemplate(
-            id: "dfd", kicker: "DATA FLOW", title: "Data flow diagram", detail: "Entities, processes and stores",
+            id: "dfd", kicker: Loc.t("DATA FLOW"), title: Loc.t("Data flow diagram"),
+            detail: Loc.t("Entities, processes and stores"),
             category: .security, type: .dfd
         ) {
             outline(
@@ -369,7 +388,8 @@ public enum TemplateLibrary {
                 """)
         },
         MapTemplate(
-            id: "attackTree", kicker: "TREE", title: "Attack tree", detail: "Goals, paths and mitigations",
+            id: "attackTree", kicker: "TREE", title: Loc.t("Attack tree"),
+            detail: Loc.t("Goals, paths and mitigations"),
             category: .security, type: .logic
         ) {
             var c = outline(
@@ -388,7 +408,8 @@ public enum TemplateLibrary {
             return c
         },
         MapTemplate(
-            id: "runbook", kicker: "FLOW", title: "Incident response runbook", detail: "Triage, contain, recover",
+            id: "runbook", kicker: "FLOW", title: Loc.t("Incident response runbook"),
+            detail: Loc.t("Triage, contain, recover"),
             category: .security, type: .flowchart
         ) {
             outline(
@@ -405,7 +426,7 @@ public enum TemplateLibrary {
                 """)
         },
         MapTemplate(
-            id: "access", kicker: "MATRIX", title: "Access review", detail: "Roles, systems and owners",
+            id: "access", kicker: "MATRIX", title: Loc.t("Access review"), detail: Loc.t("Roles, systems and owners"),
             category: .security, type: .matrix
         ) {
             var c = outline(
@@ -424,7 +445,8 @@ public enum TemplateLibrary {
         },
         // Planning
         MapTemplate(
-            id: "roadmap", kicker: "TIMELINE", title: "Roadmap", detail: "Now, next, later", category: .planning,
+            id: "roadmap", kicker: "TIMELINE", title: Loc.t("Roadmap"), detail: Loc.t("Now, next, later"),
+            category: .planning,
             type: .timeline
         ) {
             var c = outline(
@@ -442,7 +464,7 @@ public enum TemplateLibrary {
             return c
         },
         MapTemplate(
-            id: "swot", kicker: "MATRIX", title: "SWOT", detail: "Strengths, weaknesses, opportunities, threats",
+            id: "swot", kicker: "MATRIX", title: "SWOT", detail: Loc.t("Strengths, weaknesses, opportunities, threats"),
             category: .planning, type: .matrix
         ) {
             var c = outline(
@@ -462,7 +484,8 @@ public enum TemplateLibrary {
             return c
         },
         MapTemplate(
-            id: "trip", kicker: "MIND MAP", title: "Weekend trip", detail: "Plan, pack, book", category: .planning,
+            id: "trip", kicker: Loc.t("MIND MAP"), title: Loc.t("Weekend trip"), detail: Loc.t("Plan, pack, book"),
+            category: .planning,
             type: .mindmap
         ) {
             outline(
@@ -481,7 +504,8 @@ public enum TemplateLibrary {
                 """)
         },
         MapTemplate(
-            id: "project", kicker: "TREE TABLE", title: "Project plan", detail: "Workstreams and tasks",
+            id: "project", kicker: Loc.t("TREE TABLE"), title: Loc.t("Project plan"),
+            detail: Loc.t("Workstreams and tasks"),
             category: .planning, type: .treeTable
         ) {
             var c = outline(
@@ -499,7 +523,8 @@ public enum TemplateLibrary {
             return c
         },
         MapTemplate(
-            id: "meeting", kicker: "MIND MAP", title: "Meeting notes", detail: "Agenda, decisions, actions",
+            id: "meeting", kicker: Loc.t("MIND MAP"), title: Loc.t("Meeting notes"),
+            detail: Loc.t("Agenda, decisions, actions"),
             category: .planning, type: .mindmap
         ) {
             outline(
@@ -513,7 +538,8 @@ public enum TemplateLibrary {
         },
         // Learning
         MapTemplate(
-            id: "bookNotes", kicker: "MIND MAP", title: "Book notes", detail: "Ideas, quotes and questions",
+            id: "bookNotes", kicker: Loc.t("MIND MAP"), title: Loc.t("Book notes"),
+            detail: Loc.t("Ideas, quotes and questions"),
             category: .learning, type: .mindmap
         ) {
             outline(
@@ -528,7 +554,8 @@ public enum TemplateLibrary {
                 """)
         },
         MapTemplate(
-            id: "course", kicker: "TREE", title: "Course outline", detail: "Modules and lessons", category: .learning,
+            id: "course", kicker: "TREE", title: Loc.t("Course outline"), detail: Loc.t("Modules and lessons"),
+            category: .learning,
             type: .tree
         ) {
             var c = outline(
@@ -546,7 +573,8 @@ public enum TemplateLibrary {
             return c
         },
         MapTemplate(
-            id: "concept", kicker: "MIND MAP", title: "Concept map", detail: "Terms and how they relate",
+            id: "concept", kicker: Loc.t("MIND MAP"), title: Loc.t("Concept map"),
+            detail: Loc.t("Terms and how they relate"),
             category: .learning, type: .mindmap
         ) {
             outline(
@@ -560,7 +588,7 @@ public enum TemplateLibrary {
                 """, edges: [("Light", "Glucose", "powers")])
         },
         MapTemplate(
-            id: "essay", kicker: "LOGIC", title: "Essay plan", detail: "Thesis, arguments, evidence",
+            id: "essay", kicker: "LOGIC", title: Loc.t("Essay plan"), detail: Loc.t("Thesis, arguments, evidence"),
             category: .learning, type: .logic
         ) {
             var c = outline(
@@ -577,7 +605,8 @@ public enum TemplateLibrary {
             return c
         },
         MapTemplate(
-            id: "revision", kicker: "TREE TABLE", title: "Revision tracker", detail: "Topics, confidence and dates",
+            id: "revision", kicker: Loc.t("TREE TABLE"), title: Loc.t("Revision tracker"),
+            detail: Loc.t("Topics, confidence and dates"),
             category: .learning, type: .treeTable
         ) {
             var c = outline(

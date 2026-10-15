@@ -204,7 +204,7 @@ private struct ThemeGrid: View {
                             RoundedRectangle(cornerRadius: 8).stroke(
                                 selected == id ? Color(hex: "#5850EC") : Color.secondary.opacity(0.25),
                                 lineWidth: selected == id ? 2.5 : 1))
-                        Text(id == "midnightNeon" ? "Neon" : t.name).font(
+                        Text(id == "midnightNeon" ? Loc.t("Neon") : t.name).font(
                             .chrome(12.5, weight: selected == id ? .semibold : .regular))
                     }
                 }
@@ -315,9 +315,10 @@ private struct RecoveryList: View {
 private struct FramePicker: View {
     var prefs: Preferences
     static let frames: [(String, String)] = [
-        ("none", "None"), ("softShadow", "Soft shadow"), ("window", "Window"), ("gradientMat", "Gradient mat"),
-        ("paper", "Paper"),
-        ("darkMat", "Dark mat"),
+        ("none", Loc.t("None")), ("softShadow", Loc.t("Soft shadow")), ("window", Loc.t("Window")),
+        ("gradientMat", Loc.t("Gradient mat")),
+        ("paper", Loc.t("Paper")),
+        ("darkMat", Loc.t("Dark mat")),
     ]
     var body: some View {
         let selected = prefs.string("export.frame")
@@ -426,8 +427,8 @@ private struct AgentCard: View {
                     Circle().fill(on ? Color.green : Color.gray.opacity(0.6)).frame(width: 7, height: 7)
                     Text(
                         on
-                            ? (folders > 0 ? "Server on · local only" : "On · allow a folder first")
-                            : "Server off · local only"
+                            ? (folders > 0 ? Loc.t("Server on · local only") : Loc.t("On · allow a folder first"))
+                            : Loc.t("Server off · local only")
                     )
                     .font(.chrome(12.5)).foregroundStyle(on ? Color.green : .secondary)
                 }
@@ -610,7 +611,7 @@ public enum Spoken {
         } else {
             parts.append(role)
         }
-        if let t = n.nodeType, let info = DiagramCatalog.info(t, in: c.type) { parts.append(info.name) }
+        if let t = n.nodeType, let info = DiagramCatalog.info(t, in: c.type) { parts.append(Loc.t(info.name)) }
         if let b = branchColor { parts.append(Loc.f("Branch colour %@", b)) }
         if let todo = n.todo { parts.append(todo.done ? Loc.t("Done") : Loc.t("To do")) }
         if n.note != nil { parts.append(Loc.t("Has note")) }

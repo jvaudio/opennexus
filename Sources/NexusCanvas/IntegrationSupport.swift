@@ -125,7 +125,8 @@ public enum CaptureComposer {
 
     /// One line is one topic. Several lines are topics (indentation keeps the hierarchy
     /// under each top line) or a new map, per Settings.
-    public static func compose(_ text: String, multiline: String = "items", title: String = "Capture") -> Result? {
+    public static func compose(_ text: String, multiline: String = "items", title: String = Loc.t("Capture")) -> Result?
+    {
         let lines = text.split(separator: "\n", omittingEmptySubsequences: true).map(String.init).filter {
             !$0.trimmingCharacters(in: .whitespaces).isEmpty
         }
@@ -162,7 +163,9 @@ public enum CaptureComposer {
     }
 
     /// Adds items to a canvas (under the central topic) as one undo step.
-    public static func patch(adding items: [Item], to canvas: Canvas, actionName: String = "Quick Capture") -> Patch? {
+    public static func patch(adding items: [Item], to canvas: Canvas, actionName: String = Loc.t("Quick Capture"))
+        -> Patch?
+    {
         guard !items.isEmpty else { return nil }
         var e = CanvasEditor(canvas)
         var last: NodeID?

@@ -540,7 +540,7 @@ final class ElementRenderer {
                 switch bd.meaning {
                 case "vpc": "VPC"
                 case "subnet": "SUBNET"
-                case "trust": "TRUST BOUNDARY"
+                case "trust": Loc.t("TRUST BOUNDARY")
                 case "zone": "ZONE"
                 default: ""
                 }

@@ -160,19 +160,21 @@ enum MainMenu {
             if placement == .view {
                 m.addItem(.separator())
                 m.addItem(
-                    item("Enter Full Screen", #selector(NSWindow.toggleFullScreen(_:)), "f", [.control, .command]))
+                    item(
+                        Loc.t("Enter Full Screen"), #selector(NSWindow.toggleFullScreen(_:)), "f", [.control, .command])
+                )
             }
             main.addItem(submenu(m))
         }
-        let window = NSMenu(title: "Window")
-        window.addItem(item("Minimize", #selector(NSWindow.performMiniaturize(_:)), "m"))
-        window.addItem(item("Zoom", #selector(NSWindow.performZoom(_:)), ""))
+        let window = NSMenu(title: Loc.t("Window"))
+        window.addItem(item(Loc.t("Minimize"), #selector(NSWindow.performMiniaturize(_:)), "m"))
+        window.addItem(item(Loc.t("Zoom"), #selector(NSWindow.performZoom(_:)), ""))
         window.addItem(.separator())
-        window.addItem(item("Bring All to Front", #selector(NSApplication.arrangeInFront(_:)), ""))
+        window.addItem(item(Loc.t("Bring All to Front"), #selector(NSApplication.arrangeInFront(_:)), ""))
         main.addItem(submenu(window))
         NSApp.windowsMenu = window
-        let help = NSMenu(title: "Help")
-        help.addItem(item("OpenNexus Help", #selector(NSApplication.showHelp(_:)), "?"))
+        let help = NSMenu(title: Loc.t("Help"))
+        help.addItem(item(Loc.t("OpenNexus Help"), #selector(NSApplication.showHelp(_:)), "?"))
         main.addItem(submenu(help))
         NSApp.helpMenu = help
         return main
@@ -194,51 +196,52 @@ enum MainMenu {
     }
 
     private static func appMenu() -> NSMenu {
-        let m = NSMenu(title: "OpenNexus")
-        m.addItem(item("About OpenNexus", #selector(NSApplication.orderFrontStandardAboutPanel(_:)), ""))
+        let m = NSMenu(title: Loc.t("OpenNexus"))
+        m.addItem(item(Loc.t("About OpenNexus"), #selector(NSApplication.orderFrontStandardAboutPanel(_:)), ""))
         m.addItem(.separator())
         m.addItem(item("Settings…", #selector(AppDelegate.showSettings(_:)), ","))
         m.addItem(.separator())
-        let services = NSMenu(title: "Services")
+        let services = NSMenu(title: Loc.t("Services"))
         m.addItem(submenu(services))
         NSApp.servicesMenu = services
         m.addItem(.separator())
-        m.addItem(item("Hide OpenNexus", #selector(NSApplication.hide(_:)), "h"))
-        m.addItem(item("Hide Others", #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option]))
-        m.addItem(item("Show All", #selector(NSApplication.unhideAllApplications(_:)), ""))
+        m.addItem(item(Loc.t("Hide OpenNexus"), #selector(NSApplication.hide(_:)), "h"))
+        m.addItem(
+            item(Loc.t("Hide Others"), #selector(NSApplication.hideOtherApplications(_:)), "h", [.command, .option]))
+        m.addItem(item(Loc.t("Show All"), #selector(NSApplication.unhideAllApplications(_:)), ""))
         m.addItem(.separator())
-        m.addItem(item("Quit OpenNexus", #selector(NSApplication.terminate(_:)), "q"))
+        m.addItem(item(Loc.t("Quit OpenNexus"), #selector(NSApplication.terminate(_:)), "q"))
         return m
     }
 
     private static func fileMenu(_ r: CommandRegistry, _ p: KeyProfile) -> NSMenu {
-        let m = NSMenu(title: "File")
-        m.addItem(item("New", #selector(AppDelegate.newDocument(_:)), "n"))
+        let m = NSMenu(title: Loc.t("File"))
+        m.addItem(item(Loc.t("New"), #selector(AppDelegate.newDocument(_:)), "n"))
         m.addItem(item("Open…", #selector(NSDocumentController.openDocument(_:)), "o"))
-        let recent = NSMenu(title: "Open Recent")
+        let recent = NSMenu(title: Loc.t("Open Recent"))
         recent.perform(NSSelectorFromString("_setMenuName:"), with: "NSRecentDocumentsMenu")
-        recent.addItem(item("Clear Menu", #selector(NSDocumentController.clearRecentDocuments(_:)), ""))
+        recent.addItem(item(Loc.t("Clear Menu"), #selector(NSDocumentController.clearRecentDocuments(_:)), ""))
         m.addItem(submenu(recent))
         m.addItem(.separator())
-        m.addItem(item("Close", #selector(NSWindow.performClose(_:)), "w"))
+        m.addItem(item(Loc.t("Close"), #selector(NSWindow.performClose(_:)), "w"))
         m.addItem(item("Save…", #selector(NSDocument.save(_:)), "s"))
-        m.addItem(item("Duplicate", #selector(NSDocument.duplicate(_:)), "s", [.command, .shift]))
+        m.addItem(item(Loc.t("Duplicate"), #selector(NSDocument.duplicate(_:)), "s", [.command, .shift]))
         m.addItem(item("Rename…", #selector(NSDocument.rename(_:)), ""))
-        m.addItem(item("Move To…", #selector(NSDocument.move(_:)), ""))
-        m.addItem(item("Revert To Last Saved", #selector(NSDocument.revertToSaved(_:)), ""))
-        m.addItem(item("Browse All Versions…", #selector(NSDocument.browseVersions(_:)), ""))
+        m.addItem(item(Loc.t("Move To…"), #selector(NSDocument.move(_:)), ""))
+        m.addItem(item(Loc.t("Revert To Last Saved"), #selector(NSDocument.revertToSaved(_:)), ""))
+        m.addItem(item(Loc.t("Browse All Versions…"), #selector(NSDocument.browseVersions(_:)), ""))
         m.addItem(.separator())
         addRegistryItems(r, p, .file, to: m)
         return m
     }
 
     private static func editMenu(_ r: CommandRegistry, _ p: KeyProfile) -> NSMenu {
-        let m = NSMenu(title: "Edit")
+        let m = NSMenu(title: Loc.t("Edit"))
         addRegistryItems(r, p, .edit, to: m, only: [.undo, .redo])
         m.addItem(.separator())
-        m.addItem(item("Cut", #selector(NSText.cut(_:)), "x"))
-        m.addItem(item("Copy", #selector(NSText.copy(_:)), "c"))
-        m.addItem(item("Paste", #selector(NSText.paste(_:)), "v"))
+        m.addItem(item(Loc.t("Cut"), #selector(NSText.cut(_:)), "x"))
+        m.addItem(item(Loc.t("Copy"), #selector(NSText.copy(_:)), "c"))
+        m.addItem(item(Loc.t("Paste"), #selector(NSText.paste(_:)), "v"))
         m.addItem(.separator())
         addRegistryItems(r, p, .edit, to: m, excluding: [.undo, .redo, .cut, .copy, .paste])
         return m
@@ -253,8 +256,9 @@ enum MainMenu {
             $0.menu == placement && (only?.contains($0.id) ?? true) && !excluding.contains($0.id)
         }
         let families: [(prefix: String, title: String)] = [
-            ("structure.", "Branch Structure"), ("marker.priority", "Priority"), ("style.quick", "Quick Style"),
-            ("view.navigationTab", "Navigation Panel"),
+            ("structure.", Loc.t("Branch Structure")), ("marker.priority", Loc.t("Priority")),
+            ("style.quick", Loc.t("Quick Style")),
+            ("view.navigationTab", Loc.t("Navigation Panel")),
         ]
         var lastCategory: CommandCategory?
         var familyMenus: [String: NSMenu] = [:]

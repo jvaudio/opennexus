@@ -27,7 +27,7 @@ extension CanvasController {
     public var selectionOverride: TopicStyle { canvas.nodes[selection.primary]?.style ?? TopicStyle() }
 
     /// Changes the node-level style of every selected topic.
-    public func updateSelectionStyle(_ name: String = "Change Style", _ body: (inout TopicStyle) -> Void) {
+    public func updateSelectionStyle(_ name: String = Loc.t("Change Style"), _ body: (inout TopicStyle) -> Void) {
         let targets = selection.nodes
         perform(name) { e in
             for t in targets {
@@ -52,7 +52,7 @@ extension CanvasController {
             return
         }
         let targets = selection.nodes
-        perform("Paste Style") { e in
+        perform(Loc.t("Paste Style")) { e in
             for t in targets {
                 e.update(t) {
                     $0.style = clip.style.isEmpty ? nil : clip.style
@@ -65,7 +65,7 @@ extension CanvasController {
     /// Reset Style returns topics to their skeleton, colour theme and theme.
     public func resetStyle() {
         let targets = selection.nodes
-        perform("Reset Style") { e in
+        perform(Loc.t("Reset Style")) { e in
             for t in targets {
                 e.update(t) {
                     $0.style = nil
@@ -79,7 +79,7 @@ extension CanvasController {
     public func applyQuickStyle(_ id: String) {
         let targets = selection.nodes
         let value: String? = id == "default" ? nil : id
-        perform("Quick Style") { e in
+        perform(Loc.t("Quick Style")) { e in
             for t in targets { e.update(t) { $0.quickStyle = $0.quickStyle == value ? nil : value } }
         }
     }
@@ -101,7 +101,7 @@ extension CanvasController {
         switch scope {
         case .siblings:
             guard let p = c.parent(of: id), let kids = c.nodes[p]?.children else { return }
-            perform("Apply Style to Siblings") { e in
+            perform(Loc.t("Apply Style to Siblings")) { e in
                 for k in kids where k != id {
                     e.update(k) {
                         $0.style = style
@@ -121,7 +121,7 @@ extension CanvasController {
             }
         case .subtopics:
             let ids = c.subtree(id).dropFirst()
-            perform("Apply Style to Subtopics") { e in
+            perform(Loc.t("Apply Style to Subtopics")) { e in
                 for k in ids {
                     e.update(k) {
                         $0.style = style
@@ -144,7 +144,7 @@ extension CanvasController {
             i += 1
         }
         lib.quickStyles.append(QuickStyle(id: qid, name: name, glyph: "★", style: style))
-        updateLibrary("Save Quick Style", lib)
+        updateLibrary(Loc.t("Save Quick Style"), lib)
     }
 
     /// Select topics with this style.
@@ -160,21 +160,21 @@ extension CanvasController {
     // MARK: Map
 
     public func updateCanvasStyle(
-        _ name: String = "Change Map Style", morph: Bool = false,
+        _ name: String = Loc.t("Change Map Style"), morph: Bool = false,
         _ body: (inout CanvasStyle) -> Void
     ) {
         if morph { onMorph?() }
         perform(name) { e in e.updateMeta { body(&$0.style) } }
     }
 
-    public func updateLayout(_ name: String = "Change Layout", _ body: (inout CanvasLayout) -> Void) {
+    public func updateLayout(_ name: String = Loc.t("Change Layout"), _ body: (inout CanvasLayout) -> Void) {
         perform(name) { e in e.updateMeta { body(&$0.layout) } }
         onReveal?(selection.primary)
     }
 
     public func setNodeStyle(_ style: NodeStyle) {
         guard canvas.style.nodeStyle != style.rawValue else { return }
-        updateCanvasStyle("Node Style", morph: true) { $0.nodeStyle = style.rawValue }
+        updateCanvasStyle(Loc.t("Node Style"), morph: true) { $0.nodeStyle = style.rawValue }
         showToast(Loc.f("Node style: %@", style.name))
     }
 
@@ -209,7 +209,7 @@ extension CanvasController {
         t.name = name
         if base == nil { t.palette = styleEnvironment.palette }
         lib.themes.append(t)
-        updateLibrary("Save Theme", lib)
+        updateLibrary(Loc.t("Save Theme"), lib)
         setTheme(tid)
         return t
     }
@@ -217,20 +217,20 @@ extension CanvasController {
     public func saveTheme(_ t: Theme) {
         var lib = library
         if let i = lib.themes.firstIndex(where: { $0.id == t.id }) { lib.themes[i] = t } else { lib.themes.append(t) }
-        updateLibrary("Save Theme", lib)
+        updateLibrary(Loc.t("Save Theme"), lib)
     }
 
     public func deleteTheme(_ id: String) {
         var lib = library
         lib.themes.removeAll { $0.id == id }
-        updateLibrary("Delete Theme", lib)
+        updateLibrary(Loc.t("Delete Theme"), lib)
         if canvas.style.theme == id { setTheme("classic") }
     }
 
     /// A skeleton sets structure, node style and branch line in one step.
     public func applySkeleton(_ s: Skeleton) {
         onMorph?()
-        perform("Skeleton") { e in
+        perform(Loc.t("Skeleton")) { e in
             e.updateMeta {
                 $0.layout.structure = s.structure
                 $0.style.nodeStyle = s.nodeStyle.rawValue
@@ -254,7 +254,7 @@ extension CanvasController {
         } else {
             lib.palettes.append(p)
         }
-        updateLibrary("Save Colour Theme", lib)
-        updateCanvasStyle("Colour Theme") { $0.palette = p.id }
+        updateLibrary(Loc.t("Save Colour Theme"), lib)
+        updateCanvasStyle(Loc.t("Colour Theme")) { $0.palette = p.id }
     }
 }

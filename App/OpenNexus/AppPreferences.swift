@@ -96,7 +96,7 @@ final class AppPreferences {
             ?? NSPanel(
                 contentRect: CGRect(x: 0, y: 0, width: 520, height: 360), styleMask: [.titled, .closable],
                 backing: .buffered, defer: false)
-        w.title = "Allowed Folders"
+        w.title = Loc.t("Allowed Folders")
         w.isReleasedWhenClosed = false
         w.contentView = NSHostingView(rootView: view)
         if let s = settingsWindow, s.isVisible {
@@ -137,7 +137,7 @@ final class AppPreferences {
                 contentRect: CGRect(x: 0, y: 0, width: 1240, height: 820),
                 styleMask: [.titled, .closable, .resizable, .fullSizeContentView],
                 backing: .buffered, defer: false)
-            w.title = "Settings"
+            w.title = Loc.t("Settings")
             w.titlebarAppearsTransparent = true
             w.isReleasedWhenClosed = false
             w.setFrameAutosaveName("OpenNexusSettings")
@@ -148,7 +148,7 @@ final class AppPreferences {
                 [weak self] action in
                 self?.run(action)
             })
-        settingsWindow?.contentView?.setAccessibilityLabel("Settings")
+        settingsWindow?.contentView?.setAccessibilityLabel(Loc.t("Settings"))
         settingsWindow?.center()
         settingsWindow?.makeKeyAndOrderFront(nil)
     }

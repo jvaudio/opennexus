@@ -89,12 +89,12 @@ public enum DFDRules {
             if ta != .process && tb != .process {
                 let why: String =
                     switch (ta, tb) {
-                    case (.entity, .store): "Entities can’t write to stores directly."
-                    case (.store, .entity): "Entities can’t read stores directly."
-                    case (.store, .store): "Stores can’t move data between themselves."
-                    default: "Entities exchange data through a process."
+                    case (.entity, .store): CoreText.t("Entities can’t write to stores directly.")
+                    case (.store, .entity): CoreText.t("Entities can’t read stores directly.")
+                    case (.store, .store): CoreText.t("Stores can’t move data between themselves.")
+                    default: CoreText.t("Entities exchange data through a process.")
                     }
-                let label = f.label.isEmpty ? "A flow" : "“\(f.label)”"
+                let label = f.label.isEmpty ? CoreText.t("A flow") : CoreText.f("“%@”", f.label)
                 var fixes: [Fix] = [.insertProcess(flow: f.id)]
                 // A process the source already feeds (or the target already reads from).
                 let via =
@@ -105,15 +105,17 @@ public enum DFDRules {
                 out.append(
                     Violation(
                         id: "touchesProcess:\(f.id)", rule: .touchesProcess, severity: .error, subject: .flow(f.id),
-                        title: "A data flow must touch a process",
-                        detail: "\(label) goes from \(name(f.from)) straight to \(name(f.to)). \(why)", fixes: fixes))
+                        title: CoreText.t("A data flow must touch a process"),
+                        detail: CoreText.f("%@ goes from %@ straight to %@. %@", label, name(f.from), name(f.to), why),
+                        fixes: fixes))
             }
             if f.label.trimmingCharacters(in: .whitespaces).isEmpty {
                 out.append(
                     Violation(
                         id: "labelled:\(f.id)", rule: .labelled, severity: .warning, subject: .flow(f.id),
-                        title: "Name every data flow",
-                        detail: "The flow from \(name(f.from)) to \(name(f.to)) has no label.", fixes: [.ignore]))
+                        title: CoreText.t("Name every data flow"),
+                        detail: CoreText.f("The flow from %@ to %@ has no label.", name(f.from), name(f.to)),
+                        fixes: [.ignore]))
             }
         }
         for id in g.elements {
@@ -123,8 +125,8 @@ public enum DFDRules {
                     out.append(
                         Violation(
                             id: "storeWritten:\(id.rawValue)", rule: .storeWritten, severity: .error,
-                            subject: .node(id), title: "A data store is never written",
-                            detail: "\(name(id)) has no incoming flow, so nothing ever writes to it.",
+                            subject: .node(id), title: CoreText.t("A data store is never written"),
+                            detail: CoreText.f("%@ has no incoming flow, so nothing ever writes to it.", name(id)),
                             fixes: [.ignore]))
                 }
             case .process?:
@@ -136,10 +138,10 @@ public enum DFDRules {
                     out.append(
                         Violation(
                             id: "processIO:\(id.rawValue)", rule: .processIO, severity: .error, subject: .node(id),
-                            title: ins ? "A process with no output" : "A process with no input",
+                            title: ins ? CoreText.t("A process with no output") : CoreText.t("A process with no input"),
                             detail: ins
-                                ? "\(name(id)) receives data but sends none on (a black hole)."
-                                : "\(name(id)) sends data it never receives (a miracle).",
+                                ? CoreText.f("%@ receives data but sends none on (a black hole).", name(id))
+                                : CoreText.f("%@ sends data it never receives (a miracle).", name(id)),
                             fixes: [.ignore]))
                 }
                 if let sub = canvas.nodes[id]?.subCanvas, let child = level(sub) {
@@ -153,13 +155,13 @@ public enum DFDRules {
                         let missing = mine.subtracting(theirs).sorted()
                         let extra = theirs.subtracting(mine).sorted()
                         var parts: [String] = []
-                        if !missing.isEmpty { parts.append("missing \(missing.joined(separator: ", "))") }
-                        if !extra.isEmpty { parts.append("extra \(extra.joined(separator: ", "))") }
+                        if !missing.isEmpty { parts.append(CoreText.f("missing %@", missing.joined(separator: ", "))) }
+                        if !extra.isEmpty { parts.append(CoreText.f("extra %@", extra.joined(separator: ", "))) }
                         out.append(
                             Violation(
                                 id: "levelsBalanced:\(id.rawValue)", rule: .levelsBalanced, severity: .error,
-                                subject: .node(id), title: "Levels aren’t balanced",
-                                detail: "\(name(id))’s next level has \(parts.joined(separator: "; ")).",
+                                subject: .node(id), title: CoreText.t("Levels aren’t balanced"),
+                                detail: CoreText.f("%@’s next level has %@.", name(id), parts.joined(separator: "; ")),
                                 fixes: [.ignore]))
                     }
                 }
@@ -183,15 +185,31 @@ public enum DFDRules {
             (
                 .touchesProcess, n == 0,
                 n == 0
-                    ? "Flows all touch a process" : "\(n) flow\(n == 1 ? "" : "s") skip\(n == 1 ? "s" : "") a process"
+                    ? CoreText.t("Flows all touch a process")
+                    : CoreText.n("%lld flow skips a process", "%lld flows skip a process", n)
             ),
-            (.storeWritten, s == 0, s == 0 ? "Stores all written" : "\(s) store\(s == 1 ? "" : "s") never written"),
+            (
+                .storeWritten, s == 0,
+                s == 0
+                    ? CoreText.t("Stores all written")
+                    : CoreText.n("%lld store never written", "%lld stores never written", s)
+            ),
             (
                 .processIO, p == 0,
-                p == 0 ? "Processes have inputs and outputs" : "\(p) process\(p == 1 ? "" : "es") missing a flow"
+                p == 0
+                    ? CoreText.t("Processes have inputs and outputs")
+                    : CoreText.n("%lld process missing a flow", "%lld processes missing a flow", p)
             ),
-            (.labelled, l == 0, l == 0 ? "Flows all labelled" : "\(l) unlabelled flow\(l == 1 ? "" : "s")"),
-            (.levelsBalanced, b == 0, b == 0 ? "Levels balanced" : "\(b) level\(b == 1 ? "" : "s") unbalanced"),
+            (
+                .labelled, l == 0,
+                l == 0
+                    ? CoreText.t("Flows all labelled") : CoreText.n("%lld unlabelled flow", "%lld unlabelled flows", l)
+            ),
+            (
+                .levelsBalanced, b == 0,
+                b == 0
+                    ? CoreText.t("Levels balanced") : CoreText.n("%lld level unbalanced", "%lld levels unbalanced", b)
+            ),
         ]
     }
 

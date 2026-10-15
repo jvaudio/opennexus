@@ -71,7 +71,7 @@ public final class DocumentStore {
     /// version because both sides changed it.
     @discardableResult
     public func mergeExternal(
-        _ disk: DocumentModel, base: DocumentModel, focus: CanvasID, actionName: String = "Change on Disk"
+        _ disk: DocumentModel, base: DocumentModel, focus: CanvasID, actionName: String = Loc.t("Change on Disk")
     ) -> [String] {
         let merge = DocumentMerge(base: base, current: model, disk: disk)
         let target = merge.model.canvases[focus] != nil ? focus : (merge.model.canvasOrder.first ?? focus)
