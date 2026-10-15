@@ -204,7 +204,7 @@ private struct ThemeGrid: View {
                     }
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Theme \(t.name)")
+                .accessibilityLabel(Loc.f("Theme %@", t.name))
                 .accessibilityAddTraits(selected == id ? .isSelected : [])
             }
         }
@@ -273,7 +273,7 @@ private struct RecoveryList: View {
                 HStack {
                     Text("RECOVERY").font(.chrome(12, weight: .semibold)).foregroundStyle(.secondary)
                     Spacer()
-                    Text("\(items.count) snapshot\(items.count == 1 ? "" : "s")").font(.chrome(12.5))
+                    Text(Loc.n("%lld snapshot", "%lld snapshots", items.count)).font(.chrome(12.5))
                         .foregroundStyle(.secondary)
                 }
                 if items.isEmpty {
@@ -285,7 +285,11 @@ private struct RecoveryList: View {
                             Text(s.date.formatted(date: .abbreviated, time: .shortened)).font(
                                 .chrome(13.5, weight: .medium))
                             Text(
-                                "Crash recovery · \(s.topics) \(s.topics == 1 ? "topic" : "topics")\(s.encrypted ? " · encrypted" : "")"
+                                s.encrypted
+                                    ? Loc.n(
+                                        "Crash recovery · %lld topic · encrypted",
+                                        "Crash recovery · %lld topics · encrypted", s.topics)
+                                    : Loc.n("Crash recovery · %lld topic", "Crash recovery · %lld topics", s.topics)
                             ).font(
                                 .chrome(12.5)
                             ).foregroundStyle(.secondary)
@@ -328,7 +332,7 @@ private struct FramePicker: View {
                     }
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Frame \(title)")
+                .accessibilityLabel(Loc.f("Frame %@", title))
                 .accessibilityAddTraits(selected == id ? .isSelected : [])
             }
         }
@@ -594,7 +598,9 @@ public enum Spoken {
         if prefs.bool("accessibility.announceLevel") {
             parts.append("\(role), level \(depth + 1) of \(maxDepth + 1)")
             parts.append(
-                "\(n.children.count) \(n.children.count == 1 ? "child" : "children")\(n.folded ? ", collapsed" : "")")
+                n.folded
+                    ? Loc.n("%lld child, collapsed", "%lld children, collapsed", n.children.count)
+                    : Loc.n("%lld child", "%lld children", n.children.count))
         } else {
             parts.append(role)
         }

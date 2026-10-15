@@ -34,8 +34,11 @@ struct ThemeBuilder: View {
                     .background(
                         (report.passes ? Color.green : Color.red).opacity(0.12), in: RoundedRectangle(cornerRadius: 5)
                     )
-                    .help(report.passes ? "Every node style meets the target" : "Lowest: \(report.worst)")
-                    .accessibilityLabel("Contrast \(report.badge)")
+                    .help(
+                        report.passes
+                            ? Loc.f("Every node style meets the target") : Loc.f("Lowest: %@", report.worst)
+                    )
+                    .accessibilityLabel(Loc.f("Contrast %@", report.badge))
             }
             Divider()
             LabeledContent("Name") { TextField("Name", text: $theme.name).textFieldStyle(.roundedBorder) }

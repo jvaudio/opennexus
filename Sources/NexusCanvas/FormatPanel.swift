@@ -177,7 +177,7 @@ struct StyleTab: View {
     @ViewBuilder var updateStyleItems: some View {
         let depth = controller.canvas.depth(of: controller.selection.primary)
         Button("Apply to siblings") { controller.updateStyle(.siblings) }
-        Button("Apply to all level-\(depth + 1) topics") { controller.updateStyle(.sameLevel) }
+        Button(Loc.f("Apply to all level-%lld topics", depth + 1)) { controller.updateStyle(.sameLevel) }
         Button("Apply to all subtopics of this branch") { controller.updateStyle(.subtopics) }
         Divider()
         Button("Save as Quick Style…") { askingQuickName = true }
@@ -365,7 +365,7 @@ struct StyleTab: View {
                 ) {
                     Text("Auto").tag(0.0)
                     ForEach([12, 13, 14, 15, 16, 18, 20, 24, 28, 32] as [Double], id: \.self) {
-                        Text("\(Int($0)) pt").tag($0)
+                        Text(Loc.f("%lld pt", Int($0))).tag($0)
                     }
                 }
                 .labelsHidden()
@@ -642,7 +642,7 @@ struct StyleTab: View {
             VStack(alignment: .leading, spacing: 2) {
                 let depth = controller.canvas.depth(of: controller.selection.primary)
                 actionRow("Apply to siblings", "") { controller.updateStyle(.siblings) }
-                actionRow("Apply to all level-\(depth + 1) topics", "") { controller.updateStyle(.sameLevel) }
+                actionRow(Loc.f("Apply to all level-%lld topics", depth + 1), "") { controller.updateStyle(.sameLevel) }
                 actionRow("Apply to all subtopics of this branch", "") { controller.updateStyle(.subtopics) }
                 actionRow("Save as Quick Style…", "") { askingQuickName = true }
                 actionRow("Save into this theme", "") { controller.updateStyle(.sameLevel) }

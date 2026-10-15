@@ -663,9 +663,10 @@ extension CanvasController {
             let detail: String =
                 switch fmt {
                 case .nexus?:
-                    "\(topics) \(topics == 1 ? "topic" : "topics") · \(im.canvases.count) canvas\(im.canvases.count == 1 ? "" : "es")"
-                case .markdown?: "\(im.canvases.first.map { $0.nodes.count - 1 } ?? 0) headings"
-                default: "\(topics) \(topics == 1 ? "topic" : "topics") · \(fmt?.title ?? "") import"
+                    "\(Loc.n("%lld topic", "%lld topics", topics)) · \(Loc.n("%lld canvas", "%lld canvases", im.canvases.count))"
+                case .markdown?:
+                    Loc.n("%lld heading", "%lld headings", im.canvases.first.map { $0.nodes.count - 1 } ?? 0)
+                default: Loc.f("%@ · %@ import", Loc.n("%lld topic", "%lld topics", topics), fmt?.title ?? "")
                 }
             let kind: String =
                 switch fmt {
@@ -719,7 +720,10 @@ extension CanvasController {
                 }
                 return out
             }
-            showToast("Merged \(m.sources.count) document\(m.sources.count == 1 ? "" : "s") into this canvas")
+            showToast(
+                Loc.n(
+                    "Merged %lld document into this canvas", "Merged %lld documents into this canvas",
+                    m.sources.count))
             return
         }
         var focus = canvasID
@@ -743,7 +747,7 @@ extension CanvasController {
             }
         }
         if focus != canvasID { switchCanvas(to: focus) }
-        showToast("Merged \(m.sources.count) document\(m.sources.count == 1 ? "" : "s") · one undo")
+        showToast(Loc.n("Merged %lld document · one undo", "Merged %lld documents · one undo", m.sources.count))
     }
 
     // MARK: Canvas tab menu (artboard 50)

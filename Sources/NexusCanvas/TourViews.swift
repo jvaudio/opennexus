@@ -71,7 +71,7 @@ struct TourCoachView: View {
             .padding(10)
             .animation(UIMotion.animation(.snappy(duration: 0.2)), value: t.coach)
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("Tour: \(s.prompt)")
+            .accessibilityLabel(Loc.f("Tour: %@", s.prompt))
         }
     }
 }
@@ -116,14 +116,14 @@ struct TourOverlay: View {
         }
         // Shapes make no accessibility element of their own: this one is explicit.
         .accessibilityElement()
-        .accessibilityLabel("Lesson \(t.lesson + 1) of \(t.lessons.count)")
+        .accessibilityLabel(Loc.f("Lesson %lld of %lld", t.lesson + 1, t.lessons.count))
         .accessibilityAddTraits([.isStaticText, .updatesFrequently])
     }
 
     func pill(_ t: TourController) -> some View {
         HStack(spacing: 10) {
             Circle().fill(Color(hex: "#5850EC")).frame(width: 8, height: 8)
-            Text("Tour paused · lesson \(t.lesson + 1) of \(t.lessons.count)").font(.chrome(14))
+            Text(Loc.f("Tour paused · lesson %lld of %lld", t.lesson + 1, t.lessons.count)).font(.chrome(14))
             Button("Resume") { t.resume() }.buttonStyle(.link).font(.chrome(14, weight: .semibold))
         }
         .padding(.horizontal, 16).frame(height: 40)
@@ -139,7 +139,7 @@ struct TourOverlay: View {
         ]
         return VStack(alignment: .leading, spacing: 22) {
             HStack {
-                Text("You built your first map in \(t.elapsedText)").font(.chrome(26, weight: .bold))
+                Text(Loc.f("You built your first map in %@", t.elapsedText)).font(.chrome(26, weight: .bold))
                     .foregroundStyle(.white)
                 Spacer()
                 Text("FINISH").font(.chrome(12, weight: .semibold, design: .monospaced)).foregroundStyle(

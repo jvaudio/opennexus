@@ -47,7 +47,9 @@ final class NexusDocument: NSDocument {
         let repairs = store.model.repairs
         if !repairs.isEmpty {
             wc.controller.showToast(
-                "Repaired this file: \(repairs.count == 1 ? repairs[0] : "\(repairs.count) problems") · saving keeps the fix"
+                Loc.f(
+                    "Repaired this file: %@ · saving keeps the fix",
+                    repairs.count == 1 ? repairs[0] : Loc.n("%lld problem", "%lld problems", repairs.count))
             )
             store.updateDocument { $0.repairs = [] }
         }

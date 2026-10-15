@@ -37,7 +37,10 @@ struct GhostHintsView: View {
             }
             .font(.chrome(12.5))
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(g.ideas.count) suggestions. Control Return accepts, Escape dismisses.")
+            .accessibilityLabel(
+                Loc.n(
+                    "%lld suggestion. Control Return accepts, Escape dismisses.",
+                    "%lld suggestions. Control Return accepts, Escape dismisses.", g.ideas.count))
         }
     }
 }
@@ -148,7 +151,7 @@ struct PromptBarView: View {
                     }
                 }
                 HStack {
-                    Text("⇧⌘Space · anchored to “\(anchor)”")
+                    Text(Loc.f("⇧⌘Space · anchored to “%@”", anchor))
                     Spacer()
                     Text("Results arrive as ghosts, never applied silently")
                 }
@@ -188,7 +191,7 @@ struct AIPanelView: View {
                 Divider()
                 VStack(alignment: .leading, spacing: 10) {
                     HStack {
-                        LabeledMenu("Chat: \(chat?.title ?? "New chat")") {
+                        LabeledMenu(Loc.f("Chat: %@", chat?.title ?? Loc.f("New chat"))) {
                             ForEach(controller.chats) { c in Button(c.title) { controller.selectChat(c.id) } }
                         }
                         .menuStyle(.borderlessButton)

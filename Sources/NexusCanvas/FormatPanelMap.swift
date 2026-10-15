@@ -135,7 +135,7 @@ struct MapTab: View {
         PanelSection(
             "Skeleton", key: "skeleton",
             accessory: {
-                Button("All \(Skeleton.gallery.count) ›") { showingGallery = true }
+                Button(Loc.f("All %lld ›", Skeleton.gallery.count)) { showingGallery = true }
                     .buttonStyle(.plain)
                     .font(.chrome(12))
                     .foregroundStyle(Color.accentColor)
@@ -183,7 +183,7 @@ struct MapTab: View {
         PanelSection(
             "Node style", key: "nodestyle",
             accessory: {
-                Text("\(controller.bindings(for: .cycleNodeStyle).first?.glyphs ?? "") cycles")
+                Text(Loc.f("%@ cycles", controller.bindings(for: .cycleNodeStyle).first?.glyphs ?? ""))
                     .font(.chrome(11)).foregroundStyle(.secondary)
             }
         ) {
@@ -223,7 +223,7 @@ struct MapTab: View {
                         }
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Theme \(t.name)")
+                    .accessibilityLabel(Loc.f("Theme %@", t.name))
                     .accessibilityAddTraits(style.theme == t.id ? .isSelected : [])
                 }
             }

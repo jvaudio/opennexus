@@ -115,7 +115,9 @@ private struct ExportSheet: View {
                 let hits = state.askMask ? controller.maskHits.count : 0
                 if hits > 0 {
                     Toggle(
-                        "Mask \(hits) email\(hits == 1 ? "" : "s"), key\(hits == 1 ? "" : "s") or name\(hits == 1 ? "" : "s") in this export",
+                        Loc.n(
+                            "Mask %lld email, key or name in this export",
+                            "Mask %lld emails, keys or names in this export", hits),
                         isOn: Binding(get: { state.mask }, set: { v in set { $0.mask = v } })
                     )
                     .toggleStyle(.checkbox)
@@ -391,10 +393,13 @@ private struct ExportSheet: View {
                         format: .number
                     )
                     .textFieldStyle(.roundedBorder).frame(width: 90)
-                    .accessibilityLabel("Padding in \(unit)")
+                    .accessibilityLabel(Loc.f("Padding in %@", unit))
                     Text(unit).foregroundStyle(.secondary)
-                    Menu(state.image.theme.map { "Use \(Theme.named($0).name)" } ?? "Keep \(controller.theme.name)") {
-                        Button("Keep \(controller.theme.name)") { set { $0.image.theme = nil } }
+                    Menu(
+                        state.image.theme.map { Loc.f("Use %@", Theme.named($0).name) }
+                            ?? Loc.f("Keep %@", controller.theme.name)
+                    ) {
+                        Button(Loc.f("Keep %@", controller.theme.name)) { set { $0.image.theme = nil } }
                         Divider()
                         ForEach(Theme.builtIn, id: \.id) { t in Button(t.name) { set { $0.image.theme = t.id } } }
                     }
@@ -452,7 +457,7 @@ struct MapShotBar: View {
                                     lineWidth: s.frame == id ? 2.5 : 1))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Frame \(id)")
+                    .accessibilityLabel(Loc.f("Frame %@", id))
                 }
                 Stepper(
                     value: Binding(
@@ -461,7 +466,7 @@ struct MapShotBar: View {
                             var x = s; x.padding = v; controller.setMapShot(x)
                         }), in: 0...96, step: 4
                 ) {
-                    Text("\(Int(s.padding)) pt").foregroundStyle(.white).monospacedDigit()
+                    Text(Loc.f("%lld pt", Int(s.padding))).foregroundStyle(.white).monospacedDigit()
                 }
                 Toggle(
                     isOn: Binding(
@@ -550,7 +555,9 @@ private struct PrintSheet: View {
                     .accessibilityLabel("Page previews")
                     .frame(maxWidth: 340)
                     Text(
-                        "\(count) page\(count == 1 ? "" : "s")\(count > 1 && options.tile && !options.fitPage ? " · cut marks on" : "")"
+                        count > 1 && options.tile && !options.fitPage
+                            ? Loc.n("%lld page · cut marks on", "%lld pages · cut marks on", count)
+                            : Loc.n("%lld page", "%lld pages", count)
                     )
                     .font(.chrome(12.5, design: .monospaced)).foregroundStyle(.secondary)
                     Spacer(minLength: 0)
@@ -644,8 +651,9 @@ struct MergeSheetView: View {
                         items: [(false, "As canvases"), (true, "Into this canvas")],
                         selection: Binding(
                             get: { m.intoThisCanvas }, set: { controller.mergeState?.intoThisCanvas = $0 }))
-                    Text("DOCUMENTS · \(m.sources.count)").font(.chrome(13, weight: .semibold)).foregroundStyle(
-                        .secondary)
+                    Text(Loc.f("DOCUMENTS · %lld", m.sources.count)).font(.chrome(13, weight: .semibold))
+                        .foregroundStyle(
+                            .secondary)
                     ForEach(m.sources) { s in
                         HStack(spacing: 12) {
                             Text(s.kind).font(.chrome(10, weight: .bold, design: .monospaced))
@@ -666,7 +674,7 @@ struct MergeSheetView: View {
                                 Image(systemName: "xmark")
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("Remove \(s.name)")
+                            .accessibilityLabel(Loc.f("Remove %@", s.name))
                         }
                         .padding(12)
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.07)))
@@ -797,8 +805,9 @@ struct ImportReportView: View {
                 card(r)
                 if r.format == "Xmind" {
                     XmindSwitcherCard(
-                        report:
-                            "Import report: \(r.topics) \(r.topics == 1 ? "topic" : "topics"), \(r.notConverted) item\(r.notConverted == 1 ? "" : "s") not converted"
+                        report: Loc.f(
+                            "Import report: %@, %@", Loc.n("%lld topic", "%lld topics", r.topics),
+                            Loc.n("%lld item not converted", "%lld items not converted", r.notConverted))
                     )
                 }
             }
@@ -808,12 +817,14 @@ struct ImportReportView: View {
     func card(_ r: ImportReport) -> some View {
         Group {
             VStack(alignment: .leading, spacing: 16) {
-                Text("IMPORT REPORT · \(r.source)").font(.chrome(14, weight: .semibold)).foregroundStyle(
+                Text(Loc.f("IMPORT REPORT · %@", r.source)).font(.chrome(14, weight: .semibold)).foregroundStyle(
                     .secondary)
                 HStack(spacing: 10) {
                     tile(
                         "\(r.canvases)",
-                        r.format == "Xmind" ? "sheets → canvases" : "canvas\(r.canvases == 1 ? "" : "es")", ok: true)
+                        r.format == "Xmind"
+                            ? Loc.f("sheets → canvases") : r.canvases == 1 ? Loc.f("canvas") : Loc.f("canvases"),
+                        ok: true)
                     tile("\(r.topics + r.markers + r.notes)", "topics, markers, notes", ok: true)
                     tile("\(r.notConverted)", "not converted", ok: r.notConverted == 0)
                 }
@@ -884,7 +895,9 @@ struct SnapshotsSheetView: View {
                                         Text(s.date.formatted(date: .abbreviated, time: .standard)).font(
                                             .chrome(14.5))
                                         Text(
-                                            "\(s.topics) \(s.topics == 1 ? "topic" : "topics")\(s.encrypted ? " · encrypted" : "")"
+                                            s.encrypted
+                                                ? Loc.n("%lld topic · encrypted", "%lld topics · encrypted", s.topics)
+                                                : Loc.n("%lld topic", "%lld topics", s.topics)
                                         ).font(
                                             .chrome(12.5)
                                         ).foregroundStyle(.secondary)

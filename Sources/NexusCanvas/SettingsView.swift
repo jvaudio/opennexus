@@ -108,9 +108,12 @@ public struct SettingsView: View {
     var results: some View {
         let hits = SettingsSchema.search(query)
         return VStack(alignment: .leading, spacing: 6) {
-            Text(hits.isEmpty ? "No settings match “\(query)”" : "\(hits.count) result\(hits.count == 1 ? "" : "s")")
-                .font(.chrome(22, weight: .bold))
-                .padding(.bottom, 8)
+            Text(
+                hits.isEmpty
+                    ? Loc.f("No settings match “%@”", query) : Loc.n("%lld result", "%lld results", hits.count)
+            )
+            .font(.chrome(22, weight: .bold))
+            .padding(.bottom, 8)
             ForEach(Array(hits.enumerated()), id: \.offset) { _, h in
                 Button {
                     pane = h.0.id

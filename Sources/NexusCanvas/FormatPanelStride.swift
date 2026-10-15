@@ -37,7 +37,9 @@ struct StrideTab: View {
                 }
                 .background(RoundedRectangle(cornerRadius: 10).stroke(.separator))
                 if !suggestions.isEmpty {
-                    Button("✦ Accept \(suggestions.count) suggestion\(suggestions.count == 1 ? "" : "s") · ⌃⇧↩") {
+                    Button(
+                        Loc.n("✦ Accept %lld suggestion · ⌃⇧↩", "✦ Accept %lld suggestions · ⌃⇧↩", suggestions.count)
+                    ) {
                         for (s, t, r) in suggestions { controller.acceptStride(s, t, r, on: id) }
                     }
                 }
@@ -86,7 +88,7 @@ struct StrideTab: View {
                 if let threat {
                     Text(threat.title).font(.chrome(11.5)).foregroundStyle(.secondary).lineLimit(1)
                 } else if let suggestion {
-                    Text("✦ Suggested · \(suggestion.1)").font(.chrome(11.5)).foregroundStyle(
+                    Text(Loc.f("✦ Suggested · %@", suggestion.1)).font(.chrome(11.5)).foregroundStyle(
                         Color(nsColor: NSColor(cgColor: controller.theme.ai.cgColor) ?? .systemTeal)
                     ).lineLimit(1)
                 } else {

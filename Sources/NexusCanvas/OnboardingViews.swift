@@ -190,7 +190,7 @@ public struct RolePickerView: View {
                     Button {
                         onContinue(role)
                     } label: {
-                        Text("Continue as \(role.title.components(separatedBy: " · ").first ?? role.title)")
+                        Text(Loc.f("Continue as %@", role.title.components(separatedBy: " · ").first ?? role.title))
                             .font(.chrome(16, weight: .semibold)).foregroundStyle(.white)
                             .padding(.horizontal, 22).frame(height: 44)
                             .background(RoundedRectangle(cornerRadius: 10).fill(Color(white: 0.1)))

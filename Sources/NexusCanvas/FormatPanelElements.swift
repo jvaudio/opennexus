@@ -176,7 +176,7 @@ struct RelationshipSection: View {
                     PathIcon(d: d, lineWidth: 1.4, filled: filled)
                 }
                 .help(id.replacingOccurrences(of: "-", with: " ").capitalized)
-                .accessibilityLabel("\(index == 0 ? "Start" : "End") cap \(id)")
+                .accessibilityLabel(index == 0 ? Loc.f("Start cap %@", id) : Loc.f("End cap %@", id))
             }
         }
     }
@@ -358,7 +358,7 @@ struct SummarySection: View {
                         PathIcon(d: d, lineWidth: 1.6).frame(height: 24)
                     }
                     .help(id.capitalized)
-                    .accessibilityLabel("\(id) bracket")
+                    .accessibilityLabel(Loc.f("%@ bracket", id))
                 }
             }
             .accessibilityElement(children: .contain)

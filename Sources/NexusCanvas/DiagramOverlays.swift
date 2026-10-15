@@ -118,7 +118,7 @@ struct ConvertSheetView: View {
         let more = results.filter { CanvasController.moreTypes.contains($0) }
         return VStack(alignment: .leading, spacing: 14) {
             HStack {
-                Text("Convert “\(controller.canvas.nodes[controller.canvas.root]?.text ?? "")” to…")
+                Text(Loc.f("Convert “%@” to…", controller.canvas.nodes[controller.canvas.root]?.text ?? ""))
                     .font(.chrome(17, weight: .semibold))
                 Spacer()
                 Text(s.filter.isEmpty ? "Filter types" : s.filter)
@@ -394,7 +394,7 @@ struct ViolationCardView: View {
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(red.opacity(0.6)))
             .accessibilityElement(children: .contain)
-            .accessibilityLabel("Rule check: \(v.title)")
+            .accessibilityLabel(Loc.f("Rule check: %@", v.title))
         }
     }
 }
@@ -432,7 +432,7 @@ struct ThreatSuggestionCard: View {
             let teal = controller.theme.ai.color
             let name = controller.canvas.nodes[controller.selection.primary]?.text ?? ""
             VStack(alignment: .leading, spacing: 4) {
-                Text("✦ \(s.count) STRIDE threat\(s.count == 1 ? "" : "s") suggested for \(name)")
+                Text(Loc.f("✦ %@ suggested for %@", Loc.n("%lld STRIDE threat", "%lld STRIDE threats", s.count), name))
                     .font(.chrome(13, weight: .semibold)).foregroundStyle(teal)
                 HStack(spacing: 6) {
                     Text(s.map(\.0.name).joined(separator: " · ")).font(.chrome(12))

@@ -85,7 +85,7 @@ extension CanvasController {
     public func makeMaskedCopy(_ hits: [Masker.Hit]) {
         let copy = Masker.maskedCopy(canvas, hits: hits, id: store.model.makeCanvasID(), options: maskOptions)
         addCanvas(copy)
-        showToast("Masked \(hits.count) item\(hits.count == 1 ? "" : "s") · new canvas")
+        showToast(Loc.n("Masked %lld item · new canvas", "Masked %lld items · new canvas", hits.count))
     }
 
     // MARK: Remove background (Vision)

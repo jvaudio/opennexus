@@ -229,7 +229,10 @@ struct ShortcutsPane: View {
                                 }
                                 .buttonStyle(.plain)
                                 .help("Click to record a new shortcut")
-                                .accessibilityLabel("\(cmd.title) shortcut \(standard.first?.glyphs ?? "none"). Record")
+                                .accessibilityLabel(
+                                    Loc.f(
+                                        "%@ shortcut %@. Record", cmd.title,
+                                        standard.first?.glyphs ?? Loc.f("none")))
                                 if c.chords[cmd.id.rawValue] != nil || c.scopes[cmd.id.rawValue] != nil {
                                     Button("Reset") {
                                         var x = c
@@ -296,7 +299,8 @@ struct ShortcutsPane: View {
                     Button("Swap") { resolve(.swap) }
                     Button("Reassign") { resolve(.reassign) }
                     if let s = KeyCustomization.narrowing(mine?.scope ?? .global, avoiding: other.scope) {
-                        Button("Scope to \(Self.scopeName(s))") { resolve(.scope(s)) }.buttonStyle(.borderedProminent)
+                        Button(Loc.f("Scope to %@", Self.scopeName(s))) { resolve(.scope(s)) }.buttonStyle(
+                            .borderedProminent)
                     }
                 }
                 Text("Conflicts are checked against OpenNexus, the menu bar and macOS system shortcuts.")

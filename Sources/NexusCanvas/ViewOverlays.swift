@@ -40,7 +40,7 @@ struct PaletteView: View {
                         .font(.chrome(20))
                         .foregroundStyle(p.query.isEmpty ? .tertiary : .primary)
                     Spacer()
-                    Text("Selection: \(controller.canvas.nodes[controller.selection.primary]?.text ?? "")")
+                    Text(Loc.f("Selection: %@", controller.canvas.nodes[controller.selection.primary]?.text ?? ""))
                         .font(.chrome(12))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
@@ -63,7 +63,7 @@ struct PaletteView: View {
                                     .accessibleTap { controller.runPaletteRow(row) }
                             }
                             if rows.isEmpty {
-                                Text("No command matches “\(p.query)”").foregroundStyle(.secondary).padding(16)
+                                Text(Loc.f("No command matches “%@”", p.query)).foregroundStyle(.secondary).padding(16)
                             }
                         }
                         .padding(.bottom, 8)
@@ -150,8 +150,11 @@ struct JumpView: View {
                         .foregroundStyle(j.query.isEmpty ? .tertiary : .primary)
                     Spacer()
                     let nodes = rows.filter { $0.node != nil }.count
-                    Text("\(nodes) node\(nodes == 1 ? "" : "s") · \(canvases) canvas\(canvases == 1 ? "" : "es")")
-                        .font(.chrome(12)).foregroundStyle(.secondary)
+                    Text(
+                        [Loc.n("%lld node", "%lld nodes", nodes), Loc.n("%lld canvas", "%lld canvases", canvases)]
+                            .joined(separator: " · ")
+                    )
+                    .font(.chrome(12)).foregroundStyle(.secondary)
                 }
                 .padding(16)
                 Divider()
@@ -220,7 +223,7 @@ struct FilterBarView: View {
                                 Image(systemName: "xmark").font(.chrome(9, weight: .bold))
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("Remove \(c.text)")
+                            .accessibilityLabel(Loc.f("Remove %@", c.text))
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
@@ -254,10 +257,10 @@ struct FilterBarView: View {
                     .frame(width: 110)
                 }
                 HStack {
-                    Text("\(hits) of \(all) match").font(.chrome(13))
+                    Text(Loc.f("%lld of %lld match", hits, all)).font(.chrome(13))
                     Spacer()
                     if !controller.filterClauses.isEmpty {
-                        Button("Save as “\(controller.suggestedFilterName)”") { controller.saveFilter() }
+                        Button(Loc.f("Save as “%@”", controller.suggestedFilterName)) { controller.saveFilter() }
                             .buttonStyle(.plain)
                             .foregroundStyle(Color.accentColor)
                     }
@@ -324,7 +327,7 @@ struct CountsControl: View {
                 Text("\(Int((controller.zoom * 100).rounded()))%").font(.chrome(12.5, design: .monospaced))
                 Button("+") { _ = controller.perform(.zoomIn) }.buttonStyle(.plain).accessibilityLabel("Zoom in")
                 Divider().frame(height: 14)
-                Button("\(all.topics) \(all.topics == 1 ? "topic" : "topics")") { controller.countsVisible.toggle() }
+                Button(Loc.n("%lld topic", "%lld topics", all.topics)) { controller.countsVisible.toggle() }
                     .buttonStyle(.plain)
                     .foregroundStyle(Color.accentColor)
                     .popover(
@@ -385,9 +388,10 @@ struct ZenCountView: View {
                     let mins = Int(controller.zenToday / 60)
                     Text(
                         [
-                            timer ? "Today \(mins / 60):\(String(format: "%02d", mins % 60))" : nil,
+                            timer ? Loc.f("Today %lld:%02lld", mins / 60, mins % 60) : nil,
                             count
-                                ? "\(n.topics) \(n.topics == 1 ? "topic" : "topics") · \(n.words) \(n.words == 1 ? "word" : "words")"
+                                ? Loc.n("%lld topic", "%lld topics", n.topics) + " · "
+                                    + Loc.n("%lld word", "%lld words", n.words)
                                 : nil,
                         ]
                         .compactMap { $0 }.joined(separator: " · ")
@@ -395,7 +399,7 @@ struct ZenCountView: View {
                     .font(.chrome(12, design: .monospaced))
                     .foregroundStyle(.secondary.opacity(0.6))
                     .accessibilityLabel(
-                        "\(n.topics) \(n.topics == 1 ? "topic" : "topics"), \(n.words) \(n.words == 1 ? "word" : "words")"
+                        Loc.n("%lld topic", "%lld topics", n.topics) + ", " + Loc.n("%lld word", "%lld words", n.words)
                     )
                 }
             }
@@ -433,7 +437,7 @@ struct NavigationPanelView: View {
                         }
                         .buttonStyle(.plain)
                         .help("⌃⌘\(n)")
-                        .accessibilityLabel("\(title), Control Command \(n)")
+                        .accessibilityLabel(Loc.f("%@, Control Command %lld", title, n))
                     }
                 }
                 .padding(8)
@@ -734,7 +738,7 @@ struct TodosTab: View {
                                 Image(systemName: c.nodes[id]?.todo?.done == true ? "checkmark.square.fill" : "square")
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("Toggle \(c.nodes[id]?.text ?? "")")
+                            .accessibilityLabel(Loc.f("Toggle %@", c.nodes[id]?.text ?? ""))
                             Text(c.nodes[id]?.text ?? "").font(.chrome(13.5))
                                 .strikethrough(c.nodes[id]?.todo?.done == true)
                             Spacer()

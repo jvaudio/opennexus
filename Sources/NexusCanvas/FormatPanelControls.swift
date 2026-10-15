@@ -144,7 +144,7 @@ struct Swatch: View {
                         .padding(-3))
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("Colour \(color.hex)")
+        .accessibilityLabel(Loc.f("Colour %@", color.hex))
     }
 }
 

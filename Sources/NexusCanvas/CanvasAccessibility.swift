@@ -161,7 +161,7 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
             boxes[id] = e
             let title = b.boundary.title.isEmpty ? "Boundary" : b.boundary.title
             e.text =
-                "\(title). Boundary around \(b.boundary.nodes.count) \(b.boundary.nodes.count == 1 ? "topic" : "topics")."
+                Loc.f("%@. Boundary around %@.", title, Loc.n("%lld topic", "%lld topics", b.boundary.nodes.count))
             e.world = b.rect
             return e
         }

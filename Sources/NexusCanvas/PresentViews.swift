@@ -160,7 +160,8 @@ struct SlideStripView: View {
                 .foregroundStyle(s.skipped ? .tertiary : .primary)
         }
         .opacity(s.skipped ? 0.55 : 1)
-        .accessibilityLabel("Slide \(i + 1): \(s.title)\(s.skipped ? ", skipped" : "")")
+        .accessibilityLabel(
+            s.skipped ? Loc.f("Slide %lld: %@, skipped", i + 1, s.title) : Loc.f("Slide %lld: %@", i + 1, s.title))
     }
 }
 
@@ -262,7 +263,7 @@ public struct PresenterView: View {
                 .padding(14)
                 .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.08)))
                 HStack {
-                    Text("Slide \(index + 1) of \(slides.count)").foregroundStyle(.secondary)
+                    Text(Loc.f("Slide %lld of %lld", index + 1, slides.count)).foregroundStyle(.secondary)
                     Spacer()
                     Button("◀︎") { controller.stepSlide(-1) }
                     Button("▶︎") { controller.stepSlide(1) }

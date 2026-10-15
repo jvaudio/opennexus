@@ -140,8 +140,8 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     /// "16 topics · autosaved" (macOS adds its own "Edited" to the title for unsaved documents).
     func updateSubtitle() {
         let n = controller.canvas.nodes.count
-        let topics = "\(n) topic\(n == 1 ? "" : "s")"
-        window?.subtitle = document_.fileURL == nil ? topics : "\(topics) · autosaved"
+        let topics = Loc.n("%lld topic", "%lld topics", n)
+        window?.subtitle = document_.fileURL == nil ? topics : Loc.f("%@ · autosaved", topics)
     }
 
     // MARK: Commands handled at window level
@@ -455,7 +455,7 @@ struct AIStatusChip: View {
         .padding(.horizontal, 10)
         .padding(.vertical, 4)
         .background(Tokens.Signal.auroraLight.swiftUIColor.opacity(0.1), in: Capsule())
-        .accessibilityLabel("AI: \(controller.aiAvailability.chip). Nothing leaves this Mac.")
+        .accessibilityLabel(Loc.f("AI: %@. Nothing leaves this Mac.", controller.aiAvailability.chip))
     }
 }
 

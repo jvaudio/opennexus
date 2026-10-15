@@ -204,7 +204,7 @@ final class OutlineDocumentView: NSView, NSTextViewDelegate {
             }
             if n.folded, !n.children.isEmpty {
                 let hidden = c.subtree(id).count - 1
-                line("\(hidden) hidden child\(hidden == 1 ? "" : "ren") · folded", .folded)
+                line(Loc.n("%lld hidden child · folded", "%lld hidden children · folded", hidden), .folded)
             }
             if depth == 0 { y += 10 }
             _ = mains

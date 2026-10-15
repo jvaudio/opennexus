@@ -53,9 +53,13 @@ public final class HomeModel {
             let detail: String =
                 switch type {
                 case .threatModel:
-                    "Threat Model · \(doc.canvases.values.reduce(0) { $0 + Stride.threats($1).filter { $0.status.lowercased() == "open" }.count }) open threats"
-                case .dfd: "Data Flow · \(doc.canvases.count) canvas\(doc.canvases.count == 1 ? "" : "es")"
-                default: "\(HomeView.typeName(type)) · \(topics) \(topics == 1 ? "topic" : "topics")"
+                    Loc.n(
+                        "Threat Model · %lld open threat", "Threat Model · %lld open threats",
+                        doc.canvases.values.reduce(0) {
+                            $0 + Stride.threats($1).filter { $0.status.lowercased() == "open" }.count
+                        })
+                case .dfd: Loc.n("Data Flow · %lld canvas", "Data Flow · %lld canvases", doc.canvases.count)
+                default: "\(HomeView.typeName(type)) · \(Loc.n("%lld topic", "%lld topics", topics))"
                 }
             let date =
                 (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)
@@ -357,7 +361,7 @@ public struct HomeView: View {
             cardBody(t, title, highlighted: highlighted)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("New \(title)")
+        .accessibilityLabel(Loc.f("New %@", title))
     }
 
     func cardBody(_ t: DiagramType, _ title: String, highlighted: Bool) -> some View {
@@ -464,8 +468,8 @@ public struct HomeView: View {
         return VStack(alignment: .leading, spacing: 10) {
             Text(
                 hits.isEmpty
-                    ? "Nothing matches “\(model.query)” in recent maps"
-                    : "\(hits.count) map\(hits.count == 1 ? "" : "s")"
+                    ? Loc.f("Nothing matches “%@” in recent maps", model.query)
+                    : Loc.n("%lld map", "%lld maps", hits.count)
             )
             .font(.chrome(16, weight: .semibold))
             ForEach(hits, id: \.0.url) { r, nodes in

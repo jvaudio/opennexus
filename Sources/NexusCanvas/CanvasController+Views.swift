@@ -230,7 +230,8 @@ extension CanvasController {
             let title = "Select by type · \(name)"
             let row = PaletteRow(
                 id: "type:\(t.rawValue)", section: "COMMANDS", title: title,
-                subtitle: "\(n) node\(n == 1 ? "" : "s") on this canvas", glyph: "◎", keys: nil, hyper: nil,
+                subtitle: Loc.n("%lld node on this canvas", "%lld nodes on this canvas", n), glyph: "◎", keys: nil,
+                hyper: nil,
                 action: .selectByType(t))
             if q.isEmpty {
                 continue
@@ -621,7 +622,7 @@ extension CanvasController {
     public func replaceAllMatches() {
         let n = search.matches.count
         replace(search.matches)
-        showToast("Replaced \(n) match\(n == 1 ? "" : "es")")
+        showToast(Loc.n("Replaced %lld match", "Replaced %lld matches", n))
     }
 
     func replace(_ matches: [SearchMatch]) {

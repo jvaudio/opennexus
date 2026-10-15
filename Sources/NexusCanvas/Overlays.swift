@@ -108,7 +108,7 @@ public struct StatePill: View {
         .frame(height: 40)
         .background(bg, in: Capsule())
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(mode.rawValue.capitalized) mode")
+        .accessibilityLabel(Loc.f("%@ mode", mode.rawValue.capitalized))
         .accessibilityAddTraits(.isStaticText)
         .accessibilityIdentifier("state-pill")
     }

@@ -197,7 +197,7 @@ struct LinkPopover: View {
             let back = controller.backlinks(to: node)
             if !back.isEmpty {
                 Divider()
-                Text("LINKED FROM \(back.count) TOPIC\(back.count == 1 ? "" : "S")")
+                Text(Loc.n("LINKED FROM %lld TOPIC", "LINKED FROM %lld TOPICS", back.count))
                     .font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
                 ForEach(back, id: \.node) { b in
                     Text("⤳ \(b.text) · \(b.canvasTitle)").font(.chrome(12))
@@ -266,7 +266,7 @@ struct LabelPopover: View {
                             HStack {
                                 Text(s.label)
                                 Spacer()
-                                Text("used \(s.count)×").foregroundStyle(.secondary).font(.chrome(11))
+                                Text(Loc.f("used %lld×", s.count)).foregroundStyle(.secondary).font(.chrome(11))
                             }
                             .padding(.vertical, 3)
                             .contentShape(Rectangle())
@@ -274,7 +274,7 @@ struct LabelPopover: View {
                         .buttonStyle(.plain)
                     }
                     if !fragment.isEmpty, !controller.labelUsage.contains(where: { $0.label == fragment }) {
-                        Text("Create “\(fragment)”").foregroundStyle(Color.accentColor).font(.chrome(13))
+                        Text(Loc.f("Create “%@”", fragment)).foregroundStyle(Color.accentColor).font(.chrome(13))
                     }
                 }
             }

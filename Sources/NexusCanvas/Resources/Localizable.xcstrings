@@ -37,6 +37,526 @@
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
+    "%@ · %@ import" : {
+      "comment" : "Text with values filled in (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ · autosaved" : {
+      "comment" : "Text with values filled in (DocumentWindowController.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ bracket" : {
+      "comment" : "Text with values filled in (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ cycles" : {
+      "comment" : "Text with values filled in (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ mode" : {
+      "comment" : "Text with values filled in (Overlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ shortcut %@. Record" : {
+      "comment" : "Text with values filled in (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@, Control Command %lld" : {
+      "comment" : "Text with values filled in (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@. Boundary around %@." : {
+      "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "%lld canvases" : {
+      "comment" : "Count phrase with plural variants (ViewOverlays.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld canvas"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld canvases"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld children" : {
+      "comment" : "Count phrase with plural variants (SettingsCards.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld child"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld children"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld children, collapsed" : {
+      "comment" : "Count phrase with plural variants (SettingsCards.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld child, collapsed"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld children, collapsed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld headings" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Files.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld heading"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld headings"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld hidden children · folded" : {
+      "comment" : "Count phrase with plural variants (OutlineView.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld hidden child · folded"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld hidden children · folded"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld items not converted" : {
+      "comment" : "Count phrase with plural variants (FileViews.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld item not converted"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld items not converted"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld maps" : {
+      "comment" : "Count phrase with plural variants (HomeView.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld map"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld maps"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld nodes" : {
+      "comment" : "Count phrase with plural variants (ViewOverlays.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld node"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nodes"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld nodes on this canvas" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Views.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld node on this canvas"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld nodes on this canvas"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld of %lld match" : {
+      "comment" : "Text with values filled in (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "%lld pages" : {
+      "comment" : "Count phrase with plural variants (FileViews.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pages · cut marks on" : {
+      "comment" : "Count phrase with plural variants (FileViews.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld page · cut marks on"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld pages · cut marks on"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld problems" : {
+      "comment" : "Count phrase with plural variants (NexusDocument.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld problem"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld problems"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld pt" : {
+      "comment" : "Text with values filled in (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "%lld results" : {
+      "comment" : "Count phrase with plural variants (SettingsView.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld result"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld results"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld snapshots" : {
+      "comment" : "Count phrase with plural variants (SettingsCards.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld snapshot"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld snapshots"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld STRIDE threats" : {
+      "comment" : "Count phrase with plural variants (DiagramOverlays.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld STRIDE threat"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld STRIDE threats"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld STRIDE threats added" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Diagrams.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld STRIDE threat added"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld STRIDE threats added"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld suggestions. Control Return accepts, Escape dismisses." : {
+      "comment" : "Count phrase with plural variants (AIViews.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld suggestion. Control Return accepts, Escape dismisses."
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld suggestions. Control Return accepts, Escape dismisses."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld topics" : {
+      "comment" : "Count phrase with plural variants (CanvasAccessibility.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld topic"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld topics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld topics · encrypted" : {
+      "comment" : "Count phrase with plural variants (FileViews.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld topic · encrypted"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld topics · encrypted"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld words" : {
+      "comment" : "Count phrase with plural variants (ViewOverlays.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld word"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld words"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "••••" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -83,6 +603,10 @@
     },
     "⇧⌘N on Home" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "⇧⌘Space · anchored to “%@”" : {
+      "comment" : "Text with values filled in (AIViews.swift)",
       "extractionState" : "migrated"
     },
     "+ Add field" : {
@@ -145,6 +669,34 @@
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
+    "✦ %@ suggested for %@" : {
+      "comment" : "Text with values filled in (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "✦ Accept %lld suggestions · ⌃⇧↩" : {
+      "comment" : "Count phrase with plural variants (FormatPanelStride.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "✦ Accept %lld suggestion · ⌃⇧↩"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "✦ Accept %lld suggestions · ⌃⇧↩"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "✦ Ideas" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -155,6 +707,10 @@
     },
     "✦ Suggest for all" : {
       "comment" : "UI text (FormatPanelStride.swift)",
+      "extractionState" : "migrated"
+    },
+    "✦ Suggested · %@" : {
+      "comment" : "Text with values filled in (FormatPanelStride.swift)",
       "extractionState" : "migrated"
     },
     "⤳ Topic or canvas" : {
@@ -473,6 +1029,14 @@
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
     },
+    "AI: %@. Nothing leaves this Mac." : {
+      "comment" : "Text with values filled in (DocumentWindowController.swift)",
+      "extractionState" : "migrated"
+    },
+    "All %lld ›" : {
+      "comment" : "Text with values filled in (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "All scopes" : {
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
@@ -551,6 +1115,10 @@
     },
     "Apply · one undo" : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Apply to all level-%lld topics" : {
+      "comment" : "Text with values filled in (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Apply to all subtopics of this branch" : {
@@ -789,6 +1357,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "canvas" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Canvas" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -809,6 +1381,10 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "canvases" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Caps Lock" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -827,6 +1403,10 @@
     },
     "Channel" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Chat: %@" : {
+      "comment" : "Text with values filled in (AIViews.swift)",
       "extractionState" : "migrated"
     },
     "Check for updates automatically" : {
@@ -903,6 +1483,10 @@
     },
     "Collapse \/ Parent" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Colour %@" : {
+      "comment" : "Text with values filled in (FormatPanelControls.swift)",
       "extractionState" : "migrated"
     },
     "Colour profile" : {
@@ -997,12 +1581,24 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Continue as %@" : {
+      "comment" : "Text with values filled in (OnboardingViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Contrast %@" : {
+      "comment" : "Text with values filled in (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
     "Control-Return accepts this suggestion" : {
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
     "Convert · ↩" : {
       "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Convert “%@” to…" : {
+      "comment" : "Text with values filled in (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
     "Convert diagram type (⌥⌘T)" : {
@@ -1049,6 +1645,54 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Crash recovery · %lld topics" : {
+      "comment" : "Count phrase with plural variants (SettingsCards.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Crash recovery · %lld topic"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Crash recovery · %lld topics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Crash recovery · %lld topics · encrypted" : {
+      "comment" : "Count phrase with plural variants (SettingsCards.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Crash recovery · %lld topic · encrypted"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Crash recovery · %lld topics · encrypted"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Crash recovery snapshots" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -1063,6 +1707,10 @@
     },
     "CREATE" : {
       "comment" : "Cheat sheet column",
+      "extractionState" : "migrated"
+    },
+    "Create “%@”" : {
+      "comment" : "Text with values filled in (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
     "Create & export files" : {
@@ -1104,6 +1752,30 @@
     "Dark" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
+    },
+    "Data Flow · %lld canvases" : {
+      "comment" : "Count phrase with plural variants (HomeView.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Data Flow · %lld canvas"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Data Flow · %lld canvases"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Data masking" : {
       "comment" : "Settings row",
@@ -1203,6 +1875,10 @@
     },
     "Documents" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "DOCUMENTS · %lld" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "Documents you open appear here." : {
@@ -1329,6 +2005,10 @@
       "comment" : "Settings footnote",
       "extractionState" : "migrated"
     },
+    "End cap %@" : {
+      "comment" : "Text with values filled in (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
     "Engineer" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -1363,6 +2043,10 @@
     },
     "Every model runs on this Mac. OpenNexus v1 offers no cloud models, including Private Cloud Compute." : {
       "comment" : "Settings pane subtitle",
+      "extractionState" : "migrated"
+    },
+    "Every node style meets the target" : {
+      "comment" : "Text with values filled in (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
     "Everything converted." : {
@@ -1593,6 +2277,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Frame %@" : {
+      "comment" : "Text with values filled in (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
     "Frames" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -1805,6 +2493,14 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "IMPORT REPORT · %@" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Import report: %@, %@" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Import…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -1897,6 +2593,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Keep %@" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Keep AI chats" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -1977,6 +2677,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Lesson %lld of %lld" : {
+      "comment" : "Text with values filled in (TourViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Let AI read notes and attachments" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -2012,6 +2716,30 @@
     "Link" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
+    },
+    "LINKED FROM %lld TOPICS" : {
+      "comment" : "Count phrase with plural variants (CanvasPopovers.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "LINKED FROM %lld TOPIC"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "LINKED FROM %lld TOPICS"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Links & attachments" : {
       "comment" : "UI text (FormatPanelMap.swift)",
@@ -2059,6 +2787,10 @@
     },
     "Logic chart" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Lowest: %@" : {
+      "comment" : "Text with values filled in (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
     "macOS" : {
@@ -2125,9 +2857,57 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Mask %lld emails, keys or names in this export" : {
+      "comment" : "Count phrase with plural variants (FileViews.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mask %lld email, key or name in this export"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mask %lld emails, keys or names in this export"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Mask Data…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
+    },
+    "Masked %lld items · new canvas" : {
+      "comment" : "Count phrase with plural variants (CanvasController+AIMedia.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Masked %lld item · new canvas"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Masked %lld items · new canvas"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Mat colour" : {
       "comment" : "Settings row",
@@ -2156,6 +2936,54 @@
     "Merge Documents…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
+    },
+    "Merged %lld documents · one undo" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Files.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Merged %lld document · one undo"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Merged %lld documents · one undo"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Merged %lld documents into this canvas" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Files.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Merged %lld document into this canvas"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Merged %lld documents into this canvas"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Mermaid \/ PlantUML flavour" : {
       "comment" : "Settings row",
@@ -2325,6 +3153,10 @@
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
+    "New %@" : {
+      "comment" : "Text with values filled in (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
     "New Canvas" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -2343,6 +3175,10 @@
     },
     "New canvases use" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "New chat" : {
+      "comment" : "Text with values filled in (AIViews.swift)",
       "extractionState" : "migrated"
     },
     "New colour theme" : {
@@ -2385,6 +3221,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "No command matches “%@”" : {
+      "comment" : "Text with values filled in (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "No folders yet" : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
@@ -2405,6 +3245,10 @@
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "No settings match “%@”" : {
+      "comment" : "Text with values filled in (SettingsView.swift)",
+      "extractionState" : "migrated"
+    },
     "No snapshots yet. OpenNexus keeps one every five minutes while you edit, and when you close." : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
@@ -2415,6 +3259,10 @@
     },
     "Node style" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "none" : {
+      "comment" : "Text with values filled in (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
     "Note" : {
@@ -2443,6 +3291,10 @@
     },
     "Nothing leaves this Mac" : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Nothing matches “%@” in recent maps" : {
+      "comment" : "Text with values filled in (HomeView.swift)",
       "extractionState" : "migrated"
     },
     "Nothing to mask on this canvas." : {
@@ -2583,6 +3435,10 @@
     },
     "Padding · Theme override" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Padding in %@" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "Page previews" : {
@@ -2965,6 +3821,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Remove %@" : {
+      "comment" : "Text with values filled in (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "Remove AI chats when exporting" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -3009,6 +3869,10 @@
       "comment" : "UI text (DocumentFiles.swift)",
       "extractionState" : "migrated"
     },
+    "Repaired this file: %@ · saving keeps the fix" : {
+      "comment" : "Text with values filled in (NexusDocument.swift)",
+      "extractionState" : "migrated"
+    },
     "Replace" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -3032,6 +3896,30 @@
     "Replace with" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
+    },
+    "Replaced %lld matches" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Views.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Replaced %lld match"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Replaced %lld matches"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Replaces text" : {
       "comment" : "Settings option",
@@ -3129,6 +4017,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Rule check: %@" : {
+      "comment" : "Text with values filled in (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "RULE CHECKS" : {
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
@@ -3155,6 +4047,10 @@
     },
     "Save as" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Save as “%@”" : {
+      "comment" : "Text with values filled in (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
     "Save as PDF…" : {
@@ -3191,6 +4087,10 @@
     },
     "Scope" : {
       "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
+    "Scope to %@" : {
+      "comment" : "Text with values filled in (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
     "Scroll wheel" : {
@@ -3277,6 +4177,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Selection: %@" : {
+      "comment" : "Text with values filled in (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "Send" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -3341,6 +4245,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "sheets → canvases" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Shortcuts" : {
       "comment" : "Settings pane",
       "extractionState" : "migrated"
@@ -3395,6 +4303,18 @@
     },
     "Slash menu: node types, icons, \/math, \/code; also \/ at the start of a topic" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Slide %lld of %lld" : {
+      "comment" : "Text with values filled in (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Slide %lld: %@" : {
+      "comment" : "Text with values filled in (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Slide %lld: %@, skipped" : {
+      "comment" : "Text with values filled in (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Slides" : {
@@ -3495,6 +4415,10 @@
     },
     "Start at login" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Start cap %@" : {
+      "comment" : "Text with values filled in (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Start in Edit mode on the root" : {
@@ -3645,6 +4569,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Theme %@" : {
+      "comment" : "Text with values filled in (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Theme default" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
@@ -3672,6 +4600,30 @@
     "This Mac" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
+    },
+    "Threat Model · %lld open threats" : {
+      "comment" : "Count phrase with plural variants (HomeView.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Threat Model · %lld open threat"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Threat Model · %lld open threats"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Threat models" : {
       "comment" : "Command note (palette subtitle)",
@@ -3705,6 +4657,14 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Today %lld:%02lld" : {
+      "comment" : "Text with values filled in (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Toggle %@" : {
+      "comment" : "Text with values filled in (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     "Toggle Outline" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -3723,6 +4683,14 @@
     },
     "Topics & labels" : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tour paused · lesson %lld of %lld" : {
+      "comment" : "Text with values filled in (TourViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tour: %@" : {
+      "comment" : "Text with values filled in (TourViews.swift)",
       "extractionState" : "migrated"
     },
     "Transition" : {
@@ -3817,6 +4785,10 @@
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "Use %@" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Use a local model" : {
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
@@ -3831,6 +4803,10 @@
     },
     "Use Right Option" : {
       "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
+    "used %lld×" : {
+      "comment" : "Text with values filled in (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
     "Used by export, print and layout fields" : {
@@ -3947,6 +4923,10 @@
     },
     "Xmind’s four (Very Important, Important, Cross Out, Default) plus four for technical work." : {
       "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "You built your first map in %@" : {
+      "comment" : "Text with values filled in (TourViews.swift)",
       "extractionState" : "migrated"
     },
     "Your keys already work here." : {

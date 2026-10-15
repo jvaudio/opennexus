@@ -637,7 +637,7 @@ extension CanvasController {
         perform("Accept Suggested Threats") { e in
             for (s, t, r) in all { try e.addThreat(on: target, category: s, title: t, risk: r, suggested: true) }
         }
-        showToast("\(all.count) STRIDE threat\(all.count == 1 ? "" : "s") added")
+        showToast(Loc.n("%lld STRIDE threat added", "%lld STRIDE threats added", all.count))
         return true
     }
 

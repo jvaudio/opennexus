@@ -196,7 +196,7 @@ final class Integrations: NSObject {
             let doc = try? NexusPackage.read(from: url)
             let detail =
                 doc.map {
-                    "\($0.orderedCanvases.first.map { HomeView.typeName($0.type) } ?? "Map") · \($0.topicCount) \($0.topicCount == 1 ? "topic" : "topics")"
+                    "\($0.orderedCanvases.first.map { HomeView.typeName($0.type) } ?? "Map") · \(Loc.n("%lld topic", "%lld topics", $0.topicCount))"
                 }
                 ?? "Locked"
             recents.append(
