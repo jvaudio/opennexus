@@ -17,11 +17,11 @@ struct Highlighted: View {
             var piece = AttributedString(String(ch))
             if set.contains(i) {
                 piece.foregroundColor = .accentColor
-                piece.font = .system(size: size, weight: .semibold)
+                piece.font = .chrome(size, weight: .semibold)
             }
             a += piece
         }
-        return Text(a).font(.system(size: size, weight: weight)).lineLimit(1)
+        return Text(a).font(.chrome(size, weight: weight)).lineLimit(1)
     }
 }
 
@@ -37,11 +37,11 @@ struct PaletteView: View {
                 HStack(spacing: 10) {
                     Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
                     Text(p.query.isEmpty ? "Type a command…" : p.query)
-                        .font(.system(size: 20))
+                        .font(.chrome(20))
                         .foregroundStyle(p.query.isEmpty ? .tertiary : .primary)
                     Spacer()
                     Text("Selection: \(controller.canvas.nodes[controller.selection.primary]?.text ?? "")")
-                        .font(.system(size: 12))
+                        .font(.chrome(12))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(RoundedRectangle(cornerRadius: 6).fill(Color.secondary.opacity(0.12)))
@@ -53,7 +53,7 @@ struct PaletteView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             ForEach(Array(rows.enumerated()), id: \.element.id) { i, row in
                                 if i == 0 || rows[i - 1].section != row.section {
-                                    Text(row.section).font(.system(size: 11, weight: .semibold)).foregroundStyle(
+                                    Text(row.section).font(.chrome(11, weight: .semibold)).foregroundStyle(
                                         .secondary
                                     )
                                     .padding(.horizontal, 16).padding(.top, 10).padding(.bottom, 4)
@@ -80,7 +80,7 @@ struct PaletteView: View {
                     Spacer()
                     Text("Recent first, then fuzzy match")
                 }
-                .font(.system(size: 12))
+                .font(.chrome(12))
                 .foregroundStyle(.secondary)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
@@ -97,22 +97,22 @@ struct PaletteView: View {
     func paletteRow(_ row: PaletteRow, on: Bool, details: Bool) -> some View {
         HStack(spacing: 12) {
             Text(row.glyph)
-                .font(.system(size: 13, weight: .semibold))
+                .font(.chrome(13, weight: .semibold))
                 .frame(width: 28, height: 28)
                 .background(RoundedRectangle(cornerRadius: 7).fill(Color.secondary.opacity(0.12)))
             VStack(alignment: .leading, spacing: 1) {
                 Highlighted(text: row.title, matched: row.matched, size: 14.5)
                 if !row.subtitle.isEmpty {
-                    Text(row.subtitle).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(details ? 3 : 1)
+                    Text(row.subtitle).font(.chrome(12)).foregroundStyle(.secondary).lineLimit(details ? 3 : 1)
                 }
             }
             Spacer()
             if case .rebind = row.action {
-                Text("Rebind").font(.system(size: 12)).foregroundStyle(.secondary)
+                Text("Rebind").font(.chrome(12)).foregroundStyle(.secondary)
             } else {
                 Keycap(text: row.keys ?? "—")
                 Text(row.hyper ?? "—")
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .font(.chrome(11, weight: .semibold, design: .monospaced))
                     .foregroundStyle(.white)
                     .padding(.horizontal, 6)
                     .padding(.vertical, 3)
@@ -139,18 +139,18 @@ struct JumpView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 10) {
                     Text("JUMP")
-                        .font(.system(size: 11, weight: .bold, design: .monospaced))
+                        .font(.chrome(11, weight: .bold, design: .monospaced))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 7)
                         .padding(.vertical, 4)
                         .background(RoundedRectangle(cornerRadius: 6).fill(Color.black))
                     Text(j.query.isEmpty ? "Jump to a topic, edge or canvas" : j.query)
-                        .font(.system(size: 20))
+                        .font(.chrome(20))
                         .foregroundStyle(j.query.isEmpty ? .tertiary : .primary)
                     Spacer()
                     let nodes = rows.filter { $0.node != nil }.count
                     Text("\(nodes) node\(nodes == 1 ? "" : "s") · \(canvases) canvas\(canvases == 1 ? "" : "es")")
-                        .font(.system(size: 12)).foregroundStyle(.secondary)
+                        .font(.chrome(12)).foregroundStyle(.secondary)
                 }
                 .padding(16)
                 Divider()
@@ -163,10 +163,10 @@ struct JumpView: View {
                                     .frame(width: 9, height: 9)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Highlighted(text: row.title, matched: row.matched, size: 14.5)
-                                    Text(row.path).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(1)
+                                    Text(row.path).font(.chrome(12)).foregroundStyle(.secondary).lineLimit(1)
                                 }
                                 Spacer()
-                                Text(row.badge).font(.system(size: 10.5, weight: .medium, design: .monospaced))
+                                Text(row.badge).font(.chrome(10.5, weight: .medium, design: .monospaced))
                                     .foregroundStyle(.secondary)
                             }
                             .padding(.horizontal, 14)
@@ -185,7 +185,7 @@ struct JumpView: View {
                 .frame(maxHeight: 420)
                 Divider()
                 Text("↩ flies the camera there and selects the node · ⇧↩ adds to selection")
-                    .font(.system(size: 12)).foregroundStyle(.secondary).padding(12)
+                    .font(.chrome(12)).foregroundStyle(.secondary).padding(12)
             }
             .frame(width: 560)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
@@ -211,11 +211,11 @@ struct FilterBarView: View {
                 HStack(spacing: 8) {
                     ForEach(Array(controller.filterClauses.enumerated()), id: \.offset) { i, c in
                         HStack(spacing: 4) {
-                            Text(c.text).font(.system(size: 13))
+                            Text(c.text).font(.chrome(13))
                             Button {
                                 controller.removeFilterClause(at: i)
                             } label: {
-                                Image(systemName: "xmark").font(.system(size: 9, weight: .bold))
+                                Image(systemName: "xmark").font(.chrome(9, weight: .bold))
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel("Remove \(c.text)")
@@ -227,7 +227,7 @@ struct FilterBarView: View {
                     }
                     TextField("+ marker, label, text…", text: $draft)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 13))
+                        .font(.chrome(13))
                         .frame(width: 180)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
@@ -252,7 +252,7 @@ struct FilterBarView: View {
                     .frame(width: 110)
                 }
                 HStack {
-                    Text("\(hits) of \(all) match").font(.system(size: 13))
+                    Text("\(hits) of \(all) match").font(.chrome(13))
                     Spacer()
                     if !controller.filterClauses.isEmpty {
                         Button("Save as “\(controller.suggestedFilterName)”") { controller.saveFilter() }
@@ -287,7 +287,7 @@ struct FocusBreadcrumbView: View {
                 ForEach(Array(path.enumerated()), id: \.offset) { i, id in
                     if i > 0 { Text("›").foregroundStyle(.secondary) }
                     Text(controller.canvas.nodes[id]?.text ?? "")
-                        .font(.system(size: 13, weight: i == path.count - 1 ? .semibold : .regular))
+                        .font(.chrome(13, weight: i == path.count - 1 ? .semibold : .regular))
                         .onTapGesture {
                             if i == 0 {
                                 controller.exitFocus()
@@ -299,7 +299,7 @@ struct FocusBreadcrumbView: View {
                 }
                 Spacer().frame(width: 24)
                 Keycap(text: "esc")
-                Text("climbs out").font(.system(size: 12)).foregroundStyle(.secondary)
+                Text("climbs out").font(.chrome(12)).foregroundStyle(.secondary)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
@@ -316,10 +316,10 @@ struct CountsControl: View {
 
     var body: some View {
         if !controller.zen && controller.present == nil {
-            let all = CanvasCounts(controller.canvas)
+            let all = controller.canvasCounts
             HStack(spacing: 10) {
                 Button("−") { _ = controller.perform(.zoomOut) }.buttonStyle(.plain).accessibilityLabel("Zoom out")
-                Text("\(Int((controller.zoom * 100).rounded()))%").font(.system(size: 12.5, design: .monospaced))
+                Text("\(Int((controller.zoom * 100).rounded()))%").font(.chrome(12.5, design: .monospaced))
                 Button("+") { _ = controller.perform(.zoomIn) }.buttonStyle(.plain).accessibilityLabel("Zoom in")
                 Divider().frame(height: 14)
                 Button("\(all.topics) topics") { controller.countsVisible.toggle() }
@@ -331,7 +331,7 @@ struct CountsControl: View {
                         CountsCard(controller: controller)
                     }
             }
-            .font(.system(size: 13))
+            .font(.chrome(13))
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 9))
@@ -348,7 +348,7 @@ struct CountsCard: View {
         let all = CanvasCounts(c)
         let sel = CanvasCounts(c, nodes: controller.selection.nodes.flatMap { c.subtree($0) })
         VStack(alignment: .leading, spacing: 8) {
-            Text("THIS CANVAS · SELECTION").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+            Text("THIS CANVAS · SELECTION").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
             Grid(alignment: .leading, horizontalSpacing: 28, verticalSpacing: 6) {
                 row("Topics", "\(all.topics) · \(sel.topics)")
                 row("Words", "\(all.words.formatted()) · \(sel.words.formatted())")
@@ -363,8 +363,8 @@ struct CountsCard: View {
 
     func row(_ k: String, _ v: String) -> some View {
         GridRow {
-            Text(k).font(.system(size: 13))
-            Text(v).font(.system(size: 13, design: .monospaced))
+            Text(k).font(.chrome(13))
+            Text(v).font(.chrome(13, design: .monospaced))
         }
     }
 }
@@ -375,7 +375,7 @@ struct ZenCountView: View {
     var body: some View {
         let _ = controller.prefsRevision
         if controller.zen {
-            let n = CanvasCounts(controller.canvas)
+            let n = controller.canvasCounts
             let count = controller.prefs.bool("appearance.zenCount")
             let timer = controller.prefs.bool("appearance.zenTimer")
             if count || timer {
@@ -388,7 +388,7 @@ struct ZenCountView: View {
                         ]
                         .compactMap { $0 }.joined(separator: " · ")
                     )
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(.chrome(12, design: .monospaced))
                     .foregroundStyle(.secondary.opacity(0.6))
                     .accessibilityLabel("\(n.topics) topics, \(n.words) words")
                 }
@@ -417,8 +417,8 @@ struct NavigationPanelView: View {
                             if n == 1 { controller.openSearch() } else { controller.refreshView() }
                         } label: {
                             VStack(spacing: 3) {
-                                Image(systemName: icon).font(.system(size: 13))
-                                Text(title).font(.system(size: 11.5))
+                                Image(systemName: icon).font(.chrome(13))
+                                Text(title).font(.chrome(11.5))
                             }
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 8)
@@ -471,7 +471,7 @@ struct SearchTab: View {
                     }
                 if !s.query.isEmpty {
                     Text(s.matches.isEmpty ? "0 of 0" : "\(s.current + 1) of \(s.matches.count)")
-                        .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
+                        .font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
                 }
             }
             .padding(9)
@@ -517,7 +517,7 @@ struct SearchTab: View {
                 }
             }
             Text("↩ next · ⇧↩ previous · matches glow on canvas · esc closes")
-                .font(.system(size: 11)).foregroundStyle(.secondary)
+                .font(.chrome(11)).foregroundStyle(.secondary)
         }
         .padding(12)
         .onAppear { focused = true }
@@ -530,7 +530,7 @@ struct SearchTab: View {
             change(&o)
             controller.updateSearch(options: o)
         } label: {
-            Text(title).font(.system(size: 11.5)).lineLimit(1)
+            Text(title).font(.chrome(11.5)).lineLimit(1)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .foregroundStyle(on ? Color(nsColor: .textBackgroundColor) : .primary)
@@ -561,7 +561,7 @@ struct SearchTab: View {
                 .top, 5)
             VStack(alignment: .leading, spacing: 2) {
                 Highlighted(text: String(source.prefix(60)), matched: matched.filter { $0 < 60 }, size: 13.5)
-                Text(path).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
+                Text(path).font(.chrome(11.5)).foregroundStyle(.secondary).lineLimit(1)
             }
         }
         .padding(.vertical, 8)
@@ -585,7 +585,7 @@ struct OutlineTab: View {
             VStack(alignment: .leading, spacing: 2) {
                 ForEach(rows(c), id: \.0) { id, depth in
                     Text(c.nodes[id]?.text ?? "")
-                        .font(.system(size: depth == 0 ? 14 : 13, weight: depth <= 1 ? .semibold : .regular))
+                        .font(.chrome(depth == 0 ? 14 : 13, weight: depth <= 1 ? .semibold : .regular))
                         .padding(.leading, CGFloat(depth) * 14)
                         .padding(.vertical, 3)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -630,8 +630,8 @@ struct NotesTab: View {
                             ])
                             .joined(separator: " › ")
                         )
-                        .font(.system(size: 13.5, weight: .semibold))
-                        Text(c.nodes[id]?.note?.text ?? "").font(.system(size: 12.5)).foregroundStyle(.secondary)
+                        .font(.chrome(13.5, weight: .semibold))
+                        Text(c.nodes[id]?.note?.text ?? "").font(.chrome(12.5)).foregroundStyle(.secondary)
                             .lineLimit(3)
                     }
                     .padding(12)
@@ -658,7 +658,7 @@ struct TagsTab: View {
                 ForEach(tags, id: \.key) { t in
                     let on = controller.tagHighlight.contains(t.key)
                     Text("\(t.title) · \(t.count)")
-                        .font(.system(size: 12.5))
+                        .font(.chrome(12.5))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .foregroundStyle(
@@ -679,10 +679,10 @@ struct TagsTab: View {
             }
             if tags.isEmpty { Text("No markers or labels yet.").foregroundStyle(.secondary) }
             Text("Click to highlight related topics; the rest fade to 30%. ⇧-click combines.")
-                .font(.system(size: 11.5)).foregroundStyle(.secondary)
+                .font(.chrome(11.5)).foregroundStyle(.secondary)
             if !controller.canvas.filters.isEmpty {
                 Divider()
-                Text("SAVED FILTERS").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                Text("SAVED FILTERS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
                 ForEach(controller.canvas.filters, id: \.name) { f in
                     Button(f.name) { controller.applySavedFilter(f) }.buttonStyle(.plain)
                 }
@@ -707,7 +707,7 @@ struct TodosTab: View {
             HStack(spacing: 6) {
                 ForEach([("Open", open.count), ("Done", done.count), ("All", all.count)], id: \.0) { k, n in
                     Text("\(k) · \(n)")
-                        .font(.system(size: 12.5))
+                        .font(.chrome(12.5))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .foregroundStyle(which == k ? Color(nsColor: .textBackgroundColor) : .primary)
@@ -726,11 +726,11 @@ struct TodosTab: View {
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel("Toggle \(c.nodes[id]?.text ?? "")")
-                            Text(c.nodes[id]?.text ?? "").font(.system(size: 13.5))
+                            Text(c.nodes[id]?.text ?? "").font(.chrome(13.5))
                                 .strikethrough(c.nodes[id]?.todo?.done == true)
                             Spacer()
                             Text(c.parent(of: id).flatMap { c.nodes[$0]?.text } ?? "")
-                                .font(.system(size: 12)).foregroundStyle(.secondary)
+                                .font(.chrome(12)).foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 7)
                         .contentShape(Rectangle())

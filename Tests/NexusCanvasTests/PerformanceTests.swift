@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import NexusFormat
 import Testing
 
 @testable import NexusCanvas
@@ -136,5 +137,85 @@ func ms(_ d: Duration) -> Double {
         h.snapshot(to: dir.appendingPathComponent("sample-logic.png"))
         h.controller.cheatSheetVisible = true
         h.snapshot(to: dir.appendingPathComponent("cheat-sheet.png"))
+    }
+}
+
+/// M10: README §12 rows not covered above.
+@MainActor
+@Suite(.serialized) struct ScalePerformanceTests {
+    /// 5,000 topics: each pan or zoom step's main-thread work (camera, culling, text
+    /// scale, layer commit) fits a 120 Hz frame (8.3 ms).
+    @Test func panAndZoom5000NodesAt120fps() {
+        let h = CanvasHarness(model: bigDocument(mains: 20, subs: 25, leaves: 9))  // 5,021 topics
+        #expect(h.controller.scene.nodes.count == 5_021)
+        let v = h.host.canvasView
+        v.reduceMotionOverride = true
+        h.window.orderFrontRegardless()
+        CATransaction.flush()
+        let clock = ContinuousClock()
+        var pan: [Duration] = []
+        var zoom: [Duration] = []
+        for i in 0..<60 {
+            var c = v.camera
+            c.offset.x += i % 2 == 0 ? 14 : -9
+            c.offset.y += 6
+            pan.append(
+                clock.measure {
+                    v.setCamera(c, animated: false)
+                    CATransaction.flush()
+                })
+        }
+        for i in 0..<40 {
+            zoom.append(
+                clock.measure {
+                    v.zoom(by: i < 20 ? 0.94 : 1.06)
+                    CATransaction.flush()
+                })
+        }
+        h.window.orderOut(nil)
+        print(
+            "5k pan median \(ms(median(pan))) ms, max \(ms(pan.max()!)) ms; zoom median \(ms(median(zoom))) ms, max \(ms(zoom.max()!)) ms"
+        )
+        #expect(ms(median(pan)) < 8.3, "pan \(ms(median(pan))) ms")
+        #expect(ms(median(zoom)) < 8.3, "zoom \(ms(median(zoom))) ms")
+    }
+
+    /// Opening a 1,000-topic document: read the package from disk, validate, lay out and
+    /// build the window's canvas, under 1 s.
+    @Test func open1000NodeDocumentUnder1s() throws {
+        let dir = FileManager.default.temporaryDirectory.appending(path: "open-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let url = dir.appending(path: "Benchmark 1k.nexus")
+        try NexusPackage.write(bigDocument(mains: 10, subs: 10, leaves: 9), to: url)
+        let d = ContinuousClock().measure {
+            let doc = try! NexusPackage.read(from: url)
+            let h = CanvasHarness(model: doc)
+            h.host.layoutSubtreeIfNeeded()
+            CATransaction.flush()
+            #expect(h.controller.scene.nodes.count == 1_011)
+        }
+        print("open 1k \(ms(d)) ms")
+        #expect(ms(d) < 1_000, "open 1k \(ms(d)) ms")
+    }
+}
+
+/// Writes the benchmark maps to `Benchmarks/` (README §12):
+/// `NEXUS_WRITE_BENCHMARKS=1 swift test --filter writeBenchmarkMaps`.
+@MainActor
+@Suite struct BenchmarkFiles {
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["NEXUS_WRITE_BENCHMARKS"] != nil))
+    func writeBenchmarkMaps() throws {
+        let dir = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
+            .deletingLastPathComponent().appending(path: "Benchmarks")
+        for (name, doc) in [
+            ("Benchmark 1k.nexus", bigDocument(mains: 10, subs: 10, leaves: 9)),
+            ("Benchmark 5k.nexus", bigDocument(mains: 20, subs: 25, leaves: 9)),
+        ] {
+            let url = dir.appending(path: name)
+            try? FileManager.default.removeItem(at: url)
+            try NexusPackage.write(doc, to: url)
+            #expect(try NexusPackage.read(from: url).topicCount == doc.topicCount)
+        }
     }
 }

@@ -40,8 +40,17 @@ final class NexusDocument: NSDocument {
     nonisolated override class var preservesVersions: Bool { true }
 
     override func makeWindowControllers() {
-        addWindowController(DocumentWindowController(document: self))
+        let wc = DocumentWindowController(document: self)
+        addWindowController(wc)
         startSnapshots()
+        // A damaged file was repaired while reading (M10): say so; saving keeps the fix.
+        let repairs = store.model.repairs
+        if !repairs.isEmpty {
+            wc.controller.showToast(
+                "Repaired this file: \(repairs.count == 1 ? repairs[0] : "\(repairs.count) problems") · saving keeps the fix"
+            )
+            store.updateDocument { $0.repairs = [] }
+        }
     }
 
     /// A stable id for this document's recovery snapshots (kept in the manifest).

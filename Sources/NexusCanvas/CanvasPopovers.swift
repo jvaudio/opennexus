@@ -98,12 +98,12 @@ struct NotePopover: View {
                 Button("Done") { save() }.keyboardShortcut(.defaultAction)
             }
             TextEditor(text: $text)
-                .font(.system(size: 13))
+                .font(.chrome(13))
                 .scrollContentBackground(.hidden)
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .textBackgroundColor)))
                 .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.separator))
-            Text("Markdown: # headings, - lists, ``` code, | tables |").font(.system(size: 11)).foregroundStyle(
+            Text("Markdown: # headings, - lists, ``` code, | tables |").font(.chrome(11)).foregroundStyle(
                 .secondary)
         }
         .padding(14)
@@ -161,7 +161,7 @@ struct LinkPopover: View {
                         HStack {
                             Text(t.2)
                             Spacer()
-                            Text(t.3).foregroundStyle(.secondary).font(.system(size: 11))
+                            Text(t.3).foregroundStyle(.secondary).font(.chrome(11))
                         }
                     }
                     .buttonStyle(.plain)
@@ -178,7 +178,7 @@ struct LinkPopover: View {
                     }
                 }
                 Text("Links keep the file where it is; the file itself is not copied into the document.")
-                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                    .font(.chrome(11)).foregroundStyle(.secondary)
             default:
                 TextField("https://", text: $url)
                     .textFieldStyle(.roundedBorder)
@@ -198,9 +198,9 @@ struct LinkPopover: View {
             if !back.isEmpty {
                 Divider()
                 Text("LINKED FROM \(back.count) TOPIC\(back.count == 1 ? "" : "S")")
-                    .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                    .font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
                 ForEach(back, id: \.node) { b in
-                    Text("⤳ \(b.text) · \(b.canvasTitle)").font(.system(size: 12))
+                    Text("⤳ \(b.text) · \(b.canvasTitle)").font(.chrome(12))
                 }
             }
             Spacer(minLength: 0)
@@ -266,7 +266,7 @@ struct LabelPopover: View {
                             HStack {
                                 Text(s.label)
                                 Spacer()
-                                Text("used \(s.count)×").foregroundStyle(.secondary).font(.system(size: 11))
+                                Text("used \(s.count)×").foregroundStyle(.secondary).font(.chrome(11))
                             }
                             .padding(.vertical, 3)
                             .contentShape(Rectangle())
@@ -274,7 +274,7 @@ struct LabelPopover: View {
                         .buttonStyle(.plain)
                     }
                     if !fragment.isEmpty, !controller.labelUsage.contains(where: { $0.label == fragment }) {
-                        Text("Create “\(fragment)”").foregroundStyle(Color.accentColor).font(.system(size: 13))
+                        Text("Create “\(fragment)”").foregroundStyle(Color.accentColor).font(.chrome(13))
                     }
                 }
             }
@@ -327,7 +327,7 @@ struct MarkerPopover: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 10) {
                         ForEach(MarkerLibrary.groups) { g in
-                            Text(g.name.uppercased()).font(.system(size: 11, weight: .semibold)).foregroundStyle(
+                            Text(g.name.uppercased()).font(.chrome(11, weight: .semibold)).foregroundStyle(
                                 .secondary)
                             HStack(spacing: 6) {
                                 ForEach(g.markers) { m in
@@ -335,7 +335,7 @@ struct MarkerPopover: View {
                                         controller.toggleMarker(m.id)
                                     } label: {
                                         Text(m.glyph)
-                                            .font(.system(size: 12, weight: .bold))
+                                            .font(.chrome(12, weight: .bold))
                                             .foregroundStyle(.white)
                                             .frame(width: 24, height: 24)
                                             .background(RGBA(hex: m.color).color, in: Circle())
@@ -350,7 +350,7 @@ struct MarkerPopover: View {
                             }
                         }
                         Text("Picking from the same group replaces; another group adds.")
-                            .font(.system(size: 11)).foregroundStyle(.secondary)
+                            .font(.chrome(11)).foregroundStyle(.secondary)
                     }
                 }
             } else {
@@ -366,7 +366,7 @@ struct MarkerPopover: View {
                             controller.setSticker("emoji:\(s)", on: node)
                             close()
                         } label: {
-                            Text(s).font(.system(size: 26))
+                            Text(s).font(.chrome(26))
                         }
                         .buttonStyle(.plain)
                     }
@@ -378,7 +378,7 @@ struct MarkerPopover: View {
                     }
                 }
                 Text("✦ Make a sticker with Image Playground arrives with on-device AI.")
-                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                    .font(.chrome(11)).foregroundStyle(.secondary)
             }
             Spacer(minLength: 0)
         }
@@ -432,7 +432,7 @@ struct AudioPopover: View {
         VStack(spacing: 12) {
             Text("Audio note").font(.headline)
             Text(String(format: "%02d:%02d", Int(model.elapsed) / 60, Int(model.elapsed) % 60))
-                .font(.system(size: 28, weight: .semibold, design: .monospaced))
+                .font(.chrome(28, weight: .semibold, design: .monospaced))
             Button(model.recording ? "Stop and Save" : "Record") {
                 if model.recording {
                     if let (data, d) = model.stop() { controller.setAudio(data, duration: d, on: node) }
@@ -443,7 +443,7 @@ struct AudioPopover: View {
             }
             .keyboardShortcut(.defaultAction)
             Text("Recorded on this Mac. Transcription runs on-device (AI, M6).")
-                .font(.system(size: 11)).foregroundStyle(.secondary)
+                .font(.chrome(11)).foregroundStyle(.secondary)
         }
         .padding(14)
     }

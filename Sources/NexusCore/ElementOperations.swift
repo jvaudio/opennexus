@@ -243,6 +243,9 @@ extension CanvasEditor {
         guard id != canvas.root else { throw ElementRefusal.cannotMoveRoot }
         guard !isElementTopic(id) else { throw ElementRefusal.belongsToElement }
         guard !canvas.subtree(id).contains(parent) else { throw ElementRefusal.wouldCreateCycle }
+        guard canvas.depth(of: parent) + 1 + canvas.height(of: id) < Canvas.maxDepth else {
+            throw TreeOperationRefusal.tooDeep
+        }
         let oldParent = canvas.parent(of: id)
         var insertAt = index
         if let op = oldParent {

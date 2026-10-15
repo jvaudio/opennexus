@@ -154,7 +154,7 @@ public struct HomeView: View {
                     } else if model.section == "templates" {
                         ForEach(MapTemplate.Category.allCases, id: \.self) { cat in
                             VStack(alignment: .leading, spacing: 10) {
-                                Text(cat.rawValue).font(.system(size: 16, weight: .semibold))
+                                Text(cat.rawValue).font(.chrome(16, weight: .semibold))
                                 templateRow(TemplateLibrary.shelf(cat))
                             }
                         }
@@ -172,6 +172,7 @@ public struct HomeView: View {
             }
         }
         .frame(minWidth: 1100, minHeight: 760)
+        .chromeControls()
         .background(Color(nsColor: .windowBackgroundColor))
         .background {
             // ⌘N a blank mind map; ⇧⌘N jumps to the type cards; 1–7 pick a type there.
@@ -198,10 +199,10 @@ public struct HomeView: View {
                 model.onInbox()
             } label: {
                 HStack {
-                    Text("Inbox map").font(.system(size: 13.5))
+                    Text("Inbox map").font(.chrome(13.5))
                     Spacer()
                     if model.inboxCount > 0 {
-                        Text("\(model.inboxCount)").font(.system(size: 12.5)).foregroundStyle(.secondary)
+                        Text("\(model.inboxCount)").font(.chrome(12.5)).foregroundStyle(.secondary)
                     }
                 }
                 .padding(.horizontal, 10).frame(height: 30).contentShape(Rectangle())
@@ -210,7 +211,7 @@ public struct HomeView: View {
             if !model.locations.isEmpty {
                 sideHeader("LOCATIONS")
                 ForEach(model.locations, id: \.self) { u in
-                    Text(Self.prettyPath(u)).font(.system(size: 13.5)).lineLimit(1).padding(.horizontal, 10).frame(
+                    Text(Self.prettyPath(u)).font(.chrome(13.5)).lineLimit(1).padding(.horizontal, 10).frame(
                         height: 30, alignment: .leading
                     )
                     .help(u.path)
@@ -219,20 +220,20 @@ public struct HomeView: View {
             if !model.savedFilters.isEmpty {
                 sideHeader("SAVED FILTERS")
                 ForEach(Array(model.savedFilters.enumerated()), id: \.offset) { _, f in
-                    Button(f.1) { model.onFilter(f.0, f.1) }.buttonStyle(.plain).font(.system(size: 13.5))
+                    Button(f.1) { model.onFilter(f.0, f.1) }.buttonStyle(.plain).font(.chrome(13.5))
                         .padding(.horizontal, 10).frame(height: 30, alignment: .leading)
                 }
             }
             Spacer()
             HStack(spacing: 8) {
                 Circle().fill(model.aiStatus.canRun ? Color.teal : Color.orange).frame(width: 7, height: 7)
-                Text(model.aiStatus.canRun ? "On-device AI ready" : model.aiStatus.chip).font(.system(size: 13))
+                Text(model.aiStatus.canRun ? "On-device AI ready" : model.aiStatus.chip).font(.chrome(13))
                     .foregroundStyle(.secondary)
             }
             .padding(10)
         }
         .padding(12)
-        .frame(width: 230)
+        .frame(width: .chromeWidth(230))
         .background(Color(nsColor: .underPageBackgroundColor).opacity(0.5))
     }
 
@@ -252,7 +253,7 @@ public struct HomeView: View {
             model.section = id
             model.query = ""
         } label: {
-            Text(title).font(.system(size: 13.5, weight: model.section == id ? .semibold : .regular))
+            Text(title).font(.chrome(13.5, weight: model.section == id ? .semibold : .regular))
                 .foregroundStyle(model.section == id ? Self.accent : .primary)
                 .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
                 .padding(.horizontal, 10)
@@ -265,7 +266,7 @@ public struct HomeView: View {
     }
 
     func sideHeader(_ t: String) -> some View {
-        Text(t).font(.system(size: 11.5, weight: .semibold)).foregroundStyle(.secondary).padding(.horizontal, 10)
+        Text(t).font(.chrome(11.5, weight: .semibold)).foregroundStyle(.secondary).padding(.horizontal, 10)
             .padding(.top, 18).padding(.bottom, 4)
     }
 
@@ -274,9 +275,10 @@ public struct HomeView: View {
     var header: some View {
         HStack {
             Text(model.section == "recents" ? "Recents" : model.section == "templates" ? "Templates" : greeting)
-                .font(.system(size: 27, weight: .bold))
+                .font(.chrome(27, weight: .bold))
             Spacer()
             TextField("Search maps and nodes", text: $model.query).textFieldStyle(.roundedBorder).controlSize(.large)
+                .font(.chrome(13))
                 .frame(width: 300)
                 .accessibilityLabel("Search maps and nodes")
             Button("Import…") { model.onImport() }.controlSize(.large)
@@ -286,23 +288,23 @@ public struct HomeView: View {
     var newRow: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("New").font(.system(size: 16, weight: .semibold))
+                Text("New").font(.chrome(16, weight: .semibold))
                 Spacer()
                 keycap("⌘N")
                 Text("blank mind map ·").foregroundStyle(.secondary)
                 keycap("⇧⌘N")
                 Text("choose type").foregroundStyle(.secondary)
             }
-            .font(.system(size: 12.5))
+            .font(.chrome(12.5))
             if model.choosingType {
-                Text("Press 1–7 to choose a type, or click one.").font(.system(size: 13.5)).foregroundStyle(Self.accent)
+                Text("Press 1–7 to choose a type, or click one.").font(.chrome(13.5)).foregroundStyle(Self.accent)
             }
             HStack(spacing: 14) {
                 ForEach(Array(Self.newTypes.enumerated()), id: \.offset) { i, item in
                     newCard(item.0, item.1, highlighted: i == 0)
                         .overlay(alignment: .topTrailing) {
                             if model.choosingType {
-                                Text("\(i + 1)").font(.system(size: 11, weight: .semibold, design: .monospaced))
+                                Text("\(i + 1)").font(.chrome(11, weight: .semibold, design: .monospaced))
                                     .padding(.horizontal, 6).frame(height: 20)
                                     .overlay(RoundedRectangle(cornerRadius: 4).stroke(.separator)).padding(8)
                             }
@@ -331,7 +333,7 @@ public struct HomeView: View {
                             } label: {
                                 HStack(spacing: 10) {
                                     TypeGlyph(type: t, color: .primary).frame(width: 28, height: 18)
-                                    Text(Self.typeName(t)).font(.system(size: 13))
+                                    Text(Self.typeName(t)).font(.chrome(13))
                                     Spacer()
                                 }
                                 .padding(.horizontal, 10).frame(height: 28).contentShape(Rectangle())
@@ -358,7 +360,8 @@ public struct HomeView: View {
     func cardBody(_ t: DiagramType, _ title: String, highlighted: Bool) -> some View {
         VStack(spacing: 10) {
             TypeGlyph(type: t, color: highlighted ? Self.accent : .primary).frame(width: 64, height: 44)
-            Text(title).font(.system(size: 13.5, weight: .medium))
+            Text(title).font(.chrome(13.5, weight: .medium)).lineLimit(1).minimumScaleFactor(0.75)
+                .padding(.horizontal, 6)
         }
         .frame(maxWidth: .infinity, minHeight: 108)
         .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .textBackgroundColor)))
@@ -371,7 +374,7 @@ public struct HomeView: View {
 
     func recents(_ items: [RecentItem]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            if model.section == "home" { Text("Recents").font(.system(size: 16, weight: .semibold)) }
+            if model.section == "home" { Text("Recents").font(.chrome(16, weight: .semibold)) }
             if items.isEmpty { Text("Documents you open appear here.").foregroundStyle(.secondary) }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 20), count: 4), spacing: 20) {
                 ForEach(items) { r in
@@ -386,11 +389,11 @@ public struct HomeView: View {
                             .frame(height: 150)
                             .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.secondary.opacity(0.18)))
                             HStack {
-                                Text(r.title).font(.system(size: 13.5, weight: .semibold)).lineLimit(1)
+                                Text(r.title).font(.chrome(13.5, weight: .semibold)).lineLimit(1)
                                 Spacer()
-                                Text(Self.relative(r.date)).font(.system(size: 12)).foregroundStyle(.secondary)
+                                Text(Self.relative(r.date)).font(.chrome(12)).foregroundStyle(.secondary)
                             }
-                            Text(r.detail).font(.system(size: 12.5)).foregroundStyle(.secondary)
+                            Text(r.detail).font(.chrome(12.5)).foregroundStyle(.secondary)
                         }
                         .contentShape(Rectangle())
                     }
@@ -412,11 +415,11 @@ public struct HomeView: View {
     var shelf: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
-                Text(model.role.shelfTitle).font(.system(size: 16, weight: .semibold)).padding(.trailing, 8)
+                Text(model.role.shelfTitle).font(.chrome(16, weight: .semibold)).padding(.trailing, 8)
                 ForEach(MapTemplate.Category.allCases, id: \.self) { cat in
                     Button(cat.rawValue) { model.shelf = cat }
                         .buttonStyle(.plain)
-                        .font(.system(size: 13, weight: model.shelf == cat ? .semibold : .regular))
+                        .font(.chrome(13, weight: model.shelf == cat ? .semibold : .regular))
                         .foregroundStyle(model.shelf == cat ? Color.white : .primary)
                         .padding(.horizontal, 12).frame(height: 30)
                         .background(Capsule().fill(model.shelf == cat ? Color.black : Color.secondary.opacity(0.1)))
@@ -427,19 +430,19 @@ public struct HomeView: View {
     }
 
     func templateRow(_ ts: [MapTemplate]) -> some View {
-        HStack(spacing: 16) {
+        HStack(alignment: .top, spacing: 16) {
             ForEach(ts) { t in
                 Button {
                     model.onTemplate(t)
                 } label: {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(t.kicker).font(.system(size: 10.5, weight: .semibold, design: .monospaced))
+                        Text(t.kicker).font(.chrome(10.5, weight: .semibold, design: .monospaced))
                             .foregroundStyle(
                                 Self.tint(t.type))
-                        Text(t.title).font(.system(size: 14, weight: .semibold))
-                        Text(t.detail).font(.system(size: 12.5)).foregroundStyle(.secondary).lineLimit(2)
+                        Text(t.title).font(.chrome(14, weight: .semibold))
+                        Text(t.detail).font(.chrome(12.5)).foregroundStyle(.secondary).lineLimit(2)
                     }
-                    .frame(maxWidth: .infinity, minHeight: 90, alignment: .topLeading)
+                    .frame(maxWidth: .infinity, minHeight: 90, maxHeight: .infinity, alignment: .topLeading)
                     .padding(16)
                     .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .textBackgroundColor)))
                     .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.2)))
@@ -448,6 +451,7 @@ public struct HomeView: View {
                 .buttonStyle(.plain)
             }
         }
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     var searchResults: some View {
@@ -458,7 +462,7 @@ public struct HomeView: View {
                     ? "Nothing matches “\(model.query)” in recent maps"
                     : "\(hits.count) map\(hits.count == 1 ? "" : "s")"
             )
-            .font(.system(size: 16, weight: .semibold))
+            .font(.chrome(16, weight: .semibold))
             ForEach(hits, id: \.0.url) { r, nodes in
                 Button {
                     model.onOpen(r.url)
@@ -466,8 +470,8 @@ public struct HomeView: View {
                     HStack(spacing: 14) {
                         TypeGlyph(type: r.type, color: Self.tint(r.type)).frame(width: 44, height: 30)
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(r.title).font(.system(size: 15, weight: .semibold))
-                            Text(nodes.isEmpty ? r.detail : nodes.joined(separator: " · ")).font(.system(size: 13))
+                            Text(r.title).font(.chrome(15, weight: .semibold))
+                            Text(nodes.isEmpty ? r.detail : nodes.joined(separator: " · ")).font(.chrome(13))
                                 .foregroundStyle(.secondary).lineLimit(1)
                         }
                         Spacer()
@@ -484,7 +488,7 @@ public struct HomeView: View {
     var emptyState: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text("EMPTY STATE · FIRST LAUNCH AFTER TOUR").font(
-                .system(size: 12, weight: .semibold, design: .monospaced)
+                .chrome(12, weight: .semibold, design: .monospaced)
             ).foregroundStyle(.secondary)
                 .padding(14)
             Divider()
@@ -492,16 +496,16 @@ public struct HomeView: View {
                 Button {
                     if let u = model.tourMap { model.onOpen(u) }
                 } label: {
-                    Text("My first map").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
+                    Text("My first map").font(.chrome(15, weight: .semibold)).foregroundStyle(.white)
                         .padding(.horizontal, 18).frame(height: 40)
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color.black))
                         .padding(22)
                         .background(RoundedRectangle(cornerRadius: 12).fill(Color.secondary.opacity(0.07)))
                 }
                 .buttonStyle(.plain)
-                (Text("Your tutorial map is here. Press ") + Text("⌘N").font(.system(size: 12, design: .monospaced))
+                (Text("Your tutorial map is here. Press ") + Text("⌘N").font(.chrome(12, design: .monospaced))
                     + Text(" to start fresh or drop an .xmind file anywhere."))
-                    .multilineTextAlignment(.center).font(.system(size: 13.5)).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center).font(.chrome(13.5)).foregroundStyle(.secondary)
             }
             .padding(20)
         }
@@ -512,7 +516,7 @@ public struct HomeView: View {
     }
 
     func keycap(_ s: String) -> some View {
-        Text(s).font(.system(size: 11, weight: .medium, design: .monospaced)).padding(.horizontal, 5).frame(height: 20)
+        Text(s).font(.chrome(11, weight: .medium, design: .monospaced)).padding(.horizontal, 5).frame(height: 20)
             .overlay(RoundedRectangle(cornerRadius: 4).stroke(.separator))
     }
 }

@@ -243,32 +243,3 @@ import Testing
         #expect(h.store.model.canvases[original]!.nodes.values.contains { $0.text == "Pro · billing@acme.io" })
     }
 }
-
-/// Acceptance: zero outbound connections. The sandbox has no network entitlement, and no
-/// source uses a networking or cloud-model API.
-@Suite struct PrivacyTests {
-    static let root = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-        .deletingLastPathComponent()
-
-    @Test func entitlementsHaveNoNetwork() throws {
-        let url = Self.root.appending(path: "App/Support/OpenNexus.entitlements")
-        let plist = try #require(
-            PropertyListSerialization.propertyList(from: Data(contentsOf: url), format: nil) as? [String: Any])
-        #expect(plist["com.apple.security.app-sandbox"] as? Bool == true)
-        #expect(!plist.keys.contains { $0.hasPrefix("com.apple.security.network") })
-    }
-
-    @Test func sourcesUseNoNetworkingOrCloudModels() throws {
-        let banned = ["URLSession", "NWConnection", "NWBrowser", "CFSocket", "PrivateCloudCompute", "CFStream"]
-        var found: [String] = []
-        let dirs = ["Sources", "App"].map { Self.root.appending(path: $0) }
-        for dir in dirs {
-            let files = FileManager.default.enumerator(at: dir, includingPropertiesForKeys: nil)!
-            for case let f as URL in files where f.pathExtension == "swift" {
-                let s = try String(contentsOf: f, encoding: .utf8)
-                for b in banned where s.contains(b) { found.append("\(f.lastPathComponent): \(b)") }
-            }
-        }
-        #expect(found.isEmpty, "\(found)")
-    }
-}

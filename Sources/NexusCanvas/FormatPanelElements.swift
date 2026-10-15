@@ -75,7 +75,7 @@ struct RelationshipSection: View {
                 Keycap(text: controller.bindings(for: .connect).first?.glyphs ?? "⇧⌘L")
             }
         ) {
-            Text("LINE SHAPE").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+            Text("LINE SHAPE").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
                 ForEach(Self.shapes, id: \.0) { id, d in
                     Tile(selected: rel.line == id, height: 44) {
@@ -83,16 +83,16 @@ struct RelationshipSection: View {
                     } content: {
                         VStack(spacing: 2) {
                             PathIcon(d: d).frame(height: 18)
-                            Text(id.capitalized).font(.system(size: 10))
+                            Text(id.capitalized).font(.chrome(10))
                         }
                     }
                 }
             }
             HStack {
-                Text("START / END CAPS").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                Text("START / END CAPS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
                 Spacer()
-                Text("11 each").font(.system(size: 11)).foregroundStyle(.secondary)
-                Button("⇄ swap") { set { $0.ends = $0.ends.reversed() } }.buttonStyle(.plain).font(.system(size: 12))
+                Text("11 each").font(.chrome(11)).foregroundStyle(.secondary)
+                Button("⇄ swap") { set { $0.ends = $0.ends.reversed() } }.buttonStyle(.plain).font(.chrome(12))
             }
             capGrid(index: 0)
             capGrid(index: 1)
@@ -164,7 +164,7 @@ struct RelationshipSection: View {
 
     func capGrid(index: Int) -> some View {
         HStack(spacing: 4) {
-            Text(index == 0 ? "Start" : "End").font(.system(size: 11)).foregroundStyle(.secondary).frame(
+            Text(index == 0 ? "Start" : "End").font(.chrome(11)).foregroundStyle(.secondary).frame(
                 width: 30, alignment: .leading)
             ForEach(Self.caps, id: \.0) { id, d, filled in
                 Tile(selected: rel.ends[index] == id, height: 24) {
@@ -213,7 +213,7 @@ struct BoundarySection: View {
                     } content: {
                         VStack(spacing: 2) {
                             PathIcon(d: d).frame(height: 18)
-                            Text(id.capitalized).font(.system(size: 10))
+                            Text(id.capitalized).font(.chrome(10))
                         }
                     }
                 }
@@ -249,7 +249,7 @@ struct BoundarySection: View {
                     in: 0...0.3
                 )
                 .frame(maxWidth: 140)
-                Text("\(Int(boundary.fillOpacity * 100))%").font(.system(size: 12, design: .monospaced))
+                Text("\(Int(boundary.fillOpacity * 100))%").font(.chrome(12, design: .monospaced))
             }
             HStack {
                 Picker(
@@ -318,7 +318,7 @@ struct CalloutSection: View {
                 .frame(maxWidth: 200)
             }
             Text("Fill and text style: select the bubble's text and use the topic controls.")
-                .font(.system(size: 11)).foregroundStyle(.secondary)
+                .font(.chrome(11)).foregroundStyle(.secondary)
         }
     }
 }
@@ -342,7 +342,7 @@ struct SummarySection: View {
                 Keycap(text: controller.bindings(for: .summary).first?.glyphs ?? "⇧⌘]")
             }
         ) {
-            Text("BRACKET").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+            Text("BRACKET").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
                 ForEach(Self.brackets, id: \.0) { id, d in
                     Tile(selected: summary.bracket == id, height: 40) {
@@ -399,7 +399,7 @@ struct ZoneSection: View {
                 Text("H")
                 PointField(value: zone.height) { v in if let v { set { $0.height = max(Zone.minimumSize, v) } } }
             }
-            .font(.system(size: 12))
+            .font(.chrome(12))
             PanelToggle(label: "Auto resize to content", isOn: zone.autoResize) { v in set { $0.autoResize = v } }
             PanelToggle(label: "Collapsed", isOn: zone.collapsed) { v in set { $0.collapsed = v } }
             PanelRow(label: "Frame") {

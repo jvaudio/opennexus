@@ -156,6 +156,18 @@ public struct ObjectReader {
         }
     }
 
+    /// A whole number within `range`; anything else (fractions, 1e308, out of range) is
+    /// a decoding error rather than a trap when converted (M10 fuzzing).
+    public mutating func optionalInt(_ key: String, in range: ClosedRange<Int> = -1_000_000_000...1_000_000_000) throws
+        -> Int?
+    {
+        guard let d = try optionalDouble(key) else { return nil }
+        guard d.isFinite, d == d.rounded(), d >= Double(range.lowerBound), d <= Double(range.upperBound) else {
+            throw ModelDecodingError(path: "\(path).\(key)", "expected a whole number in \(range)")
+        }
+        return Int(d)
+    }
+
     public mutating func strings(_ key: String) throws -> [String] {
         switch raw(key) {
         case nil, .null?: return []

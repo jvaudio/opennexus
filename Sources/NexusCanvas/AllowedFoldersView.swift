@@ -17,7 +17,7 @@ public struct AllowedFoldersView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Agents can read and edit maps only in these folders, and in the folders inside them.")
-                .font(.system(size: 13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             List(selection: $selection) {
                 ForEach(folders, id: \.self) { f in
                     HStack(spacing: 8) {

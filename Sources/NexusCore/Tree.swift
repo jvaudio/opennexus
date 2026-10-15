@@ -132,23 +132,31 @@ extension Canvas {
 }
 
 extension Canvas {
-    /// Pre-order walk of the main tree (root first), with depth (root = 0).
+    /// The deepest nesting OpenNexus creates or opens (deeper branches are moved to
+    /// floating topics on load). Layout and drawing recurse by depth, and no real map
+    /// comes near it.
+    public static let maxDepth = 256
+
+    /// Pre-order walk of the main tree (root first), with depth (root = 0). Iterative,
+    /// so a damaged file can't exhaust the stack.
     public func walk(_ visit: (NodeID, Node, Int) -> Void) {
-        func go(_ id: NodeID, _ d: Int) {
-            guard let n = nodes[id] else { return }
-            visit(id, n, d)
-            for c in n.children { go(c, d + 1) }
-        }
-        go(root, 0)
+        walk(from: root, visit)
+    }
+
+    /// Levels below `id` (0 for a leaf).
+    public func height(of id: NodeID) -> Int {
+        var h = 0
+        walk(from: id) { _, _, d in h = max(h, d) }
+        return h
     }
 
     /// Walks one branch from `top` (depth 0 at `top`).
     public func walk(from top: NodeID, _ visit: (NodeID, Node, Int) -> Void) {
-        func go(_ id: NodeID, _ d: Int) {
-            guard let n = nodes[id] else { return }
+        var stack: [(NodeID, Int)] = [(top, 0)]
+        while let (id, d) = stack.popLast() {
+            guard let n = nodes[id] else { continue }
             visit(id, n, d)
-            for c in n.children { go(c, d + 1) }
+            for c in n.children.reversed() { stack.append((c, d + 1)) }
         }
-        go(top, 0)
     }
 }

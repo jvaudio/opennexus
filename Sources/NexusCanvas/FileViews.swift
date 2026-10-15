@@ -21,7 +21,7 @@ struct FileSegments<T: Hashable>: View {
                     selection = item.0
                 } label: {
                     Text(item.1)
-                        .font(.system(size: 13.5, weight: selection == item.0 ? .medium : .regular))
+                        .font(.chrome(13.5, weight: selection == item.0 ? .medium : .regular))
                         .foregroundStyle(selection == item.0 ? fileAccent : .primary)
                         .frame(maxWidth: .infinity, minHeight: 30)
                         .background(selection == item.0 ? fileAccent.opacity(0.1) : .clear)
@@ -42,7 +42,7 @@ struct FileButtonStyle: ButtonStyle {
     var prominent = false
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 14, weight: prominent ? .medium : .regular))
+            .font(.chrome(14, weight: prominent ? .medium : .regular))
             .foregroundStyle(prominent ? Color.white : .primary)
             .padding(.horizontal, 16)
             .frame(minHeight: 32)
@@ -119,10 +119,10 @@ private struct ExportSheet: View {
                         isOn: Binding(get: { state.mask }, set: { v in set { $0.mask = v } })
                     )
                     .toggleStyle(.checkbox)
-                    .font(.system(size: 13))
+                    .font(.chrome(13))
                 } else {
                     Text("Preview updates as options change · last used settings remembered per format")
-                        .font(.system(size: 13)).foregroundStyle(.secondary)
+                        .font(.chrome(13)).foregroundStyle(.secondary)
                 }
                 Spacer()
                 Button("Copy") { controller.copyExport(state) }.buttonStyle(FileButtonStyle())
@@ -154,16 +154,16 @@ private struct ExportSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 2) {
                 ForEach(ExportFormat.Group.allCases, id: \.self) { g in
-                    Text(g.rawValue).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(.secondary)
+                    Text(g.rawValue).font(.chrome(12.5, weight: .semibold)).foregroundStyle(.secondary)
                         .padding(.horizontal, 14).padding(.top, g == .visual ? 4 : 18).padding(.bottom, 6)
                     ForEach(ExportFormat.allCases.filter { $0.group == g }) { f in
                         Button {
                             set { $0.format = f }
                         } label: {
                             HStack {
-                                Text(f.title).font(.system(size: 15, weight: state.format == f ? .semibold : .regular))
+                                Text(f.title).font(.chrome(15, weight: state.format == f ? .semibold : .regular))
                                 Spacer()
-                                Text(".\(f.ext)").font(.system(size: 11.5, design: .monospaced)).opacity(0.75)
+                                Text(".\(f.ext)").font(.chrome(11.5, design: .monospaced)).opacity(0.75)
                             }
                             .foregroundStyle(state.format == f ? Color.white : .primary)
                             .padding(.horizontal, 14)
@@ -185,7 +185,7 @@ private struct ExportSheet: View {
         ZStack(alignment: .bottomTrailing) {
             if let text {
                 ScrollView([.vertical, .horizontal]) {
-                    Text(text).font(.system(size: 13, design: .monospaced)).foregroundStyle(.white.opacity(0.92))
+                    Text(text).font(.chrome(13, design: .monospaced)).foregroundStyle(.white.opacity(0.92))
                         .textSelection(.enabled)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(18)
@@ -212,7 +212,7 @@ private struct ExportSheet: View {
                 }
             }
             if !sizeLine.isEmpty {
-                Text(sizeLine).font(.system(size: 12.5, design: .monospaced)).foregroundStyle(.secondary)
+                Text(sizeLine).font(.chrome(12.5, design: .monospaced)).foregroundStyle(.secondary)
                     .padding(.horizontal, 10).padding(.vertical, 5)
                     .background(
                         RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor).opacity(0.9))
@@ -255,7 +255,7 @@ private struct ExportSheet: View {
                         in: 0.3...1
                     )
                     .frame(width: 260)
-                    Text("\(Int(state.jpegQuality * 100))%").font(.system(size: 12.5, design: .monospaced))
+                    Text("\(Int(state.jpegQuality * 100))%").font(.chrome(12.5, design: .monospaced))
                 }
             }
             if state.format == .pdf {
@@ -278,7 +278,7 @@ private struct ExportSheet: View {
                     )
                     .frame(width: 480)
                 }
-                Text("Round-trips: paste Mermaid back to rebuild").font(.system(size: 13)).foregroundStyle(.secondary)
+                Text("Round-trips: paste Mermaid back to rebuild").font(.chrome(13)).foregroundStyle(.secondary)
             } else if state.format == .json {
                 HStack(spacing: 18) {
                     FileSegments(
@@ -292,11 +292,11 @@ private struct ExportSheet: View {
                         ).toggleStyle(.switch)
                     }
                     Text("OpenNexus schema · the whole document · assets stay in the .nexus package").font(
-                        .system(size: 13)
+                        .chrome(13)
                     ).foregroundStyle(.secondary)
                 }
             } else if state.format == .drawio {
-                Text("Keeps positions and branch colours from the canvas layout.").font(.system(size: 13))
+                Text("Keeps positions and branch colours from the canvas layout.").font(.chrome(13))
                     .foregroundStyle(.secondary)
             } else {
                 scopeOnly
@@ -327,7 +327,7 @@ private struct ExportSheet: View {
                         ? "Threat table: element, STRIDE category, risk, mitigation, status."
                         : "Task list: topic, path, status, priority, labels, note."
                 )
-                .font(.system(size: 13)).foregroundStyle(.secondary)
+                .font(.chrome(13)).foregroundStyle(.secondary)
             } else {
                 Text(
                     state.format == .word
@@ -336,7 +336,7 @@ private struct ExportSheet: View {
                             ? "A PowerPoint deck Keynote opens directly, one slide per step."
                             : "One slide per step, as in Present."
                 )
-                .font(.system(size: 13)).foregroundStyle(.secondary)
+                .font(.chrome(13)).foregroundStyle(.secondary)
             }
         }
     }
@@ -356,8 +356,8 @@ private struct ExportSheet: View {
     var visualOptions: some View {
         Grid(alignment: .leading, horizontalSpacing: 24, verticalSpacing: 8) {
             GridRow {
-                Text("Scope").font(.system(size: 14, weight: .medium))
-                Text("Scale").font(.system(size: 14, weight: .medium))
+                Text("Scope").font(.chrome(14, weight: .medium))
+                Text("Scale").font(.chrome(14, weight: .medium))
             }
             GridRow {
                 FileSegments(
@@ -368,8 +368,8 @@ private struct ExportSheet: View {
                     selection: Binding(get: { state.image.scale }, set: { v in set { $0.image.scale = v } }))
             }
             GridRow {
-                Text("Background").font(.system(size: 14, weight: .medium)).padding(.top, 10)
-                Text("Padding · Theme override").font(.system(size: 14, weight: .medium)).padding(.top, 10)
+                Text("Background").font(.chrome(14, weight: .medium)).padding(.top, 10)
+                Text("Padding · Theme override").font(.chrome(14, weight: .medium)).padding(.top, 10)
             }
             GridRow {
                 FileSegments(
@@ -403,7 +403,7 @@ private struct ExportSheet: View {
 
     func labelled(_ title: String, @ViewBuilder _ content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(title).font(.system(size: 14, weight: .medium))
+            Text(title).font(.chrome(14, weight: .medium))
             content()
         }
     }
@@ -421,7 +421,7 @@ struct MapShotBar: View {
                     ForEach(MapShotState.Aspect.allCases, id: \.self) { a in
                         Button(a.rawValue) { controller.setMapShotAspect(a) }
                             .buttonStyle(.plain)
-                            .font(.system(size: 14, weight: s.aspect == a ? .semibold : .regular))
+                            .font(.chrome(14, weight: s.aspect == a ? .semibold : .regular))
                             .foregroundStyle(s.aspect == a ? Color.black : .white)
                             .padding(.horizontal, 10).frame(height: 30)
                             .background(RoundedRectangle(cornerRadius: 7).fill(s.aspect == a ? Color.white : .clear))
@@ -473,12 +473,12 @@ struct MapShotBar: View {
                 Divider().frame(height: 24).overlay(Color.white.opacity(0.2))
                 Button("Copy & Save ↩") { controller.commitMapShot() }
                     .buttonStyle(.plain)
-                    .font(.system(size: 14, weight: .semibold))
+                    .font(.chrome(14, weight: .semibold))
                     .foregroundStyle(.black)
                     .padding(.horizontal, 14).frame(height: 32)
                     .background(RoundedRectangle(cornerRadius: 8).fill(Color(red: 0.62, green: 0.6, blue: 1)))
             }
-            .font(.system(size: 14))
+            .font(.chrome(14))
             .padding(.horizontal, 14).padding(.vertical, 10)
             .background(RoundedRectangle(cornerRadius: 14).fill(Color(white: 0.16)))
             .shadow(color: .black.opacity(0.35), radius: 20, y: 8)
@@ -495,12 +495,12 @@ struct MapShotHintHost: View {
 struct MapShotHint: View {
     var body: some View {
         HStack(spacing: 10) {
-            Text("Map Shot").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
-            Text("⌃⌘M").font(.system(size: 11, weight: .medium, design: .monospaced)).foregroundStyle(.white)
+            Text("Map Shot").font(.chrome(14, weight: .semibold)).foregroundStyle(.white)
+            Text("⌃⌘M").font(.chrome(11, weight: .medium, design: .monospaced)).foregroundStyle(.white)
                 .padding(.horizontal, 6).padding(.vertical, 3)
                 .background(RoundedRectangle(cornerRadius: 5).fill(Color.black.opacity(0.6)))
             Text("drag to move · handles resize · ⇧ keeps ratio · arrows nudge · ⌥↩ copy only · esc cancels")
-                .font(.system(size: 13.5)).foregroundStyle(.white.opacity(0.8))
+                .font(.chrome(13.5)).foregroundStyle(.white.opacity(0.8))
         }
     }
 }
@@ -524,9 +524,9 @@ private struct PrintSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
-                Text("Print").font(.system(size: 18, weight: .semibold))
+                Text("Print").font(.chrome(18, weight: .semibold))
                 Spacer()
-                Text("⌘P").font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
+                Text("⌘P").font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
             }
             .padding(18)
             Divider()
@@ -539,7 +539,7 @@ private struct PrintSheet: View {
                             Image(nsImage: img).resizable().aspectRatio(contentMode: .fit)
                                 .background(Color.white)
                                 .overlay(alignment: .bottomTrailing) {
-                                    Text("\(i + 1)").font(.system(size: 9)).foregroundStyle(.secondary).padding(4)
+                                    Text("\(i + 1)").font(.chrome(9)).foregroundStyle(.secondary).padding(4)
                                 }
                         }
                     }
@@ -547,7 +547,7 @@ private struct PrintSheet: View {
                     Text(
                         "\(count) page\(count == 1 ? "" : "s")\(count > 1 && options.tile && !options.fitPage ? " · cut marks on" : "")"
                     )
-                    .font(.system(size: 12.5, design: .monospaced)).foregroundStyle(.secondary)
+                    .font(.chrome(12.5, design: .monospaced)).foregroundStyle(.secondary)
                     Spacer(minLength: 0)
                 }
                 .frame(width: 380)
@@ -576,11 +576,11 @@ private struct PrintSheet: View {
                     Toggle("Notes as appendix", isOn: $options.notesAppendix)
                     Toggle("Header: title · date", isOn: $options.header)
                     Text("Right-click a branch or zone › Print Branch prints only that part.")
-                        .font(.system(size: 13)).foregroundStyle(.secondary)
+                        .font(.chrome(13)).foregroundStyle(.secondary)
                     Spacer()
                 }
                 .toggleStyle(.switch)
-                .font(.system(size: 14))
+                .font(.chrome(14))
                 .padding(20)
                 .frame(width: 300)
             }
@@ -606,7 +606,7 @@ private struct PrintSheet: View {
     }
 
     func section(_ t: String) -> some View {
-        Text(t).font(.system(size: 12.5, weight: .semibold)).foregroundStyle(.secondary).padding(.top, 4)
+        Text(t).font(.chrome(12.5, weight: .semibold)).foregroundStyle(.secondary).padding(.top, 4)
     }
 
     func render() {
@@ -628,9 +628,9 @@ struct MergeSheetView: View {
         if let m = controller.mergeState {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Text("Merge documents").font(.system(size: 18, weight: .semibold))
+                    Text("Merge documents").font(.chrome(18, weight: .semibold))
                     Spacer()
-                    Text("Tools › Merge…").font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
+                    Text("Tools › Merge…").font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
                 }
                 .padding(18)
                 Divider()
@@ -639,11 +639,11 @@ struct MergeSheetView: View {
                         items: [(false, "As canvases"), (true, "Into this canvas")],
                         selection: Binding(
                             get: { m.intoThisCanvas }, set: { controller.mergeState?.intoThisCanvas = $0 }))
-                    Text("DOCUMENTS · \(m.sources.count)").font(.system(size: 13, weight: .semibold)).foregroundStyle(
+                    Text("DOCUMENTS · \(m.sources.count)").font(.chrome(13, weight: .semibold)).foregroundStyle(
                         .secondary)
                     ForEach(m.sources) { s in
                         HStack(spacing: 12) {
-                            Text(s.kind).font(.system(size: 10, weight: .bold, design: .monospaced))
+                            Text(s.kind).font(.chrome(10, weight: .bold, design: .monospaced))
                                 .foregroundStyle(s.kind == "XM" ? Color.red : s.kind == "MD" ? .teal : fileAccent)
                                 .frame(width: 34, height: 34)
                                 .background(
@@ -651,8 +651,8 @@ struct MergeSheetView: View {
                                 )
                                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(s.name).font(.system(size: 15))
-                                Text(s.detail).font(.system(size: 13)).foregroundStyle(.secondary)
+                                Text(s.name).font(.chrome(15))
+                                Text(s.detail).font(.chrome(13)).foregroundStyle(.secondary)
                             }
                             Spacer()
                             Button {
@@ -678,7 +678,7 @@ struct MergeSheetView: View {
                             ? "Each document’s central topic becomes a branch of this canvas’s central topic."
                             : "Each root becomes a branch on a new index canvas, with topic links to the merged canvases. Styles keep their source theme. .xmind, OPML and Markdown are accepted too."
                     )
-                    .font(.system(size: 13.5)).foregroundStyle(.secondary)
+                    .font(.chrome(13.5)).foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(20)
@@ -717,35 +717,35 @@ struct PasswordSheetView: View {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
                     Text(controller.documentEncrypted ? "Change password" : "Encrypt document").font(
-                        .system(size: 18, weight: .semibold))
+                        .chrome(18, weight: .semibold))
                     Spacer()
-                    Text("File › Set Password…").font(.system(size: 12, design: .monospaced)).foregroundStyle(
+                    Text("File › Set Password…").font(.chrome(12, design: .monospaced)).foregroundStyle(
                         .secondary)
                 }
                 .padding(18)
                 Divider()
                 VStack(alignment: .leading, spacing: 10) {
-                    Text("Password").font(.system(size: 14, weight: .medium))
+                    Text("Password").font(.chrome(14, weight: .medium))
                     SecureField("", text: $password).textFieldStyle(.roundedBorder).accessibilityLabel("Password")
-                    Text("Confirm").font(.system(size: 14, weight: .medium)).padding(.top, 6)
+                    Text("Confirm").font(.chrome(14, weight: .medium)).padding(.top, 6)
                     SecureField("", text: $confirm).textFieldStyle(.roundedBorder).accessibilityLabel(
                         "Confirm password")
-                    Text("Hint (optional, stored unencrypted)").font(.system(size: 14, weight: .medium)).padding(
+                    Text("Hint (optional, stored unencrypted)").font(.chrome(14, weight: .medium)).padding(
                         .top, 6)
                     TextField("", text: $hint).textFieldStyle(.roundedBorder).accessibilityLabel("Hint")
                     Toggle("Remember in Keychain", isOn: $remember).toggleStyle(.switch).padding(.vertical, 4)
                     HStack(alignment: .top, spacing: 8) {
-                        Text("!").font(.system(size: 14, weight: .bold)).foregroundStyle(.orange)
+                        Text("!").font(.chrome(14, weight: .bold)).foregroundStyle(.orange)
                         Text(
                             "A forgotten password cannot be recovered. Recovery snapshots of this document are encrypted with the same key."
                         )
-                        .font(.system(size: 13.5)).foregroundStyle(Color(red: 0.55, green: 0.35, blue: 0))
+                        .font(.chrome(13.5)).foregroundStyle(Color(red: 0.55, green: 0.35, blue: 0))
                         .fixedSize(horizontal: false, vertical: true)
                     }
                     .padding(12)
                     .background(RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.1)))
                     if !confirm.isEmpty && confirm != password {
-                        Text("The passwords don’t match.").font(.system(size: 13)).foregroundStyle(.red)
+                        Text("The passwords don’t match.").font(.chrome(13)).foregroundStyle(.red)
                     }
                 }
                 .padding(20)
@@ -803,7 +803,7 @@ struct ImportReportView: View {
     func card(_ r: ImportReport) -> some View {
         Group {
             VStack(alignment: .leading, spacing: 16) {
-                Text("IMPORT REPORT · \(r.source)").font(.system(size: 14, weight: .semibold)).foregroundStyle(
+                Text("IMPORT REPORT · \(r.source)").font(.chrome(14, weight: .semibold)).foregroundStyle(
                     .secondary)
                 HStack(spacing: 10) {
                     tile(
@@ -813,16 +813,16 @@ struct ImportReportView: View {
                     tile("\(r.notConverted)", "not converted", ok: r.notConverted == 0)
                 }
                 if r.lines.isEmpty {
-                    Text("Everything converted.").font(.system(size: 14.5)).foregroundStyle(.secondary)
+                    Text("Everything converted.").font(.chrome(14.5)).foregroundStyle(.secondary)
                 } else {
                     VStack(alignment: .leading, spacing: 6) {
-                        ForEach(r.lines, id: \.self) { Text("· " + $0).font(.system(size: 14.5)) }
+                        ForEach(r.lines, id: \.self) { Text("· " + $0).font(.chrome(14.5)) }
                     }
                 }
                 Text(
                     "Also imports MindNode, Word (.docx), TextBundle, OPML, Markdown, Mermaid, PlantUML subset, draw.io, FreeMind and MindManager (best effort), and indented text."
                 )
-                .font(.system(size: 13)).foregroundStyle(.secondary)
+                .font(.chrome(13)).foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
                 HStack {
                     Spacer()
@@ -842,9 +842,9 @@ struct ImportReportView: View {
 
     func tile(_ n: String, _ label: String, ok: Bool) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(n).font(.system(size: 28, weight: .bold)).foregroundStyle(
+            Text(n).font(.chrome(28, weight: .bold)).foregroundStyle(
                 ok ? Color(red: 0.1, green: 0.45, blue: 0.3) : Color(red: 0.6, green: 0.4, blue: 0))
-            Text(label).font(.system(size: 13.5))
+            Text(label).font(.chrome(13.5))
         }
         .frame(maxWidth: .infinity, minHeight: 92, alignment: .topLeading)
         .padding(14)
@@ -861,9 +861,9 @@ struct SnapshotsSheetView: View {
         if let list = controller.snapshots {
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Text("Recovery snapshots").font(.system(size: 18, weight: .semibold))
+                    Text("Recovery snapshots").font(.chrome(18, weight: .semibold))
                     Spacer()
-                    Text("File › Revert To").font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
+                    Text("File › Revert To").font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
                 }
                 .padding(18)
                 Divider()
@@ -877,9 +877,9 @@ struct SnapshotsSheetView: View {
                                 HStack {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(s.date.formatted(date: .abbreviated, time: .standard)).font(
-                                            .system(size: 14.5))
+                                            .chrome(14.5))
                                         Text("\(s.topics) topics\(s.encrypted ? " · encrypted" : "")").font(
-                                            .system(size: 12.5)
+                                            .chrome(12.5)
                                         ).foregroundStyle(.secondary)
                                     }
                                     Spacer()
@@ -898,7 +898,7 @@ struct SnapshotsSheetView: View {
                 }
                 HStack {
                     Text("Restore is one undo. Older versions: File › Revert To › Browse All Versions.").font(
-                        .system(size: 12.5)
+                        .chrome(12.5)
                     ).foregroundStyle(.secondary)
                     Spacer()
                     Button("Close") { controller.snapshots = nil }.buttonStyle(FileButtonStyle()).keyboardShortcut(

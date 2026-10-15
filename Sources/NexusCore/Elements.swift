@@ -247,8 +247,8 @@ public struct TextMark: Hashable, Sendable, JSONRepresentable {
 
     public init(json: JSONValue, path: String) throws {
         var r = try ObjectReader(json, path: path)
-        start = Int(try r.optionalDouble("start") ?? 0)
-        length = Int(try r.optionalDouble("length") ?? 0)
+        start = try r.optionalInt("start", in: 0...10_000_000) ?? 0
+        length = try r.optionalInt("length", in: 0...10_000_000) ?? 0
         bold = try r.bool("bold", default: false)
         italic = try r.bool("italic", default: false)
         underline = try r.bool("underline", default: false)

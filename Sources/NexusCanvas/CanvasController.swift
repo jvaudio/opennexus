@@ -116,6 +116,19 @@ public final class CanvasController {
     @ObservationIgnored var zenStarted: Date?
     /// Forces the system appearance for "Follow system light / dark" (tests).
     @ObservationIgnored public var systemIsDark: Bool?
+    /// The canvas's counts, cached per document revision: the status bar re-renders on
+    /// every zoom step, and counting 5,000 topics each time cost a frame (M10).
+    public var canvasCounts: CanvasCounts {
+        let key = (store.revision, canvasID)
+        if let c = countsCache, c.0 == key.0, c.1 == key.1 { return c.2 }
+        let counts = CanvasCounts(canvas)
+        countsCache = (key.0, key.1, counts)
+        return counts
+    }
+    @ObservationIgnored private var countsCache: (Int, CanvasID, CanvasCounts)?
+
+    /// Bumped on every scene rebuild (caches keyed on the scene, like the minimap's).
+    @ObservationIgnored public private(set) var sceneRevision = 0
     /// Offscreen exports and previews draw the canvas's own theme, whatever the
     /// appearance of the Mac that made them (D119).
     @ObservationIgnored public var rendersThemeAsNamed = false
@@ -360,6 +373,7 @@ public final class CanvasController {
     }
 
     func rebuildScene() {
+        sceneRevision &+= 1
         // Element sessions (labels, titles) carry their source node for context only; the
         // topic itself isn't being edited.
         let state: SceneBuilder.EditingState? = edit.flatMap {

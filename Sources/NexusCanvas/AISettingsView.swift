@@ -33,7 +33,7 @@ struct AISettingsPane: View {
                 status: nil
             ) {
                 HStack(spacing: 10) {
-                    Text("http://localhost:11434").font(.system(size: 13, design: .monospaced))
+                    Text("http://localhost:11434").font(.chrome(13, design: .monospaced))
                         .padding(.horizontal, 10).padding(.vertical, 5)
                         .background(RoundedRectangle(cornerRadius: 6).stroke(.separator))
                     Text("Test connection").foregroundStyle(.secondary)
@@ -49,19 +49,19 @@ struct AISettingsPane: View {
     ) -> some View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: selected ? "largecircle.fill.circle" : "circle")
-                .font(.system(size: 18))
+                .font(.chrome(18))
                 .foregroundStyle(selected ? Color.teal : .secondary)
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 8) {
-                    Text(title).font(.system(size: 16, weight: .semibold))
+                    Text(title).font(.chrome(16, weight: .semibold))
                     if let badge {
-                        Text(badge).font(.system(size: 12, weight: .medium)).foregroundStyle(.teal)
+                        Text(badge).font(.chrome(12, weight: .medium)).foregroundStyle(.teal)
                             .padding(.horizontal, 6).padding(.vertical, 2)
                             .background(RoundedRectangle(cornerRadius: 4).fill(Color.teal.opacity(0.12)))
                     }
                 }
-                Text(detail).font(.system(size: 13.5)).foregroundStyle(.secondary)
-                extra().font(.system(size: 13)).padding(.top, 6)
+                Text(detail).font(.chrome(13.5)).foregroundStyle(.secondary)
+                extra().font(.chrome(13)).padding(.top, 6)
             }
             Spacer()
             if let status {
@@ -73,7 +73,7 @@ struct AISettingsPane: View {
                             : status == .off
                                 ? "Apple Intelligence off" : status == .downloading ? "downloading" : "unavailable"
                     )
-                    .font(.system(size: 13, design: .monospaced))
+                    .font(.chrome(13, design: .monospaced))
                     .foregroundStyle(status.canRun ? Color.green : .orange)
                 }
             }
@@ -88,7 +88,7 @@ struct AISettingsPane: View {
     func row(_ title: String, divider: Bool = true, @ViewBuilder _ trailing: () -> some View) -> some View {
         VStack(spacing: 0) {
             HStack {
-                Text(title).font(.system(size: 14))
+                Text(title).font(.chrome(14))
                 Spacer()
                 trailing()
             }

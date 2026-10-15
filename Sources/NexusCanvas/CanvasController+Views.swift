@@ -205,12 +205,12 @@ extension CanvasController {
             let section = d.category == .ai ? "AI · ON-DEVICE" : "COMMANDS"
             let rank = recent.firstIndex(of: d.id.rawValue).map { 2000 - $0 * 10 } ?? 0
             let base = PaletteRow(
-                id: d.id.rawValue, section: section, title: d.title,
-                subtitle: d.note.isEmpty ? d.category.rawValue : d.note,
+                id: d.id.rawValue, section: section, title: Loc.t(d.title),
+                subtitle: Loc.t(d.note.isEmpty ? d.category.rawValue : d.note),
                 glyph: Self.glyph(for: d), keys: keys, hyper: hyper, action: .command(d.id))
             if q.isEmpty {
                 rows.append((rank, base))
-            } else if let (score, idx) = Fuzzy.match(q, in: d.title) {
+            } else if let (score, idx) = Fuzzy.match(q, in: base.title) {
                 var r = base
                 r.matched = idx
                 rows.append((score + rank / 4, r))

@@ -15,9 +15,9 @@ struct PresentOverlayView: View {
             let ink = Color(nsColor: NSColor(cgColor: controller.scene.theme.ink.cgColor) ?? .labelColor)
             ZStack(alignment: .topLeading) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(slide?.kicker ?? "").font(.system(size: 13, weight: .medium, design: .monospaced))
+                    Text(slide?.kicker ?? "").font(.chrome(13, weight: .medium, design: .monospaced))
                         .kerning(1.6).foregroundStyle(ink.opacity(0.6))
-                    Text(slide?.title ?? "").font(.system(size: 40, weight: .bold)).foregroundStyle(ink)
+                    Text(slide?.title ?? "").font(.chrome(40, weight: .bold)).foregroundStyle(ink)
                         .lineLimit(2)
                 }
                 .padding(.leading, 56)
@@ -55,10 +55,10 @@ struct SlideStripView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Text("SLIDES · AUTO-GENERATED · DRAG TO REORDER")
-                    .font(.system(size: 11.5, weight: .semibold, design: .monospaced)).kerning(1.2)
+                    .font(.chrome(11.5, weight: .semibold, design: .monospaced)).kerning(1.2)
                     .foregroundStyle(.secondary)
                 Spacer()
-                Text("Transition").font(.system(size: 12.5)).foregroundStyle(.secondary)
+                Text("Transition").font(.chrome(12.5)).foregroundStyle(.secondary)
                 ForEach([("glide", "Glide"), ("zoom", "Zoom"), ("cut", "Cut")], id: \.0) { id, title in
                     chip(title, on: settings.transition == id) {
                         controller.setPresentation("Transition") { $0.transition = id }
@@ -112,7 +112,7 @@ struct SlideStripView: View {
                     Button(f) { controller.onExportSlides?(f) }.buttonStyle(.plain)
                 }
             }
-            .font(.system(size: 12.5))
+            .font(.chrome(12.5))
         }
         .padding(16)
         .frame(height: 236)
@@ -122,7 +122,7 @@ struct SlideStripView: View {
 
     func chip(_ t: String, on: Bool, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(t).font(.system(size: 12.5))
+            Text(t).font(.chrome(12.5))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
                 .foregroundStyle(on ? Color.white : .primary)
@@ -144,7 +144,7 @@ struct SlideStripView: View {
             SlideWireframe(scene: controller.scene, slide: s)
                 .frame(width: 170, height: 80)
                 .overlay(alignment: .bottomLeading) {
-                    Text(String(format: "%02d", i + 1)).font(.system(size: 10, design: .monospaced))
+                    Text(String(format: "%02d", i + 1)).font(.chrome(10, design: .monospaced))
                         .foregroundStyle(.secondary).padding(5)
                 }
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
@@ -153,7 +153,7 @@ struct SlideStripView: View {
                         i == state.index ? Color.accentColor : Color.secondary.opacity(0.25),
                         lineWidth: i == state.index ? 2 : 1))
             Text(s.title + (s.skipped ? " · skipped" : ""))
-                .font(.system(size: 12))
+                .font(.chrome(12))
                 .lineLimit(1)
                 .frame(width: 170, alignment: .leading)
                 .foregroundStyle(s.skipped ? .tertiary : .primary)
@@ -195,7 +195,7 @@ struct SlideWireframe: View {
 struct PresentKeysView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("Present keys").font(.system(size: 17, weight: .semibold))
+            Text("Present keys").font(.chrome(17, weight: .semibold))
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
                 ForEach(
                     [
@@ -207,7 +207,7 @@ struct PresentKeysView: View {
                 ) { k, v in
                     GridRow {
                         Keycap(text: k)
-                        Text(v).font(.system(size: 13))
+                        Text(v).font(.chrome(13))
                     }
                 }
             }
@@ -233,14 +233,14 @@ public struct PresenterView: View {
             let elapsed = Int(ctx.date.timeIntervalSince(p?.started ?? ctx.date))
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
-                    Text("PRESENTER VIEW").font(.system(size: 12, weight: .semibold, design: .monospaced)).kerning(1.4)
+                    Text("PRESENTER VIEW").font(.chrome(12, weight: .semibold, design: .monospaced)).kerning(1.4)
                         .foregroundStyle(.secondary)
                     Spacer()
                     Text(String(format: "%02d:%02d", elapsed / 60, elapsed % 60))
-                        .font(.system(size: 30, weight: .semibold, design: .monospaced))
+                        .font(.chrome(30, weight: .semibold, design: .monospaced))
                         .foregroundStyle(Color.accentColor)
                 }
-                Text(current?.title ?? "").font(.system(size: 20, weight: .semibold))
+                Text(current?.title ?? "").font(.chrome(20, weight: .semibold))
                 HStack(alignment: .top, spacing: 14) {
                     if let next {
                         SlideWireframe(scene: controller.scene, slide: next)
@@ -249,12 +249,12 @@ public struct PresenterView: View {
                     }
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Next").foregroundStyle(.secondary)
-                        Text(next?.title ?? "End of deck").font(.system(size: 15))
+                        Text(next?.title ?? "End of deck").font(.chrome(15))
                     }
                 }
                 ScrollView {
                     Text(current?.note ?? "No note on this slide's topic.")
-                        .font(.system(size: 16))
+                        .font(.chrome(16))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .padding(14)

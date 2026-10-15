@@ -113,6 +113,9 @@ extension CommandID {
     public static let showOutline: CommandID = "view.outline"
     public static let showSplit: CommandID = "view.split"
     public static let inspector: CommandID = "view.inspector"
+    /// F6 / ⇧F6: move keyboard focus between the window's panels (M10).
+    public static let nextPanel: CommandID = "view.nextPanel"
+    public static let previousPanel: CommandID = "view.previousPanel"
     public static let filterBar: CommandID = "view.filter"
     public static let present: CommandID = "view.present"
     public static let convert: CommandID = "view.convert"
@@ -361,6 +364,12 @@ public enum DefaultCommands {
             C(.showOutline, "Outline", .view, scope: .global, keys: [k("cmd+2")], menu: .view),
             C(.showSplit, "Split", .view, scope: .global, keys: [k("cmd+3")], menu: .view),
             C(.inspector, "Format Panel", .view, keys: [k("cmd+i")], menu: .view, xmind: true),
+            C(
+                .nextPanel, "Move Focus to Next Panel", .view, scope: .global, keys: [k("f6")], menu: .view,
+                note: "Canvas, tabs, Format panel, AI panel"),
+            C(
+                .previousPanel, "Move Focus to Previous Panel", .view, scope: .global, keys: [k("shift+f6")],
+                menu: .view),
             C(.filterBar, "Filter…", .view, scope: .global, keys: [k("shift+cmd+f")], menu: .view),
             C(
                 .present, "Present", .view, scope: .global, keys: [k("shift+cmd+p")], hyper: k("hyper+p"), menu: .view,

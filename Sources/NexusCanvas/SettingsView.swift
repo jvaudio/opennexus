@@ -45,12 +45,13 @@ public struct SettingsView: View {
                     }
                 }
                 .onChange(of: highlight) { _, h in
-                    if let h { withAnimation { proxy.scrollTo(h, anchor: .center) } }
+                    if let h { withAnimation(UIMotion.animation(.default)) { proxy.scrollTo(h, anchor: .center) } }
                 }
             }
             .background(Color(nsColor: .windowBackgroundColor))
         }
         .frame(minWidth: 1100, minHeight: 760)
+        .chromeControls()
         .background {
             Button("") { searchFocused = true }.keyboardShortcut("f", modifiers: .command).opacity(0)
         }
@@ -72,11 +73,11 @@ public struct SettingsView: View {
                 } label: {
                     HStack(spacing: 12) {
                         Text(p.glyph)
-                            .font(.system(size: 11, weight: .bold))
+                            .font(.chrome(11, weight: .bold))
                             .foregroundStyle(.white)
                             .frame(width: 22, height: 22)
                             .background(RoundedRectangle(cornerRadius: 6).fill(Color(hex: p.tint)))
-                        Text(p.title).font(.system(size: 14.5))
+                        Text(Loc.t(p.title)).font(.chrome(14.5))
                         Spacer()
                     }
                     .padding(.horizontal, 10)
@@ -92,10 +93,10 @@ public struct SettingsView: View {
                 .accessibilityAddTraits(pane == p.id ? .isSelected : [])
             }
             Spacer()
-            Text("⌘, opens Settings · ⌘F searches every pane").font(.system(size: 12)).foregroundStyle(.secondary)
+            Text("⌘, opens Settings · ⌘F searches every pane").font(.chrome(12)).foregroundStyle(.secondary)
         }
         .padding(16)
-        .frame(width: 250)
+        .frame(width: .chromeWidth(250))
         .background(Color(nsColor: .underPageBackgroundColor).opacity(0.5))
     }
 
@@ -103,7 +104,7 @@ public struct SettingsView: View {
         let hits = SettingsSchema.search(query)
         return VStack(alignment: .leading, spacing: 6) {
             Text(hits.isEmpty ? "No settings match “\(query)”" : "\(hits.count) result\(hits.count == 1 ? "" : "s")")
-                .font(.system(size: 22, weight: .bold))
+                .font(.chrome(22, weight: .bold))
                 .padding(.bottom, 8)
             ForEach(Array(hits.enumerated()), id: \.offset) { _, h in
                 Button {
@@ -113,9 +114,9 @@ public struct SettingsView: View {
                 } label: {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(h.2.title.isEmpty ? h.1.title : h.2.title).font(.system(size: 14.5))
+                            Text(h.2.title.isEmpty ? h.1.title : h.2.title).font(.chrome(14.5))
                             Text([h.0.title, h.1.title].filter { !$0.isEmpty }.joined(separator: " › "))
-                                .font(.system(size: 12.5)).foregroundStyle(.secondary)
+                                .font(.chrome(12.5)).foregroundStyle(.secondary)
                         }
                         Spacer()
                         Image(systemName: "arrow.right").foregroundStyle(.secondary)
@@ -144,8 +145,8 @@ struct PaneView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 6) {
-                Text(pane.title).font(.system(size: 24, weight: .bold))
-                Text(pane.subtitle).font(.system(size: 13.5)).foregroundStyle(.secondary)
+                Text(Loc.t(pane.title)).font(.chrome(24, weight: .bold))
+                Text(Loc.t(pane.subtitle)).font(.chrome(13.5)).foregroundStyle(.secondary)
             }
             let columns = Set(pane.sections.map(\.column))
             if columns.count > 1 {
@@ -180,8 +181,8 @@ struct SectionView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if !section.title.isEmpty {
-                Text(section.title.uppercased() == section.title ? section.title : section.title)
-                    .font(.system(size: 14, weight: .semibold))
+                Text(Loc.t(section.title))
+                    .font(.chrome(14, weight: .semibold))
                     .foregroundStyle(.secondary)
                     .padding(.leading, 4)
             }
@@ -203,7 +204,7 @@ struct SectionView: View {
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator.opacity(0.6)))
             }
             if let f = section.footnote {
-                Text(f).font(.system(size: 13)).foregroundStyle(.secondary).padding(.horizontal, 4)
+                Text(Loc.t(f)).font(.chrome(13)).foregroundStyle(.secondary).padding(.horizontal, 4)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -233,26 +234,44 @@ struct RowView: View {
         if case .card = row.kind {
             CardView(row: row, prefs: prefs, availability: availability, onAction: onAction).padding(14)
         } else {
-            HStack(alignment: .center, spacing: 12) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(row.title).font(.system(size: 13.5))
-                    if let d = Self.liveDetail(row, prefs) ?? row.detail {
-                        Text(d)
-                            .font(.system(size: 11.5))
-                            .foregroundStyle(.secondary)
-                            .fixedSize(horizontal: false, vertical: true)
-                    }
+            // Side by side when it fits; otherwise (long translations, large text) the
+            // control moves under the title instead of truncating.
+            ViewThatFits(in: .horizontal) {
+                HStack(alignment: .center, spacing: 12) {
+                    titleBlock
+                    Spacer(minLength: 12)
+                    lockedControl
                 }
-                Spacer(minLength: 12)
-                control
-                    .disabled(row.locked != nil)
-                    .opacity(row.locked != nil ? 0.5 : 1)
-                    .help(row.locked ?? "")
+                VStack(alignment: .leading, spacing: 8) {
+                    titleBlock
+                    lockedControl
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
             .accessibilityElement(children: .combine)
         }
+    }
+
+    var titleBlock: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(Loc.t(row.title)).font(.chrome(13.5))
+            if let d = Self.liveDetail(row, prefs) ?? row.detail {
+                Text(Loc.t(d))
+                    .font(.chrome(11.5))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+    }
+
+    var lockedControl: some View {
+        control
+            .fixedSize()
+            .disabled(row.locked != nil)
+            .opacity(row.locked != nil ? 0.5 : 1)
+            .help(row.locked.map(Loc.t) ?? "")
     }
 
     @ViewBuilder var control: some View {
@@ -268,11 +287,11 @@ struct RowView: View {
                 options: options, selection: Binding(get: { prefs.string(row.key) }, set: { prefs.set(row.key, $0) }))
         case .menu(let options):
             Picker("", selection: Binding(get: { prefs.string(row.key) }, set: { prefs.set(row.key, $0) })) {
-                ForEach(options, id: \.value) { Text($0.label).tag($0.value) }
+                ForEach(options, id: \.value) { Text(Loc.t($0.label)).tag($0.value) }
             }
             .labelsHidden()
             .fixedSize()
-            .accessibilityLabel(row.title)
+            .accessibilityLabel(Loc.t(row.title))
         case .number(let unit, let lo, let hi, let step) where (hi - lo) / step <= 100:
             // Ranges are sliders with their value (artboards 36, 39 and 42).
             HStack(spacing: 10) {
@@ -284,7 +303,7 @@ struct RowView: View {
                 .frame(width: 120)
                 .accessibilityLabel(row.title)
                 Text("\(prefs.number(row.key), format: .number.precision(.fractionLength(step < 1 ? 1 : 0))) \(unit)")
-                    .font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary).frame(
+                    .font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary).frame(
                         minWidth: 44, alignment: .trailing)
             }
         case .number(let unit, let lo, let hi, let step):
@@ -311,7 +330,7 @@ struct RowView: View {
                 "", text: Binding(get: { prefs.string(row.key) }, set: { prefs.set(row.key, $0) }), axis: .vertical
             )
             .textFieldStyle(.roundedBorder)
-            .font(.system(size: 13, design: .monospaced))
+            .font(.chrome(13, design: .monospaced))
             .lineLimit(1...4)
             .frame(width: 240)
             .accessibilityLabel(row.title)
@@ -320,7 +339,7 @@ struct RowView: View {
         case .keycaps(let keys):
             HStack(spacing: 6) {
                 ForEach(keys, id: \.self) { k in
-                    Text(k).font(.system(size: 12, weight: .semibold, design: .monospaced))
+                    Text(k).font(.chrome(12, weight: .semibold, design: .monospaced))
                         .foregroundStyle(k.hasPrefix("✦") ? Color.white : .primary)
                         .padding(.horizontal, 8).padding(.vertical, 3)
                         .background(
@@ -334,14 +353,14 @@ struct RowView: View {
             if v == "on-device" {
                 HStack(spacing: 6) {
                     Circle().fill(Color.green).frame(width: 7, height: 7)
-                    Text(v).foregroundStyle(.green)
+                    Text(Loc.t(v)).foregroundStyle(.green)
                 }
             } else if v == "Never" {
-                Text(v).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                Text(Loc.t(v)).font(.chrome(13, weight: .semibold)).foregroundStyle(.white)
                     .padding(.horizontal, 10).padding(.vertical, 4)
                     .background(RoundedRectangle(cornerRadius: 6).fill(Color.green))
             } else {
-                Text(v).foregroundStyle(.secondary)
+                Text(Loc.t(v)).foregroundStyle(.secondary)
             }
         case .card:
             EmptyView()
@@ -360,8 +379,8 @@ struct SettingSegments: View {
                 Button {
                     selection = o.value
                 } label: {
-                    Text(o.label)
-                        .font(.system(size: 13, weight: selection == o.value ? .semibold : .regular))
+                    Text(Loc.t(o.label))
+                        .font(.chrome(13, weight: selection == o.value ? .semibold : .regular))
                         .padding(.horizontal, 11).frame(height: 26)
                         .background(
                             RoundedRectangle(cornerRadius: 6).fill(

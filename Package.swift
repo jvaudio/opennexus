@@ -7,6 +7,7 @@ let strict: [SwiftSetting] = [
 
 let package = Package(
     name: "OpenNexus",
+    defaultLocalization: "en",
     platforms: [.macOS(.v27)],
     products: [
         .library(
@@ -48,6 +49,7 @@ let package = Package(
         .target(
             name: "NexusCanvas",
             dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI", "NexusFormat", "NexusInterchange"],
+            resources: [.process("Resources")],
             swiftSettings: strict
         ),
         // The `nexus` CLI and MCP server (M9): commands, map tools, permissions. Uses the

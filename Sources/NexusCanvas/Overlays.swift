@@ -13,7 +13,7 @@ struct Keycap: View {
 
     var body: some View {
         Text(text)
-            .font(.system(size: 11, weight: .medium, design: .monospaced))
+            .font(.chrome(11, weight: .medium, design: .monospaced))
             .padding(.horizontal, 6)
             .frame(minWidth: 22, minHeight: 20)
             .background(.background.opacity(0.9), in: RoundedRectangle(cornerRadius: 5))
@@ -40,7 +40,7 @@ public struct CanvasStatusBar: View {
                 ForEach(hints, id: \.label) { h in
                     HStack(spacing: 6) {
                         Keycap(text: h.key)
-                        Text(h.label).font(.system(size: 13)).foregroundStyle(.secondary).fixedSize()
+                        Text(h.label).font(.chrome(13)).foregroundStyle(.secondary).fixedSize()
                     }
                 }
             }
@@ -49,7 +49,7 @@ public struct CanvasStatusBar: View {
             .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
             .accessibilityElement(children: .combine)
         }
-        .animation(.snappy(duration: 0.18), value: controller.mode)
+        .animation(UIMotion.animation(.snappy(duration: 0.18)), value: controller.mode)
     }
 
     struct Hint {
@@ -100,7 +100,7 @@ public struct StatePill: View {
         HStack(spacing: 8) {
             glyph(fg)
             Text(mode.rawValue.uppercased())
-                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .font(.chrome(13, weight: .semibold, design: .monospaced))
                 .tracking(1.2)
         }
         .foregroundStyle(fg)
@@ -131,7 +131,7 @@ public struct ToastView: View {
         VStack {
             if let t = controller.toast {
                 Text(t.text)
-                    .font(.system(size: 13))
+                    .font(.chrome(13))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 9)
                     .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 10))
@@ -140,7 +140,7 @@ public struct ToastView: View {
                     .accessibilityIdentifier("toast")
             }
         }
-        .animation(.snappy(duration: 0.25), value: controller.toast)
+        .animation(UIMotion.animation(.snappy(duration: 0.25)), value: controller.toast)
         .allowsHitTesting(false)
     }
 }
@@ -169,14 +169,14 @@ public struct CheatSheetView: View {
             HStack(alignment: .top, spacing: 28) {
                 ForEach(Self.groups, id: \.0) { title, ids in
                     VStack(alignment: .leading, spacing: 8) {
-                        Text(title)
-                            .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                        Text(Loc.t(title))
+                            .font(.chrome(11, weight: .semibold, design: .monospaced))
                             .tracking(1.2)
                             .foregroundStyle(.secondary)
                         ForEach(ids, id: \.self) { id in
                             if let c = controller.registry[id] {
                                 HStack {
-                                    Text(c.title).font(.system(size: 13))
+                                    Text(Loc.t(c.title)).font(.chrome(13))
                                     Spacer(minLength: 16)
                                     Keycap(text: controller.bindings(for: id).first?.glyphs ?? "—")
                                 }
@@ -208,7 +208,7 @@ struct ConnectFieldView: View {
                 Rectangle().fill(Color.primary).frame(width: 1.5, height: 15)
                 Spacer(minLength: 0)
             }
-            .font(.system(size: 13))
+            .font(.chrome(13))
             .padding(.horizontal, 12)
             .padding(.vertical, 9)
             if state.offersCreate {
@@ -237,11 +237,11 @@ struct ConnectFieldView: View {
     func row(hint: String, text: String, on: Bool) -> some View {
         HStack(spacing: 10) {
             Text(hint)
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .font(.chrome(11, weight: .bold, design: .monospaced))
                 .foregroundStyle(RGBA(hex: "#17171C").color)
                 .frame(minWidth: 20, minHeight: 20)
                 .background(theme.amber.color, in: RoundedRectangle(cornerRadius: 5))
-            Text(text).font(.system(size: 13)).lineLimit(1)
+            Text(text).font(.chrome(13)).lineLimit(1)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, 12)

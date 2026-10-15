@@ -5,6 +5,8 @@ import SwiftUI
 /// centre) and the ⌘-hold cheat sheet (centre). Overlays are sized to their content so
 /// the canvas keeps every pixel it can for the mouse.
 public final class CanvasHostView: NSView {
+    /// The AI panel (a keyboard focus region, F6).
+    public private(set) var aiPanelView: NSView?
     public let canvasView: CanvasView
     private var presentHost: NSView?
     private var overlays: [NSView] = []
@@ -58,6 +60,7 @@ public final class CanvasHostView: NSView {
         let present = NSHostingView(rootView: PresentOverlayView(controller: controller))
         // On-device AI (M6).
         let aiPanel = NSHostingView(rootView: AIPanelView(controller: controller))
+        aiPanelView = aiPanel
         let aiSheet = NSHostingView(rootView: AISheetView(controller: controller))
         aiPanel.sizingOptions = [.intrinsicContentSize]
         // Files (M7).

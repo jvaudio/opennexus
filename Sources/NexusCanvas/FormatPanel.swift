@@ -26,7 +26,7 @@ public struct FormatPanel: View {
                     } label: {
                         VStack(spacing: 6) {
                             Text(title)
-                                .font(.system(size: 14, weight: tab == id ? .semibold : .regular))
+                                .font(.chrome(14, weight: tab == id ? .semibold : .regular))
                                 .foregroundStyle(tab == id ? .primary : .secondary)
                             Rectangle().fill(tab == id ? Color.accentColor : .clear).frame(height: 2)
                         }
@@ -111,7 +111,7 @@ struct StyleTab: View {
         PanelSection(
             "Quick style", key: "quick",
             accessory: {
-                Text("⌃⌥1–8").font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
+                Text("⌃⌥1–8").font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
             }
         ) {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
@@ -121,7 +121,7 @@ struct StyleTab: View {
                     } label: {
                         HStack(spacing: 8) {
                             QuickGlyph(quick: q, theme: controller.theme)
-                            Text(q.name).font(.system(size: 13)).lineLimit(1)
+                            Text(q.name).font(.chrome(13)).lineLimit(1)
                             Spacer(minLength: 0)
                         }
                         .padding(6)
@@ -136,7 +136,7 @@ struct StyleTab: View {
                 }
             }
             Text("Xmind’s four (Very Important, Important, Cross Out, Default) plus four for technical work.")
-                .font(.system(size: 11)).foregroundStyle(.secondary)
+                .font(.chrome(11)).foregroundStyle(.secondary)
         }
     }
 
@@ -152,7 +152,7 @@ struct StyleTab: View {
                 Menu {
                     updateStyleItems
                 } label: {
-                    Text("Update style").font(.system(size: 13))
+                    Text("Update style").font(.chrome(13))
                 }
                 .menuStyle(.borderlessButton)
                 .padding(.vertical, 4)
@@ -183,9 +183,9 @@ struct StyleTab: View {
     func actionRow(_ title: String, _ keys: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
             HStack {
-                Text(title).font(.system(size: 13))
+                Text(title).font(.chrome(13))
                 Spacer()
-                Text(keys).font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
+                Text(keys).font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
             }
             .padding(.vertical, 4)
             .contentShape(Rectangle())
@@ -220,7 +220,7 @@ struct StyleTab: View {
         PanelSection(
             "Shape", key: "shape",
             accessory: {
-                Text("\(ShapeLibrary.all.count)").font(.system(size: 11)).foregroundStyle(.secondary)
+                Text("\(ShapeLibrary.all.count)").font(.chrome(11)).foregroundStyle(.secondary)
             }
         ) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 8), spacing: 6) {
@@ -380,7 +380,7 @@ struct StyleTab: View {
                         get: { style.autoContrast ?? true }, set: { v in set("Auto Contrast") { $0.autoContrast = v } })
                 )
                 .toggleStyle(.checkbox)
-                .font(.system(size: 13))
+                .font(.chrome(13))
             }
             HStack(spacing: 0) {
                 textToggle("B", .bold, style.fontWeight == "bold" || style.fontWeight == "heavy") {
@@ -437,7 +437,7 @@ struct StyleTab: View {
     ) -> some View {
         Button(action: action) {
             Text(label)
-                .font(.system(size: 13, weight: weight))
+                .font(.chrome(13, weight: weight))
                 .italic(italic)
                 .underline(underline)
                 .strikethrough(strike)
@@ -480,7 +480,7 @@ struct StyleTab: View {
                             $0.numbering = id == "none" ? nil : n
                         }
                     } content: {
-                        Text(label).font(.system(size: 12, design: .monospaced))
+                        Text(label).font(.chrome(12, design: .monospaced))
                     }
                 }
             }
@@ -559,7 +559,7 @@ struct StyleTab: View {
                     } content: {
                         VStack(spacing: 2) {
                             PathIcon(d: d, lineWidth: id == "tapered" ? 3 : 1.6).frame(height: 22)
-                            Text(name).font(.system(size: 11))
+                            Text(name).font(.chrome(11))
                         }
                     }
                 }
@@ -572,7 +572,7 @@ struct StyleTab: View {
                 ) {
                     HStack(spacing: 6) {
                         RoundedRectangle(cornerRadius: 3).fill(branch.color).frame(width: 12, height: 12)
-                        Text("Follow branch").font(.system(size: 13))
+                        Text("Follow branch").font(.chrome(13))
                     }
                 }
                 .toggleStyle(.checkbox)
@@ -624,7 +624,7 @@ struct StyleTab: View {
                 .frame(width: 150)
             }
             Divider().padding(.vertical, 4)
-            Text("UPDATE STYLE").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+            Text("UPDATE STYLE").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
             VStack(alignment: .leading, spacing: 2) {
                 let depth = controller.canvas.depth(of: controller.selection.primary)
                 actionRow("Apply to siblings", "") { controller.updateStyle(.siblings) }
@@ -648,7 +648,7 @@ struct QuickGlyph: View {
         let fg = StyleResolver.resolveColor(quick.style.textColor, branch: theme.ring, env: env) ?? theme.ink
         let border = StyleResolver.resolveColor(quick.style.borderColor, branch: theme.ring, env: env)
         Text(quick.glyph)
-            .font(.system(size: 11, weight: .bold))
+            .font(.chrome(11, weight: .bold))
             .strikethrough(quick.style.strikethrough == true)
             .foregroundStyle(fg.color)
             .frame(width: 26, height: 22)

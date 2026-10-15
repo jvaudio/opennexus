@@ -20,14 +20,14 @@ public struct WelcomeView: View {
             SelfBuildingMap().opacity(0.35)
             VStack(spacing: 0) {
                 AppMark(size: 84).padding(.bottom, 26)
-                Text("WELCOME TO OPENNEXUS").font(.system(size: 13, weight: .medium, design: .monospaced)).kerning(2)
+                Text("WELCOME TO OPENNEXUS").font(.chrome(13, weight: .medium, design: .monospaced)).kerning(2)
                     .foregroundStyle(.white.opacity(0.6)).padding(.bottom, 10)
-                Text("Think at the speed\nof your keyboard.").font(.system(size: 44, weight: .heavy)).kerning(-1.3)
+                Text("Think at the speed\nof your keyboard.").font(.chrome(44, weight: .heavy)).kerning(-1.3)
                     .multilineTextAlignment(.center).foregroundStyle(.white).padding(.bottom, 36)
                 Button(action: onTour) {
                     HStack(spacing: 12) {
-                        Text("Start the 4-minute tour").font(.system(size: 17, weight: .medium))
-                        Text("↩").font(.system(size: 12, design: .monospaced)).padding(.horizontal, 6).frame(height: 22)
+                        Text("Start the 4-minute tour").font(.chrome(17, weight: .medium))
+                        Text("↩").font(.chrome(12, design: .monospaced)).padding(.horizontal, 6).frame(height: 22)
                             .background(RoundedRectangle(cornerRadius: 5).fill(Color.black.opacity(0.06)))
                             .overlay(RoundedRectangle(cornerRadius: 5).stroke(Color.black.opacity(0.15)))
                     }
@@ -50,7 +50,7 @@ public struct WelcomeView: View {
                     Text("·")
                     Text("Open source")
                 }
-                .font(.system(size: 13.5)).foregroundStyle(.white.opacity(0.55)).padding(.top, 30)
+                .font(.chrome(13.5)).foregroundStyle(.white.opacity(0.55)).padding(.top, 30)
             }
             .padding(.horizontal, 48).padding(.vertical, 44)
             .frame(width: 640)
@@ -66,7 +66,7 @@ public struct WelcomeView: View {
 
     func secondary(_ title: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Text(title).font(.system(size: 15)).foregroundStyle(.white)
+            Text(title).font(.chrome(15)).foregroundStyle(.white)
                 .frame(maxWidth: .infinity, minHeight: 42)
                 .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.06)))
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.white.opacity(0.14)))
@@ -107,7 +107,7 @@ struct SelfBuildingMap: View {
                         }
                         .stroke(Color(hex: ["#7B6CF6", "#3DD6C6", "#F2A93B", "#EB5E8C"][i % 4]), lineWidth: 2)
                     }
-                    Text(t.0).font(.system(size: i == 0 ? 22 : 15, weight: i == 0 ? .bold : .medium)).foregroundStyle(
+                    Text(t.0).font(.chrome(i == 0 ? 22 : 15, weight: i == 0 ? .bold : .medium)).foregroundStyle(
                         .white
                     )
                     .padding(.horizontal, 14).padding(.vertical, 8)
@@ -119,9 +119,14 @@ struct SelfBuildingMap: View {
             }
         }
         .task {
+            // Reduce Motion: the map is simply there.
+            if UIMotion.reduce {
+                shown = Self.topics.count
+                return
+            }
             while shown < Self.topics.count {
                 try? await Task.sleep(for: .seconds(1))
-                withAnimation(.spring(duration: 0.6)) { shown += 1 }
+                withAnimation(UIMotion.animation(.spring(duration: 0.6))) { shown += 1 }
             }
         }
         .accessibilityHidden(true)
@@ -146,16 +151,16 @@ public struct RolePickerView: View {
             Color(nsColor: .windowBackgroundColor)
             DotGrid().opacity(0.6)
             VStack(alignment: .leading, spacing: 0) {
-                Text("STEP 2 OF 9 · PICK YOUR WORLD").font(.system(size: 12.5, weight: .medium, design: .monospaced))
+                Text("STEP 2 OF 9 · PICK YOUR WORLD").font(.chrome(12.5, weight: .medium, design: .monospaced))
                     .kerning(2)
                     .foregroundStyle(.secondary).padding(.bottom, 10)
-                Text("What will you map first?").font(.system(size: 36, weight: .heavy)).kerning(-1).padding(
+                Text("What will you map first?").font(.chrome(36, weight: .heavy)).kerning(-1).padding(
                     .bottom, 10)
                 HStack {
                     Text(
                         "This sets the tour’s example and your template shelf. You can change it any time in Settings."
                     )
-                    .font(.system(size: 16)).foregroundStyle(.secondary)
+                    .font(.chrome(16)).foregroundStyle(.secondary)
                     Spacer()
                     HStack(spacing: 6) {
                         key("1")
@@ -167,7 +172,7 @@ public struct RolePickerView: View {
                         Text("then")
                         key("↩")
                     }
-                    .font(.system(size: 14)).foregroundStyle(.secondary)
+                    .font(.chrome(14)).foregroundStyle(.secondary)
                 }
                 .padding(.bottom, 28)
                 HStack(alignment: .top, spacing: 18) {
@@ -186,7 +191,7 @@ public struct RolePickerView: View {
                         onContinue(role)
                     } label: {
                         Text("Continue as \(role.title.components(separatedBy: " · ").first ?? role.title)")
-                            .font(.system(size: 16, weight: .semibold)).foregroundStyle(.white)
+                            .font(.chrome(16, weight: .semibold)).foregroundStyle(.white)
                             .padding(.horizontal, 22).frame(height: 44)
                             .background(RoundedRectangle(cornerRadius: 10).fill(Color(white: 0.1)))
                     }
@@ -217,7 +222,7 @@ public struct RolePickerView: View {
     }
 
     func key(_ s: String) -> some View {
-        Text(s).font(.system(size: 13, weight: .medium, design: .monospaced)).padding(.horizontal, 7).frame(height: 26)
+        Text(s).font(.chrome(13, weight: .medium, design: .monospaced)).padding(.horizontal, 7).frame(height: 26)
             .background(RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor)))
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
     }
@@ -236,14 +241,14 @@ public struct RolePickerView: View {
         } label: {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Image(systemName: icon).font(.system(size: 17, weight: .semibold)).foregroundStyle(tint)
+                    Image(systemName: icon).font(.chrome(17, weight: .semibold)).foregroundStyle(tint)
                         .frame(width: 42, height: 42).background(
                             RoundedRectangle(cornerRadius: 10).fill(tint.opacity(0.12)))
                     Spacer()
                     key("\(number)")
                 }
-                Text(r.title).font(.system(size: 19, weight: .bold)).padding(.top, 6)
-                Text(r.blurb).font(.system(size: 13.5)).foregroundStyle(.secondary).fixedSize(
+                Text(r.title).font(.chrome(19, weight: .bold)).padding(.top, 6)
+                Text(r.blurb).font(.chrome(13.5)).foregroundStyle(.secondary).fixedSize(
                     horizontal: false, vertical: true)
                 Divider().padding(.vertical, 6)
                 detail("Tour example", r.tourExample)
@@ -266,7 +271,7 @@ public struct RolePickerView: View {
     }
 
     func detail(_ k: String, _ v: String) -> some View {
-        (Text(k).fontWeight(.semibold) + Text(" · " + v).foregroundStyle(.secondary)).font(.system(size: 12.5))
+        (Text(k).fontWeight(.semibold) + Text(" · " + v).foregroundStyle(.secondary)).font(.chrome(12.5))
             .fixedSize(horizontal: false, vertical: true)
     }
 }
@@ -293,13 +298,13 @@ public struct XmindSwitcherCard: View {
     public init(report: String) { self.report = report }
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("XMIND SWITCHERS · ON .XMIND IMPORT").font(.system(size: 12, weight: .semibold, design: .monospaced))
+            Text("XMIND SWITCHERS · ON .XMIND IMPORT").font(.chrome(12, weight: .semibold, design: .monospaced))
                 .foregroundStyle(.secondary)
-            Text("Your keys already work here.").font(.system(size: 19, weight: .bold))
-            (Text("Same: ").bold() + Text("⇥ ↩ ⇧↩ ⌘↩, structures, markers, Pitch → Present")).font(.system(size: 12.5))
-            (Text("New: ").bold() + Text("⇧⌘L Connect mode, typed diagrams, ⌥⌘T convert")).font(.system(size: 12.5))
-            (Text("New: ").bold() + Text("AI that runs on this Mac, no credits")).font(.system(size: 12.5))
-            Text(report).font(.system(size: 13.5)).foregroundStyle(.secondary)
+            Text("Your keys already work here.").font(.chrome(19, weight: .bold))
+            (Text("Same: ").bold() + Text("⇥ ↩ ⇧↩ ⌘↩, structures, markers, Pitch → Present")).font(.chrome(12.5))
+            (Text("New: ").bold() + Text("⇧⌘L Connect mode, typed diagrams, ⌥⌘T convert")).font(.chrome(12.5))
+            (Text("New: ").bold() + Text("AI that runs on this Mac, no credits")).font(.chrome(12.5))
+            Text(report).font(.chrome(13.5)).foregroundStyle(.secondary)
         }
         .padding(22)
         .frame(width: 460, alignment: .leading)

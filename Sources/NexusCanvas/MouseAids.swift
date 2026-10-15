@@ -33,7 +33,7 @@ struct FloatingToolbarView: View {
             if let id { controller.noteMouseUse(id) }
             action()
         } label: {
-            Text(label).font(.system(size: 13, weight: accent ? .semibold : .regular)).foregroundStyle(
+            Text(label).font(.chrome(13, weight: accent ? .semibold : .regular)).foregroundStyle(
                 accent ? Color.teal : .primary
             )
             .padding(.horizontal, 7).frame(minWidth: 26, minHeight: 26).contentShape(Rectangle())
@@ -54,7 +54,7 @@ struct AddTopicButton: View {
             controller.noteMouseUse(child ? .addChild : .addSiblingAfter)
             _ = controller.perform(child ? .addChild : .addSiblingAfter)
         } label: {
-            Text("+").font(.system(size: 14, weight: .bold)).foregroundStyle(.white)
+            Text("+").font(.chrome(14, weight: .bold)).foregroundStyle(.white)
                 .frame(width: 20, height: 20).background(Circle().fill(Color(hex: "#5850EC")))
         }
         .buttonStyle(.plain)

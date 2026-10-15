@@ -13,9 +13,9 @@ struct SlashMenuView: View {
             let items = Array(controller.slashResults.prefix(9))
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 4) {
-                    Text("/").font(.system(size: 13, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
+                    Text("/").font(.chrome(13, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
                     Text(s.query.isEmpty ? "Type to filter" : s.query)
-                        .font(.system(size: 13, design: .monospaced))
+                        .font(.chrome(13, design: .monospaced))
                         .foregroundStyle(s.query.isEmpty ? .tertiary : .primary)
                     Spacer()
                     Keycap(text: "esc")
@@ -24,7 +24,7 @@ struct SlashMenuView: View {
                 .padding(.vertical, 8)
                 Divider()
                 if items.isEmpty {
-                    Text("No matches").font(.system(size: 12)).foregroundStyle(.secondary).padding(12)
+                    Text("No matches").font(.chrome(12)).foregroundStyle(.secondary).padding(12)
                 }
                 ForEach(Array(items.enumerated()), id: \.element.id) { i, item in
                     HStack(spacing: 10) {
@@ -32,13 +32,13 @@ struct SlashMenuView: View {
                             if let icon = item.icon {
                                 IconGlyph(icon: icon).frame(width: 16, height: 16)
                             } else {
-                                Text(item.glyph).font(.system(size: 12, weight: .semibold))
+                                Text(item.glyph).font(.chrome(12, weight: .semibold))
                             }
                         }
                         .frame(width: 22)
-                        Text(item.title).font(.system(size: 13))
+                        Text(item.title).font(.chrome(13))
                         Spacer()
-                        Text("/\(item.slug)").font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
+                        Text("/\(item.slug)").font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -83,7 +83,7 @@ struct ProtocolSuggestionsView: View {
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(Array(list.prefix(5).enumerated()), id: \.offset) { i, p in
                     Text(p)
-                        .font(.system(size: 12.5, design: .monospaced))
+                        .font(.chrome(12.5, design: .monospaced))
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
@@ -119,10 +119,10 @@ struct ConvertSheetView: View {
         return VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Convert “\(controller.canvas.nodes[controller.canvas.root]?.text ?? "")” to…")
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.chrome(17, weight: .semibold))
                 Spacer()
                 Text(s.filter.isEmpty ? "Filter types" : s.filter)
-                    .font(.system(size: 13))
+                    .font(.chrome(13))
                     .foregroundStyle(s.filter.isEmpty ? .tertiary : .primary)
                     .frame(width: 200, alignment: .leading)
                     .padding(.horizontal, 10)
@@ -136,11 +136,11 @@ struct ConvertSheetView: View {
             }
             if !more.isEmpty {
                 HStack(spacing: 6) {
-                    Text("More").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                    Text("More").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
                     ForEach(more, id: \.self) { t in
                         Button(t.displayName) { controller.chooseConvertType(t) }
                             .buttonStyle(.plain)
-                            .font(.system(size: 12))
+                            .font(.chrome(12))
                             .padding(.horizontal, 9)
                             .padding(.vertical, 4)
                             .background(
@@ -153,7 +153,7 @@ struct ConvertSheetView: View {
             Text(
                 "Previews are rendered from **this** canvas. Arrow keys move; ↩ converts; Esc closes. Hierarchy types convert losslessly; technical types ask for node types next."
             )
-            .font(.system(size: 12))
+            .font(.chrome(12))
             .foregroundStyle(.secondary)
             .frame(width: 636, alignment: .leading)
         }
@@ -171,8 +171,8 @@ struct ConvertSheetView: View {
                 .frame(height: 84)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(on ? 0.06 : 0.08)))
             HStack {
-                Text(t.displayName).font(.system(size: 13, weight: .medium))
-                if current { Text("current").font(.system(size: 10)).foregroundStyle(.secondary) }
+                Text(t.displayName).font(.chrome(13, weight: .medium))
+                if current { Text("current").font(.chrome(10)).foregroundStyle(.secondary) }
                 Spacer()
                 Keycap(text: "\(number)")
             }
@@ -191,16 +191,16 @@ struct ConvertSheetView: View {
     func confirm(_ s: ConvertState) -> some View {
         let options = DiagramCatalog.nodeTypes(for: s.highlighted)
         return VStack(alignment: .leading, spacing: 12) {
-            Text("Confirm node types").font(.system(size: 17, weight: .semibold))
+            Text("Confirm node types").font(.chrome(17, weight: .semibold))
             Text(
                 "\(s.highlighted.displayName) needs to know what each first-level branch is. Suggestions (✦) are made on this Mac."
             )
-            .font(.system(size: 12))
+            .font(.chrome(12))
             .foregroundStyle(.secondary)
             .frame(width: 330, alignment: .leading)
             ForEach(Array(s.rows.enumerated()), id: \.element) { i, row in
                 HStack {
-                    Text(controller.canvas.nodes[row]?.text ?? "").font(.system(size: 13))
+                    Text(controller.canvas.nodes[row]?.text ?? "").font(.chrome(13))
                     Spacer()
                     if s.suggested.contains(row) {
                         Text("✦").foregroundStyle(controller.theme.ai.color)
@@ -310,10 +310,10 @@ struct DFDPanelView: View {
         if controller.canvas.type == .dfd, controller.present == nil {
             let c = controller.canvas
             VStack(alignment: .leading, spacing: 8) {
-                Text("LEVELS").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                Text("LEVELS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
                 ForEach(controller.levelPath, id: \.id) { l in
                     Text(l.title)
-                        .font(.system(size: 13, weight: l.id == c.id ? .semibold : .regular))
+                        .font(.chrome(13, weight: l.id == c.id ? .semibold : .regular))
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -328,17 +328,17 @@ struct DFDPanelView: View {
                     FlowGraph(c).elements.filter { DiagramCatalog.effectiveType($0, in: c) == .process }, id: \.self
                 ) { p in
                     Text("\(numbers[p] ?? "") \(c.nodes[p]?.text ?? "")")
-                        .font(.system(size: 12.5))
+                        .font(.chrome(12.5))
                         .padding(.leading, 18)
                         .foregroundStyle(c.nodes[p]?.subCanvas != nil ? .primary : .secondary)
                         .onTapGesture { controller.select(p) }
                 }
-                Text("RULE CHECKS").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).padding(
+                Text("RULE CHECKS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary).padding(
                     .top, 10)
                 ForEach(DFDRules.summary(controller.violations), id: \.rule.rawValue) { row in
                     HStack(spacing: 8) {
                         Circle().fill(row.ok ? Color.green : controller.theme.critical.color).frame(width: 7, height: 7)
-                        Text(row.text).font(.system(size: 12.5)).foregroundStyle(
+                        Text(row.text).font(.chrome(12.5)).foregroundStyle(
                             row.ok ? Color.green : controller.theme.critical.color)
                     }
                     .onTapGesture {
@@ -347,7 +347,7 @@ struct DFDPanelView: View {
                         }
                     }
                 }
-                Text("⌘. drills into a process").font(.system(size: 11)).foregroundStyle(.tertiary).padding(.top, 6)
+                Text("⌘. drills into a process").font(.chrome(11)).foregroundStyle(.tertiary).padding(.top, 6)
             }
             .padding(14)
             .frame(width: 230, alignment: .leading)
@@ -368,8 +368,8 @@ struct ViolationCardView: View {
         {
             let red = controller.theme.critical.color
             VStack(alignment: .leading, spacing: 8) {
-                Text(v.title).font(.system(size: 14, weight: .semibold)).foregroundStyle(red)
-                Text(v.detail).font(.system(size: 12.5)).frame(width: 360, alignment: .leading)
+                Text(v.title).font(.chrome(14, weight: .semibold)).foregroundStyle(red)
+                Text(v.detail).font(.chrome(12.5)).frame(width: 360, alignment: .leading)
                 HStack(spacing: 8) {
                     ForEach(Array(v.fixes.enumerated()), id: \.offset) { i, f in
                         let title: String =
@@ -407,7 +407,7 @@ struct LevelBreadcrumbView: View {
                 ForEach(Array(path.enumerated()), id: \.offset) { i, l in
                     if i > 0 { Text("›").foregroundStyle(.secondary) }
                     Text(l.title)
-                        .font(.system(size: 12.5, weight: i == path.count - 1 ? .semibold : .regular))
+                        .font(.chrome(12.5, weight: i == path.count - 1 ? .semibold : .regular))
                         .onTapGesture { controller.switchCanvas(to: l.id) }
                 }
                 Keycap(text: "⌘[")
@@ -431,11 +431,11 @@ struct ThreatSuggestionCard: View {
             let name = controller.canvas.nodes[controller.selection.primary]?.text ?? ""
             VStack(alignment: .leading, spacing: 4) {
                 Text("✦ \(s.count) STRIDE threat\(s.count == 1 ? "" : "s") suggested for \(name)")
-                    .font(.system(size: 13, weight: .semibold)).foregroundStyle(teal)
+                    .font(.chrome(13, weight: .semibold)).foregroundStyle(teal)
                 HStack(spacing: 6) {
-                    Text(s.map(\.0.name).joined(separator: " · ")).font(.system(size: 12))
+                    Text(s.map(\.0.name).joined(separator: " · ")).font(.chrome(12))
                     Keycap(text: "⌃⇧↩")
-                    Text("accept all").font(.system(size: 12)).foregroundStyle(.secondary)
+                    Text("accept all").font(.chrome(12)).foregroundStyle(.secondary)
                 }
             }
             .padding(12)
@@ -455,7 +455,7 @@ struct ThreatTableView: View {
             let rows = filter == "All" ? all : all.filter { $0.status == filter }
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Text("Threat table").font(.system(size: 14, weight: .semibold))
+                    Text("Threat table").font(.chrome(14, weight: .semibold))
                     Picker("", selection: $filter) {
                         ForEach(["All"] + Stride.statuses, id: \.self) { Text($0) }
                     }
@@ -481,7 +481,7 @@ struct ThreatTableView: View {
                     TableColumn("Threat", value: \.title)
                     TableColumn("Risk") { t in
                         Text(t.risk)
-                            .font(.system(size: 11, weight: .bold, design: .monospaced))
+                            .font(.chrome(11, weight: .bold, design: .monospaced))
                             .padding(.horizontal, 5)
                             .background(
                                 RoundedRectangle(cornerRadius: 3).fill(
@@ -518,7 +518,7 @@ struct IconLibraryView: View {
             let groups = Dictionary(grouping: icons, by: \.category)
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("Icon library").font(.system(size: 14, weight: .semibold))
+                    Text("Icon library").font(.chrome(14, weight: .semibold))
                     Spacer()
                     Keycap(text: "⇧⌘Y")
                 }
@@ -527,7 +527,7 @@ struct IconLibraryView: View {
                     VStack(alignment: .leading, spacing: 10) {
                         ForEach(["Data", "Compute", "Network", "Clients", "Security", "Diagram"], id: \.self) { cat in
                             if let items = groups[cat] {
-                                Text(cat.uppercased()).font(.system(size: 11, weight: .semibold)).foregroundStyle(
+                                Text(cat.uppercased()).font(.chrome(11, weight: .semibold)).foregroundStyle(
                                     .secondary)
                                 LazyVGrid(
                                     columns: Array(repeating: GridItem(.fixed(62), spacing: 6), count: 4), spacing: 6
@@ -538,7 +538,7 @@ struct IconLibraryView: View {
                                         } label: {
                                             VStack(spacing: 4) {
                                                 IconGlyph(icon: info.icon ?? info.slug).frame(width: 22, height: 22)
-                                                Text(info.name).font(.system(size: 10)).lineLimit(1)
+                                                Text(info.name).font(.chrome(10)).lineLimit(1)
                                             }
                                             .frame(width: 62, height: 58)
                                             .background(RoundedRectangle(cornerRadius: 8).stroke(.separator))
@@ -553,7 +553,7 @@ struct IconLibraryView: View {
                     }
                 }
                 Text("Click to insert as a child of the selection. Icon packs install from file or URL.")
-                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                    .font(.chrome(11)).foregroundStyle(.secondary)
             }
             .padding(14)
             .frame(width: 290, height: 520)

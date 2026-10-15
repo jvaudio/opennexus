@@ -15,7 +15,7 @@ extension DocumentWindowController {
     static let windowCommands: Set<CommandID> = [
         .newCanvas, .inspector, .importFile, .setPassword, .recoverySnapshots, .renameCanvas, .moveCanvasToWindow,
         .duplicateCanvas, .deleteCanvas, .copyCanvas, .pasteCanvas, .saveCanvasAsDocument, .mergeDocuments,
-        .printDocument, .export, .mapShot, .splitByBranch,
+        .printDocument, .export, .mapShot, .splitByBranch, .nextPanel, .previousPanel,
     ]
 
     func runWindowCommand(_ id: CommandID) {
@@ -37,6 +37,8 @@ extension DocumentWindowController {
         case .export: controller.openExport()
         case .mapShot: controller.openMapShot()
         case .splitByBranch: controller.splitByBranch()
+        case .nextPanel: moveFocus(forward: true)
+        case .previousPanel: moveFocus(forward: false)
         default: break
         }
         if let w = window, w.firstResponder !== host.canvasView, controller.passwordSheet == false,
@@ -361,5 +363,44 @@ struct CanvasTabMenu: View {
         let item = NSMenuItem()
         item.representedObject = id.rawValue
         NSApp.sendAction(#selector(DocumentWindowController.performRegistryCommand(_:)), to: nil, from: item)
+    }
+}
+
+// MARK: Keyboard focus regions (M10)
+
+extension DocumentWindowController {
+    /// The window's regions in F6 order: canvas tabs, the canvas or outline, the AI panel,
+    /// the Format panel. Hidden ones are skipped.
+    var focusRegions: [(name: String, view: NSView)] {
+        var out: [(String, NSView)] = []
+        if let t = tabsView, !t.isHiddenOrHasHiddenAncestor { out.append(("Canvas tabs", t)) }
+        out.append(outline.isHiddenOrHasHiddenAncestor ? ("Canvas", host.canvasView) : ("Outline", outline))
+        if let ai = host.aiPanelView, !ai.isHiddenOrHasHiddenAncestor, ai.frame.width > 0 {
+            out.append(("AI panel", ai))
+        }
+        if !panel.isHiddenOrHasHiddenAncestor { out.append(("Format panel", panel)) }
+        return out
+    }
+
+    /// F6 / ⇧F6: the next region gets keyboard focus (its first control), and VoiceOver
+    /// says where focus went.
+    func moveFocus(forward: Bool) {
+        guard let w = window else { return }
+        let regions = focusRegions
+        guard !regions.isEmpty else { return }
+        let responder = w.firstResponder as? NSView
+        let current = regions.firstIndex { r in responder.map { $0 === r.view || $0.isDescendant(of: r.view) } ?? false
+        }
+        let i = current.map { (forward ? $0 + 1 : $0 - 1 + regions.count) % regions.count } ?? 0
+        let target = regions[i]
+        if !(target.view.acceptsFirstResponder && w.makeFirstResponder(target.view)) {
+            // A container: focus its first control.
+            var v = target.view.nextValidKeyView
+            while let k = v, k !== target.view, !k.isDescendant(of: target.view) { v = k.nextValidKeyView }
+            if let k = v, k !== target.view { w.makeFirstResponder(k) } else { w.makeFirstResponder(target.view) }
+        }
+        NSAccessibility.post(
+            element: w, notification: .announcementRequested,
+            userInfo: [.announcement: target.name, .priority: NSAccessibilityPriorityLevel.medium.rawValue])
     }
 }

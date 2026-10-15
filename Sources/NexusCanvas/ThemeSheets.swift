@@ -27,7 +27,7 @@ struct ThemeBuilder: View {
                 Text(theme.id.isEmpty ? "New Theme" : "Edit Theme").font(.title3.bold())
                 Spacer()
                 Text(report.badge)
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .font(.chrome(11, weight: .semibold, design: .monospaced))
                     .padding(.horizontal, 8)
                     .padding(.vertical, 3)
                     .foregroundStyle(report.passes ? Color.green : Color.red)
@@ -58,7 +58,7 @@ struct ThemeBuilder: View {
                 }
             }
             VStack(alignment: .leading, spacing: 8) {
-                Text("Branch palette").font(.system(size: 13))
+                Text("Branch palette").font(.chrome(13))
                 HStack(spacing: 8) {
                     ForEach(Array(theme.palette.enumerated()), id: \.offset) { i, c in
                         Swatch(color: c, selected: i == selectedColor, size: 30) { selectedColor = i }
@@ -77,7 +77,7 @@ struct ThemeBuilder: View {
                         theme.palette = g.colors + Array(g.colors.prefix(2))
                     }
                 }
-                .font(.system(size: 12))
+                .font(.chrome(12))
             }
             HStack(spacing: 16) {
                 LabeledContent("Canvas") {
@@ -113,7 +113,7 @@ struct ThemeBuilder: View {
                 }
             }
             VStack(alignment: .leading, spacing: 6) {
-                Text("Branch line").font(.system(size: 13))
+                Text("Branch line").font(.chrome(13))
                 Segments(
                     options: [
                         ("curved", "Curved"), ("straight", "Straight"), ("elbow", "Elbow"), ("rounded", "Rounded"),
@@ -124,12 +124,12 @@ struct ThemeBuilder: View {
             }
             GroupBox {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Per diagram type").font(.system(size: 13, weight: .semibold))
+                    Text("Per diagram type").font(.chrome(13, weight: .semibold))
                     modeRow("Mind maps", "mindmap", ["branch": "Colour by branch"])
                     modeRow("DFD · Architecture", "dfd", ["type": "Colour by node type", "branch": "Colour by branch"])
                     modeRow("Threat model", "threatModel", ["risk": "Colour by risk", "type": "Colour by node type"])
                 }
-                .font(.system(size: 12))
+                .font(.chrome(12))
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             Spacer()
@@ -230,7 +230,7 @@ struct ColourThemeEditor: View {
             Text(palette.id.isEmpty ? "New colour theme" : "Edit colour theme").font(.title3.bold())
             Divider()
             LabeledContent("Name") { TextField("Name", text: $palette.name).textFieldStyle(.roundedBorder) }
-            Text("6 BRANCH COLOURS · REORDER WITH THE ARROWS").font(.system(size: 11, weight: .semibold))
+            Text("6 BRANCH COLOURS · REORDER WITH THE ARROWS").font(.chrome(11, weight: .semibold))
                 .foregroundStyle(.secondary)
             HStack(spacing: 8) {
                 ForEach(Array(palette.colors.enumerated()), id: \.offset) { i, c in
@@ -263,7 +263,7 @@ struct ColourThemeEditor: View {
                 .labelsHidden()
                 TextField("#RRGGBB", text: $hex)
                     .textFieldStyle(.roundedBorder)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(.chrome(12, design: .monospaced))
                     .onSubmit { if let c = RGBA(hexString: hex) { palette.colors[selected] = c } }
             }
             PanelRow(label: "Root colour") {
@@ -278,7 +278,7 @@ struct ColourThemeEditor: View {
             PanelRow(label: "Contrast check") {
                 let ok = check.passing == check.total
                 Text(ok ? "AA on all \(check.total)" : "AA on \(check.passing) of \(check.total)")
-                    .font(.system(size: 11, weight: .semibold, design: .monospaced))
+                    .font(.chrome(11, weight: .semibold, design: .monospaced))
                     .padding(.horizontal, 8).padding(.vertical, 3)
                     .foregroundStyle(ok ? Color.green : Color.orange)
                     .background((ok ? Color.green : Color.orange).opacity(0.12), in: RoundedRectangle(cornerRadius: 5))

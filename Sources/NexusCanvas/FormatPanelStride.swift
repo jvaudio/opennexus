@@ -20,12 +20,12 @@ struct StrideTab: View {
                     ([type.flatMap { DiagramCatalog.info($0, in: c.type)?.caption }, number].compactMap { $0 })
                         .joined(separator: " · ")
                 )
-                .font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
-                Text(c.nodes[id]?.text ?? "").font(.system(size: 18, weight: .semibold))
+                .font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                Text(c.nodes[id]?.text ?? "").font(.chrome(18, weight: .semibold))
             }
             if applicable.isEmpty {
                 Text("Select a process, data store or external entity to see its STRIDE checklist.")
-                    .font(.system(size: 12)).foregroundStyle(.secondary)
+                    .font(.chrome(12)).foregroundStyle(.secondary)
             } else {
                 VStack(spacing: 0) {
                     ForEach(Stride.allCases, id: \.self) { s in
@@ -45,7 +45,7 @@ struct StrideTab: View {
             Divider()
             ForEach(["Owner", "Data class.", "Protocol"], id: \.self) { key in
                 HStack {
-                    Text(key).font(.system(size: 12.5)).foregroundStyle(.secondary).frame(
+                    Text(key).font(.chrome(12.5)).foregroundStyle(.secondary).frame(
                         width: 82, alignment: .leading)
                     TextField(
                         "—",
@@ -54,7 +54,7 @@ struct StrideTab: View {
                             set: { v in controller.setThreatField(id, key, v) })
                     )
                     .textFieldStyle(.plain)
-                    .font(.system(size: 12.5, design: key == "Protocol" ? .monospaced : .default))
+                    .font(.chrome(12.5, design: key == "Protocol" ? .monospaced : .default))
                 }
             }
             Toggle(
@@ -62,7 +62,7 @@ struct StrideTab: View {
                 isOn: Binding(get: { c.diagram.colorByRisk }, set: { _ in controller.toggleColorByRisk() })
             )
             .toggleStyle(.switch)
-            .font(.system(size: 12.5))
+            .font(.chrome(12.5))
             HStack {
                 Button("Threat table") { controller.threatTableVisible.toggle() }
                 Button("✦ Suggest for all") { controller.suggestStrideEverywhere() }
@@ -77,20 +77,20 @@ struct StrideTab: View {
     {
         HStack(spacing: 10) {
             Text(s.rawValue)
-                .font(.system(size: 12, weight: .bold, design: .monospaced))
+                .font(.chrome(12, weight: .bold, design: .monospaced))
                 .foregroundStyle(.white)
                 .frame(width: 24, height: 24)
                 .background(RoundedRectangle(cornerRadius: 5).fill(Color.primary.opacity(applies ? 0.85 : 0.25)))
             VStack(alignment: .leading, spacing: 1) {
-                Text(s.name).font(.system(size: 13, weight: .medium))
+                Text(s.name).font(.chrome(13, weight: .medium))
                 if let threat {
-                    Text(threat.title).font(.system(size: 11.5)).foregroundStyle(.secondary).lineLimit(1)
+                    Text(threat.title).font(.chrome(11.5)).foregroundStyle(.secondary).lineLimit(1)
                 } else if let suggestion {
-                    Text("✦ Suggested · \(suggestion.1)").font(.system(size: 11.5)).foregroundStyle(
+                    Text("✦ Suggested · \(suggestion.1)").font(.chrome(11.5)).foregroundStyle(
                         Color(nsColor: NSColor(cgColor: controller.theme.ai.cgColor) ?? .systemTeal)
                     ).lineLimit(1)
                 } else {
-                    Text(applies ? "No threat recorded" : "Not applicable").font(.system(size: 11.5)).foregroundStyle(
+                    Text(applies ? "No threat recorded" : "Not applicable").font(.chrome(11.5)).foregroundStyle(
                         .tertiary)
                 }
             }
@@ -103,12 +103,12 @@ struct StrideTab: View {
                 }
                 .menuStyle(.borderlessButton)
                 .fixedSize()
-                .font(.system(size: 11, weight: .bold, design: .monospaced))
+                .font(.chrome(11, weight: .bold, design: .monospaced))
             } else if let suggestion {
                 Button("+") { controller.acceptStride(s, suggestion.1, suggestion.2, on: element) }
                     .help("Add this threat")
             } else {
-                Text("N/A").font(.system(size: 11, design: .monospaced)).foregroundStyle(.tertiary)
+                Text("N/A").font(.chrome(11, design: .monospaced)).foregroundStyle(.tertiary)
             }
         }
         .padding(.horizontal, 10)

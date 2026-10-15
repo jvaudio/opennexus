@@ -281,7 +281,7 @@ enum MainMenu {
         let action: Selector =
             c.standardAction.map(NSSelectorFromString)
             ?? #selector(RegistryCommandTarget.performRegistryCommand(_:))
-        let mi = NSMenuItem(title: c.title, action: action, keyEquivalent: "")
+        let mi = NSMenuItem(title: Loc.t(c.title), action: action, keyEquivalent: "")
         mi.representedObject = c.id.rawValue
         if let chord = r.primaryBinding(for: c.id, profile: p, custom: custom) {
             mi.keyEquivalent = chord.key.keyEquivalent

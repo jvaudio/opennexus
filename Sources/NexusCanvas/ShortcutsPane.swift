@@ -29,7 +29,7 @@ struct ShortcutsPane: View {
         let _ = prefs.revision
         VStack(alignment: .leading, spacing: 18) {
             HStack {
-                Text("Shortcuts").font(.system(size: 30, weight: .bold))
+                Text("Shortcuts").font(.chrome(30, weight: .bold))
                 Spacer()
                 Button("Import profile…") { importProfile() }
                 Button("Export JSON") { exportProfile() }
@@ -66,7 +66,7 @@ struct ShortcutsPane: View {
     var profiles: some View {
         let current = prefs.string("shortcuts.profile")
         return VStack(alignment: .leading, spacing: 12) {
-            Text("Profile").font(.system(size: 15, weight: .semibold))
+            Text("Profile").font(.chrome(15, weight: .semibold))
             HStack(spacing: 10) {
                 ForEach(
                     [
@@ -80,8 +80,8 @@ struct ShortcutsPane: View {
                         prefs.set("shortcuts.profile", id)
                     } label: {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(name).font(.system(size: 15, weight: .semibold))
-                            Text(detail).font(.system(size: 12.5)).foregroundStyle(.secondary)
+                            Text(name).font(.chrome(15, weight: .semibold))
+                            Text(detail).font(.chrome(12.5)).foregroundStyle(.secondary)
                         }
                         .frame(maxWidth: .infinity, minHeight: 68, alignment: .topLeading)
                         .padding(12)
@@ -109,12 +109,12 @@ struct ShortcutsPane: View {
 
     var hyperCard: some View {
         HStack(alignment: .top, spacing: 14) {
-            Text("✦").font(.system(size: 26)).foregroundStyle(.yellow)
+            Text("✦").font(.chrome(26)).foregroundStyle(.yellow)
                 .frame(width: 58, height: 58).background(
                     RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.08)))
             VStack(alignment: .leading, spacing: 6) {
                 HStack {
-                    Text("Hyper key").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white)
+                    Text("Hyper key").font(.chrome(16, weight: .semibold)).foregroundStyle(.white)
                     Spacer()
                     Toggle(
                         "",
@@ -131,7 +131,7 @@ struct ShortcutsPane: View {
                 Text(
                     "\(prefs.string("shortcuts.hyperKey") == "rightOption" ? "Right Option" : "Caps Lock") acts as ⌃⌥⇧⌘ pressed together, giving OpenNexus a clash-free namespace. Tap alone: \(prefs.string("shortcuts.hyperTap") == "esc" ? "Esc" : "nothing")."
                 )
-                .font(.system(size: 13)).foregroundStyle(.white.opacity(0.7)).fixedSize(
+                .font(.chrome(13)).foregroundStyle(.white.opacity(0.7)).fixedSize(
                     horizontal: false, vertical: true)
             }
         }
@@ -140,13 +140,13 @@ struct ShortcutsPane: View {
         .background(RoundedRectangle(cornerRadius: 14).fill(Color(white: 0.1)))
         .popover(isPresented: $hyperPrompt, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("SHOWN ONCE, WHEN HYPER IS TURNED ON").font(.system(size: 11.5, weight: .semibold))
+                Text("SHOWN ONCE, WHEN HYPER IS TURNED ON").font(.chrome(11.5, weight: .semibold))
                     .foregroundStyle(.secondary)
-                Text("Let OpenNexus read Caps Lock").font(.system(size: 16, weight: .semibold))
+                Text("Let OpenNexus read Caps Lock").font(.chrome(16, weight: .semibold))
                 Text(
                     "To turn Caps Lock into Hyper, macOS needs to allow Input Monitoring. OpenNexus only remaps that one key and never records what you type."
                 )
-                .font(.system(size: 13)).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).fixedSize(horizontal: false, vertical: true)
                 HStack {
                     Spacer()
                     Button("Use Right Option") {
@@ -202,7 +202,7 @@ struct ShortcutsPane: View {
                 Text("Standard").frame(width: 260, alignment: .leading)
                 Text("Hyper").frame(width: 110, alignment: .leading)
             }
-            .font(.system(size: 13, weight: .medium)).foregroundStyle(.secondary)
+            .font(.chrome(13, weight: .medium)).foregroundStyle(.secondary)
             .padding(.horizontal, 18).padding(.vertical, 10)
             Divider()
             LazyVStack(spacing: 0) {
@@ -211,7 +211,7 @@ struct ShortcutsPane: View {
                     let standard = keys.filter { !$0.isHyper }
                     let hyper = keys.first(where: \.isHyper)
                     HStack {
-                        Text(cmd.title).frame(maxWidth: .infinity, alignment: .leading)
+                        Text(Loc.t(cmd.title)).frame(maxWidth: .infinity, alignment: .leading)
                         Text(Self.scopeName(cmd.scope)).foregroundStyle(.secondary).frame(
                             width: 120, alignment: .leading)
                         HStack(spacing: 6) {
@@ -246,7 +246,7 @@ struct ShortcutsPane: View {
                         }
                         .frame(width: 110, alignment: .leading)
                     }
-                    .font(.system(size: 14))
+                    .font(.chrome(14))
                     .padding(.horizontal, 18).padding(.vertical, 9)
                     .background(recording == cmd.id ? Color.red.opacity(0.06) : .clear)
                     .popover(
@@ -268,7 +268,7 @@ struct ShortcutsPane: View {
     }
 
     func cap(_ s: String, hyper: Bool) -> some View {
-        Text(s).font(.system(size: 12.5, weight: .medium, design: .monospaced))
+        Text(s).font(.chrome(12.5, weight: .medium, design: .monospaced))
             .foregroundStyle(hyper ? Color.white : .primary)
             .padding(.horizontal, 8).frame(height: 24)
             .background(
@@ -282,16 +282,16 @@ struct ShortcutsPane: View {
             let mine = customization.apply(to: .standard)[p.id]
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 6) {
-                    Text("!").font(.system(size: 13, weight: .bold)).foregroundStyle(.red)
+                    Text("!").font(.chrome(13, weight: .bold)).foregroundStyle(.red)
                         .frame(width: 22, height: 22).background(
                             RoundedRectangle(cornerRadius: 5).fill(Color.red.opacity(0.12)))
                     cap(p.chord.glyphs, hyper: false)
-                    Text("is already taken").font(.system(size: 15, weight: .semibold))
+                    Text("is already taken").font(.chrome(15, weight: .semibold))
                 }
                 Text(
                     "OpenNexus uses it for **\(other.title)** (\(Self.scopeName(other.scope)) scope). You’re assigning it to **\(mine?.title ?? "")**."
                 )
-                .font(.system(size: 13.5)).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13.5)).fixedSize(horizontal: false, vertical: true)
                 HStack {
                     Button("Swap") { resolve(.swap) }
                     Button("Reassign") { resolve(.reassign) }
@@ -300,7 +300,7 @@ struct ShortcutsPane: View {
                     }
                 }
                 Text("Conflicts are checked against OpenNexus, the menu bar and macOS system shortcuts.")
-                    .font(.system(size: 12.5)).foregroundStyle(.secondary)
+                    .font(.chrome(12.5)).foregroundStyle(.secondary)
             }
             .padding(18)
             .frame(width: 520)

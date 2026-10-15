@@ -23,6 +23,14 @@ final class AppPreferences {
             let key = n.userInfo?["key"] as? String
             MainActor.assumeIsolated { AppPreferences.shared.apply(key) }
         }
+        // The system text size can change while OpenNexus is in the background.
+        NotificationCenter.default.addObserver(
+            forName: NSApplication.didBecomeActiveNotification, object: nil, queue: .main
+        ) { _ in
+            MainActor.assumeIsolated {
+                ChromeText.apply(followSystem: AppPreferences.shared.prefs.bool("accessibility.systemTextSize"))
+            }
+        }
     }
 
     func apply(_ key: String?) {
@@ -58,6 +66,18 @@ final class AppPreferences {
             || touched("general.autocorrect") || touched("general.smartQuotes") || touched("ai.statusChip")
         {
             for w in NSApp.windows { (w.windowController as? DocumentWindowController)?.applyWindowPreferences() }
+        }
+        if touched("accessibility.fullKeyboard") {
+            // Settings › Accessibility › Full keyboard access to panels: Tab reaches every
+            // control in OpenNexus, whatever the system's Keyboard navigation setting.
+            if prefs.bool("accessibility.fullKeyboard") {
+                UserDefaults.standard.set(2, forKey: "AppleKeyboardUIMode")
+            } else {
+                UserDefaults.standard.removeObject(forKey: "AppleKeyboardUIMode")
+            }
+        }
+        if touched("accessibility.systemTextSize") {
+            ChromeText.apply(followSystem: prefs.bool("accessibility.systemTextSize"))
         }
         if touched("files.snapshotKeep") {
             SnapshotStore.prune(olderThan: Double(prefs.string("files.snapshotKeep")) ?? 7)
@@ -219,7 +239,7 @@ final class AppPreferences {
         w.isReleasedWhenClosed = false
         w.contentView = NSHostingView(
             rootView: ScrollView {
-                Text(.init(body)).font(.system(size: 14)).textSelection(.enabled).frame(
+                Text(.init(body)).font(.chrome(14)).textSelection(.enabled).frame(
                     maxWidth: .infinity, alignment: .leading
                 ).padding(24)
             })

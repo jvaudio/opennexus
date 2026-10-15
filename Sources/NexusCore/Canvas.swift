@@ -79,7 +79,7 @@ public struct CanvasStyle: Hashable, Sendable, JSONRepresentable {
         nodeStyle = try r.optionalString("nodeStyle") ?? "outline"
         colorTheme = try r.optionalString("colorTheme") ?? "rainbow"
         palette = try r.optionalString("palette") ?? "theme"
-        paletteShift = Int(try r.optionalDouble("paletteShift") ?? 0)
+        paletteShift = try r.optionalInt("paletteShift", in: -1_000...1_000) ?? 0
         coloredBranch = try r.bool("coloredBranch", default: true)
         singleColor = try r.optionalString("singleColor")
         background = try r.optionalString("background")

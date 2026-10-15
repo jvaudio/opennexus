@@ -400,7 +400,7 @@ struct DiagramTypeButton: View {
         } label: {
             HStack(spacing: 8) {
                 Text(controller.canvas.type.displayName)
-                Text("⌥⌘T").font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
+                Text("⌥⌘T").font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
             }
         }
         .fixedSize()
@@ -477,7 +477,7 @@ struct CanvasTabsView: View {
                     HStack(spacing: 8) {
                         RoundedRectangle(cornerRadius: 2).fill(color(for: c.type)).frame(width: 9, height: 9)
                         Text(c.title.isEmpty ? (c.nodes[c.root]?.text ?? "Untitled") : c.title)
-                            .font(.system(size: 13, weight: on ? .semibold : .regular))
+                            .font(.chrome(13, weight: on ? .semibold : .regular))
                     }
                     .padding(.horizontal, 14)
                     .frame(height: 30)
@@ -491,7 +491,7 @@ struct CanvasTabsView: View {
                         Menu {
                             CanvasTabMenu(controller: controller, target: c.id)
                         } label: {
-                            Image(systemName: "chevron.down").font(.system(size: 9, weight: .semibold))
+                            Image(systemName: "chevron.down").font(.chrome(9, weight: .semibold))
                         }
                         .menuStyle(.borderlessButton)
                         .menuIndicator(.hidden)

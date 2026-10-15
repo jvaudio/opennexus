@@ -37,10 +37,10 @@ struct PanelSection<Content: View, Accessory: View>: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Button {
-                    withAnimation(.snappy(duration: 0.2)) { open.toggle() }
+                    withAnimation(UIMotion.animation(.snappy(duration: 0.2))) { open.toggle() }
                 } label: {
                     Text(title.uppercased())
-                        .font(.system(size: 11, weight: .semibold))
+                        .font(.chrome(11, weight: .semibold))
                         .foregroundStyle(.secondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
@@ -76,7 +76,7 @@ struct Segments<T: Hashable>: View {
                     pick(o.0)
                 } label: {
                     Text(o.1)
-                        .font(.system(size: 12, weight: on ? .semibold : .regular))
+                        .font(.chrome(12, weight: on ? .semibold : .regular))
                         .foregroundStyle(on ? Color.accentColor : Color.primary)
                         .frame(maxWidth: .infinity, minHeight: 26)
                         .background(on ? Color.accentColor.opacity(0.12) : .clear)
@@ -102,12 +102,12 @@ struct PanelRow<Trailing: View>: View {
         // One line when it fits, label above the control when the panel is narrow.
         ViewThatFits(in: .horizontal) {
             HStack {
-                Text(label).font(.system(size: 13)).fixedSize()
+                Text(label).font(.chrome(13)).fixedSize()
                 Spacer(minLength: 8)
                 trailing()
             }
             VStack(alignment: .leading, spacing: 6) {
-                Text(label).font(.system(size: 13))
+                Text(label).font(.chrome(13))
                 trailing()
             }
         }
@@ -120,7 +120,7 @@ struct PanelToggle: View {
     let set: (Bool) -> Void
 
     var body: some View {
-        Toggle(isOn: Binding(get: { isOn }, set: set)) { Text(label).font(.system(size: 13)) }
+        Toggle(isOn: Binding(get: { isOn }, set: set)) { Text(label).font(.chrome(13)) }
             .toggleStyle(.switch)
             .controlSize(.small)
     }

@@ -103,7 +103,7 @@ private struct AboutCard: View {
                         Text(
                             "OpenNexus \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0")"
                         )
-                        .font(.system(size: 18, weight: .semibold))
+                        .font(.chrome(18, weight: .semibold))
                         Text(
                             "Build \(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1") · Open source · MIT"
                         )
@@ -115,7 +115,7 @@ private struct AboutCard: View {
                     Button("Release notes") { onAction("about.notes") }
                     Button("Report an issue…") { onAction("about.issue") }
                 }
-                Text("Usage statistics are off. See Privacy & Data.").font(.system(size: 13)).foregroundStyle(
+                Text("Usage statistics are off. See Privacy & Data.").font(.chrome(13)).foregroundStyle(
                     .secondary)
             }
         }
@@ -129,9 +129,9 @@ private struct MouseAidsPreview: View {
                 HStack(alignment: .top, spacing: 18) {
                     ZStack(alignment: .topLeading) {
                         HStack(spacing: 4) {
-                            Text("✦ Ideas").font(.system(size: 12, weight: .semibold)).foregroundStyle(.teal)
+                            Text("✦ Ideas").font(.chrome(12, weight: .semibold)).foregroundStyle(.teal)
                             ForEach(["⇢", "↗", "▣", "≡", "☐", "Aa"], id: \.self) {
-                                Text($0).font(.system(size: 12)).frame(width: 22)
+                                Text($0).font(.chrome(12)).frame(width: 22)
                             }
                         }
                         .padding(.horizontal, 8).frame(height: 28)
@@ -140,7 +140,7 @@ private struct MouseAidsPreview: View {
                                 color: .black.opacity(0.12), radius: 6, y: 2)
                         )
                         .offset(x: 0, y: 0)
-                        Text("Pricing").font(.system(size: 15, weight: .medium))
+                        Text("Pricing").font(.chrome(15, weight: .medium))
                             .padding(.horizontal, 18).frame(height: 38)
                             .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .textBackgroundColor)))
                             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "#E4572E"), lineWidth: 2))
@@ -153,12 +153,12 @@ private struct MouseAidsPreview: View {
                 Text(
                     "Right + adds a child (⇥), lower + a sibling (↩). The floating toolbar offers AI ideas, connect, link, image, note, to-do and style. It never appears while typing."
                 )
-                .font(.system(size: 13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
     }
     var plus: some View {
-        Text("+").font(.system(size: 13, weight: .bold)).foregroundStyle(.white)
+        Text("+").font(.chrome(13, weight: .bold)).foregroundStyle(.white)
             .frame(width: 20, height: 20).background(Circle().fill(Color(hex: "#5850EC")))
     }
 }
@@ -200,7 +200,7 @@ private struct ThemeGrid: View {
                                 selected == id ? Color(hex: "#5850EC") : Color.secondary.opacity(0.25),
                                 lineWidth: selected == id ? 2.5 : 1))
                         Text(id == "midnightNeon" ? "Neon" : t.name).font(
-                            .system(size: 12.5, weight: selected == id ? .semibold : .regular))
+                            .chrome(12.5, weight: selected == id ? .semibold : .regular))
                     }
                 }
                 .buttonStyle(.plain)
@@ -228,7 +228,7 @@ private struct LookPreview: View {
             }
             .frame(height: 170)
             Text("Live preview of theme + node style + colour theme. Documents keep their own look once created.")
-                .font(.system(size: 13)).foregroundStyle(.secondary)
+                .font(.chrome(13)).foregroundStyle(.secondary)
         }
         .task(id: prefs.revision) { render() }
     }
@@ -251,7 +251,7 @@ private struct SnapshotUsageRow: View {
     @State private var bytes: Int64 = 0
     var body: some View {
         HStack {
-            Text("Using").font(.system(size: 14.5))
+            Text("Using").font(.chrome(14.5))
             Spacer()
             Text(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)).foregroundStyle(.secondary)
                 .monospacedDigit()
@@ -269,9 +269,9 @@ private struct RecoveryList: View {
         Card {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("RECOVERY").font(.system(size: 12, weight: .semibold)).foregroundStyle(.secondary)
+                    Text("RECOVERY").font(.chrome(12, weight: .semibold)).foregroundStyle(.secondary)
                     Spacer()
-                    Text("\(items.count) snapshot\(items.count == 1 ? "" : "s")").font(.system(size: 12.5))
+                    Text("\(items.count) snapshot\(items.count == 1 ? "" : "s")").font(.chrome(12.5))
                         .foregroundStyle(.secondary)
                 }
                 if items.isEmpty {
@@ -281,9 +281,9 @@ private struct RecoveryList: View {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(s.date.formatted(date: .abbreviated, time: .shortened)).font(
-                                .system(size: 13.5, weight: .medium))
+                                .chrome(13.5, weight: .medium))
                             Text("Crash recovery · \(s.topics) topics\(s.encrypted ? " · encrypted" : "")").font(
-                                .system(size: 12.5)
+                                .chrome(12.5)
                             ).foregroundStyle(.secondary)
                         }
                         Spacer()
@@ -320,7 +320,7 @@ private struct FramePicker: View {
                                 RoundedRectangle(cornerRadius: 8).stroke(
                                     selected == id ? Color(hex: "#5850EC") : Color.secondary.opacity(0.25),
                                     lineWidth: selected == id ? 2.5 : 1))
-                        Text(title).font(.system(size: 12.5, weight: selected == id ? .semibold : .regular))
+                        Text(title).font(.chrome(12.5, weight: selected == id ? .semibold : .regular))
                     }
                 }
                 .buttonStyle(.plain)
@@ -374,7 +374,7 @@ private struct MatColorRow: View {
     var prefs: Preferences
     var body: some View {
         HStack {
-            Text("Mat colour").font(.system(size: 14.5))
+            Text("Mat colour").font(.chrome(14.5))
             Spacer()
             ColorPicker(
                 "",
@@ -405,7 +405,7 @@ private struct AgentCard: View {
         Card {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 6) {
-                    Text("CONNECT AN AGENT").font(.system(size: 12.5, weight: .semibold)).foregroundStyle(.secondary)
+                    Text("CONNECT AN AGENT").font(.chrome(12.5, weight: .semibold)).foregroundStyle(.secondary)
                     Spacer()
                     Circle().fill(on ? Color.green : Color.gray.opacity(0.6)).frame(width: 7, height: 7)
                     Text(
@@ -413,12 +413,12 @@ private struct AgentCard: View {
                             ? (folders > 0 ? "Server on · local only" : "On · allow a folder first")
                             : "Server off · local only"
                     )
-                    .font(.system(size: 12.5)).foregroundStyle(on ? Color.green : .secondary)
+                    .font(.chrome(12.5)).foregroundStyle(on ? Color.green : .secondary)
                 }
                 Text(
                     "Any MCP client on this Mac (Claude, Codex, Cursor…) can read and edit maps in the folders you allow. Nothing is uploaded."
                 )
-                .font(.system(size: 12.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(12.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
                 Self.code(
                     """
                     $ nexus mcp            # stdio server
@@ -440,7 +440,7 @@ private struct AgentCard: View {
 
     /// Commands and config on a dark block (artboard 40), selectable for copying.
     static func code(_ text: String) -> some View {
-        Text(text).font(.system(size: 11.5, design: .monospaced)).foregroundStyle(.white.opacity(0.92))
+        Text(text).font(.chrome(11.5, design: .monospaced)).foregroundStyle(.white.opacity(0.92))
             .textSelection(.enabled)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
@@ -459,7 +459,7 @@ private struct FlowChips: View {
         ) {
             ForEach(read + edit, id: \.self) { t in
                 let isRead = read.contains(t)
-                Text(t).font(.system(size: 11.5, design: .monospaced))
+                Text(t).font(.chrome(11.5, design: .monospaced))
                     .foregroundStyle(isRead ? Color(hex: "#3F38C8") : Color(hex: "#8A5A00"))
                     .lineLimit(1).fixedSize()
                     .padding(.horizontal, 8).padding(.vertical, 3)
@@ -476,13 +476,13 @@ private struct NetworkLogCard: View {
         // Dark like artboard 41, so the log reads as the system's record rather than a setting.
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text("0").font(.system(size: 34, weight: .bold))
-                Text("requests").font(.system(size: 14)).foregroundStyle(.white.opacity(0.75))
+                Text("0").font(.chrome(34, weight: .bold))
+                Text("requests").font(.chrome(14)).foregroundStyle(.white.opacity(0.75))
             }
             Text(
                 "Documents, AI prompts and AI results never leave this Mac. OpenNexus has no network permission, so this log stays empty."
             )
-            .font(.system(size: 12.5)).foregroundStyle(.white.opacity(0.7)).fixedSize(horizontal: false, vertical: true)
+            .font(.chrome(12.5)).foregroundStyle(.white.opacity(0.7)).fixedSize(horizontal: false, vertical: true)
             Button("Open log…") { onAction("privacy.log") }
         }
         .foregroundStyle(.white)
@@ -503,7 +503,7 @@ private struct MaskPreviewCard: View {
         Card {
             VStack(alignment: .leading, spacing: 10) {
                 ForEach(Self.samples, id: \.self) { s in
-                    Text(Masker.mask(s, options: o)).font(.system(size: 13.5, design: .monospaced))
+                    Text(Masker.mask(s, options: o)).font(.chrome(13.5, design: .monospaced))
                         .padding(.horizontal, 10).padding(.vertical, 6)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.07)))
@@ -511,7 +511,7 @@ private struct MaskPreviewCard: View {
                 Text(
                     "Detected on-device with the Natural Language framework plus your patterns. Masking applies to the export copy; your document is unchanged."
                 )
-                .font(.system(size: 13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -537,17 +537,17 @@ private struct VoiceOverPreview: View {
         Card {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(spacing: 10) {
-                    Text("Pricing").font(.system(size: 15, weight: .medium))
+                    Text("Pricing").font(.chrome(15, weight: .medium))
                         .padding(.horizontal, 16).frame(height: 36)
                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.teal, lineWidth: 2))
                     Text("→").foregroundStyle(.secondary)
                 }
-                Text("“\(Spoken.sample(prefs))”").font(.system(size: 14)).italic()
+                Text("“\(Spoken.sample(prefs))”").font(.chrome(14)).italic()
                     .fixedSize(horizontal: false, vertical: true)
                 Text(
                     "Rotor categories: Nodes, Edges, Boundaries, Notes, AI suggestions. Connect mode reads targets by hint letter."
                 )
-                .font(.system(size: 13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -562,23 +562,26 @@ extension RGBA {
 /// What VoiceOver says for a topic, shaped by Settings › Accessibility › VoiceOver.
 @MainActor
 public enum Spoken {
-    public static func describe(_ id: NodeID, in c: NexusCore.Canvas, prefs: Preferences, branchColor: String? = nil)
-        -> String
-    {
+    public static func describe(
+        _ id: NodeID, in c: NexusCore.Canvas, prefs: Preferences, branchColor: String? = nil,
+        depth knownDepth: Int? = nil,
+        maxDepth knownMax: Int? = nil
+    ) -> String {
         guard let n = c.nodes[id] else { return "" }
-        // One walk from the root gives every depth (this runs on each selection change).
-        var depths: [NodeID: Int] = [c.root: 0]
-        var stack = [c.root]
-        while let cur = stack.popLast() {
-            for ch in c.nodes[cur]?.children ?? [] {
-                depths[ch] = depths[cur]! + 1
-                stack.append(ch)
-            }
+        let depth: Int
+        let maxDepth: Int
+        if let knownDepth, let knownMax {
+            (depth, maxDepth) = (knownDepth, knownMax)
+        } else {
+            // One walk from the root gives every depth.
+            let d = depths(c)
+            depth = d.depths[id] ?? c.depth(of: id)
+            maxDepth = d.max
         }
-        let depth = depths[id] ?? c.depth(of: id)
-        let maxDepth = depths.values.max() ?? depth
         var parts: [String] = [n.text.isEmpty ? "Topic" : n.text]
-        let role = id == c.root ? "Central topic" : depth == 1 ? "Main topic" : "Subtopic"
+        let role =
+            id == c.root
+            ? "Central topic" : c.floating.contains(id) ? "Floating topic" : depth == 1 ? "Main topic" : "Subtopic"
         if prefs.bool("accessibility.announceLevel") {
             parts.append("\(role), level \(depth + 1) of \(maxDepth + 1)")
             parts.append(
@@ -586,7 +589,9 @@ public enum Spoken {
         } else {
             parts.append(role)
         }
+        if let t = n.nodeType, let info = DiagramCatalog.info(t, in: c.type) { parts.append(info.name) }
         if let b = branchColor { parts.append("Branch colour \(b)") }
+        if let todo = n.todo { parts.append(todo.done ? "Done" : "To do") }
         if n.note != nil { parts.append("Has note") }
         if prefs.string("accessibility.readEdges") == "source" {
             for r in c.relationships where r.from == id || r.to == id {
@@ -597,6 +602,42 @@ public enum Spoken {
         }
         if prefs.bool("accessibility.speakHints") { parts.append("Tab adds a child") }
         return parts.joined(separator: ". ") + "."
+    }
+
+    /// Depth of every topic in the tree under the root (floating tops start their own).
+    public static func depths(_ c: NexusCore.Canvas) -> (depths: [NodeID: Int], max: Int) {
+        var depths: [NodeID: Int] = [:]
+        for top in c.tops { c.walk(from: top) { id, _, d in depths[id] = d } }
+        return (depths, depths.values.max() ?? 0)
+    }
+
+    /// A plain colour word for a branch colour ("teal", "orange"…), for VoiceOver.
+    public static func colorName(_ c: RGBA) -> String {
+        let mx = max(c.r, c.g, c.b)
+        let mn = min(c.r, c.g, c.b)
+        let delta = mx - mn
+        if delta < 0.08 { return mx > 0.85 ? "white" : mx < 0.2 ? "black" : "grey" }
+        var h: Double
+        if mx == c.r {
+            h = ((c.g - c.b) / delta).truncatingRemainder(dividingBy: 6)
+        } else if mx == c.g {
+            h = (c.b - c.r) / delta + 2
+        } else {
+            h = (c.r - c.g) / delta + 4
+        }
+        h *= 60
+        if h < 0 { h += 360 }
+        switch h {
+        case ..<15, 345...: return "red"
+        case ..<40: return "orange"
+        case ..<65: return "yellow"
+        case ..<150: return "green"
+        case ..<195: return "teal"
+        case ..<235: return "blue"
+        case ..<260: return "indigo"
+        case ..<290: return "purple"
+        default: return "pink"
+        }
     }
 
     static func sample(_ prefs: Preferences) -> String {

@@ -35,7 +35,7 @@ struct GhostHintsView: View {
                     Text("dismiss · typing ignores ghosts").foregroundStyle(controller.aiColor)
                 }
             }
-            .font(.system(size: 12.5))
+            .font(.chrome(12.5))
             .accessibilityElement(children: .combine)
             .accessibilityLabel("\(g.ideas.count) suggestions. Control Return accepts, Escape dismisses.")
         }
@@ -53,7 +53,7 @@ struct AINoticeView: View {
                     + Text(
                         notice.contains(",")
                             ? "," + notice.components(separatedBy: ",").dropFirst().joined(separator: ",") : ""))
-                    .font(.system(size: 14))
+                    .font(.chrome(14))
                 HStack {
                     Button("Open System Settings") {
                         if let url = URL(string: "x-apple.systempreferences:com.apple.Siri-Settings.extension") {
@@ -81,7 +81,7 @@ struct AIButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.system(size: 13.5, weight: fill == nil ? .regular : .medium))
+            .font(.chrome(13.5, weight: fill == nil ? .regular : .medium))
             .foregroundStyle(fill == nil ? Color.primary : .white)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
@@ -103,7 +103,7 @@ struct GhostBadgeView: View {
 
     var body: some View {
         Text("⌃↩")
-            .font(.system(size: 11, weight: .semibold))
+            .font(.chrome(11, weight: .semibold))
             .foregroundStyle(.white)
             .padding(.horizontal, 7)
             .padding(.vertical, 4)
@@ -122,10 +122,10 @@ struct PromptBarView: View {
             let anchor = controller.canvas.nodes[bar.anchor]?.text ?? ""
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 10) {
-                    Text("✦").foregroundStyle(controller.aiColor).font(.system(size: 17))
+                    Text("✦").foregroundStyle(controller.aiColor).font(.chrome(17))
                     TextField("Ask AI to change this branch…", text: $text)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 17))
+                        .font(.chrome(17))
                         .focused($focused)
                         .onSubmit {
                             controller.submitPrompt(text)
@@ -141,7 +141,7 @@ struct PromptBarView: View {
                             text = ""
                         }
                         .buttonStyle(.plain)
-                        .font(.system(size: 13))
+                        .font(.chrome(13))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(Capsule().stroke(.separator))
@@ -152,7 +152,7 @@ struct PromptBarView: View {
                     Spacer()
                     Text("Results arrive as ghosts, never applied silently")
                 }
-                .font(.system(size: 11.5))
+                .font(.chrome(11.5))
                 .foregroundStyle(.secondary)
             }
             .padding(18)
@@ -180,7 +180,7 @@ struct AIPanelView: View {
             let chat = controller.currentChat
             VStack(alignment: .leading, spacing: 0) {
                 HStack {
-                    Text("Ask about this document").font(.system(size: 15, weight: .semibold))
+                    Text("Ask about this document").font(.chrome(15, weight: .semibold))
                     Spacer()
                     Keycap(text: "⇧⌘J")
                 }
@@ -209,7 +209,7 @@ struct AIPanelView: View {
                         isOn: Binding(get: { chat?.discussion ?? false }, set: { controller.setDiscussion($0) })
                     )
                     .toggleStyle(.switch)
-                    .font(.system(size: 13))
+                    .font(.chrome(13))
                 }
                 .padding(.horizontal, 16)
                 .padding(.vertical, 12)
@@ -221,7 +221,7 @@ struct AIPanelView: View {
                                 message(m, index: i, chat: chat?.id ?? "")
                             }
                             if let s = controller.aiStreaming {
-                                Text(s).font(.system(size: 14))
+                                Text(s).font(.chrome(14))
                             }
                             if let busy = controller.aiBusy {
                                 HStack(spacing: 6) {
@@ -229,7 +229,7 @@ struct AIPanelView: View {
                                     Text(busy + "…").foregroundStyle(.secondary)
                                     Button("Stop") { controller.stopAI() }.buttonStyle(.plain).foregroundStyle(.red)
                                 }
-                                .font(.system(size: 13))
+                                .font(.chrome(13))
                             }
                             actions
                             Color.clear.frame(height: 1).id("end")
@@ -242,7 +242,7 @@ struct AIPanelView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     TextField("Ask, or type @ to reference a node…", text: $draft, axis: .vertical)
                         .textFieldStyle(.plain)
-                        .font(.system(size: 14))
+                        .font(.chrome(14))
                         .lineLimit(1...4)
                         .focused($focused)
                         .padding(12)
@@ -263,7 +263,7 @@ struct AIPanelView: View {
                         Spacer()
                         Text("Nothing leaves this Mac")
                     }
-                    .font(.system(size: 12))
+                    .font(.chrome(12))
                     .foregroundStyle(.secondary)
                 }
                 .padding(16)
@@ -292,7 +292,7 @@ struct AIPanelView: View {
                     if let at = draft.lastIndex(of: "@") { draft = String(draft[..<at]) + "@" + t + " " }
                 }
                 .buttonStyle(.plain)
-                .font(.system(size: 12))
+                .font(.chrome(12))
                 .foregroundStyle(Color.accentColor)
             }
         }
@@ -302,14 +302,14 @@ struct AIPanelView: View {
     func message(_ m: AIMessage, index: Int, chat: String) -> some View {
         if m.role == "user" {
             Text(highlightRefs(m.text))
-                .font(.system(size: 14.5))
+                .font(.chrome(14.5))
                 .padding(14)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(RoundedRectangle(cornerRadius: 12).fill(Color.accentColor.opacity(0.08)))
                 .padding(.leading, 40)
         } else {
             VStack(alignment: .leading, spacing: 10) {
-                Text(highlightTopics(m.text)).font(.system(size: 14.5))
+                Text(highlightTopics(m.text)).font(.chrome(14.5))
                 if let plan = m.plan { planCard(plan, chat: chat, index: index, applied: m.applied) }
             }
         }
@@ -318,16 +318,16 @@ struct AIPanelView: View {
     func planCard(_ plan: ChangePlan, chat: String, index: Int, applied: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("PROPOSED CHANGE").font(.system(size: 11.5, weight: .semibold)).foregroundStyle(.secondary)
+                Text("PROPOSED CHANGE").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.secondary)
                 Spacer()
-                Text(plan.counts()).font(.system(size: 12, design: .monospaced)).foregroundStyle(.secondary)
+                Text(plan.counts()).font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
             }
             .padding(12)
             .background(Color.secondary.opacity(0.06))
             VStack(alignment: .leading, spacing: 6) {
                 ForEach(Array(plan.lines(in: controller.canvas).enumerated()), id: \.offset) { _, line in
                     Text(line)
-                        .font(.system(size: 12.5, design: .monospaced))
+                        .font(.chrome(12.5, design: .monospaced))
                         .foregroundStyle(line.hasPrefix("+") ? Color.green : Color.orange)
                         .fixedSize(horizontal: false, vertical: true)
                 }
@@ -338,7 +338,7 @@ struct AIPanelView: View {
             HStack {
                 Spacer()
                 if applied {
-                    Text("Applied · ⌘Z undoes").font(.system(size: 12.5)).foregroundStyle(.secondary)
+                    Text("Applied · ⌘Z undoes").font(.chrome(12.5)).foregroundStyle(.secondary)
                 } else {
                     Button(controller.previewPlan == plan ? "Hide preview" : "Preview on canvas") {
                         controller.previewPlan(plan)
@@ -356,12 +356,12 @@ struct AIPanelView: View {
 
     var actions: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("ACTIONS · ALSO IN ⌘K").font(.system(size: 11.5, weight: .semibold)).foregroundStyle(.secondary)
+            Text("ACTIONS · ALSO IN ⌘K").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.secondary)
             FlowLayout(spacing: 6) {
                 ForEach(AIAction.panel, id: \.self) { a in
                     Button(a.title == "Rewrite shorter" ? "Rewrite" : a.title) { controller.runAction(a) }
                         .buttonStyle(.plain)
-                        .font(.system(size: 13))
+                        .font(.chrome(13))
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(Capsule().stroke(.separator))
@@ -427,9 +427,9 @@ private struct SheetHeader: View {
     var close: () -> Void
     var body: some View {
         HStack {
-            Text(title).font(.system(size: 17, weight: .semibold))
+            Text(title).font(.chrome(17, weight: .semibold))
             Spacer()
-            Text(hint).font(.system(size: 11, design: .monospaced)).foregroundStyle(.secondary)
+            Text(hint).font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
                 .padding(.horizontal, 6).padding(.vertical, 3)
                 .background(RoundedRectangle(cornerRadius: 5).stroke(.separator))
             Button {
@@ -440,7 +440,7 @@ private struct SheetHeader: View {
             .buttonStyle(.plain)
             .accessibilityLabel("Close")
         }
-        Text(framework).font(.system(size: 11, design: .monospaced)).foregroundStyle(.teal)
+        Text(framework).font(.chrome(11, design: .monospaced)).foregroundStyle(.teal)
     }
 }
 
@@ -480,7 +480,7 @@ struct TranslateSheet: View {
             Toggle("Notes", isOn: $options.notes)
             Toggle("Keep code blocks as is", isOn: $options.keepCode)
             Text("Writes a new canvas, structure and styles untouched; the original stays.")
-                .font(.system(size: 12)).foregroundStyle(.secondary)
+                .font(.chrome(12)).foregroundStyle(.secondary)
             HStack {
                 Spacer()
                 if busy { ProgressView().controlSize(.small) }
@@ -521,7 +521,7 @@ struct TranslateSheet: View {
                 Text(
                     "Install this language pair in System Settings › General › Language & Region › Translation Languages to preview."
                 )
-                .font(.system(size: 12))
+                .font(.chrome(12))
                 .foregroundStyle(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(10)
@@ -535,7 +535,7 @@ struct TranslateSheet: View {
     func column(_ lines: [String]) -> some View {
         VStack(alignment: .leading, spacing: 5) {
             ForEach(Array(lines.enumerated()), id: \.offset) { i, t in
-                Text(t).font(.system(size: 13, weight: i == 0 ? .semibold : .regular)).lineLimit(1)
+                Text(t).font(.chrome(13, weight: i == 0 ? .semibold : .regular)).lineLimit(1)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -558,7 +558,7 @@ struct MaskSheet: View {
             HStack(spacing: 6) {
                 ForEach(Masker.counts(hits), id: \.0) { k, n in
                     Text("\(k.title) \(n)")
-                        .font(.system(size: 12))
+                        .font(.chrome(12))
                         .padding(.horizontal, 10).padding(.vertical, 4)
                         .foregroundStyle(n > 0 ? Color.white : .secondary)
                         .background(Capsule().fill(n > 0 ? Color.black : Color.secondary.opacity(0.12)))
@@ -576,9 +576,9 @@ struct MaskSheet: View {
                                 })
                         ) {
                             HStack {
-                                Text(h.text).font(.system(size: 13, design: .monospaced))
+                                Text(h.text).font(.chrome(13, design: .monospaced))
                                 Spacer()
-                                Text(h.kind.title).font(.system(size: 11)).foregroundStyle(.secondary)
+                                Text(h.kind.title).font(.chrome(11)).foregroundStyle(.secondary)
                             }
                         }
                     }
@@ -586,7 +586,7 @@ struct MaskSheet: View {
             }
             .frame(maxHeight: 220)
             Text("Makes a masked copy for export, Present or sharing. You review each hit before anything is written.")
-                .font(.system(size: 12)).foregroundStyle(.secondary)
+                .font(.chrome(12)).foregroundStyle(.secondary)
             HStack {
                 Spacer()
                 Button("Make masked copy") {
@@ -613,7 +613,7 @@ struct MaskSheet: View {
             Text(after).frame(maxWidth: .infinity, alignment: .leading).padding(10)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.07)))
         }
-        .font(.system(size: 14))
+        .font(.chrome(14))
         .lineLimit(2)
     }
 }
@@ -635,7 +635,7 @@ struct RemoveBackgroundSheet: View {
             } else {
                 Text("Select a topic with an image (drag one onto a topic).").foregroundStyle(.secondary)
             }
-            Text("Subject lift in under a second.").font(.system(size: 12)).foregroundStyle(.secondary)
+            Text("Subject lift in under a second.").font(.chrome(12)).foregroundStyle(.secondary)
             HStack {
                 if busy { ProgressView().controlSize(.small) }
                 Spacer()
@@ -695,11 +695,11 @@ struct StickerSheet: View {
                 }
                 if busy { ProgressView() }
             }
-            if let error { Text(error).font(.system(size: 12)).foregroundStyle(.red) }
+            if let error { Text(error).font(.chrome(12)).foregroundStyle(.red) }
             Text(
                 "Prompt is pre-filled from the topic and its branch. The pick lands on the topic with its background removed."
             )
-            .font(.system(size: 12)).foregroundStyle(.secondary)
+            .font(.chrome(12)).foregroundStyle(.secondary)
             HStack {
                 Spacer()
                 Button(images.isEmpty ? "Make" : "Make more", action: make).buttonStyle(.borderedProminent).disabled(
@@ -745,7 +745,7 @@ struct RecordSheet: View {
                         Circle().fill(running && !paused ? Color.red : Color.gray).frame(width: 12, height: 12)
                         let s = Int(recorder.elapsed)
                         Text(String(format: "%02d:%02d", s / 60, s % 60))
-                            .font(.system(size: 17, weight: .semibold, design: .monospaced))
+                            .font(.chrome(17, weight: .semibold, design: .monospaced))
                         Spacer()
                         if running {
                             Button(paused ? "Resume" : "Pause") {
@@ -758,16 +758,16 @@ struct RecordSheet: View {
                         }
                     }
                     Text(text.isEmpty ? (running ? "Listening…" : "Press Record to start.") : "“…\(text.suffix(180))”")
-                        .font(.system(size: 14))
+                        .font(.chrome(14))
                         .frame(maxWidth: .infinity, minHeight: 60, alignment: .topLeading)
                 }
                 .foregroundStyle(.white)
                 .padding(16)
                 .background(RoundedRectangle(cornerRadius: 12).fill(Color.black.opacity(0.88)))
             }
-            if let error { Text(error).font(.system(size: 12)).foregroundStyle(.red) }
+            if let error { Text(error).font(.chrome(12)).foregroundStyle(.red) }
             Text("Live transcript; key points become ghosts and the full transcript goes into the root’s note.")
-                .font(.system(size: 12)).foregroundStyle(.secondary)
+                .font(.chrome(12)).foregroundStyle(.secondary)
             HStack {
                 Spacer()
                 if !running {

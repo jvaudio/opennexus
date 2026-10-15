@@ -76,7 +76,7 @@ struct OutlineHints: View {
             }
             Text("Notes edit inline").foregroundStyle(.secondary)
         }
-        .font(.system(size: 12.5))
+        .font(.chrome(12.5))
     }
 }
 

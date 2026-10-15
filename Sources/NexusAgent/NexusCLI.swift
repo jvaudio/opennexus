@@ -118,7 +118,9 @@ public enum NexusCLI {
     public static func validationIssues(_ url: URL) throws -> (issues: [String], summary: String) {
         if url.pathExtension.lowercased() == "nexusjson" {
             let doc = try DocumentJSON.parse(Data(contentsOf: url), name: url.lastPathComponent)
-            let issues = doc.orderedCanvases.flatMap { c in c.validate().map { "\(c.id.rawValue): \($0)" } }
+            let issues =
+                doc.repairs.map { "needs repair: \($0)" }
+                + doc.orderedCanvases.flatMap { c in c.validate().map { "\(c.id.rawValue): \($0)" } }
             return (issues, "\(doc.canvases.count) canvases, \(doc.topicCount) topics")
         }
         let files = NexusPackage.flatten(try FileWrapper(url: url, options: [.immediate]))
@@ -129,6 +131,7 @@ public enum NexusCLI {
         var issues = SchemaValidator.bundled.validate(package: files).map(\.description)
         do {
             let doc = try NexusPackage.read(files: files)
+            issues += doc.repairs.map { "needs repair: \($0)" }
             for c in doc.orderedCanvases { issues += c.validate().map { "canvases/\(c.id.rawValue).json: \($0)" } }
             return (issues, "\(doc.canvases.count) canvases, \(doc.topicCount) topics")
         } catch {

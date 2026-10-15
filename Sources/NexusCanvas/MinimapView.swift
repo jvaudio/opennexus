@@ -34,19 +34,48 @@ final class MinimapView: NSView {
         needsDisplay = true
     }
 
-    /// World → minimap transform.
+    /// World → minimap transform, from the map's bounds (cached per scene), so it stays
+    /// put while the view pans and the topics' bitmap can be reused.
     func mapping() -> (CGFloat, CGPoint, CGRect)? {
         guard let c = canvas else { return nil }
-        var b = c.controller.scene.bounds
-        guard !b.isNull else { return nil }
+        let rev = c.controller.sceneRevision
+        if boundsCache?.0 != rev { boundsCache = (rev, c.controller.scene.bounds) }
+        guard var b = boundsCache?.1, !b.isNull else { return nil }
         let view = CGRect(
             origin: c.camera.toWorld(.zero),
             size: CGSize(width: c.bounds.width / c.camera.zoom, height: c.bounds.height / c.camera.zoom))
-        b = b.union(view).insetBy(dx: -40, dy: -40)
+        b = b.insetBy(dx: -40, dy: -40)
         let inner = bounds.insetBy(dx: 8, dy: 8)
         let k = min(inner.width / b.width, inner.height / b.height)
         let o = CGPoint(x: inner.midX - b.midX * k, y: inner.midY - b.midY * k)
         return (k, o, view)
+    }
+
+    private var boundsCache: (Int, CGRect)?
+
+    private var cache: (key: String, image: CGImage?)?
+
+    /// The topics as a bitmap in the view's (flipped) coordinates.
+    static func render(_ scene: Scene, k: CGFloat, o: CGPoint, size: CGSize, scale: CGFloat) -> CGImage? {
+        let w = Int(size.width * scale)
+        let h = Int(size.height * scale)
+        guard w > 0, h > 0,
+            let ctx = CGContext(
+                data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return nil }
+        // Flip so y grows downwards, matching the view.
+        ctx.translateBy(x: 0, y: CGFloat(h))
+        ctx.scaleBy(x: scale, y: -scale)
+        for n in scene.nodes.values {
+            let r = n.frame.rect
+            let m = CGRect(
+                x: o.x + r.minX * k, y: o.y + r.minY * k, width: max(2, r.width * k), height: max(1.5, r.height * k))
+            ctx.setFillColor(n.branchColor.cgColor.copy(alpha: 0.8) ?? n.branchColor.cgColor)
+            ctx.addPath(CGPath(roundedRect: m, cornerWidth: 1, cornerHeight: 1, transform: nil))
+            ctx.fillPath()
+        }
+        return ctx.makeImage()
     }
 
     override func draw(_ dirtyRect: NSRect) {
@@ -56,14 +85,25 @@ final class MinimapView: NSView {
         NSColor.separatorColor.setStroke()
         bg.stroke()
         guard let c = canvas, let (k, o, view) = mapping() else { return }
-        for n in c.controller.scene.nodes.values {
-            let r = n.frame.rect
-            let m = CGRect(
-                x: o.x + r.minX * k, y: o.y + r.minY * k, width: max(2, r.width * k), height: max(1.5, r.height * k))
-            (NSColor(cgColor: n.branchColor.cgColor) ?? .gray).withAlphaComponent(0.8).setFill()
-            NSBezierPath(roundedRect: m, xRadius: 1, yRadius: 1).fill()
+        // The topics are drawn once per scene and mapping, then reused while panning: a
+        // 5,000-topic map would otherwise be redrawn on every scroll step (M10).
+        let key = "\(c.controller.sceneRevision)|\(k)|\(o)|\(bounds.size)"
+        if cache?.key != key {
+            cache = (
+                key,
+                Self.render(c.controller.scene, k: k, o: o, size: bounds.size, scale: window?.backingScaleFactor ?? 2)
+            )
+        }
+        if let img = cache?.image, let ctx = NSGraphicsContext.current?.cgContext {
+            ctx.saveGState()
+            ctx.translateBy(x: 0, y: bounds.height)
+            ctx.scaleBy(x: 1, y: -1)
+            ctx.draw(img, in: bounds)
+            ctx.restoreGState()
         }
         let v = CGRect(x: o.x + view.minX * k, y: o.y + view.minY * k, width: view.width * k, height: view.height * k)
+            .intersection(bounds.insetBy(dx: 2, dy: 2))
+        guard !v.isNull else { return }
         let vp = NSBezierPath(roundedRect: v, xRadius: 3, yRadius: 3)
         NSColor(red: 0.345, green: 0.314, blue: 0.925, alpha: 0.12).setFill()
         vp.fill()

@@ -19,6 +19,9 @@ public struct DocumentModel: Equatable, Sendable {
     /// AI panel chats (`ai/chats.json`). Document-level and outside undo, so undoing a map
     /// edit never loses a conversation.
     public var chats: [AIChat] = []
+    /// What reading had to repair in a damaged file ("canvases/c1.json: 2 broken or
+    /// repeated child links"). Not saved; the next save writes the repaired form.
+    public var repairs: [String] = []
 
     public init(canvases: [Canvas], theme: JSONValue = .object([:]), assets: [String: Data] = [:]) {
         self.canvases = Dictionary(uniqueKeysWithValues: canvases.map { ($0.id, $0) })

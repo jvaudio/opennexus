@@ -10,6 +10,7 @@ public enum TreeOperationRefusal: Error, Equatable, Sendable, CustomStringConver
     case cannotDuplicateRoot
     case atEdge
     case missingNode
+    case tooDeep
 
     public var description: String {
         switch self {
@@ -21,6 +22,7 @@ public enum TreeOperationRefusal: Error, Equatable, Sendable, CustomStringConver
         case .cannotDuplicateRoot: "Duplicate works on branches, not the root"
         case .atEdge: "Already at the end"
         case .missingNode: "That topic no longer exists"
+        case .tooDeep: "Topics can nest \(Canvas.maxDepth) levels deep"
         }
     }
 }
@@ -51,6 +53,7 @@ extension CanvasEditor {
     @discardableResult
     public mutating func addChild(of parent: NodeID, text: String? = nil) throws -> NodeID {
         guard self[parent] != nil else { throw TreeOperationRefusal.missingNode }
+        guard canvas.depth(of: parent) + 1 < Canvas.maxDepth else { throw TreeOperationRefusal.tooDeep }
         var node = newTopic(under: parent)
         if let text { node.text = text }
         let id = makeNodeID()
@@ -84,6 +87,9 @@ extension CanvasEditor {
     public mutating func addParent(of id: NodeID, text: String? = nil) throws -> NodeID {
         guard self[id] != nil else { throw TreeOperationRefusal.missingNode }
         guard let parent = parentOf(id) else { throw TreeOperationRefusal.rootHasNoParent }
+        guard canvas.depth(of: id) + 1 + canvas.height(of: id) < Canvas.maxDepth else {
+            throw TreeOperationRefusal.tooDeep
+        }
         var node = newTopic(under: parent)
         if let text { node.text = text }
         node.children = [id]
@@ -202,6 +208,9 @@ extension CanvasEditor {
     public mutating func demote(_ id: NodeID) throws {
         guard let p = parentOf(id), let siblings = self[p]?.children, let i = siblings.firstIndex(of: id), i > 0
         else { throw TreeOperationRefusal.noPreviousSibling }
+        guard canvas.depth(of: id) + 1 + canvas.height(of: id) < Canvas.maxDepth else {
+            throw TreeOperationRefusal.tooDeep
+        }
         let prev = siblings[i - 1]
         update(p) { $0.children.remove(at: i) }
         update(prev) {

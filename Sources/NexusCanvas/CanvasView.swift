@@ -38,7 +38,10 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     public var morphNextUpdate = false
     /// Offscreen export: no selection ring, no grid.
     public var exportMode = false {
-        didSet { grid.isHidden = exportMode }
+        didSet {
+            grid.suppressed = exportMode
+            grid.isHidden = exportMode
+        }
     }
 
     public private(set) var camera = Camera()
@@ -222,8 +225,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         host.frame = bounds
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        grid.frame = bounds
-        grid.setNeedsDisplay()
+        grid.place(in: bounds, force: true)
         CATransaction.commit()
         if !hasPlacedCamera, bounds.width > 0 {
             hasPlacedCamera = true
@@ -257,7 +259,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         if lastBackground.map({ $0.0 != scene.canvasColor || $0.1 != scene.grid }) ?? true {
             rootLayer.backgroundColor = scene.canvasColor.cgColor
             grid.pattern = scene.grid
-            grid.setNeedsDisplay()
+            grid.place(in: bounds, force: true)
             lastBackground = (scene.canvasColor, scene.grid)
         }
         let morph = morphNextUpdate && animate
@@ -397,6 +399,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         decorRenderer.textScale = textScale
         decorRenderer.update(scene: scene, frame: { [weak self] in self?.animatedFrame($0)?.rect })
         CATransaction.commit()
+        cull()
         updateConnectField()
         if controller.morphSerial != lastMorphSerial {
             lastMorphSerial = controller.morphSerial
@@ -587,6 +590,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         if moving.isEmpty && cameraDone {
             link.invalidate()
             displayLink = nil
+            cull()
         }
     }
 
@@ -597,10 +601,43 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         return backing * max(1, (camera.zoom * 4).rounded(.up) / 4)
     }
 
-    private func updateTextScale() {
+    private func updateTextScale() { cull() }
+
+    /// Viewport culling (M10): topics outside the view (plus a margin of a quarter view
+    /// each side) are hidden, so the compositor skips them and zooming doesn't
+    /// re-rasterise their text; a topic catches up on its text scale when it comes back
+    /// into view. Views without a window (offscreen export) draw everything.
+    func cull() {
         let s = textScale
-        for l in nodeLayers.values { l.textScale = s }
+        guard window != nil, bounds.width > 0, cullingEnabled else {
+            for l in nodeLayers.values {
+                if l.isHidden { l.isHidden = false }
+                l.textScale = s
+            }
+            return
+        }
+        let size = CGSize(width: bounds.width / camera.zoom, height: bounds.height / camera.zoom)
+        let visible = CGRect(origin: camera.toWorld(.zero), size: size)
+            .insetBy(dx: -size.width / 4, dy: -size.height / 4)
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        var shown = 0
+        for l in nodeLayers.values {
+            let show = visible.intersects(l.frame)
+            if l.isHidden == show { l.isHidden = !show }
+            if show {
+                shown += 1
+                if l.textScale != s { l.textScale = s }
+            }
+        }
+        CATransaction.commit()
+        visibleNodeLayers = shown
     }
+
+    /// Off only for tests and tools that need every layer live.
+    var cullingEnabled = true
+    /// How many topic layers the last cull left on screen.
+    private(set) var visibleNodeLayers = 0
 
     func setCamera(_ c: Camera, animated: Bool) {
         if animated && !reduceMotion && window != nil {
@@ -622,9 +659,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         } else {
             grid.camera = c
         }
-        grid.setNeedsDisplay()
+        grid.place(in: bounds)
         CATransaction.commit()
-        if zoomChanged { updateTextScale() }
+        cull()
+        // Overlays pinned to a topic (Add Topic +, the floating toolbar) follow the camera.
+        positionMouseAids()
         if controller.edit != nil { positionEditor() }
     }
 
@@ -1238,6 +1277,12 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     func refreshMouseAids() {
         minimap?.refresh(panning: false)
         applyEffects()
+        positionMouseAids()
+    }
+
+    /// Places the Add Topic + buttons and the floating toolbar beside the selection (also
+    /// on every camera move, so they stay with their topic).
+    func positionMouseAids() {
         let c = controller
         let showAids =
             c.mode == .select && c.selection.nodes.count == 1 && c.edit == nil && c.present == nil && c.mapShot == nil
@@ -1766,10 +1811,41 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
 
     /// What VoiceOver reads for the selection (Settings › Accessibility › VoiceOver), and
     /// the Connect-mode targets by hint letter.
+    /// The topic tree VoiceOver walks (CanvasAccessibility.swift).
+    lazy var accessibilityTree = CanvasAccessibility(view: self)
+    /// The last selection VoiceOver was told about.
+    private var announcedPrimary: NodeID?
+    /// Tests stand in for a running assistive app.
+    var assistiveAppOverride: Bool?
+    var assistiveAppRunning: Bool {
+        assistiveAppOverride ?? (NSWorkspace.shared.isVoiceOverEnabled || NSWorkspace.shared.isSwitchControlEnabled)
+    }
+
+    public override func accessibilityChildren() -> [Any]? { accessibilityTree.roots() }
+    public override func accessibilityCustomRotors() -> [NSAccessibilityCustomRotor] { accessibilityTree.rotors() }
+    /// Read when asked (not on every edit): the selection's description.
+    public override func accessibilityValue() -> Any? { accessibilityTree.label(controller.selection.primary) }
+
+    public override func accessibilityHitTest(_ point: NSPoint) -> Any? {
+        onMain {
+            guard let w = window else { return self }
+            let p = convert(w.convertPoint(fromScreen: point), from: nil)
+            if let id = node(at: p), let e = accessibilityTree.element(id) { return e }
+            return self
+        }
+    }
+
     private func updateAccessibility() {
         let c = controller.canvas
         guard c.nodes[controller.selection.primary] != nil else { return }
-        setAccessibilityValue(Spoken.describe(controller.selection.primary, in: c, prefs: controller.prefs))
+        // VoiceOver follows the selection (only work done when an assistive app is running).
+        if assistiveAppRunning, announcedPrimary != controller.selection.primary {
+            announcedPrimary = controller.selection.primary
+            if let e = accessibilityTree.element(controller.selection.primary) {
+                NSAccessibility.post(element: e, notification: .focusedUIElementChanged)
+                NSAccessibility.post(element: self, notification: .selectedChildrenChanged)
+            }
+        }
         if let s = controller.connect, !announcedConnect {
             announcedConnect = true
             if controller.prefs.bool("accessibility.announceConnect") {
@@ -1799,51 +1875,87 @@ final class FlippedView: NSView {
 final class GridLayer: CALayer {
     var pattern: Theme.Grid = Theme.classic.grid
     var camera = Camera()
+    /// Off for offscreen export, whatever the pattern.
+    var suppressed = false
+    /// What the drawn contents were made for: redraw only when it changes.
+    private var drawn: (step: CGFloat, size: CGSize, pattern: Theme.Grid)?
+
+    /// The grid pattern's cell size on screen, or nil when there's no grid to draw.
+    var step: CGFloat? {
+        let spacing: CGFloat
+        switch pattern {
+        case .none: return nil
+        case .dots(_, let s), .lines(_, let s): spacing = s
+        }
+        let step = spacing * camera.zoom
+        // Denser than this the grid is only noise (and costly to draw at 5k-topic zoom levels).
+        return step >= 12 ? step : nil
+    }
+
+    /// Covers `viewBounds` plus one cell each side, shifted by the camera's offset modulo
+    /// the cell, so panning only moves the layer (M10: no redraw per scroll step).
+    func place(in viewBounds: CGRect, force: Bool = false) {
+        guard let step, !suppressed else {
+            if !isHidden { isHidden = true }
+            return
+        }
+        if isHidden { isHidden = false }
+        func phase(_ v: CGFloat) -> CGFloat {
+            let r = v.truncatingRemainder(dividingBy: step)
+            return r < 0 ? r + step : r
+        }
+        let size = CGSize(width: viewBounds.width + 2 * step, height: viewBounds.height + 2 * step)
+        frame = CGRect(
+            x: viewBounds.minX + phase(camera.offset.x) - step, y: viewBounds.minY + phase(camera.offset.y) - step,
+            width: size.width, height: size.height)
+        if force || drawn?.step != step || drawn?.size != size || drawn?.pattern != pattern {
+            drawn = (step, size, pattern)
+            setNeedsDisplay()
+        }
+    }
 
     override func draw(in ctx: CGContext) {
-        let spacing: CGFloat
         let color: RGBA
         let lines: Bool
         switch pattern {
         case .none: return
-        case .dots(let c, let s):
-            (color, spacing, lines) = (c, s, false)
-        case .lines(let c, let s):
-            (color, spacing, lines) = (c, s, true)
+        case .dots(let c, _): (color, lines) = (c, false)
+        case .lines(let c, _): (color, lines) = (c, true)
         }
-        let step = spacing * camera.zoom
-        guard step >= 8 else { return }
+        guard let step else { return }
         ctx.setFillColor(color.cgColor)
         ctx.setStrokeColor(color.cgColor)
-        let startX = camera.offset.x.truncatingRemainder(dividingBy: step) - step
-        let startY = camera.offset.y.truncatingRemainder(dividingBy: step) - step
         if lines {
             ctx.setLineWidth(1)
-            var x = startX
-            while x < bounds.maxX + step {
+            var x: CGFloat = 0
+            while x <= bounds.maxX {
                 ctx.move(to: CGPoint(x: x, y: 0))
                 ctx.addLine(to: CGPoint(x: x, y: bounds.maxY))
                 x += step
             }
-            var y = startY
-            while y < bounds.maxY + step {
+            var y: CGFloat = 0
+            while y <= bounds.maxY {
                 ctx.move(to: CGPoint(x: 0, y: y))
                 ctx.addLine(to: CGPoint(x: bounds.maxX, y: y))
                 y += step
             }
             ctx.strokePath()
         } else {
-            let r = max(0.8, min(1.3, camera.zoom))
-            var y = startY
-            while y < bounds.maxY + step {
-                var x = startX
-                while x < bounds.maxX + step {
-                    ctx.addEllipse(in: CGRect(x: x - r / 2, y: y - r / 2, width: r, height: r))
+            // Dots this small read the same as squares; one fill call for all of them.
+            let r = max(0.9, min(1.3, camera.zoom))
+            var rects: [CGRect] = []
+            rects.reserveCapacity(Int((bounds.width / step + 1) * (bounds.height / step + 1)))
+            var y: CGFloat = 0
+            while y <= bounds.maxY {
+                var x: CGFloat = 0
+                while x <= bounds.maxX {
+                    rects.append(CGRect(x: x - r / 2, y: y - r / 2, width: r, height: r))
                     x += step
                 }
                 y += step
             }
-            ctx.fillPath()
+            ctx.setShouldAntialias(false)
+            ctx.fill(rects)
         }
     }
 }

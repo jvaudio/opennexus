@@ -25,8 +25,8 @@ struct CoachKey: View {
             default: Color(hex: "#C9C9D2")
             }
         HStack(spacing: 6) {
-            Text(label).font(.system(size: large ? 22 : 17, weight: .semibold, design: .rounded))
-            if state == .success { Text("✓").font(.system(size: large ? 20 : 16, weight: .bold)) }
+            Text(label).font(.chrome(large ? 22 : 17, weight: .semibold, design: .rounded))
+            if state == .success { Text("✓").font(.chrome(large ? 20 : 16, weight: .bold)) }
         }
         .foregroundStyle(Color(hex: "#25252B"))
         .padding(.horizontal, large ? 18 : 14)
@@ -64,12 +64,12 @@ struct TourCoachView: View {
                     }
                 }
                 if case .wrong(let what) = t.coach {
-                    Text(what).font(.system(size: 12.5, weight: .medium)).foregroundStyle(Color(hex: "#8A5A00"))
+                    Text(what).font(.chrome(12.5, weight: .medium)).foregroundStyle(Color(hex: "#8A5A00"))
                 }
-                Text(s.prompt).font(.system(size: large ? 15 : 13)).foregroundStyle(.secondary)
+                Text(s.prompt).font(.chrome(large ? 15 : 13)).foregroundStyle(.secondary)
             }
             .padding(10)
-            .animation(.snappy(duration: 0.2), value: t.coach)
+            .animation(UIMotion.animation(.snappy(duration: 0.2)), value: t.coach)
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Tour: \(s.prompt)")
         }
@@ -95,7 +95,7 @@ struct TourOverlay: View {
 
     func bar(_ t: TourController) -> some View {
         HStack(spacing: 14) {
-            Text("\(t.lesson + 1) · \(t.lessons[t.lesson].title)").font(.system(size: 13.5, weight: .semibold))
+            Text("\(t.lesson + 1) · \(t.lessons[t.lesson].title)").font(.chrome(13.5, weight: .semibold))
             dots(t)
             Button("Skip lesson") { t.skipLesson() }.buttonStyle(.link)
             Button("Pause") { t.pause() }.buttonStyle(.link)
@@ -118,8 +118,8 @@ struct TourOverlay: View {
     func pill(_ t: TourController) -> some View {
         HStack(spacing: 10) {
             Circle().fill(Color(hex: "#5850EC")).frame(width: 8, height: 8)
-            Text("Tour paused · lesson \(t.lesson + 1) of \(t.lessons.count)").font(.system(size: 14))
-            Button("Resume") { t.resume() }.buttonStyle(.link).font(.system(size: 14, weight: .semibold))
+            Text("Tour paused · lesson \(t.lesson + 1) of \(t.lessons.count)").font(.chrome(14))
+            Button("Resume") { t.resume() }.buttonStyle(.link).font(.chrome(14, weight: .semibold))
         }
         .padding(.horizontal, 16).frame(height: 40)
         .background(
@@ -134,10 +134,10 @@ struct TourOverlay: View {
         ]
         return VStack(alignment: .leading, spacing: 22) {
             HStack {
-                Text("You built your first map in \(t.elapsedText)").font(.system(size: 26, weight: .bold))
+                Text("You built your first map in \(t.elapsedText)").font(.chrome(26, weight: .bold))
                     .foregroundStyle(.white)
                 Spacer()
-                Text("FINISH").font(.system(size: 12, weight: .semibold, design: .monospaced)).foregroundStyle(
+                Text("FINISH").font(.chrome(12, weight: .semibold, design: .monospaced)).foregroundStyle(
                     .white.opacity(0.6))
             }
             LazyVGrid(
@@ -146,22 +146,22 @@ struct TourOverlay: View {
             ) {
                 ForEach(keys, id: \.0) { k, label in
                     HStack(spacing: 8) {
-                        Text(k).font(.system(size: 12, weight: .medium, design: .monospaced)).foregroundStyle(.white)
+                        Text(k).font(.chrome(12, weight: .medium, design: .monospaced)).foregroundStyle(.white)
                             .padding(.horizontal, 6).frame(height: 24)
                             .background(RoundedRectangle(cornerRadius: 5).fill(Color.white.opacity(0.12)))
-                        Text(label).font(.system(size: 15)).foregroundStyle(.white.opacity(0.9))
+                        Text(label).font(.chrome(15)).foregroundStyle(.white.opacity(0.9))
                     }
                 }
             }
             HStack(alignment: .bottom) {
                 Text("Hold ⌘ any time to see these again. Your tutorial map stays as your first document.")
-                    .font(.system(size: 15)).foregroundStyle(.white.opacity(0.75)).fixedSize(
+                    .font(.chrome(15)).foregroundStyle(.white.opacity(0.75)).fixedSize(
                         horizontal: false, vertical: true)
                 Spacer(minLength: 20)
                 Button {
                     t.end()
                 } label: {
-                    Text("Keep mapping ↩").font(.system(size: 15, weight: .semibold)).foregroundStyle(.black)
+                    Text("Keep mapping ↩").font(.chrome(15, weight: .semibold)).foregroundStyle(.black)
                         .padding(.horizontal, 22).frame(height: 40)
                         .background(RoundedRectangle(cornerRadius: 10).fill(Color.white))
                 }
@@ -184,17 +184,17 @@ struct TipView: View {
     var body: some View {
         if let tip = controller.tip {
             HStack(spacing: 10) {
-                Text("Faster:").font(.system(size: 14, weight: .medium))
-                Text(tip.keys).font(.system(size: 12, weight: .medium, design: .monospaced))
+                Text("Faster:").font(.chrome(14, weight: .medium))
+                Text(tip.keys).font(.chrome(12, weight: .medium, design: .monospaced))
                     .padding(.horizontal, 6).frame(height: 22)
                     .overlay(RoundedRectangle(cornerRadius: 5).stroke(.separator))
-                Text(tip.does).font(.system(size: 14))
+                Text(tip.does).font(.chrome(14))
                 Button("Don’t show tips") {
                     controller.prefs.set("general.tips", false)
                     controller.tip = nil
                 }
                 .buttonStyle(.link)
-                .font(.system(size: 13))
+                .font(.chrome(13))
                 .padding(.leading, 12)
             }
             .padding(.horizontal, 16).frame(height: 44)
@@ -228,11 +228,11 @@ struct EmptyCanvasHints: View {
 
     func hint(_ k: String, _ t: String) -> some View {
         HStack(spacing: 6) {
-            Text(k).font(.system(size: 13, weight: .medium, design: .monospaced)).padding(.horizontal, 7).frame(
+            Text(k).font(.chrome(13, weight: .medium, design: .monospaced)).padding(.horizontal, 7).frame(
                 height: 24
             )
             .overlay(RoundedRectangle(cornerRadius: 5).stroke(.separator))
-            Text(t).font(.system(size: 13)).foregroundStyle(.secondary)
+            Text(t).font(.chrome(13)).foregroundStyle(.secondary)
         }
     }
 }

@@ -37,7 +37,7 @@ public struct QuickCaptureView: View {
                 AppMarkGlyph().frame(width: 18, height: 18).alignmentGuide(.firstTextBaseline) { $0[.bottom] - 3 }
                 TextField("Jot an idea", text: $model.text, axis: .vertical)
                     .textFieldStyle(.plain)
-                    .font(.system(size: 21, weight: .regular))
+                    .font(.chrome(21, weight: .regular))
                     .lineLimit(1...6)
                     .focused($focused)
                     .onSubmit { model.save() }
@@ -56,7 +56,7 @@ public struct QuickCaptureView: View {
                 Spacer(minLength: 12)
                 Text("↩ save · ⇥ choose map").foregroundStyle(.secondary)
             }
-            .font(.system(size: 13))
+            .font(.chrome(13))
         }
         .padding(.horizontal, 22).padding(.vertical, 18)
         .frame(width: 560, alignment: .leading)

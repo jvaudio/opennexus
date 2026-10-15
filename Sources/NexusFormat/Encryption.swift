@@ -99,7 +99,11 @@ public enum PackageCrypto {
             let e = o["encryption"]?.objectValue, case .string(let salt)? = e["salt"], let s = Data(base64Encoded: salt)
         else { return nil }
         var iterations = PackageCrypto.iterations
-        if case .number(let n)? = e["iterations"] { iterations = Int(n) }
+        // Bounded, so a damaged manifest can't make opening hang (or trap converting).
+        if case .number(let n)? = e["iterations"] {
+            guard n.isFinite, n >= 1, n <= 10_000_000 else { return nil }
+            iterations = Int(n)
+        }
         var hint: String?
         if case .string(let h)? = o["hint"] { hint = h }
         return Info(salt: s, iterations: iterations, hint: hint)

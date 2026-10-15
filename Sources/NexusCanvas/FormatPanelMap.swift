@@ -137,7 +137,7 @@ struct MapTab: View {
             accessory: {
                 Button("All \(Skeleton.gallery.count) ›") { showingGallery = true }
                     .buttonStyle(.plain)
-                    .font(.system(size: 12))
+                    .font(.chrome(12))
                     .foregroundStyle(Color.accentColor)
             }
         ) {
@@ -167,7 +167,7 @@ struct MapTab: View {
                 } content: {
                     VStack(spacing: 4) {
                         PathIcon(d: s.icon, lineWidth: 1.4).frame(width: 52, height: 36)
-                        if labels { Text(s.name).font(.system(size: 11)).lineLimit(1) }
+                        if labels { Text(s.name).font(.chrome(11)).lineLimit(1) }
                     }
                 }
                 .help(s.name)
@@ -181,7 +181,7 @@ struct MapTab: View {
             "Node style", key: "nodestyle",
             accessory: {
                 Text("\(controller.bindings(for: .cycleNodeStyle).first?.glyphs ?? "") cycles")
-                    .font(.system(size: 11)).foregroundStyle(.secondary)
+                    .font(.chrome(11)).foregroundStyle(.secondary)
             }
         ) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
@@ -191,7 +191,7 @@ struct MapTab: View {
                     } content: {
                         VStack(spacing: 6) {
                             NodeStyleSwatch(style: ns, theme: controller.theme).frame(width: 48, height: 16)
-                            Text(ns.name).font(.system(size: 11))
+                            Text(ns.name).font(.chrome(11))
                         }
                     }
                     .help(ns.summary)
@@ -214,7 +214,7 @@ struct MapTab: View {
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 7)
                                         .strokeBorder(style.theme == t.id ? Color.accentColor : .clear, lineWidth: 2))
-                            Text(t.name).font(.system(size: 10)).lineLimit(1)
+                            Text(t.name).font(.chrome(10)).lineLimit(1)
                         }
                     }
                     .buttonStyle(.plain)
@@ -223,12 +223,12 @@ struct MapTab: View {
                 }
             }
             if !lib.themes.isEmpty {
-                Text("CUSTOM THEMES").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary).padding(
+                Text("CUSTOM THEMES").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary).padding(
                     .top, 6)
                 ForEach(lib.themes) { t in
                     HStack {
                         ThemeSwatch(theme: t).frame(width: 18, height: 18).clipShape(Circle())
-                        Text(t.name).font(.system(size: 13))
+                        Text(t.name).font(.chrome(13))
                         Spacer()
                         Button("Edit") { editingTheme = t }.buttonStyle(.plain).foregroundStyle(.secondary)
                         Button("Rename") {
@@ -241,7 +241,7 @@ struct MapTab: View {
                         Button("Delete") { controller.deleteTheme(t.id) }.buttonStyle(.plain).foregroundStyle(
                             .secondary)
                     }
-                    .font(.system(size: 11))
+                    .font(.chrome(11))
                 }
             }
             HStack {
@@ -315,7 +315,7 @@ struct MapTab: View {
                         setStyle("Single Colour") { $0.singleColor = hex }
                     }
                 )
-                .font(.system(size: 12))
+                .font(.chrome(12))
             }
             PanelRow(label: "Reshuffle") {
                 Button {
@@ -326,7 +326,7 @@ struct MapTab: View {
                 .buttonStyle(.plain)
             }
             HStack {
-                Text("MY COLOURS").font(.system(size: 11, weight: .semibold)).foregroundStyle(.secondary)
+                Text("MY COLOURS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
                 Spacer()
                 Button {
                     editingPalette = ColorPalette(
@@ -360,7 +360,7 @@ struct MapTab: View {
             }
             .frame(width: 150, height: 18)
             .clipShape(RoundedRectangle(cornerRadius: 4))
-            Text(name).font(.system(size: 13))
+            Text(name).font(.chrome(13))
             Spacer()
         }
         .padding(6)
@@ -559,7 +559,7 @@ struct DataTab: View {
                 HStack {
                     TextField("key", text: Binding(get: { f.key }, set: { v in update { $0[i].key = v } }))
                         .textFieldStyle(.roundedBorder)
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(.chrome(12, design: .monospaced))
                         .frame(width: 100)
                     TextField("value", text: Binding(get: { f.value }, set: { v in update { $0[i].value = v } }))
                         .textFieldStyle(.roundedBorder)
@@ -586,10 +586,10 @@ struct DataTab: View {
         PanelSection("Links & attachments", key: "links") {
             let n = controller.canvas.nodes[controller.selection.primary]
             if let link = n?.link {
-                Text(link).font(.system(size: 12)).lineLimit(1).truncationMode(.middle)
+                Text(link).font(.chrome(12)).lineLimit(1).truncationMode(.middle)
             } else {
                 Text("Add a hyperlink with ⇧⌘K or drop a file on the topic.")
-                    .font(.system(size: 12)).foregroundStyle(.secondary)
+                    .font(.chrome(12)).foregroundStyle(.secondary)
             }
         }
     }

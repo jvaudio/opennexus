@@ -73,23 +73,27 @@ public enum NexusPackage {
         var m = try ObjectReader(manifestJSON, path: "manifest")
         let format = try m.optionalString("format") ?? ""
         guard format == DocumentModel.formatName else { throw ReadError.notOpenNexus(format) }
-        let version = Int(try m.optionalDouble("schemaVersion") ?? 1)
+        let version = try m.optionalInt("schemaVersion", in: 0...1_000_000) ?? 1
         guard version <= DocumentModel.schemaVersion else { throw ReadError.newerSchema(version) }
         _ = try m.optionalString("app")
         let encrypted = try m.bool("encrypted", default: false)
         let order = try m.strings("canvases").map { CanvasID($0) }
 
         var canvases: [Canvas] = []
+        var repairs: [String] = []
+        guard Set(order).count == order.count else { throw ReadError.invalid("The manifest lists a canvas twice.") }
         for id in order {
             let path = "canvases/\(id.rawValue).json"
             guard let data = files[path] else { throw ReadError.missingFile(path) }
-            let canvas = try Canvas(json: try parse(data, path), path: id.rawValue)
+            var canvas = try Canvas(json: try parse(data, path), path: id.rawValue)
             guard canvas.id == id else { throw ReadError.invalid("\(path) has id \(canvas.id)") }
+            repairs += canvas.repair().map { "\(path): \($0)" }
             canvases.append(canvas)
         }
         guard !canvases.isEmpty else { throw ReadError.invalid("The document has no canvases.") }
 
         var doc = DocumentModel(canvases: canvases)
+        doc.repairs = repairs
         doc.encrypted = encrypted
         doc.manifestExtra = m.leftovers
         if let t = files["theme.json"] { doc.theme = try parse(t, "theme.json") }
