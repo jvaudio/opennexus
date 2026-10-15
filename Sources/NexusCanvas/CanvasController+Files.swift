@@ -662,9 +662,10 @@ extension CanvasController {
             let topics = im.canvases.reduce(0) { $0 + $1.nodes.count }
             let detail: String =
                 switch fmt {
-                case .nexus?: "\(topics) topics · \(im.canvases.count) canvas\(im.canvases.count == 1 ? "" : "es")"
+                case .nexus?:
+                    "\(topics) \(topics == 1 ? "topic" : "topics") · \(im.canvases.count) canvas\(im.canvases.count == 1 ? "" : "es")"
                 case .markdown?: "\(im.canvases.first.map { $0.nodes.count - 1 } ?? 0) headings"
-                default: "\(topics) topics · \(fmt?.title ?? "") import"
+                default: "\(topics) \(topics == 1 ? "topic" : "topics") · \(fmt?.title ?? "") import"
                 }
             let kind: String =
                 switch fmt {

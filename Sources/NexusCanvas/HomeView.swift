@@ -55,7 +55,7 @@ public final class HomeModel {
                 case .threatModel:
                     "Threat Model · \(doc.canvases.values.reduce(0) { $0 + Stride.threats($1).filter { $0.status.lowercased() == "open" }.count }) open threats"
                 case .dfd: "Data Flow · \(doc.canvases.count) canvas\(doc.canvases.count == 1 ? "" : "es")"
-                default: "\(HomeView.typeName(type)) · \(topics) topics"
+                default: "\(HomeView.typeName(type)) · \(topics) \(topics == 1 ? "topic" : "topics")"
                 }
             let date =
                 (try? url.resourceValues(forKeys: [.contentModificationDateKey]).contentModificationDate)

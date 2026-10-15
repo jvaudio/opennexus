@@ -798,7 +798,7 @@ struct ImportReportView: View {
                 if r.format == "Xmind" {
                     XmindSwitcherCard(
                         report:
-                            "Import report: \(r.topics) topics, \(r.notConverted) item\(r.notConverted == 1 ? "" : "s") not converted"
+                            "Import report: \(r.topics) \(r.topics == 1 ? "topic" : "topics"), \(r.notConverted) item\(r.notConverted == 1 ? "" : "s") not converted"
                     )
                 }
             }
@@ -883,7 +883,9 @@ struct SnapshotsSheetView: View {
                                     VStack(alignment: .leading, spacing: 2) {
                                         Text(s.date.formatted(date: .abbreviated, time: .standard)).font(
                                             .chrome(14.5))
-                                        Text("\(s.topics) topics\(s.encrypted ? " · encrypted" : "")").font(
+                                        Text(
+                                            "\(s.topics) \(s.topics == 1 ? "topic" : "topics")\(s.encrypted ? " · encrypted" : "")"
+                                        ).font(
                                             .chrome(12.5)
                                         ).foregroundStyle(.secondary)
                                     }

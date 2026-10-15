@@ -284,7 +284,9 @@ private struct RecoveryList: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(s.date.formatted(date: .abbreviated, time: .shortened)).font(
                                 .chrome(13.5, weight: .medium))
-                            Text("Crash recovery · \(s.topics) topics\(s.encrypted ? " · encrypted" : "")").font(
+                            Text(
+                                "Crash recovery · \(s.topics) \(s.topics == 1 ? "topic" : "topics")\(s.encrypted ? " · encrypted" : "")"
+                            ).font(
                                 .chrome(12.5)
                             ).foregroundStyle(.secondary)
                         }
