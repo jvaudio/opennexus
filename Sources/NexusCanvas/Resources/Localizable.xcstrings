@@ -3709,6 +3709,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Tutorial" : {
+      "comment" : "UI text (TourViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Typing" : {
       "comment" : "Settings section",
       "extractionState" : "migrated"

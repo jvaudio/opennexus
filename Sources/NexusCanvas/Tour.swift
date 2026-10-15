@@ -46,6 +46,8 @@ public final class TourController {
     public private(set) var streak = 0
     @ObservationIgnored weak var controller: CanvasController?
     @ObservationIgnored var edgesAtStart = 0
+    /// The central topic's text when the tour began: lesson 1 needs a name the user typed.
+    @ObservationIgnored var initialRootText = ""
 
     public static let structural: Set<CommandID> = [
         .addChild, .addSiblingAfter, .addSiblingBefore, .addParent, .commitAndAddChild, .commitAndAddParent, .delete,
@@ -119,6 +121,7 @@ public final class TourController {
         controller = c
         c.tour = self
         started = Date()
+        initialRootText = c.canvas.nodes[c.canvas.root]?.text ?? ""
         if !c.ai.availability.canRun {
             c.ai = ScriptedEngine(defaultIdeas: Self.ideas(role).map { GhostIdea(text: $0) })
         }
@@ -155,7 +158,10 @@ public final class TourController {
         guard !paused, !finished, let s = current, let c = controller else { return }
         switch s.check {
         case .rootNamed?:
-            if c.mode == .select, !(c.canvas.nodes[c.canvas.root]?.text.isEmpty ?? true) { advance() }
+            let name = c.canvas.nodes[c.canvas.root]?.text ?? ""
+            // An empty commit brings back the central topic's default text: not a name.
+            let placeholder = CanvasController.defaultRootText(c.canvas.type)
+            if c.mode == .select, !name.isEmpty, name != initialRootText, name != placeholder { advance() }
         case .edgeDrawn?:
             if c.canvas.relationships.count > edgesAtStart { advance() }
         case .edgeLabelled?:

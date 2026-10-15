@@ -119,3 +119,19 @@ import Testing
         #expect(h.canvas.validate().isEmpty)
     }
 }
+
+@MainActor
+@Suite struct TourLessonOneTests {
+    /// Committing without typing (the placeholder comes back) doesn't count as naming it.
+    @Test func lessonOneNeedsARealName() {
+        let h = CanvasHarness(model: TemplateLibrary.tourDocument(.engineer))
+        let tour = TourController(role: .engineer)
+        tour.attach(h.controller)
+        h.press("return")
+        #expect(tour.lesson == 0, "an empty commit isn’t a name")
+        h.press("space")
+        h.type("Checkout")
+        h.press("return")
+        #expect(tour.lesson == 1)
+    }
+}

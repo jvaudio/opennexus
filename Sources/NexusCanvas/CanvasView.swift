@@ -1822,6 +1822,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     }
 
     public override func accessibilityChildren() -> [Any]? { accessibilityTree.roots() }
+    /// The canvas is always usable (otherwise VoiceOver reads it as dimmed).
+    public override func isAccessibilityEnabled() -> Bool { true }
     public override func accessibilityCustomRotors() -> [NSAccessibilityCustomRotor] { accessibilityTree.rotors() }
     /// Read when asked (not on every edit): the selection's description.
     public override func accessibilityValue() -> Any? { accessibilityTree.label(controller.selection.primary) }

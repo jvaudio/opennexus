@@ -49,7 +49,8 @@ enum Onboarding {
     static func showWelcome() {
         present(
             WelcomeView(
-                onTour: { showRoles() },
+                // Deferred: the same Return must not also press the role picker's default button.
+                onTour: { DispatchQueue.main.async { MainActor.assumeIsolated { showRoles() } } },
                 onSkip: {
                     finish()
                     NSDocumentController.shared.newDocument(nil)
@@ -69,7 +70,8 @@ enum Onboarding {
                 initial: current,
                 onContinue: { role in
                     Preferences.shared.set("general.role", role.rawValue)
-                    startTour(role)
+                    // Deferred, so the Return that pressed Continue doesn't reach the new map.
+                    DispatchQueue.main.async { MainActor.assumeIsolated { startTour(role) } }
                 },
                 onSkip: { role in
                     Preferences.shared.set("general.role", role.rawValue)

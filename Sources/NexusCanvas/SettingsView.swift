@@ -90,6 +90,9 @@ public struct SettingsView: View {
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                // Read as the pane's name (not "G, General"), found by tests by its id.
+                .accessibilityLabel(Loc.t(p.title))
+                .accessibilityIdentifier("settings.pane.\(p.id)")
                 .accessibilityAddTraits(pane == p.id ? .isSelected : [])
             }
             Spacer()

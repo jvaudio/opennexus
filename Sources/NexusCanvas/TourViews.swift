@@ -103,6 +103,8 @@ struct TourOverlay: View {
         .padding(.horizontal, 16).frame(height: 40)
         .background(Capsule().fill(.regularMaterial))
         .overlay(Capsule().stroke(.separator))
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Tutorial")
     }
 
     func dots(_ t: TourController) -> some View {
@@ -112,7 +114,10 @@ struct TourOverlay: View {
                     .frame(width: i == t.lesson ? 22 : 7, height: 7)
             }
         }
+        // Shapes make no accessibility element of their own: this one is explicit.
+        .accessibilityElement()
         .accessibilityLabel("Lesson \(t.lesson + 1) of \(t.lessons.count)")
+        .accessibilityAddTraits(.updatesFrequently)
     }
 
     func pill(_ t: TourController) -> some View {
