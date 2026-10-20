@@ -8449,7 +8449,7 @@
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
-    "Version details are on the clipboard. Paste them into your report so it’s easy to reproduce. OpenNexus never sends anything itself.\n\n%@" : {
+    "Version details are on the clipboard, and a new GitHub issue is opening in your browser. Paste the details into it so it’s easy to reproduce. OpenNexus never sends anything itself.\n\n%@" : {
       "comment" : "Text with values filled in (AppPreferences.swift)",
       "extractionState" : "migrated"
     },

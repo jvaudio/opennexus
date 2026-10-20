@@ -16,6 +16,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         AppPreferences.shared.showSettings(pane: (sender as? String) ?? "general")
     }
 
+    /// Help › OpenNexus Help opens the README on GitHub in the browser (D140).
+    @objc func showOnlineHelp(_ sender: Any?) {
+        NSWorkspace.shared.open(ProjectLinks.help)
+    }
+
     static func main() {
         let app = NSApplication.shared
         let delegate = AppDelegate()
@@ -174,7 +179,7 @@ enum MainMenu {
         main.addItem(submenu(window))
         NSApp.windowsMenu = window
         let help = NSMenu(title: Loc.t("Help"))
-        help.addItem(item(Loc.t("OpenNexus Help"), #selector(NSApplication.showHelp(_:)), "?"))
+        help.addItem(item(Loc.t("OpenNexus Help"), #selector(AppDelegate.showOnlineHelp(_:)), "?"))
         main.addItem(submenu(help))
         NSApp.helpMenu = help
         return main

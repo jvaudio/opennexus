@@ -185,9 +185,10 @@ final class AppPreferences {
             showInfo(
                 Loc.t("Report an issue"),
                 Loc.f(
-                    "Version details are on the clipboard. Paste them into your report so it’s easy to reproduce. OpenNexus never sends anything itself.\n\n%@",
+                    "Version details are on the clipboard, and a new GitHub issue is opening in your browser. Paste the details into it so it’s easy to reproduce. OpenNexus never sends anything itself.\n\n%@",
                     info)
             )
+            NSWorkspace.shared.open(ProjectLinks.newIssue)
         case "files.openRecovery":
             if let (doc, wc) = frontDocument {
                 wc.controller.snapshots = doc.snapshots
@@ -269,6 +270,12 @@ final class AppPreferences {
 
         THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         """
+}
+
+/// Where Help and Report an issue send people: the project on GitHub (D140).
+enum ProjectLinks {
+    static let help = URL(string: "https://github.com/jvaudio/opennexus#readme")!
+    static let newIssue = URL(string: "https://github.com/jvaudio/opennexus/issues/new")!
 }
 
 enum WhatsNew {
