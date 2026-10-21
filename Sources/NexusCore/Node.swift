@@ -28,21 +28,45 @@ public struct CanvasPoint: Hashable, Sendable, JSONRepresentable {
     }
 }
 
+/// A to-do, and with dates, an owner, progress or dependencies, a task (M11). Every
+/// field but `done` is omitted when unset, so a plain to-do is still `{"done": …}`.
 public struct Todo: Hashable, Sendable, JSONRepresentable {
     public var done: Bool
+    /// First day of work. Calendar dates carry no time or time zone (D142).
+    public var start: TaskDate?
+    /// Last day of work, inclusive. A task with only `due` is a milestone.
+    public var due: TaskDate?
+    public var owner: String?
+    /// Whole percent, 0–100 (nil is 0; see `Canvas.progress(of:)` for the effective value).
+    public var progress: Int?
+    /// Tasks this one waits for (stored on the successor, as Xmind does; D144).
+    public var after: [TaskDependency] = []
     public var extra: [String: JSONValue] = [:]
 
     public init(done: Bool) { self.done = done }
 
+    /// True when the to-do carries planning data, so it shows in the Gantt.
+    public var isScheduled: Bool { start != nil || due != nil }
+
     public init(json: JSONValue, path: String) throws {
         var r = try ObjectReader(json, path: path)
         done = try r.bool("done", default: false)
+        start = try r.optionalString("start").map { try TaskDate(json: $0, path: "\(path).start") }
+        due = try r.optionalString("due").map { try TaskDate(json: $0, path: "\(path).due") }
+        owner = try r.optionalString("owner")
+        progress = try r.optionalInt("progress", in: 0...100)
+        after = try r.array("after").enumerated().map { try TaskDependency(json: $1, path: "\(path).after[\($0)]") }
         extra = r.leftovers
     }
 
     public var json: JSONValue {
         var w = ObjectWriter(extra: extra)
         w.set("done", .bool(done))
+        w.set("start", start?.description)
+        w.set("due", due?.description)
+        w.set("owner", owner)
+        if let progress, progress != 0 { w.set("progress", .number(Double(progress))) }
+        if !after.isEmpty { w.set("after", .array(after.map(\.json))) }
         return w.value
     }
 }

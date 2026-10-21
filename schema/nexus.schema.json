@@ -176,6 +176,30 @@
         "root": {
           "$ref": "#/$defs/id"
         },
+        "schedule": {
+          "description": "The work calendar for tasks and the Gantt (M11). Omitted when it is the default: Monday to Friday, no holidays, non-working days skipped.",
+          "properties": {
+            "holidays": {
+              "items": {
+                "$ref": "#/$defs/date"
+              },
+              "type": "array"
+            },
+            "skipNonWorking": {
+              "type": "boolean"
+            },
+            "workdays": {
+              "items": {
+                "maximum": 7,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "type": "object"
+        },
         "style": {
           "properties": {
             "autoBalance": {
@@ -401,6 +425,36 @@
       },
       "required": [
         "chats"
+      ],
+      "type": "object"
+    },
+    "date": {
+      "description": "A calendar date with no time or time zone.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
+      "type": "string"
+    },
+    "dependency": {
+      "description": "A task this one waits for (M11): the predecessor topic, the kind (finish-to-start by default) and a lag in working days.",
+      "properties": {
+        "lag": {
+          "maximum": 3650,
+          "minimum": -3650,
+          "type": "integer"
+        },
+        "task": {
+          "$ref": "#/$defs/id"
+        },
+        "type": {
+          "enum": [
+            "FS",
+            "SS",
+            "FF",
+            "SF"
+          ]
+        }
+      },
+      "required": [
+        "task"
       ],
       "type": "object"
     },
@@ -647,9 +701,31 @@
           ]
         },
         "todo": {
+          "description": "A to-do; with dates, an owner, progress or dependencies, a task (M11).",
           "properties": {
+            "after": {
+              "items": {
+                "$ref": "#/$defs/dependency"
+              },
+              "type": "array"
+            },
             "done": {
               "type": "boolean"
+            },
+            "due": {
+              "$ref": "#/$defs/date",
+              "description": "Last day of work, inclusive. Only a due date makes a milestone."
+            },
+            "owner": {
+              "type": "string"
+            },
+            "progress": {
+              "maximum": 100,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "start": {
+              "$ref": "#/$defs/date"
             }
           },
           "required": [

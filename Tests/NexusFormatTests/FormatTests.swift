@@ -59,7 +59,78 @@ func launchPlanDocument() -> DocumentModel {
     return DocumentModel(canvases: [c, flow], theme: ["name": "classic"])
 }
 
+/// A small plan with every M11 task field, a dependency of each kind and a custom
+/// work calendar (the TaskPlan golden).
+func taskPlanDocument() -> DocumentModel {
+    var c = Canvas(id: "c1", title: "Release plan", rootText: "Release 2.0")
+    var undo = UndoStack()
+    c.edit("Sample", undo: &undo) { e in
+        let phase = try! e.addChild(of: e.canvas.root, text: "Build")
+        let design = try! e.addChild(of: phase, text: "Design")
+        let code = try! e.addChild(of: phase, text: "Code")
+        let docs = try! e.addChild(of: phase, text: "Docs")
+        let launch = try! e.addChild(of: e.canvas.root, text: "Launch")
+        e.updateTask(design) {
+            $0.start = TaskDate("2026-11-02")
+            $0.due = TaskDate("2026-11-06")
+            $0.owner = "Ana"
+            $0.done = true
+        }
+        e.updateTask(code) {
+            $0.start = TaskDate("2026-11-09")
+            $0.due = TaskDate("2026-11-20")
+            $0.owner = "Sam, Lee"
+            $0.progress = 40
+        }
+        e.updateTask(docs) { $0.start = TaskDate("2026-11-10") }
+        e.updateTask(launch) { $0.due = TaskDate("2026-11-24") }
+        e.update(code) { $0.priority = 1 }
+        try! e.addDependency(code, on: design)
+        try! e.addDependency(docs, on: code, type: .startToStart, lag: 1)
+        try! e.addDependency(launch, on: code, type: .finishToStart, lag: 1)
+        try! e.addDependency(launch, on: docs, type: .finishToFinish)
+        e.updateMeta {
+            $0.schedule.holidays = [TaskDate("2026-11-26")!]
+            $0.schedule.workdays = [1, 2, 3, 4, 5]
+        }
+    }
+    return DocumentModel(canvases: [c], theme: ["name": "classic"])
+}
+
 @Suite struct FormatTests {
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["REGENERATE_FIXTURES"] == "1"))
+    func regenerateTaskPlanFixture() throws {
+        let dir = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/TaskPlan.nexus")
+        try? FileManager.default.removeItem(at: dir)
+        try NexusPackage.write(taskPlanDocument(), to: dir)
+    }
+
+    /// M11: task fields round-trip byte-identically and match the schema.
+    @Test func taskPlanGoldenRoundTrips() throws {
+        let files = try fixtureFiles("TaskPlan")
+        let doc = try NexusPackage.read(files: files)
+        let out = NexusPackage.files(for: doc)
+        #expect(out.keys.sorted() == files.keys.sorted())
+        for (path, data) in files { #expect(out[path] == data, "\(path) changed on round trip") }
+        for (path, data) in NexusPackage.files(for: taskPlanDocument()) where files[path] != nil {
+            #expect(files[path] == data, "\(path) differs from the golden fixture")
+        }
+        let issues = SchemaValidator.bundled.validate(package: files)
+        #expect(issues.isEmpty, "\(issues)")
+        let c = try #require(doc.canvases["c1"])
+        #expect(c.schedule.holidays == [TaskDate("2026-11-26")!])
+        #expect(TaskSchedule(c).violations.isEmpty)
+    }
+
+    @Test func schemaRejectsBadTaskFields() {
+        let v = SchemaValidator.bundled
+        let node: JSONValue = ["text": "a", "kind": "topic", "children": [], "todo": ["done": false, "start": "2/11"]]
+        #expect(!v.validate(node, definition: "node").isEmpty)
+        let dep: JSONValue = ["text": "a", "kind": "topic", "children": [], "todo": ["done": false, "after": [["task": "n1", "type": "XY"]]]]
+        #expect(!v.validate(dep, definition: "node").isEmpty)
+    }
+
     /// Set REGENERATE_FIXTURES=1 to rewrite the golden fixture after an intended format change.
     @Test(.enabled(if: ProcessInfo.processInfo.environment["REGENERATE_FIXTURES"] == "1"))
     func regenerateFixture() throws {

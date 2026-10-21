@@ -33,6 +33,16 @@ import Testing
         _ = try? e.addBoundary(around: [kids[0]], title: "Group")
         _ = try? e.addSummary(over: Array(c.nodes[kids[1]]!.children.prefix(2)), text: "Summary")
         _ = try? e.addCallout(on: kids[2], text: "Callout")
+        // M11 task fields, dependencies and a work calendar.
+        e.updateTask(kids[1]) {
+            $0.start = TaskDate("2026-11-02")
+            $0.due = TaskDate("2026-11-06")
+            $0.owner = "Ana"
+            $0.progress = 30
+        }
+        e.updateTask(kids[2]) { $0.due = TaskDate("2026-11-10") }
+        try? e.addDependency(kids[2], on: kids[1], type: .startToFinish, lag: 2)
+        e.updateMeta { $0.schedule.holidays = [TaskDate("2026-12-25")!] }
         c = e.canvas
         doc.canvases["c1"] = c
         return doc
