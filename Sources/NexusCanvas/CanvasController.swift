@@ -380,6 +380,7 @@ public final class CanvasController {
             }
         }
         if canvas.nodes[selection.primary] == nil { selection = Selection(canvas.root) }
+        if case .zone(let z)? = selectedElement, !canvas.zones.contains(where: { $0.id == z }) { selectedElement = nil }
         if let e = edit, canvas.nodes[e.node] == nil {
             edit = nil
             mode = .select

@@ -63,6 +63,8 @@ extension CanvasController {
             .exportBranchMarkdown: { $0.exportBranch(.markdown) },
             .exportZone: { $0.exportZone() },
             .printZone: { $0.printZone() },
+            .exportZones: { $0.exportEachZone() },
+            .duplicateZone: { $0.duplicateZone() },
             .splitByBranch: { $0.splitByBranch() },
             .newCanvasFromTopic: { $0.newCanvasFromTopic() },
             .duplicateCanvas: { $0.duplicateCanvas() },
@@ -176,7 +178,8 @@ extension CanvasController {
         case .select:
             guard handlers[id] != nil else { return false }
             // Zone commands need a zone: selected, or holding the selected topic.
-            if id == .exportZone || id == .printZone, targetZone == nil { return false }
+            if id == .exportZone || id == .printZone || id == .duplicateZone, targetZone == nil { return false }
+            if id == .exportZones, canvas.zones.isEmpty { return false }
             return canvas.nodes[selection.primary] != nil
         case .edit:
             return editorHandlers[id] != nil
@@ -272,13 +275,14 @@ extension CanvasController {
         create(Loc.t("Add Floating Topic")) { $0.addFloating(at: CanvasPoint(x: p.x, y: p.y)) }
     }
 
-    private func defaultFloatingPoint() -> CGPoint {
+    func defaultFloatingPoint() -> CGPoint {
         let b = scene.bounds
         guard !b.isNull else { return CGPoint(x: 0, y: 160) }
         return CGPoint(x: b.minX + 60, y: b.maxY + 60)
     }
 
     func duplicateBranch() {
+        if case .zone(let id)? = selectedElement { return duplicateZone(id) }
         let target = selection.primary
         perform(Loc.t("Duplicate"), selectionAfter: { Selection($0) }) { try $0.duplicate(target) }
         onReveal?(selection.primary)

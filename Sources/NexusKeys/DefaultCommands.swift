@@ -94,6 +94,7 @@ extension CommandID {
     public static let toggleTodo: CommandID = "marker.todo"
     public static let markerPicker: CommandID = "marker.picker"
     public static let zone: CommandID = "element.zone"
+    public static let duplicateZone: CommandID = "element.duplicateZone"
     public static let bringToFront: CommandID = "element.bringToFront"
     public static let sendToBack: CommandID = "element.sendToBack"
     // Style
@@ -151,6 +152,7 @@ extension CommandID {
     public static let exportBranchMarkdown: CommandID = "file.exportBranchMarkdown"
     public static let exportZone: CommandID = "file.exportZone"
     public static let printZone: CommandID = "file.printZone"
+    public static let exportZones: CommandID = "file.exportZones"
     public static let splitByBranch: CommandID = "file.splitByBranch"
     public static let duplicateCanvas: CommandID = "canvas.duplicate"
     public static let renameCanvas: CommandID = "canvas.rename"
@@ -403,6 +405,7 @@ public enum DefaultCommands {
             C(.toggleTodo, "To-Do", .elements, keys: [k("ctrl+0")], menu: .insert, note: "Strikes through when done"),
             C(.markerPicker, "Markers…", .elements, keys: [k("shift+cmd+m")], menu: .insert),
             C(.zone, "Zone", .elements, keys: [k("opt+cmd+z")], menu: .insert),
+            C(.duplicateZone, "Duplicate Zone", .elements, menu: .insert, note: "⌘D on a selected zone"),
             C(.bringToFront, "Bring to Front", .elements, keys: [k("opt+cmd+]")], menu: .format),
             C(.sendToBack, "Send to Back", .elements, keys: [k("opt+cmd+[")], menu: .format),
         ]
@@ -501,6 +504,7 @@ public enum DefaultCommands {
         C(.exportBranchMarkdown, "Export Branch as Markdown…", .file, menu: .file),
         C(.exportZone, "Export Zone…", .file, menu: .file, note: "The selected zone and its contents"),
         C(.printZone, "Print Zone…", .file, menu: .file, note: "The selected zone and its contents"),
+        C(.exportZones, "Export Each Zone…", .file, menu: .file, note: "One file per zone, or a PDF page per zone"),
         C(.splitByBranch, "Export Split by Main Branch…", .file, scope: .global, menu: .file),
         C(.duplicateCanvas, "Duplicate Canvas", .file, scope: .global, menu: .file),
         C(.renameCanvas, "Rename Canvas…", .file, scope: .global, menu: .file),

@@ -451,6 +451,7 @@ struct ZoneSection: View {
             HStack {
                 Button("Export Zone…") { controller.exportZone(zone.id) }
                 Button("Print Zone…") { controller.printZone(zone.id) }
+                Button("Duplicate") { controller.duplicateZone(zone.id) }
             }
             Button("Remove zone (keep content)") {
                 controller.perform(Loc.t("Remove Zone")) { $0.removeZone(zone.id) }

@@ -40,6 +40,34 @@ extension Canvas {
     }
 }
 
+extension Canvas {
+    /// Zones as a fragment (copy and cut on a selected zone, D196): each zone with its
+    /// members' branches where they sit, plus the boundaries and summaries inside them and
+    /// every relationship that touches the copy. A relationship with an end outside the copy
+    /// travels too; only a paste back into this canvas keeps it. The placeholder root lists
+    /// the members, so a build that predates zone paste pastes their branches as topics.
+    public func zoneFragment(_ ids: [String]) -> Canvas {
+        let picked = zones.filter { ids.contains($0.id) }.map { z in
+            var x = z
+            x.members = z.members.filter { nodes[$0] != nil }
+            return x
+        }
+        let members = picked.flatMap(\.members)
+        var f = fragment(members)
+        // `fragment` attaches its tops; a zone copy keeps them floating where they are.
+        for m in members { f.nodes[m] = nodes[m] }
+        f.floating = members
+        f.zones = picked
+        let inside = Set(f.nodes.keys)
+        let zoneIDs = Set(picked.map(\.id))
+        func within(_ e: RelationshipEnd) -> Bool {
+            e.topic.map(inside.contains) ?? e.zone.map(zoneIDs.contains) ?? false
+        }
+        f.relationships = relationships.filter { within($0.from) || within($0.to) }
+        return f
+    }
+}
+
 extension CanvasEditor {
     /// Copies `src`'s branch at `top` (with fresh ids) under `parent`. Relationships,
     /// boundaries and summaries inside the branch come along. Returns the new top.
@@ -53,30 +81,12 @@ extension CanvasEditor {
         for s in src.summaries where map[s.parent] != nil && map[s.from] != nil && map[s.to] != nil {
             map[s.topic] = map[s.topic] ?? makeNodeID()
         }
-        for (old, new) in map {
-            guard var n = src.nodes[old] else { continue }
-            n.children = n.children.compactMap { map[$0] }
-            if old == top {
-                n.kind = .topic
-                n.position = nil
-            }
-            if let link = n.link, let t = TopicLink.parse(link), t.canvas == src.id, let m = map[t.node] {
-                n.link = TopicLink.make(canvas: canvas.id, node: m)
-            }
-            // Dependencies inside the branch follow it; ones outside survive only within
-            // the same canvas (Duplicate Branch, paste back into the source).
-            if var t = n.todo, !t.after.isEmpty {
-                t.after = t.after.compactMap { d in
-                    if let m = map[d.task] {
-                        var x = d
-                        x.task = m
-                        return x
-                    }
-                    return src.id == canvas.id && canvas.nodes[d.task] != nil ? d : nil
-                }
-                n.todo = t
-            }
-            insert(n, as: new)
+        // Dependencies outside the branch survive only within the same canvas (Duplicate
+        // Branch, paste back into the source).
+        insertCopies(of: src, map, sameCanvas: src.id == canvas.id) { old, n in
+            guard old == top else { return }
+            n.kind = .topic
+            n.position = nil
         }
         let newTop = map[top]!
         update(parent) {
@@ -87,45 +97,142 @@ extension CanvasEditor {
                 $0.children.append(newTop)
             }
         }
+        // A relationship comes along when every end does: a topic, boundary or summary of the
+        // branch (D181). Zones stay behind, and so do relationships to them.
+        copyElements(of: src, nodes: map, relationships: src.relationships, sameCanvas: false)
+        return newTop
+    }
+
+    /// Pastes a zone fragment (`Canvas.zoneFragment`) moved by `dx`, `dy`: each zone gets a
+    /// fresh id, its members land as floating topics at their copied positions plus the
+    /// offset, and relationships follow the copy. One whose other end is outside the copy
+    /// is kept only when `sameCanvas` and that end is still here, as `graft` does for
+    /// dependencies (D196). Returns the new zones' ids.
+    @discardableResult
+    public mutating func pasteZones(_ f: Canvas, by dx: Double, _ dy: Double, sameCanvas: Bool) -> [String] {
+        guard !f.zones.isEmpty else { return [] }
+        let tops = f.zones.flatMap(\.members).filter { f.nodes[$0] != nil }
+        var map: [NodeID: NodeID] = [:]
+        for t in tops { for id in f.subtree(t) { map[id] = makeNodeID() } }
+        for s in f.summaries where map[s.parent] != nil && map[s.from] != nil && map[s.to] != nil {
+            map[s.topic] = map[s.topic] ?? makeNodeID()
+        }
+        let topSet = Set(tops)
+        insertCopies(of: f, map, sameCanvas: sameCanvas) { old, n in
+            guard topSet.contains(old) else { return }
+            let p = n.position ?? CanvasPoint(x: 0, y: 0)
+            n.kind = .floating
+            n.position = CanvasPoint(x: p.x + dx, y: p.y + dy)
+        }
+        var zones: [String: String] = [:]
+        updateMeta { c in
+            for z in f.zones {
+                var x = z
+                x.id = Self.fresh("z", c.zones.map(\.id))
+                x.origin = CanvasPoint(x: z.origin.x + dx, y: z.origin.y + dy)
+                x.members = z.members.compactMap { map[$0] }
+                zones[z.id] = x.id
+                c.zones.append(x)
+            }
+            c.floating.append(contentsOf: tops.compactMap { map[$0] })
+        }
+        copyElements(of: f, nodes: map, zones: zones, relationships: f.relationships, sameCanvas: sameCanvas)
+        return f.zones.compactMap { zones[$0.id] }
+    }
+
+    /// Pastes a zone fragment with the top-left corner of its zones at `origin`.
+    @discardableResult
+    public mutating func pasteZones(_ f: Canvas, at origin: CanvasPoint, sameCanvas: Bool) -> [String] {
+        guard let x = f.zones.map(\.origin.x).min(), let y = f.zones.map(\.origin.y).min() else { return [] }
+        return pasteZones(f, by: origin.x - x, origin.y - y, sameCanvas: sameCanvas)
+    }
+
+    /// Inserts copies of `src`'s nodes under their new ids in `map`, with children, topic
+    /// links and dependencies following the copy. A dependency on a topic outside it
+    /// survives only when `sameCanvas` and that topic is here. `adjust` changes a copy
+    /// before it's inserted (the tops).
+    private mutating func insertCopies(
+        of src: Canvas, _ map: [NodeID: NodeID], sameCanvas: Bool, adjust: (NodeID, inout Node) -> Void
+    ) {
+        for (old, new) in map {
+            guard var n = src.nodes[old] else { continue }
+            n.children = n.children.compactMap { map[$0] }
+            adjust(old, &n)
+            if let link = n.link, let t = TopicLink.parse(link), t.canvas == src.id, let m = map[t.node] {
+                n.link = TopicLink.make(canvas: canvas.id, node: m)
+            }
+            if var t = n.todo, !t.after.isEmpty {
+                t.after = t.after.compactMap { d in
+                    if let m = map[d.task] {
+                        var x = d
+                        x.task = m
+                        return x
+                    }
+                    return sameCanvas && canvas.nodes[d.task] != nil ? d : nil
+                }
+                n.todo = t
+            }
+            insert(n, as: new)
+        }
+    }
+
+    /// Adds copies of `rels` and of the boundaries and summaries wholly inside `map`, with
+    /// fresh ids. A relationship end the copy carries moves to its copy; any other end is
+    /// kept only when `sameCanvas` and it's still here, or the relationship is dropped.
+    private mutating func copyElements(
+        of src: Canvas, nodes map: [NodeID: NodeID], zones: [String: String] = [:], relationships rels: [Relationship],
+        sameCanvas: Bool
+    ) {
         let bounds = src.boundaries.filter { !$0.nodes.isEmpty && $0.nodes.allSatisfy { map[$0] != nil } }
         let sums = src.summaries.filter { map[$0.parent] != nil && map[$0.from] != nil && map[$0.to] != nil }
-        // Relationships come along when every end does: a topic, boundary or summary of the
-        // branch (D181). Zones stay behind, and so do relationships to them.
-        let carried = Set(bounds.map { RelationshipEnd.boundary($0.id) } + sums.map { .summary($0.id) })
-        let rels = src.relationships.filter { r in
-            [r.from, r.to].allSatisfy { $0.topic.map { map[$0] != nil } ?? carried.contains($0) }
-        }
-        if !rels.isEmpty || !bounds.isEmpty || !sums.isEmpty {
-            updateMeta { c in
-                var ends: [RelationshipEnd: RelationshipEnd] = [:]
-                for b in bounds {
-                    var x = b
-                    x.id = Self.fresh("b", c.boundaries.map(\.id))
-                    x.nodes = b.nodes.compactMap { map[$0] }
-                    c.boundaries.append(x)
-                    ends[.boundary(b.id)] = .boundary(x.id)
-                }
-                for s in sums {
-                    var x = s
-                    x.id = Self.fresh("s", c.summaries.map(\.id))
-                    x.parent = map[s.parent]!
-                    x.from = map[s.from]!
-                    x.to = map[s.to]!
-                    x.topic = map[s.topic]!
-                    c.summaries.append(x)
-                    ends[.summary(s.id)] = .summary(x.id)
-                }
-                func moved(_ e: RelationshipEnd) -> RelationshipEnd { e.topic.map { .topic(map[$0]!) } ?? ends[e]! }
-                for r in rels {
-                    var x = r
-                    x.id = Self.fresh("r", c.relationships.map(\.id))
-                    x.from = moved(r.from)
-                    x.to = moved(r.to)
-                    c.relationships.append(x)
-                }
+        guard !rels.isEmpty || !bounds.isEmpty || !sums.isEmpty else { return }
+        updateMeta { c in
+            // New ids by end kind, so an end of any kind can follow its element.
+            var elements: [String: [String: String]] = ["zone": zones]
+            for b in bounds {
+                var x = b
+                x.id = Self.fresh("b", c.boundaries.map(\.id))
+                x.nodes = b.nodes.compactMap { map[$0] }
+                elements["boundary", default: [:]][b.id] = x.id
+                c.boundaries.append(x)
+            }
+            for s in sums {
+                var x = s
+                x.id = Self.fresh("s", c.summaries.map(\.id))
+                x.parent = map[s.parent]!
+                x.from = map[s.from]!
+                x.to = map[s.to]!
+                x.topic = map[s.topic]!
+                elements["summary", default: [:]][s.id] = x.id
+                c.summaries.append(x)
+            }
+            for r in rels {
+                let ends = [r.from, r.to].map { Self.remap($0, nodes: map, elements: elements, in: c, sameCanvas) }
+                guard let from = ends[0], let to = ends[1] else { continue }
+                var x = r
+                x.id = Self.fresh("r", c.relationships.map(\.id))
+                x.from = from
+                x.to = to
+                c.relationships.append(x)
             }
         }
-        return newTop
+    }
+
+    /// One relationship end after a copy: the copied topic or element, else the original
+    /// when `sameCanvas` and it's on `c`, else nil.
+    static func remap(
+        _ end: RelationshipEnd, nodes: [NodeID: NodeID], elements: [String: [String: String]], in c: Canvas,
+        _ sameCanvas: Bool
+    ) -> RelationshipEnd? {
+        switch end {
+        case .topic(let id):
+            if let m = nodes[id] { return .topic(m) }
+        case .zone(let id):
+            if let m = elements["zone"]?[id] { return .zone(m) }
+        case .boundary, .summary:
+            if let m = elements[end.kind]?[end.rawValue] { return RelationshipEnd(kind: end.kind, id: m) }
+        }
+        return sameCanvas && c.has(end) ? end : nil
     }
 
     static func fresh(_ prefix: String, _ used: [String]) -> String {
