@@ -260,7 +260,7 @@ extension CanvasEditor {
     public mutating func toggleMarker(_ id: NodeID, priority n: Int) {
         update(id) {
             if n == 0 {
-                if let t = $0.todo { $0.todo = Todo(done: !t.done) } else { $0.todo = Todo(done: false) }
+                if $0.todo != nil { $0.todo?.done.toggle() } else { $0.todo = Todo(done: false) }
             } else {
                 $0.priority = $0.priority == n ? nil : n
             }

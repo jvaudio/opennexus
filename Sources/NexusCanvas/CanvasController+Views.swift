@@ -4,7 +4,7 @@ import NexusKeys
 import NexusLayout
 import NexusTheme
 
-public enum CanvasViewMode: String, Sendable { case canvas, outline, split }
+public enum CanvasViewMode: String, Sendable { case canvas, outline, split, gantt }
 
 // MARK: Palette & jump (artboard 25)
 

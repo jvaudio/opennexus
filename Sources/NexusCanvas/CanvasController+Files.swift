@@ -13,17 +13,19 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
     case png, jpeg, svg, pdf
     case mermaid, plantuml, drawio, json, opml
     case markdown, word, powerpoint, keynote, csv, excel
+    case ganttPNG, ganttJPEG, ganttPDF, tasksCSV, ics
 
     public var id: String { rawValue }
 
     public enum Group: String, CaseIterable, Sendable {
-        case visual = "VISUAL", structural = "STRUCTURAL", document = "DOCUMENT"
+        case visual = "VISUAL", structural = "STRUCTURAL", document = "DOCUMENT", tasks = "TASKS"
     }
 
     public var group: Group {
         switch self {
         case .png, .jpeg, .svg, .pdf: .visual
         case .mermaid, .plantuml, .drawio, .json, .opml: .structural
+        case .ganttPNG, .ganttJPEG, .ganttPDF, .tasksCSV, .ics: .tasks
         default: .document
         }
     }
@@ -45,6 +47,11 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
         case .keynote: Loc.t("Keynote")
         case .csv: Loc.t("CSV · threats")
         case .excel: "Excel"
+        case .ganttPNG: Loc.t("Gantt · PNG")
+        case .ganttJPEG: Loc.t("Gantt · JPEG")
+        case .ganttPDF: Loc.t("Gantt · PDF")
+        case .tasksCSV: Loc.t("Tasks · CSV")
+        case .ics: Loc.t("Calendar")
         }
     }
 
@@ -65,13 +72,22 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
         case .keynote: "key"
         case .csv: "csv"
         case .excel: "xlsx"
+        case .ganttPNG: "png"
+        case .ganttJPEG: "jpg"
+        case .ganttPDF: "pdf"
+        case .tasksCSV: "csv"
+        case .ics: "ics"
         }
     }
 
     /// The written file's extension (Keynote opens the .pptx; D74).
     public var fileExt: String { self == .keynote ? "pptx" : self == .json ? "json" : ext }
 
-    public var isText: Bool { [.svg, .mermaid, .plantuml, .drawio, .json, .opml, .markdown, .csv].contains(self) }
+    public var isText: Bool {
+        [.svg, .mermaid, .plantuml, .drawio, .json, .opml, .markdown, .csv, .tasksCSV, .ics].contains(self)
+    }
+    /// The Gantt as an image or PDF (M11).
+    public var isGantt: Bool { [.ganttPNG, .ganttJPEG, .ganttPDF].contains(self) }
     public var isVisual: Bool { group == .visual }
 }
 
@@ -93,6 +109,8 @@ public struct ExportState: Equatable, Sendable {
     public var askMask = false
     /// Settings › Export › Split by main branch (PNG and JPEG).
     public var split = false
+    /// The Gantt's image and PDF options (M11).
+    public var gantt = GanttExporter.Options()
     public init() {}
 }
 
@@ -213,6 +231,8 @@ extension CanvasController {
         case .csv: return CSVFormat.export(c)
         // Tab-separated rows: the preview, and Copy pastes straight into a spreadsheet.
         case .excel: return ExcelFormat.tsv(c)
+        case .tasksCSV: return CSVFormat.export(c, tasksOnly: true)
+        case .ics: return ICSFormat.export(c)
         case .svg: return SVGExporter.export(exportModel(s), canvas: canvasID, s.image, s.svg)
         default: return nil
         }
@@ -234,6 +254,11 @@ extension CanvasController {
     /// The preview image for visual formats (scale 1 for speed; the size line shows the
     /// real output).
     public func exportPreview(_ s: ExportState) -> CGImage? {
+        if s.format.isGantt {
+            var o = s.gantt
+            o.scale = 1
+            return GanttExporter.image(self, exportCanvas(s), o)
+        }
         guard s.format.isVisual || s.format == .word || s.format == .powerpoint || s.format == .keynote else {
             return nil
         }
@@ -242,9 +267,17 @@ extension CanvasController {
         return ImageExporter.image(exportModel(s), canvas: canvasID, o)
     }
 
+    /// The current canvas as exported (masked per Settings).
+    func exportCanvas(_ s: ExportState) -> Canvas { exportModel(s).canvases[canvasID] ?? canvas }
+
     /// "2880 × 1850 px · 412 KB".
     public func exportSizeLine(_ s: ExportState) -> String {
         switch s.format {
+        case .ganttPNG, .ganttJPEG:
+            let size = GanttExporter.pixelSize(self, exportCanvas(s), s.gantt)
+            return Loc.f("%lld × %lld px", Int(size.width), Int(size.height))
+        case .ganttPDF:
+            return Loc.n("%lld task", "%lld tasks", TaskSchedule(exportCanvas(s)).spans.count)
         case .png, .jpeg:
             let size = ImageExporter.pixelSize(exportModel, canvas: canvasID, s.image)
             let bytes = Int(size.width * size.height * (s.format == .png ? 0.33 : 0.12))
@@ -299,6 +332,9 @@ extension CanvasController {
                 }
             }
             return WordFormat.export(m, images: images.mapValues { (png: $0.0, width: $0.1, height: $0.2) })
+        case .ganttPNG: return GanttExporter.data(self, exportCanvas(s), s.gantt)
+        case .ganttJPEG: return GanttExporter.data(self, exportCanvas(s), s.gantt, jpeg: s.jpegQuality)
+        case .ganttPDF: return GanttExporter.pdf(self, exportCanvas(s), s.gantt)
         case .powerpoint, .keynote:
             let slides = SlideExporter.renderSlides(m, canvas: canvasID)
             return SlideExporter.pptx(slides, titles: self.slides.filter { !$0.skipped }.map(\.title))
@@ -356,7 +392,10 @@ extension CanvasController {
         s.remember(in: prefs.defaults)
         let pb = pasteboard
         pb.clearContents()
-        if s.format.isVisual, s.format != .svg {
+        if s.format == .ganttPNG || s.format == .ganttJPEG, let d = GanttExporter.data(self, exportCanvas(s), s.gantt) {
+            pb.setData(d, forType: .png)
+            showToast(Loc.t("Copied image"))
+        } else if s.format.isVisual, s.format != .svg {
             if let img = ImageExporter.image(exportModel, canvas: canvasID, s.image) {
                 pb.setData(ImageExporter.png(img), forType: .png)
                 showToast(Loc.t("Copied image"))
@@ -948,6 +987,9 @@ extension ExportState {
         if let v = d["yaml"] as? Bool { s.yaml = v }
         if let v = d["pretty"] as? Bool { s.prettyJSON = v }
         if let v = d["pdfScope"] as? String { s.pdfScope = v }
+        if let v = d["ganttScale"] as? Double { s.gantt.scale = v }
+        if let v = d["ganttSelection"] as? Bool { s.gantt.selectionOnly = v }
+        if let v = d["ganttPaper"] as? String { s.gantt.paper = v }
         return s
     }
 
@@ -959,7 +1001,8 @@ extension ExportState {
             "background": image.background.rawValue,
             "padding": image.padding, "quality": jpegQuality, "outline": svg.outlineText, "metadata": svg.metadata,
             "headings": markdown.headings, "notes": markdown.notes, "mermaidBlock": markdown.mermaidBlock, "yaml": yaml,
-            "pretty": prettyJSON, "pdfScope": pdfScope,
+            "pretty": prettyJSON, "pdfScope": pdfScope, "ganttScale": gantt.scale,
+            "ganttSelection": gantt.selectionOnly, "ganttPaper": gantt.paper,
         ]
         if let t = image.theme { d["theme"] = t }
         if let f = mermaid { d["flavour"] = f.rawValue }

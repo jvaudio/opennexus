@@ -61,6 +61,19 @@ extension CanvasEditor {
             if let link = n.link, let t = TopicLink.parse(link), t.canvas == src.id, let m = map[t.node] {
                 n.link = TopicLink.make(canvas: canvas.id, node: m)
             }
+            // Dependencies inside the branch follow it; ones outside survive only within
+            // the same canvas (Duplicate Branch, paste back into the source).
+            if var t = n.todo, !t.after.isEmpty {
+                t.after = t.after.compactMap { d in
+                    if let m = map[d.task] {
+                        var x = d
+                        x.task = m
+                        return x
+                    }
+                    return src.id == canvas.id && canvas.nodes[d.task] != nil ? d : nil
+                }
+                n.todo = t
+            }
             insert(n, as: new)
         }
         let newTop = map[top]!

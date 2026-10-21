@@ -203,6 +203,7 @@ extension CanvasEditor {
     /// After topics are deleted, drops or trims elements that pointed at them.
     mutating func cleanUpElements(removed: Set<NodeID>) {
         guard !removed.isEmpty else { return }
+        dropDependencies(on: removed)
         let c = canvas
         let deadSummaries = c.summaries.filter {
             removed.contains($0.parent) || removed.contains($0.from) || removed.contains($0.to)

@@ -38,7 +38,9 @@ public struct NodeFilter: Hashable, Sendable, JSONRepresentable {
         self.hide = hide
     }
 
-    public static let fields = ["type", "risk", "status", "marker", "label", "text", "todo", "note", "ai"]
+    public static let fields = [
+        "type", "risk", "status", "marker", "label", "text", "todo", "note", "ai", "owner", "due", "task",
+    ]
 
     /// Parses one chip: `field: value`, `field = value`, `field != value`, `field ≠ value`,
     /// or plain text (matches topic text).
@@ -69,6 +71,16 @@ public struct NodeFilter: Hashable, Sendable, JSONRepresentable {
         case "todo": return [n.todo.map { $0.done ? "done" : "open" } ?? "none"]
         case "note": return [n.note?.text ?? ""]
         case "ai": return [n.ai ? "yes" : "no"]
+        // M11: `owner: Ana`, `due: overdue` (or `week`, `none`, a date), `task: yes`.
+        case "owner": return [n.todo?.owner ?? ""]
+        case "task": return [n.todo?.isScheduled == true ? "yes" : "no"]
+        case "due":
+            guard let s = canvas.span(of: id) else { return n.todo == nil ? [] : ["none"] }
+            let today = TaskDate.today()
+            var out = [s.finish.description]
+            if n.todo?.done != true && s.finish < today { out.append("overdue") }
+            if s.finish >= today && s.finish.day - today.day < 7 { out.append("week") }
+            return out
         default: return [n.text]
         }
     }

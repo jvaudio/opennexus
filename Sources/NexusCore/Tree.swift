@@ -127,6 +127,11 @@ extension Canvas {
         for r in relationships where nodes[r.from] == nil || nodes[r.to] == nil {
             problems.append("relationship \(r.id) points at a missing node")
         }
+        for (id, n) in nodes {
+            for d in n.todo?.after ?? [] where d.task == id || nodes[d.task] == nil {
+                problems.append("\(id) depends on a missing task \(d.task)")
+            }
+        }
         return problems.sorted()
     }
 }

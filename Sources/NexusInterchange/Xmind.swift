@@ -5,7 +5,8 @@ import NexusFormat
 /// `.xmind` import: Xmind 2020+ ("Zen", `content.json`) and XMind 8 (`content.xml`). The
 /// migration path, so it is tolerant: anything it can't convert goes in the report.
 public enum XmindFormat {
-    public static func parse(_ data: Data, name: String) throws -> Imported {
+    /// Xmind stores task dates as instants; they become calendar days in `timeZone` (D149).
+    public static func parse(_ data: Data, name: String, timeZone: TimeZone = .current) throws -> Imported {
         guard !data.isEmpty else { throw ImportError.empty(name) }
         let files: [String: Data]
         do {
@@ -28,12 +29,12 @@ public enum XmindFormat {
             guard let any = try? JSONSerialization.jsonObject(with: json) else {
                 throw ImportError.invalid(name, "content.json is not valid JSON")
             }
-            var z = Zen(files: files, report: report)
+            var z = Zen(files: files, report: report, zone: timeZone)
             sheets = z.sheets(any)
             report = z.report
             assets = z.assets
         } else if let xml = files["content.xml"] {
-            var x = Legacy(files: files, report: report)
+            var x = Legacy(files: files, report: report, zone: timeZone)
             sheets = try x.sheets(xml, name: name)
             report = x.report
             assets = x.assets
@@ -126,6 +127,7 @@ public enum XmindFormat {
     struct Zen {
         let files: [String: Data]
         var report: ImportReport
+        let zone: TimeZone
         var assets: [String: Data] = [:]
         var groups: [ICanvas.Group] = []
         var summaries: [ICanvas.Brace] = []
@@ -195,7 +197,7 @@ public enum XmindFormat {
             switch p {
             case "org.xmind.ui.skeleton.structure.style", "org.xmind.ui.map.unbalanced", "org.xmind.ui.branch.style":
                 break
-            case _ where p.contains("task"): report.skip("Gantt task dates (not in v1)")
+            case _ where p.contains("task"): report.skip("Gantt chart settings on “\(title)”")
             case _ where p.contains("audio"): report.skip("Audio note on “\(title)” (kept as attachment)")
             default: report.skip("Xmind extension \(p.split(separator: ".").last ?? "")")
             }
@@ -248,7 +250,15 @@ public enum XmindFormat {
             it.structure = XmindFormat.structure(t["structureClass"] as? String)
             if t["numbering"] != nil { report.skip("Numbering format") }
             if t["comments"] != nil { report.skip("Comment") }
-            for e in (t["extensions"] as? [[String: Any]]) ?? [] { ext(e, on: it.text) }
+            for e in (t["extensions"] as? [[String: Any]]) ?? [] {
+                if let p = e["provider"] as? String, p.contains("task"), let content = e["content"] as? [String: Any] {
+                    var task = it.task ?? ITask()
+                    XmindTask.read(content, into: &task, zone: zone, report: &report)
+                    it.task = task
+                } else {
+                    ext(e, on: it.text)
+                }
+            }
             let children = t["children"] as? [String: Any] ?? [:]
             let attached = (children["attached"] as? [[String: Any]]) ?? []
             it.children = attached.map { topic($0) }
@@ -296,6 +306,7 @@ public enum XmindFormat {
     struct Legacy {
         let files: [String: Data]
         var report: ImportReport
+        let zone: TimeZone
         var assets: [String: Data] = [:]
         var groups: [ICanvas.Group] = []
         var summaries: [ICanvas.Brace] = []
@@ -377,7 +388,28 @@ public enum XmindFormat {
             }
             if e.attr("branch") == "folded" { it.folded = true }
             it.structure = XmindFormat.structure(e.attr("structure-class"))
-            if e.kid("extensions") != nil { report.skip("XMind 8 extension (task info, audio)") }
+            for x in e.kid("extensions")?.kids("extension") ?? [] {
+                if x.attr("provider")?.contains("task") == true, let content = x.kid("content") {
+                    var fields: [String: Any] = [:]
+                    for k in content.kids() {
+                        let name = k.localName ?? k.name ?? ""
+                        fields[name] =
+                            k.kids().isEmpty
+                            ? (k.stringValue?.trimmed ?? "")
+                            : k.kids().map { g -> Any in
+                                var o: [String: Any] = [:]
+                                for a in g.attributes ?? [] { o[a.localName ?? a.name ?? ""] = a.stringValue ?? "" }
+                                return o.isEmpty ? (g.stringValue?.trimmed ?? "") : o
+                            }
+                    }
+                    for a in content.attributes ?? [] { fields[a.localName ?? a.name ?? ""] = a.stringValue ?? "" }
+                    var task = it.task ?? ITask()
+                    XmindTask.read(fields, into: &task, zone: zone, report: &report)
+                    it.task = task
+                } else {
+                    report.skip("XMind 8 extension (audio, other)")
+                }
+            }
             var summaryTopics: [XMLElement] = []
             for ts in e.kid("children")?.kids("topics") ?? [] {
                 switch ts.attr("type") {
@@ -403,5 +435,99 @@ public enum XmindFormat {
             }
             return it
         }
+    }
+}
+
+/// Xmind's task extension (`org.xmind.ui.task`, Zen; `org.xmind.ui.taskInfo`, XMind 8), read
+/// tolerantly: key spellings vary between versions (D149).
+enum XmindTask {
+    static func read(_ c: [String: Any], into t: inout ITask, zone: TimeZone, report: inout ImportReport) {
+        var duration: Double?
+        for (key, value) in c.sorted(by: { $0.key < $1.key }) {
+            switch key.lowercased() {
+            case "status": t.done = (value as? String)?.lowercased() == "done" || t.done
+            case "progress":
+                if let p = number(value) { t.progress = Int(max(0, min(100, (p > 1 ? p : p * 100).rounded()))) }
+            case "priority": if let p = number(value), p >= 1, p <= 9 { t.priority = Int(p) }
+            case "start", "startdate", "start-date": t.start = date(value, zone: zone) ?? t.start
+            case "due", "duedate", "due-date", "end", "end-date", "enddate": t.due = date(value, zone: zone) ?? t.due
+            case "duration": duration = number(value)
+            case "assignee", "assignees", "assigned-to", "assignedto", "owner":
+                let names = self.names(value)
+                if !names.isEmpty { t.owner = names.joined(separator: ", ") }
+            case "dependencies", "prerequisite", "prerequisites", "predecessors":
+                t.after += dependencies(value)
+            case "creator", "creatorname": report.skip("Task creator")
+            default: report.skip("Task field “\(key)”")
+            }
+        }
+        if t.due == nil, let s = t.start, let ms = duration, ms > 0, ms < 3.2e11 {
+            let days = max(1, Int((ms / 86_400_000).rounded()))
+            t.due = s.adding(days: days - 1)
+        }
+    }
+
+    static func number(_ v: Any) -> Double? {
+        if let d = v as? Double, d.isFinite { return d }
+        if let n = v as? NSNumber, !(v is Bool) { return n.doubleValue.isFinite ? n.doubleValue : nil }
+        if let s = v as? String, let d = Double(s.trimmed), d.isFinite { return d }
+        return nil
+    }
+
+    /// Epoch milliseconds (number or digits), ISO 8601 with a time, or a plain date.
+    static func date(_ v: Any, zone: TimeZone) -> TaskDate? {
+        if let s = v as? String {
+            let x = s.trimmed
+            if let d = TaskDate(String(x.prefix(10))), x.count == 10 { return d }
+            if x.allSatisfy(\.isNumber), let ms = Double(x) { return epoch(ms, zone) }
+            let iso = ISO8601DateFormatter()
+            for o: ISO8601DateFormatter.Options in [
+                [.withInternetDateTime, .withFractionalSeconds], [.withInternetDateTime],
+            ] {
+                iso.formatOptions = o
+                if let d = iso.date(from: x) { return TaskDate(d, in: zone) }
+            }
+            return TaskDate(String(x.prefix(10)))
+        }
+        return number(v).flatMap { epoch($0, zone) }
+    }
+
+    static func epoch(_ ms: Double, _ zone: TimeZone) -> TaskDate? {
+        // Anything below 1e11 is seconds (before 1973 in milliseconds), as some tools write.
+        let seconds = abs(ms) < 1e11 ? ms : ms / 1000
+        guard abs(seconds) < 2.5e11 else { return nil }
+        return TaskDate(Date(timeIntervalSince1970: seconds), in: zone)
+    }
+
+    static func names(_ v: Any) -> [String] {
+        if let s = v as? String { return s.trimmed.isEmpty ? [] : [s.trimmed] }
+        if let list = v as? [Any] {
+            return list.flatMap { item -> [String] in
+                if let o = item as? [String: Any] {
+                    return [o["name"], o["title"], o["email"], o["id"]].compactMap { $0 as? String }.prefix(1).map(
+                        \.trimmed)
+                }
+                return names(item)
+            }.filter { !$0.isEmpty }
+        }
+        if let o = v as? [String: Any] { return names([o]) }
+        return []
+    }
+
+    static func dependencies(_ v: Any) -> [ITask.Dependency] {
+        if let s = v as? String {
+            return s.split(whereSeparator: { $0 == "," || $0 == " " }).map { ITask.Dependency(ref: String($0)) }
+        }
+        if let list = v as? [Any] {
+            return list.flatMap { item -> [ITask.Dependency] in
+                guard let o = item as? [String: Any] else { return dependencies(item) }
+                guard let ref = (o["id"] ?? o["topicId"] ?? o["taskId"] ?? o["target"]) as? String else { return [] }
+                let type = DependencyType(rawValue: ((o["type"] as? String) ?? "FS").uppercased()) ?? .finishToStart
+                var lag = number(o["lag"] ?? 0) ?? 0
+                if abs(lag) >= 3_600_000 { lag /= 86_400_000 }
+                return [ITask.Dependency(ref: ref, type: type, lag: Int(max(-3650, min(3650, lag.rounded()))))]
+            }
+        }
+        return []
     }
 }

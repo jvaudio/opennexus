@@ -45,6 +45,7 @@ extension CanvasController {
             .showCanvas: { $0.viewMode = .canvas },
             .showOutline: { $0.viewMode = .outline },
             .showSplit: { $0.viewMode = .split },
+            .showGantt: { $0.viewMode = .gantt },
             .aiAcceptAll: { c in if c.ghosts != nil { c.acceptAllGhosts() } else { _ = c.acceptAllStride() } },
             .aiAccept: { $0.acceptGhost() },
             .aiGhosts: { $0.requestGhosts() },
@@ -136,6 +137,7 @@ extension CanvasController {
             h[.priority(n)] = { $0.toggleMarker(n) }
             h[.structure(n)] = { $0.setStructure(Self.structureCycle[n - 1]) }
         }
+        h.merge(taskHandlers) { a, _ in a }
         for n in 1...5 {
             h[.navigationTab(n)] = { c in
                 c.navTab = c.navTab == n ? nil : n
@@ -193,6 +195,11 @@ extension CanvasController {
     }
 
     private func performCommand(_ id: CommandID) -> Bool {
+        // ⌘= and ⌘- step the Gantt's timeline scale while it's showing.
+        if viewMode == .gantt, mode == .select, id == .zoomIn || id == .zoomOut {
+            stepGanttScale(id == .zoomIn ? -1 : 1)
+            return true
+        }
         if let v = viewCommandHandler, v(id) { return true }
         switch mode {
         case .select:

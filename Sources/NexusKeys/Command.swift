@@ -25,6 +25,8 @@ public enum Scope: String, Sendable, CaseIterable, Codable {
     case outline
     /// The find and replace bar.
     case find
+    /// The Gantt view (M11).
+    case gantt
 
     public var title: String {
         switch self {
@@ -34,6 +36,7 @@ public enum Scope: String, Sendable, CaseIterable, Codable {
         case .connect: "Connect"
         case .outline: "Outline"
         case .find: "Find"
+        case .gantt: "Gantt"
         }
     }
 

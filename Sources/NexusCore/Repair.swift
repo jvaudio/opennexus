@@ -148,6 +148,22 @@ extension Canvas {
                     "%lld boundary or zone member that is missing", "%lld boundary or zone members that are missing",
                     trimmed))
         }
+        var badDeps = 0
+        for (id, n) in nodes {
+            guard let after = n.todo?.after, !after.isEmpty else { continue }
+            var seen = Set<NodeID>()
+            let kept = after.filter { d in d.task != id && nodes[d.task] != nil && seen.insert(d.task).inserted }
+            if kept.count != after.count {
+                badDeps += after.count - kept.count
+                nodes[id]?.todo?.after = kept
+            }
+        }
+        if badDeps > 0 {
+            fixes.append(
+                CoreText.n(
+                    "%lld task dependency on a missing or repeated topic",
+                    "%lld task dependencies on missing or repeated topics", badDeps))
+        }
         return fixes
     }
 }

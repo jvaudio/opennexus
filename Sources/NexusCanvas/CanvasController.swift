@@ -154,8 +154,21 @@ public final class CanvasController {
     /// Give keyboard focus back to the canvas (after the prompt bar or a panel field).
     @ObservationIgnored public var onRestoreFocus: (() -> Void)?
 
+    // MARK: Task planning (M11)
+    /// The Task editor (⌃⌘T), while it's open.
+    public internal(set) var taskEditor: TaskEditorState?
+    /// Gantt rows the user collapsed (view state, D146).
+    public internal(set) var ganttCollapsed: Set<NodeID> = []
+    public internal(set) var ganttScale: GanttScale = .day
+    /// The Gantt view has keyboard focus (its key scope is active).
+    @ObservationIgnored public var ganttFocused = false
+    /// Scroll the Gantt so this day shows (Go to Today).
+    @ObservationIgnored public var onGanttScroll: ((TaskDate) -> Void)?
+    /// "Today" for task lines and the Gantt (tests pin it).
+    @ObservationIgnored public var today: TaskDate?
+
     // MARK: Views & navigation (M5)
-    /// Canvas, Outline or Split (⌘1–3).
+    /// Canvas, Outline, Split or Gantt (⌘1–4).
     public var viewMode: CanvasViewMode = .canvas {
         didSet { if viewMode != oldValue { onViewMode?(viewMode) } }
     }
@@ -512,7 +525,7 @@ public final class CanvasController {
 
     public var activeScope: Scope {
         switch mode {
-        case .select: outlineFocused ? .outline : .canvas
+        case .select: viewMode == .gantt && ganttFocused ? .gantt : outlineFocused ? .outline : .canvas
         case .edit: .editor
         case .connect: .connect
         }
@@ -522,8 +535,18 @@ public final class CanvasController {
     public func command(for chord: KeyChord) -> CommandID? {
         // The outline's own keys win there; everything else works as on the canvas.
         if activeScope == .outline, let id = lookup[.outline]?[chord] ?? lookup[.canvas]?[chord] { return id }
+        // The Gantt's own keys win; a few topic commands (to-do, priority, delete, palette,
+        // Task…) work there too. Canvas navigation and creation don't.
+        if activeScope == .gantt {
+            if let id = lookup[.gantt]?[chord] { return id }
+            if let id = lookup[.canvas]?[chord], Self.ganttPassThrough.contains(id) { return id }
+            return lookup[.global]?[chord]
+        }
         return lookup[activeScope]?[chord] ?? lookup[.global]?[chord]
     }
+
+    /// A Gantt-scope command bound to this chord (the Gantt claims these before the menus).
+    public func ganttCommand(for chord: KeyChord) -> CommandID? { lookup[.gantt]?[chord] }
 
     /// Bindings as resolved under the current profile (for menus, hints, cheat sheet).
     public func bindings(for id: CommandID) -> [KeyChord] {

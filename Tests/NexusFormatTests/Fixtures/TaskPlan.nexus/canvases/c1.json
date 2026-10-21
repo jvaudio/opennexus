@@ -1,0 +1,115 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n6"
+      ],
+      "kind": "root",
+      "text": "Release 2.0"
+    },
+    "n2": {
+      "children": [
+        "n3",
+        "n4",
+        "n5"
+      ],
+      "kind": "topic",
+      "text": "Build"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Design",
+      "todo": {
+        "done": true,
+        "due": "2026-11-06",
+        "owner": "Ana",
+        "start": "2026-11-02"
+      }
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "markers": [
+        "priority-1"
+      ],
+      "text": "Code",
+      "todo": {
+        "after": [
+          {
+            "task": "n3"
+          }
+        ],
+        "done": false,
+        "due": "2026-11-20",
+        "owner": "Sam, Lee",
+        "progress": 40,
+        "start": "2026-11-09"
+      }
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Docs",
+      "todo": {
+        "after": [
+          {
+            "lag": 1,
+            "task": "n4",
+            "type": "SS"
+          }
+        ],
+        "done": false,
+        "start": "2026-11-10"
+      }
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "Launch",
+      "todo": {
+        "after": [
+          {
+            "lag": 1,
+            "task": "n4"
+          },
+          {
+            "task": "n5",
+            "type": "FF"
+          }
+        ],
+        "done": false,
+        "due": "2026-11-24"
+      }
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "schedule": {
+    "holidays": [
+      "2026-11-26"
+    ],
+    "workdays": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ]
+  },
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Release plan",
+  "type": "mindmap"
+}

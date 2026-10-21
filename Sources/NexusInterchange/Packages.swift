@@ -1,3 +1,4 @@
+import CryptoKit
 import Foundation
 import NexusCore
 import NexusFormat
@@ -464,22 +465,122 @@ public enum CSVFormat {
     }
 
     /// Threat table on threat models (element, STRIDE category, risk, mitigation, status);
-    /// a task list everywhere else.
-    public static func export(_ c: Canvas) -> String {
+    /// a task list everywhere else, with M11's planning columns. `tasksOnly` lists only
+    /// to-dos (on any canvas).
+    public static func export(_ c: Canvas, tasksOnly: Bool = false) -> String {
         let threats = Stride.threats(c)
-        if c.type == .threatModel || !threats.isEmpty { return Stride.csv(threats) }
-        var out = "Topic,Path,Status,Priority,Labels,Note\n"
+        if !tasksOnly, c.type == .threatModel || !threats.isEmpty { return Stride.csv(threats) }
+        var out = "Topic,Path,Status,Priority,Owner,Start,Due,Working days,Progress,Depends on,Labels,Note\n"
+        let cal = c.workCalendar
         c.walk { id, n, d in
-            guard d > 0 else { return }
+            guard d > 0, !tasksOnly || n.todo != nil else { return }
             let path = c.path(to: id).compactMap { c.nodes[$0]?.text }.joined(separator: " › ")
-            let status = n.todo.map { $0.done ? "done" : "open" } ?? ""
+            let t = n.todo
+            let span = c.span(of: id, calendar: cal)
+            let deps = (t?.after ?? []).compactMap { dep -> String? in
+                guard let name = c.nodes[dep.task]?.text else { return nil }
+                return name + TaskText.dependencySuffix(dep)
+            }
             out +=
                 [
-                    n.text, path, status, n.priority.map { "P\($0)" } ?? "", n.labels.joined(separator: "; "),
-                    n.note?.text ?? "",
+                    n.text, path, t.map { $0.done ? "done" : "open" } ?? "", n.priority.map { "P\($0)" } ?? "",
+                    t?.owner ?? "", t?.start?.description ?? "", t?.due?.description ?? "",
+                    span.map { "\($0.workingDays)" } ?? "", t == nil ? "" : "\(c.progress(of: id))%",
+                    deps.joined(separator: "; "), n.labels.joined(separator: "; "), n.note?.text ?? "",
                 ]
                 .map(field).joined(separator: ",") + "\n"
         }
+        return out
+    }
+}
+
+/// Short text forms shared by the CSV, ICS and Gantt.
+public enum TaskText {
+    /// "" for finish-to-start with no lag, else " (SS +1)".
+    public static func dependencySuffix(_ d: TaskDependency) -> String {
+        if d.type == .finishToStart && d.lag == 0 { return "" }
+        let lag = d.lag == 0 ? "" : d.lag > 0 ? " +\(d.lag)" : " \(d.lag)"
+        return " (\(d.type.rawValue)\(lag))"
+    }
+}
+
+/// Calendar export (RFC 5545): one all-day event per dated task (D148).
+public enum ICSFormat {
+    /// `now` stamps every event (DTSTAMP), so tests pass a fixed date.
+    public static func export(_ c: Canvas, now: Date = Date()) -> String {
+        var lines = [
+            "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//OpenNexus//Tasks//EN", "CALSCALE:GREGORIAN",
+            "METHOD:PUBLISH", "X-WR-CALNAME:" + text(c.title.isEmpty ? (c.nodes[c.root]?.text ?? "") : c.title),
+        ]
+        let stamp = utc(now)
+        let salt = SHA256.hash(data: Data((c.id.rawValue + "\u{0}" + c.title).utf8)).prefix(4)
+            .map { String(format: "%02x", $0) }.joined()
+        let cal = c.workCalendar
+        var rows: [(NodeID, Node)] = []
+        for top in c.tops { c.walk(from: top) { id, n, _ in rows.append((id, n)) } }
+        for (id, n) in rows {
+            guard let t = n.todo, let span = c.span(of: id, calendar: cal) else { continue }
+            let path = c.path(to: id).dropLast().compactMap { c.nodes[$0]?.text }.joined(separator: " › ")
+            var about: [String] = []
+            if !path.isEmpty { about.append(path) }
+            if let o = t.owner { about.append("Owner: \(o)") }
+            about.append("Progress: \(c.progress(of: id))%")
+            let deps = t.after.compactMap { d in c.nodes[d.task].map { $0.text + TaskText.dependencySuffix(d) } }
+            if !deps.isEmpty { about.append("After: " + deps.joined(separator: ", ")) }
+            if let note = n.note?.text, !note.isEmpty { about.append("\n" + note) }
+            lines += [
+                "BEGIN:VEVENT",
+                "UID:\(c.id.rawValue)-\(id.rawValue)-\(salt)@opennexus",
+                "DTSTAMP:\(stamp)",
+                "DTSTART;VALUE=DATE:\(compact(span.start))",
+                "DTEND;VALUE=DATE:\(compact(span.finish.adding(days: 1)))",
+                "SUMMARY:" + text((t.done ? "✓ " : "") + (span.milestone ? "◆ " : "") + n.text),
+                "DESCRIPTION:" + text(about.joined(separator: "\n")),
+            ]
+            if !n.labels.isEmpty { lines.append("CATEGORIES:" + n.labels.map(text).joined(separator: ",")) }
+            if let p = n.priority { lines.append("PRIORITY:\(p)") }
+            lines += ["TRANSP:TRANSPARENT", "END:VEVENT"]
+        }
+        lines.append("END:VCALENDAR")
+        return lines.map(fold).joined(separator: "\r\n") + "\r\n"
+    }
+
+    static func compact(_ d: TaskDate) -> String { d.description.replacingOccurrences(of: "-", with: "") }
+
+    static func utc(_ d: Date) -> String {
+        var cal = Calendar(identifier: .gregorian)
+        cal.timeZone = TimeZone(identifier: "UTC")!
+        let c = cal.dateComponents([.year, .month, .day, .hour, .minute, .second], from: d)
+        return String(
+            format: "%04d%02d%02dT%02d%02d%02dZ", c.year ?? 1970, c.month ?? 1, c.day ?? 1, c.hour ?? 0, c.minute ?? 0,
+            c.second ?? 0)
+    }
+
+    /// TEXT escaping: backslash, semicolon, comma and newlines.
+    static func text(_ s: String) -> String {
+        s.replacingOccurrences(of: "\\", with: "\\\\").replacingOccurrences(of: ";", with: "\\;")
+            .replacingOccurrences(of: ",", with: "\\,").replacingOccurrences(of: "\r\n", with: "\\n")
+            .replacingOccurrences(of: "\n", with: "\\n")
+    }
+
+    /// Folds a content line at 75 octets, never inside a UTF-8 sequence or an escape.
+    static func fold(_ line: String) -> String {
+        var out = ""
+        var octets = 0
+        var pending = ""
+        for ch in line {
+            pending.append(ch)
+            if ch == "\\" && pending == "\\" { continue }
+            let n = pending.utf8.count
+            if octets + n > 75 {
+                out += "\r\n "
+                octets = 1
+            }
+            out += pending
+            octets += n
+            pending = ""
+        }
+        out += pending
         return out
     }
 }
