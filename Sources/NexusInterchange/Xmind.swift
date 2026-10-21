@@ -86,7 +86,8 @@ public enum XmindFormat {
         guard let c = cls else { return nil }
         if c.contains("logic.left") { return .logicLeft }
         if c.contains("logic.right") { return .logicRight }
-        if c.contains("map.unbalanced") || c.contains("map.clockwise") { return .mindmapRight }
+        // Xmind's default mind map (`map.unbalanced`) puts branches on both sides (D169).
+        if c.contains("map.clockwise") { return .mindmapRight }
         if c.contains("map.anticlockwise") { return .mindmapLeft }
         if c.contains("map") { return .mindmapBalanced }
         if c.contains("org-chart") || c.contains("orgchart") { return .orgDown }
@@ -116,10 +117,10 @@ public enum XmindFormat {
         }
     }
 
-    /// `(0,2)` → 0...2 (child indices). Xmind 8 also writes `master` for whole-branch groups.
+    /// `(0,2)` → 0...2 (child indices). `master` (a boundary around the topic's whole
+    /// branch) is handled by the callers.
     static func range(_ s: String?, count: Int) -> ClosedRange<Int>? {
-        guard let s else { return nil }
-        if s == "master" { return count > 0 ? 0...(count - 1) : nil }
+        guard let s, s != "master" else { return nil }
         let nums = s.split { !$0.isNumber }.compactMap { Int($0) }
         guard nums.count == 2, nums[0] <= nums[1], nums[0] >= 0, nums[1] < count else { return nil }
         return nums[0]...nums[1]
@@ -286,6 +287,7 @@ public enum XmindFormat {
                 if let r = XmindFormat.range(b["range"] as? String, count: kidRefs.count) {
                     groups.append(ICanvas.Group(refs: Array(kidRefs[r]), title: (b["title"] as? String) ?? ""))
                 } else if let parent = it.ref, b["range"] as? String == "master" {
+                    // Around the topic and its whole branch.
                     groups.append(ICanvas.Group(refs: [parent], title: (b["title"] as? String) ?? ""))
                 }
             }
@@ -347,7 +349,7 @@ public enum XmindFormat {
             groups = []
             summaries = []
             let rt = s.kid("topic") ?? XMLElement(name: "topic")
-            let root = topic(rt)
+            var root = topic(rt)
             var floating: [ITopic] = []
             for ts in rt.kid("children")?.kids("topics") ?? [] where ts.attr("type") == "detached" {
                 for d in ts.kids("topic") {
@@ -360,6 +362,8 @@ public enum XmindFormat {
                 }
             }
             let structure = XmindFormat.structure(rt.attr("structure-class"))
+            // The central topic's class is the canvas's structure, as in Zen files.
+            root.structure = nil
             let title = s.kid("title")?.stringValue?.trimmed ?? root.text
             var ic = ICanvas(title: title.isEmpty ? root.text : title, root: root)
             ic.structure = structure
@@ -451,6 +455,8 @@ public enum XmindFormat {
             for b in e.kid("boundaries")?.kids("boundary") ?? [] {
                 if let r = XmindFormat.range(b.attr("range"), count: kidRefs.count) {
                     groups.append(ICanvas.Group(refs: Array(kidRefs[r]), title: b.kid("title")?.stringValue ?? ""))
+                } else if let parent = it.ref, b.attr("range") == "master" {
+                    groups.append(ICanvas.Group(refs: [parent], title: b.kid("title")?.stringValue ?? ""))
                 }
             }
             for s in e.kid("summaries")?.kids("summary") ?? [] {

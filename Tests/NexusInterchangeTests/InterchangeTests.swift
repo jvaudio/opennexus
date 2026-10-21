@@ -28,7 +28,7 @@ import Testing
         let c = im.canvases[0]
         func id(_ t: String) -> NodeID { c.nodes.first { $0.value.text == t }!.key }
         #expect(c.nodes[c.root]!.note?.text == "North star: retention.")
-        #expect(c.layout.structure == .mindmapRight)
+        #expect(c.layout.structure == .mindmapBalanced, "Xmind’s default map has branches on both sides")
         #expect(c.nodes[id("Kickoff")]!.markers == ["priority-1"] && c.nodes[id("Kickoff")]!.labels == ["Q1"])
         #expect(c.nodes[id("Owners")]!.markers == ["progress-100"], "Xmind task pies are progress markers")
         #expect(c.nodes[id("Risks")]!.markers == ["flag-red", "progress-50"])

@@ -31,7 +31,7 @@ zen.xmind · Xmind
   "id": "c1",
   "layout": {
     "mode": "auto",
-    "structure": "mindmap.right"
+    "structure": "mindmap.balanced"
   },
   "nodes": {
     "n1": {

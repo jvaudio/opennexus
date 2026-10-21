@@ -11,7 +11,7 @@ import UniformTypeIdentifiers
 
 public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
     case png, jpeg, svg, pdf
-    case mermaid, plantuml, drawio, json, opml
+    case mermaid, plantuml, drawio, json, opml, xmind
     case markdown, word, powerpoint, keynote, csv, excel
     case ganttPNG, ganttJPEG, ganttPDF, tasksCSV, ics
 
@@ -24,7 +24,7 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
     public var group: Group {
         switch self {
         case .png, .jpeg, .svg, .pdf: .visual
-        case .mermaid, .plantuml, .drawio, .json, .opml: .structural
+        case .mermaid, .plantuml, .drawio, .json, .opml, .xmind: .structural
         case .ganttPNG, .ganttJPEG, .ganttPDF, .tasksCSV, .ics: .tasks
         default: .document
         }
@@ -41,6 +41,7 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
         case .drawio: "draw.io"
         case .json: Loc.t("JSON · YAML")
         case .opml: "OPML"
+        case .xmind: "Xmind"
         case .markdown: Loc.t("Markdown")
         case .word: Loc.t("Word")
         case .powerpoint: "PowerPoint"
@@ -66,6 +67,7 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
         case .drawio: "drawio"
         case .json: "json"
         case .opml: "opml"
+        case .xmind: "xmind"
         case .markdown: "md"
         case .word: "docx"
         case .powerpoint: "pptx"
@@ -259,7 +261,10 @@ extension CanvasController {
             o.scale = 1
             return GanttExporter.image(self, exportCanvas(s), o)
         }
-        guard s.format.isVisual || s.format == .word || s.format == .powerpoint || s.format == .keynote else {
+        guard
+            s.format.isVisual || s.format == .word || s.format == .powerpoint || s.format == .keynote
+                || s.format == .xmind
+        else {
             return nil
         }
         var o = s.image
@@ -278,6 +283,9 @@ extension CanvasController {
             return Loc.f("%lld × %lld px", Int(size.width), Int(size.height))
         case .ganttPDF:
             return Loc.n("%lld task", "%lld tasks", TaskSchedule(exportCanvas(s)).spans.count)
+        case .xmind:
+            let r = XmindWriter.report(exportModel(s))
+            return Loc.n("%lld sheet", "%lld sheets", r.sheets) + " · " + Loc.n("%lld topic", "%lld topics", r.topics)
         case .png, .jpeg:
             let size = ImageExporter.pixelSize(exportModel, canvas: canvasID, s.image)
             let bytes = Int(size.width * size.height * (s.format == .png ? 0.33 : 0.12))
@@ -339,9 +347,22 @@ extension CanvasController {
             let slides = SlideExporter.renderSlides(m, canvas: canvasID)
             return SlideExporter.pptx(slides, titles: self.slides.filter { !$0.skipped }.map(\.title))
         case .excel: return ExcelFormat.export(m)
+        case .xmind: return xmindExport(m).data
         default:
             return exportText(s).map { Data($0.utf8) }
         }
+    }
+
+    /// The whole document as an Xmind file (M15), with the first canvas as its thumbnail.
+    func xmindExport(_ m: DocumentModel) -> XmindWriter.Result {
+        var o = ImageExporter.Options()
+        o.scale = 1
+        o.padding = 24
+        let first = m.canvasOrder.first ?? canvasID
+        let r = ImageExporter.contentRect(m, canvas: first, o)
+        o.scale = min(1, 600 / max(Double(r.width), 1))
+        let thumb = ImageExporter.image(m, canvas: first, o).map(ImageExporter.png)
+        return XmindWriter.export(m, thumbnail: thumb)
     }
 
     static func pdfPages(_ images: [CGImage]) -> Data {
@@ -385,6 +406,15 @@ extension CanvasController {
         exportState = nil
         onSaveFile?(data, name + "." + (s.format == .json && s.yaml ? "yaml" : s.format.fileExt))
         if s.format == .keynote { showToast(Loc.t("Keynote opens this .pptx directly")) }
+        if s.format == .xmind {
+            let n = XmindWriter.report(exportModel(s)).notConverted
+            showToast(
+                n == 0
+                    ? Loc.t("Saved for Xmind 2020 or later")
+                    : Loc.f(
+                        "Saved for Xmind 2020 or later · %@",
+                        Loc.n("%lld item not carried over", "%lld items not carried over", n)))
+        }
     }
 
     /// Copy (the sheet's left button): an image or text on the clipboard.

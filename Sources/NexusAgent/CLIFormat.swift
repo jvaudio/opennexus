@@ -6,7 +6,7 @@ import NexusInterchange
 /// `nexus export --to <format>` and the MCP `export` tool. Every format goes through the
 /// app's own exporters (the offscreen canvas for visual formats and draw.io).
 public enum CLIFormat: String, CaseIterable, Sendable {
-    case md, opml, mermaid, plantuml, json, yaml, csv, txt, drawio, svg, png, jpeg, pdf, docx, pptx, xlsx
+    case md, opml, mermaid, plantuml, json, yaml, csv, txt, drawio, svg, png, jpeg, pdf, docx, pptx, xlsx, xmind
 
     /// Also accepted: the file extensions people type.
     public init?(name: String) {
@@ -21,7 +21,7 @@ public enum CLIFormat: String, CaseIterable, Sendable {
 
     public var isText: Bool {
         switch self {
-        case .png, .jpeg, .pdf, .docx, .pptx, .xlsx: false
+        case .png, .jpeg, .pdf, .docx, .pptx, .xlsx, .xmind: false
         default: true
         }
     }
@@ -51,6 +51,7 @@ public enum CLIFormat: String, CaseIterable, Sendable {
         case .docx: .word
         case .pptx: .powerpoint
         case .xlsx: .excel
+        case .xmind: .xmind
         case .txt: nil
         }
     }

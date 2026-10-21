@@ -228,6 +228,24 @@ private struct ExportSheet: View {
         .frame(height: 520)
     }
 
+    /// Xmind (M15): what the file holds, and what doesn't carry over.
+    var xmindOptions: some View {
+        let r = XmindWriter.report(controller.exportModel(state))
+        return VStack(alignment: .leading, spacing: 6) {
+            Text(
+                "Every canvas as an Xmind sheet, for Xmind 2020 or later: topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, the legend and task info."
+            )
+            .font(.chrome(13)).foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
+            if !r.lines.isEmpty {
+                Text("NOT CARRIED OVER").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                    .padding(.top, 4)
+                ForEach(r.lines, id: \.self) { Text("· " + $0).font(.chrome(12.5)) }
+            }
+        }
+        .accessibilityElement(children: .combine)
+    }
+
     func svgAsPNG(_ s: ExportState) -> ExportState {
         var x = s
         x.format = .png
@@ -306,6 +324,8 @@ private struct ExportSheet: View {
                         .chrome(13)
                     ).foregroundStyle(.secondary)
                 }
+            } else if state.format == .xmind {
+                xmindOptions
             } else if state.format == .drawio {
                 Text("Keeps positions and branch colours from the canvas layout.").font(.chrome(13))
                     .foregroundStyle(.secondary)

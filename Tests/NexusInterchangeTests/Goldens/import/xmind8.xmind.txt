@@ -28,7 +28,6 @@ xmind8.xmind · Xmind
         "n5"
       ],
       "kind": "root",
-      "structure": "logic.right",
       "text": "Legacy plan"
     },
     "n2": {

@@ -493,6 +493,30 @@
         }
       }
     },
+    "%lld items not carried over" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Files.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld item not carried over"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld items not carried over"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld items not converted" : {
       "comment" : "Count phrase with plural variants (FileViews.swift)",
       "extractionState" : "migrated",
@@ -794,6 +818,30 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld results"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld sheets" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Files.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld sheet"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld sheets"
                 }
               }
             }
@@ -3929,6 +3977,10 @@
       "comment" : "Settings footnote",
       "extractionState" : "migrated"
     },
+    "Every canvas as an Xmind sheet, for Xmind 2020 or later: topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, the legend and task info." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Every change, always on" : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
@@ -6305,6 +6357,10 @@
       "comment" : "UI text (FormatPanelStride.swift)",
       "extractionState" : "migrated"
     },
+    "NOT CARRIED OVER" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Not started" : {
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
@@ -7775,6 +7831,14 @@
     },
     "SAVED FILTERS" : {
       "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Saved for Xmind 2020 or later" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
+    "Saved for Xmind 2020 or later · %@" : {
+      "comment" : "Text with values filled in (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Saved to %@" : {

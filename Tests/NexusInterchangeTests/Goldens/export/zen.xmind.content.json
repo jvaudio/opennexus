@@ -1,0 +1,236 @@
+[
+  {
+    "class" : "sheet",
+    "extensions" : [
+      {
+        "content" : {
+          "centralTopic" : "org.xmind.ui.map.unbalanced"
+        },
+        "provider" : "org.xmind.ui.skeleton.structure.style"
+      }
+    ],
+    "id" : "sheet-c1",
+    "relationships" : [
+      {
+        "end1Id" : "c1-n2",
+        "end2Id" : "c1-n10",
+        "id" : "c1-r1",
+        "title" : "drives"
+      }
+    ],
+    "rootTopic" : {
+      "children" : {
+        "attached" : [
+          {
+            "boundaries" : [
+              {
+                "id" : "c1-b1",
+                "range" : "(0,1)",
+                "title" : "Prep"
+              }
+            ],
+            "children" : {
+              "attached" : [
+                {
+                  "class" : "topic",
+                  "id" : "c1-n3",
+                  "title" : "Agenda"
+                },
+                {
+                  "class" : "topic",
+                  "id" : "c1-n4",
+                  "markers" : [
+                    {
+                      "markerId" : "task-done"
+                    }
+                  ],
+                  "title" : "Owners"
+                }
+              ]
+            },
+            "class" : "topic",
+            "id" : "c1-n2",
+            "labels" : [
+              "Q1"
+            ],
+            "markers" : [
+              {
+                "markerId" : "priority-1"
+              }
+            ],
+            "title" : "Kickoff"
+          },
+          {
+            "branch" : "folded",
+            "children" : {
+              "attached" : [
+                {
+                  "class" : "topic",
+                  "id" : "c1-n6",
+                  "title" : "Now"
+                },
+                {
+                  "class" : "topic",
+                  "id" : "c1-n7",
+                  "title" : "Next"
+                },
+                {
+                  "class" : "topic",
+                  "id" : "c1-n8",
+                  "title" : "Later"
+                }
+              ],
+              "summary" : [
+                {
+                  "class" : "topic",
+                  "id" : "c1-n13",
+                  "title" : "Sequenced"
+                }
+              ]
+            },
+            "class" : "topic",
+            "extensions" : [
+              {
+                "content" : {
+                  "start" : "1970-01-01T12:00:00Z",
+                  "status" : "todo"
+                },
+                "provider" : "org.xmind.ui.task"
+              }
+            ],
+            "href" : "https://example.com/roadmap",
+            "id" : "c1-n5",
+            "summaries" : [
+              {
+                "id" : "c1-s1",
+                "range" : "(0,2)",
+                "topicId" : "c1-n13"
+              }
+            ],
+            "title" : "Roadmap"
+          },
+          {
+            "children" : {
+              "attached" : [
+                {
+                  "class" : "topic",
+                  "href" : "xmind:#c1-n7",
+                  "id" : "c1-n10",
+                  "title" : "Churn"
+                }
+              ],
+              "callout" : [
+                {
+                  "class" : "topic",
+                  "id" : "c1-n14",
+                  "title" : "Watch closely"
+                }
+              ]
+            },
+            "class" : "topic",
+            "id" : "c1-n9",
+            "image" : {
+              "height" : 60,
+              "src" : "xap:resources/c414cd0e204de974f737.png",
+              "width" : 80
+            },
+            "markers" : [
+              {
+                "markerId" : "flag-red"
+              },
+              {
+                "markerId" : "task-half"
+              }
+            ],
+            "title" : "Risks"
+          }
+        ],
+        "detached" : [
+          {
+            "children" : {
+              "attached" : [
+                {
+                  "class" : "topic",
+                  "id" : "c1-n12",
+                  "title" : "Ideas"
+                }
+              ]
+            },
+            "class" : "topic",
+            "id" : "c1-n11",
+            "position" : {
+              "x" : 300,
+              "y" : -200
+            },
+            "title" : "Parking lot"
+          }
+        ]
+      },
+      "class" : "topic",
+      "id" : "c1-n1",
+      "notes" : {
+        "plain" : {
+          "content" : "North star: retention."
+        },
+        "realHTML" : {
+          "content" : "<div>North star: retention.</div>"
+        }
+      },
+      "structureClass" : "org.xmind.ui.map.unbalanced",
+      "title" : "Strategy 2026"
+    },
+    "title" : "Strategy 2026"
+  },
+  {
+    "class" : "sheet",
+    "extensions" : [
+      {
+        "content" : {
+          "centralTopic" : "org.xmind.ui.org-chart.down"
+        },
+        "provider" : "org.xmind.ui.skeleton.structure.style"
+      }
+    ],
+    "id" : "sheet-c2",
+    "rootTopic" : {
+      "children" : {
+        "attached" : [
+          {
+            "class" : "topic",
+            "id" : "c2-n2",
+            "title" : "Design"
+          },
+          {
+            "class" : "topic",
+            "id" : "c2-n3",
+            "title" : "Engineering"
+          }
+        ]
+      },
+      "class" : "topic",
+      "id" : "c2-n1",
+      "structureClass" : "org.xmind.ui.org-chart.down",
+      "title" : "Team"
+    },
+    "title" : "Org"
+  },
+  {
+    "class" : "sheet",
+    "extensions" : [
+      {
+        "content" : {
+          "centralTopic" : "org.xmind.ui.map.unbalanced"
+        },
+        "provider" : "org.xmind.ui.skeleton.structure.style"
+      }
+    ],
+    "id" : "sheet-c3",
+    "rootTopic" : {
+      "class" : "topic",
+      "id" : "c3-n1",
+      "structureClass" : "org.xmind.ui.map.unbalanced",
+      "title" : "Copy"
+    },
+    "title" : "Copy"
+  }
+]
