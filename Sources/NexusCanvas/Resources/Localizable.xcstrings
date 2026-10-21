@@ -373,6 +373,30 @@
         }
       }
     },
+    "%lld files" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Files.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld file"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld files"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld floating topic entries" : {
       "comment" : "Count phrase with plural variants (Repair.swift)",
       "extractionState" : "migrated",
@@ -1311,6 +1335,10 @@
     },
     "⌘↩ run and keep open" : {
       "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "⌘D on a selected zone" : {
+      "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "⌘K › Mask" : {
@@ -3369,6 +3397,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Cut Zone" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
     "Cycles structure of the branch" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
@@ -3741,6 +3773,10 @@
       "comment" : "UI text (TreeOperations.swift)",
       "extractionState" : "migrated"
     },
+    "Duplicate Zone" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Dynamic Type for sidebars, panels and menus" : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
@@ -3750,6 +3786,10 @@
       "extractionState" : "migrated"
     },
     "Each document’s central topic becomes a branch of this canvas’s central topic." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Each zone as its own file" : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
@@ -4075,6 +4115,10 @@
     },
     "Export CSV" : {
       "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Export Each Zone…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Export Gantt…" : {
@@ -6501,11 +6545,19 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "One file per zone, or a PDF page per zone" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
     "One image per first-level branch" : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
     "One page" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "One PDF, a page per zone" : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
@@ -6779,6 +6831,10 @@
     },
     "Paste Style" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Paste Zone" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Pasted Image" : {
@@ -8869,6 +8925,10 @@
       "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
+    "This canvas has no zones" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
     "This document" : {
       "comment" : "UI text (DocumentFiles.swift)",
       "extractionState" : "migrated"
@@ -8887,6 +8947,10 @@
     },
     "This topic has no image" : {
       "comment" : "UI text (CanvasController+AIMedia.swift)",
+      "extractionState" : "migrated"
+    },
+    "This zone" : {
+      "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "Threat" : {
@@ -9591,6 +9655,10 @@
     },
     "Zone: %@" : {
       "comment" : "Text with values filled in (CanvasController+Connect.swift)",
+      "extractionState" : "migrated"
+    },
+    "Zones" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Zoom" : {

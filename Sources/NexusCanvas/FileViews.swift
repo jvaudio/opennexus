@@ -284,7 +284,18 @@ private struct ExportSheet: View {
                     Text("\(Int(state.jpegQuality * 100))%").font(.chrome(12.5, design: .monospaced))
                 }
             }
-            if state.format == .pdf {
+            if state.image.scope == .zone {
+                labelled(Loc.t("Zones")) {
+                    FileSegments(
+                        items: [
+                            (ExportState.ZoneExport.one, Loc.t("This zone")),
+                            (.each, Loc.t("Each zone as its own file")),
+                        ] + (state.format == .pdf ? [(.pages, Loc.t("One PDF, a page per zone"))] : []),
+                        selection: Binding(get: { state.zones }, set: { v in set { $0.zones = v } })
+                    )
+                    .frame(width: state.format == .pdf ? 560 : 380)
+                }
+            } else if state.format == .pdf {
                 labelled(Loc.t("Pages")) {
                     FileSegments(
                         items: [

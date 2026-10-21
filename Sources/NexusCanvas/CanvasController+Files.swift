@@ -113,6 +113,10 @@ public struct ExportState: Equatable, Sendable {
     public var split = false
     /// The Gantt's image and PDF options (M11).
     public var gantt = GanttExporter.Options()
+    /// Zone scope: the one zone, each zone as its own file, or (PDF) one file with a page
+    /// per zone (D195). Never remembered, like the zone scope itself.
+    public var zones = ZoneExport.one
+    public enum ZoneExport: String, CaseIterable, Sendable { case one, each, pages }
     public init() {}
 }
 
@@ -162,6 +166,8 @@ extension NSPasteboard.PasteboardType {
     public static let nexusFragment = NSPasteboard.PasteboardType("org.opennexus.fragment")
     /// A whole canvas (Copy canvas).
     public static let nexusCanvas = NSPasteboard.PasteboardType("org.opennexus.canvas")
+    /// Where a zone fragment was copied: the open document and the canvas (D196).
+    public static let nexusFragmentSource = NSPasteboard.PasteboardType("org.opennexus.fragment.source")
 }
 
 extension CanvasController {
@@ -193,6 +199,7 @@ extension CanvasController {
             s = ExportState.remembered(s.format, keeping: s, prefs: prefs)
             if zone { s.image.scope = .zone }
         }
+        if s.zones == .pages, s.format != .pdf { s.zones = .each }
         exportState = s
     }
 
@@ -277,6 +284,10 @@ extension CanvasController {
 
     /// "2880 × 1850 px · 412 KB".
     public func exportSizeLine(_ s: ExportState) -> String {
+        if s.image.scope == .zone, s.format.isVisual, s.zones != .one {
+            let n = canvas.zones.count
+            return s.zones == .pages ? Loc.n("%lld page", "%lld pages", n) : Loc.n("%lld file", "%lld files", n)
+        }
         switch s.format {
         case .ganttPNG, .ganttJPEG:
             let size = GanttExporter.pixelSize(self, exportCanvas(s), s.gantt)
@@ -319,6 +330,16 @@ extension CanvasController {
             return ImageExporter.image(m, canvas: canvasID, s.image).map {
                 ImageExporter.jpeg($0, quality: s.jpegQuality, matte: matte)
             }
+        case .pdf where s.image.scope == .zone:
+            guard s.zones == .pages else {
+                return PrintLayout.singlePage(m, canvas: canvasID, s.image, links: prefs.bool("export.pdfLinks"))
+            }
+            let pages = (m.canvases[canvasID]?.zones ?? []).map { z in
+                var o = s.image
+                o.zone = z.id
+                return o
+            }
+            return PrintLayout.pages(m, canvas: canvasID, pages, links: prefs.bool("export.pdfLinks"))
         case .pdf:
             switch s.pdfScope {
             case "presentation": return SlideExporter.pdf(SlideExporter.renderSlides(m, canvas: canvasID))
@@ -389,6 +410,11 @@ extension CanvasController {
     /// Export… (save panel in the app).
     public func runExport(_ s: ExportState) {
         s.remember(in: prefs.defaults)
+        if s.image.scope == .zone, s.zones == .each, s.format.isVisual {
+            exportState = nil
+            onSaveFolder?(zoneFiles(s))
+            return
+        }
         if s.split, s.format == .png || s.format == .jpeg, s.image.scope == .canvas {
             exportState = nil
             splitByBranch()
@@ -402,7 +428,10 @@ extension CanvasController {
             exportFileName
             + (s.image.scope == .branch
                 ? " – " + (canvas.nodes[s.image.selection.first ?? canvas.root]?.text ?? "")
-                : s.image.scope == .zone ? " – " + (canvas.zones.first { $0.id == s.image.zone }?.title ?? "") : "")
+                : s.image.scope == .zone
+                    ? " – "
+                        + (s.zones == .pages
+                            ? Loc.t("Zones") : canvas.zones.first { $0.id == s.image.zone }?.title ?? "") : "")
         exportState = nil
         onSaveFile?(data, name + "." + (s.format == .json && s.yaml ? "yaml" : s.format.fileExt))
         if s.format == .keynote { showToast(Loc.t("Keynote opens this .pptx directly")) }
@@ -482,6 +511,31 @@ extension CanvasController {
         exportState?.split = false
     }
 
+    /// Export Each Zone…: the export sheet in zone scope, set to write one file per zone.
+    public func exportEachZone() {
+        guard let first = targetZone ?? canvas.zones.first?.id else {
+            showToast(Loc.t("This canvas has no zones"))
+            return
+        }
+        exportZone(first)
+        exportState?.zones = .each
+    }
+
+    /// Each zone as its own file in the sheet's format, named after its title (D195).
+    public func zoneFiles(_ s: ExportState) -> [(String, Data)] {
+        let zones = canvas.zones
+        let names = ImageExporter.fileNames(zones.map(\.title), fallback: Loc.t("Zone"))
+        var out: [(String, Data)] = []
+        for (z, name) in zip(zones, names) {
+            var x = s
+            x.image.scope = .zone
+            x.image.zone = z.id
+            x.zones = .one
+            if let d = exportData(x) { out.append((name + "." + x.format.fileExt, d)) }
+        }
+        return out
+    }
+
     /// Print Zone…: the print sheet showing only the zone.
     public func printZone(_ id: String? = nil) {
         guard let zone = id ?? targetZone, canvas.zones.contains(where: { $0.id == zone }) else {
@@ -516,6 +570,10 @@ extension CanvasController {
     // MARK: Copy, cut and paste topics
 
     public func copySelection() {
+        if case .zone(let id)? = selectedElement {
+            copyZone(id)
+            return
+        }
         let ids = selection.nodes.filter { canvas.nodes[$0] != nil }
         guard !ids.isEmpty else { return }
         let f = canvas.fragment(ids)
@@ -528,6 +586,11 @@ extension CanvasController {
     }
 
     public func cutSelection() {
+        if case .zone(let id)? = selectedElement {
+            copyZone(id)
+            removeZoneWithContents(id, Loc.t("Cut Zone"))
+            return
+        }
         copySelection()
         let ids = selection.nodes.filter { $0 != canvas.root }
         guard !ids.isEmpty else { return }
@@ -543,6 +606,10 @@ extension CanvasController {
         if let data = pb.data(forType: .nexusFragment), let v = try? CanonicalJSON.parse(data),
             let f = try? Canvas(json: v, path: "clipboard")
         {
+            if !f.zones.isEmpty {
+                pasteZones(f)
+                return
+            }
             perform(
                 Loc.t("Paste"),
                 selectionAfter: { (ids: [NodeID]) in Selection(primary: ids.first ?? parent, nodes: ids) }
@@ -577,6 +644,61 @@ extension CanvasController {
                 return
             }
         }
+    }
+
+    // MARK: Copy, cut, paste and duplicate zones (D196)
+
+    /// Identifies this canvas in this open document, so a paste can tell it's going back
+    /// where it came from.
+    var fragmentSource: String { store.sessionID + "/" + canvasID.rawValue }
+
+    /// Copy on a zone: the zone, its members' branches and the relationships touching them.
+    public func copyZone(_ id: String) {
+        guard canvas.zones.contains(where: { $0.id == id }) else { return }
+        let f = canvas.zoneFragment([id])
+        let pb = pasteboard
+        pb.clearContents()
+        pb.setData(CanonicalJSON.data(f.json), forType: .nexusFragment)
+        pb.setString(fragmentSource, forType: .nexusFragmentSource)
+        var text = ""
+        for top in f.floating { text += IndentedText.export(f, from: top) }
+        pb.setString(text, forType: .string)
+    }
+
+    /// Cut's second half: the zone and its contents go, one undo step.
+    func removeZoneWithContents(_ id: String, _ name: String) {
+        guard let z = canvas.zones.first(where: { $0.id == id }) else { return }
+        let root = canvas.root
+        perform(name, selectionAfter: { Selection(root) }) { e in
+            e.removeZone(id)
+            if !z.members.isEmpty { _ = try e.delete(z.members) }
+        }
+        selectedElement = nil
+        onSceneChange?(false)
+    }
+
+    /// Pastes a copied zone with its top-left corner where a new floating topic would go,
+    /// and selects it. Relationships to topics or zones outside the copy survive only when
+    /// pasting back into the canvas it came from.
+    func pasteZones(_ f: Canvas) {
+        let same = pasteboard.string(forType: .nexusFragmentSource) == fragmentSource
+        let p = floatingPlacement?() ?? defaultFloatingPoint()
+        let ids = perform(Loc.t("Paste Zone")) { e in
+            e.pasteZones(f, at: CanvasPoint(x: Double(p.x), y: Double(p.y)), sameCanvas: same)
+        }
+        if let first = ids?.first { selectElement(.zone(first)) }
+    }
+
+    /// Duplicate Zone (and ⌘D on a selected zone): a copy beside the original, keeping
+    /// relationships to the rest of the canvas.
+    public func duplicateZone(_ id: String? = nil) {
+        guard let id = id ?? targetZone, let z = canvas.zones.first(where: { $0.id == id }) else {
+            showToast(Loc.t("Select a zone first"))
+            return
+        }
+        let f = canvas.zoneFragment([id])
+        let ids = perform(Loc.t("Duplicate Zone")) { e in e.pasteZones(f, by: z.width + 40, 0, sameCanvas: true) }
+        if let first = ids?.first { selectElement(.zone(first)) }
     }
 
     // MARK: Map Shot (⌃⌘M)

@@ -290,6 +290,30 @@ public enum ImageExporter {
         return out
     }
 
+    /// File names from titles (D195): no path separators, colons or control characters,
+    /// no leading dots, at most 100 characters, `fallback` when nothing is left, and
+    /// unique ignoring case ("Ideas", "Ideas 2").
+    public static func fileNames(_ titles: [String], fallback: String) -> [String] {
+        var used = Set<String>()
+        return titles.map { t in
+            let cleaned = String(
+                t.unicodeScalars.map { s -> Character in
+                    s.properties.generalCategory == .control || "/\\:".unicodeScalars.contains(s) ? "-" : Character(s)
+                })
+            var base = String(cleaned.trimmingCharacters(in: .whitespacesAndNewlines).drop { $0 == "." }.prefix(100))
+            base = base.trimmingCharacters(in: .whitespaces)
+            if base.isEmpty { base = fallback }
+            var name = base
+            var i = 2
+            while used.contains(name.lowercased()) {
+                name = "\(base) \(i)"
+                i += 1
+            }
+            used.insert(name.lowercased())
+            return name
+        }
+    }
+
     public static func slug(_ s: String) -> String {
         let folded = s.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current).lowercased()
         let parts = folded.split { !$0.isLetter && !$0.isNumber }
@@ -551,19 +575,35 @@ public enum PrintLayout {
     public static func singlePage(
         _ model: DocumentModel, canvas id: CanvasID, _ io: ImageExporter.Options, links: Bool = true
     ) -> Data {
+        pages(model, canvas: id, [io], links: links)
+    }
+
+    /// One page per set of options, each its content's size: a zone per page (D195).
+    public static func pages(
+        _ model: DocumentModel, canvas id: CanvasID, _ pages: [ImageExporter.Options], links: Bool = true
+    ) -> Data {
+        let data = NSMutableData()
+        guard let consumer = CGDataConsumer(data: data as CFMutableData),
+            let ctx = CGContext(consumer: consumer, mediaBox: nil, nil)
+        else { return Data() }
+        for io in pages { page(ctx, model, canvas: id, io, links: links) }
+        ctx.closePDF()
+        return data as Data
+    }
+
+    private static func page(
+        _ ctx: CGContext, _ model: DocumentModel, canvas id: CanvasID, _ io: ImageExporter.Options, links: Bool
+    ) {
         var io = io
         io.frame = "none"
         io.aspect = "fit"
         let rect = ImageExporter.contentRect(model, canvas: id, io)
         var x = io
         x.scale = max(io.scale, 2)
-        guard let img = ImageExporter.image(model, canvas: id, x) else { return Data() }
-        let data = NSMutableData()
+        guard let img = ImageExporter.image(model, canvas: id, x) else { return }
         var box = CGRect(origin: .zero, size: rect.size)
-        guard let consumer = CGDataConsumer(data: data as CFMutableData),
-            let ctx = CGContext(consumer: consumer, mediaBox: &box, nil)
-        else { return Data() }
-        ctx.beginPDFPage(nil)
+        ctx.beginPDFPage(
+            [kCGPDFContextMediaBox as String: Data(bytes: &box, count: MemoryLayout<CGRect>.size)] as CFDictionary)
         ctx.draw(img, in: box)
         // Settings › Export › Clickable topic links: web links become link annotations.
         if links {
@@ -579,7 +619,5 @@ public enum PrintLayout {
             }
         }
         ctx.endPDFPage()
-        ctx.closePDF()
-        return data as Data
     }
 }

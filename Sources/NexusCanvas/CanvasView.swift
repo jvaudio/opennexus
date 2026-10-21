@@ -1360,7 +1360,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     public func validateMenuItem(_ item: NSMenuItem) -> Bool {
         if item.action == #selector(copy(_:)) || item.action == #selector(cut(_:)) {
             return controller.mode == .select
-                && !(item.action == #selector(cut(_:)) && controller.selection.nodes == [controller.canvas.root])
+                && !(item.action == #selector(cut(_:)) && controller.selection.nodes == [controller.canvas.root]
+                    && controller.targetZone == nil)
         }
         if item.action == #selector(paste(_:)) { return controller.mode == .select }
         if item.action == #selector(performRegistryCommand(_:)), let raw = item.representedObject as? String {

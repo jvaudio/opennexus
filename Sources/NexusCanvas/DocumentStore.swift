@@ -17,6 +17,8 @@ public final class DocumentStore {
     public private(set) var model: DocumentModel
     /// Increments on every applied patch; views observe it to refresh.
     public private(set) var revision = 0
+    /// Tells this open document apart on the pasteboard (zone paste, D196).
+    @ObservationIgnored public let sessionID = UUID().uuidString
     @ObservationIgnored public weak var undoRegistrar: (any UndoRegistrar)?
     @ObservationIgnored private var observers: [ObjectIdentifier: (Patch) -> Void] = [:]
     /// Called after every change so the document can update its change count.
