@@ -112,6 +112,7 @@ extension CanvasController {
     public func selectElement(_ ref: ElementRef?) {
         if mode == .edit { commitEdit() }
         selectedElement = ref
+        legendSelected = false
         if case .callout(let id)? = ref, let k = canvas.callouts.first(where: { $0.id == id }) {
             selection = Selection(k.topic)
         }

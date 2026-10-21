@@ -141,6 +141,7 @@ extension CanvasController {
             h[.structure(n)] = { $0.setStructure(Self.structureCycle[n - 1]) }
         }
         h.merge(taskHandlers) { a, _ in a }
+        h.merge(legendHandlers) { a, _ in a }
         for n in 1...5 {
             h[.navigationTab(n)] = { c in
                 c.navTab = c.navTab == n ? nil : n
@@ -177,6 +178,7 @@ extension CanvasController {
             guard handlers[id] != nil else { return false }
             // Zone commands need a zone: selected, or holding the selected topic.
             if id == .exportZone || id == .printZone, targetZone == nil { return false }
+            if legendHandlers[id] != nil, !canPerformLegend(id) { return false }
             return canvas.nodes[selection.primary] != nil
         case .edit:
             return editorHandlers[id] != nil

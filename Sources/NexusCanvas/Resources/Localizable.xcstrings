@@ -77,6 +77,10 @@
       "comment" : "Text with values filled in (DocumentWindowController.swift)",
       "extractionState" : "migrated"
     },
+    "%@ · Timeline" : {
+      "comment" : "Text with values filled in (PresentExtras.swift)",
+      "extractionState" : "migrated"
+    },
     "%@ › flow" : {
       "comment" : "Text with values filled in (CanvasController+Views.swift)",
       "extractionState" : "migrated"
@@ -2133,6 +2137,10 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "Arrow keys then move it; ⇧ moves it further" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
     "As canvases" : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
@@ -2267,6 +2275,10 @@
     },
     "Back" : {
       "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Back beside the map" : {
+      "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "Back to Canvas" : {
@@ -3681,6 +3693,10 @@
       "comment" : "UI text (AllowedFoldersView.swift)",
       "extractionState" : "migrated"
     },
+    "Done Moving Legend" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Done sparkle" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -3795,6 +3811,10 @@
     },
     "Edit maps" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Edit Selected Legend" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Edit summary topic" : {
@@ -5269,6 +5289,14 @@
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
+    "Legend on slides" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Legend on Slides" : {
+      "comment" : "UI text (PresentExtras.swift)",
+      "extractionState" : "migrated"
+    },
     "Legend shown · ⌥⌘L hides it" : {
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
@@ -6025,6 +6053,38 @@
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
+    "Move Legend Down" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move Legend Far Down" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move Legend Far Left" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move Legend Far Right" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move Legend Far Up" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move Legend Left" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move Legend Right" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move Legend Up" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Move Task" : {
       "comment" : "UI text (GanttView.swift)",
       "extractionState" : "migrated"
@@ -6259,6 +6319,10 @@
     },
     "No comments yet." : {
       "comment" : "UI text (CommentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "No dated tasks on this canvas" : {
+      "comment" : "UI text (PresentExtras.swift)",
       "extractionState" : "migrated"
     },
     "No dates" : {
@@ -7569,6 +7633,10 @@
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "Reset Legend Position" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Reset Position" : {
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
@@ -7949,6 +8017,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Select Legend" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Select Only Primary" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -8155,6 +8227,10 @@
     },
     "Show task details on topics" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Show the legend first · ⌥⌘L" : {
+      "comment" : "UI text (LegendKeyboard.swift)",
       "extractionState" : "migrated"
     },
     "Show the legend on the canvas" : {
@@ -8869,6 +8945,10 @@
       "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
+    "This canvas has no legend · ⌥⌘L shows one" : {
+      "comment" : "UI text (PresentExtras.swift)",
+      "extractionState" : "migrated"
+    },
     "This document" : {
       "comment" : "UI text (DocumentFiles.swift)",
       "extractionState" : "migrated"
@@ -8975,6 +9055,18 @@
     },
     "Timeline · Solid" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Timeline for %@" : {
+      "comment" : "Text with values filled in (PresentExtras.swift)",
+      "extractionState" : "migrated"
+    },
+    "Timeline slides" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Timeline Slides" : {
+      "comment" : "UI text (PresentExtras.swift)",
       "extractionState" : "migrated"
     },
     "Tint" : {

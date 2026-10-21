@@ -412,6 +412,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             legendLayer.setNeedsDisplay()
         }
         legendLayer.legend = scene.legend
+        legendLayer.selected = controller.legendActive
         CATransaction.commit()
         cull()
         updateConnectField()
@@ -1426,10 +1427,12 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             if event.clickCount == 2 {
                 controller.editLegend()
             } else {
+                controller.selectLegend()
                 drag = .legend(start: w, origin: l.rect.origin, active: false)
             }
             return
         }
+        controller.deselectLegend()
         if let id = node(at: p), let n = controller.scene.nodes[id], let f = animatedFrame(id) {
             let local = CGPoint(x: w.x - f.rect.minX, y: w.y - f.rect.minY)
             if event.clickCount == 1, handleDecorationClick(id, n, local) { return }
@@ -1886,6 +1889,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     lazy var accessibilityTree = CanvasAccessibility(view: self)
     /// The last selection VoiceOver was told about.
     private var announcedPrimary: NodeID?
+    private var announcedLegend = false
     /// Tests stand in for a running assistive app.
     var assistiveAppOverride: Bool?
     var assistiveAppRunning: Bool {
@@ -1916,7 +1920,16 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         let c = controller.canvas
         guard c.nodes[controller.selection.primary] != nil else { return }
         // VoiceOver follows the selection (only work done when an assistive app is running).
-        if assistiveAppRunning, announcedPrimary != controller.selection.primary {
+        // The selected legend takes VoiceOver's focus; deselecting returns it to the topic (M21).
+        if assistiveAppRunning, controller.legendActive != announcedLegend {
+            announcedLegend = controller.legendActive
+            if announcedLegend, let e = accessibilityTree.legendItem() {
+                NSAccessibility.post(element: e, notification: .focusedUIElementChanged)
+            } else {
+                announcedPrimary = nil
+            }
+        }
+        if assistiveAppRunning, !announcedLegend, announcedPrimary != controller.selection.primary {
             announcedPrimary = controller.selection.primary
             if let e = accessibilityTree.element(controller.selection.primary) {
                 NSAccessibility.post(element: e, notification: .focusedUIElementChanged)

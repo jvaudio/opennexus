@@ -166,6 +166,8 @@ public final class CanvasController {
     @ObservationIgnored public var onGanttScroll: ((TaskDate) -> Void)?
     /// "Today" for task lines and the Gantt (tests pin it).
     @ObservationIgnored public var today: TaskDate?
+    /// The legend has the keyboard: arrows move it (M21, D203).
+    public internal(set) var legendSelected = false
 
     // MARK: Views & navigation (M5)
     /// Canvas, Outline, Split or Gantt (⌘1–4).
@@ -415,12 +417,14 @@ public final class CanvasController {
         if mode == .edit { commitEdit() }
         selection = extend ? selection.extended(with: id) : Selection(id)
         selectedElement = nil
+        legendSelected = false
         onSceneChange?(false)
         onReveal?(id)
     }
 
     public func setSelection(_ s: Selection) {
         selection = s
+        legendSelected = false
         onSceneChange?(false)
     }
 
@@ -525,7 +529,8 @@ public final class CanvasController {
 
     public var activeScope: Scope {
         switch mode {
-        case .select: viewMode == .gantt && ganttFocused ? .gantt : outlineFocused ? .outline : .canvas
+        case .select:
+            viewMode == .gantt && ganttFocused ? .gantt : outlineFocused ? .outline : legendActive ? .legend : .canvas
         case .edit: .editor
         case .connect: .connect
         }
@@ -541,6 +546,10 @@ public final class CanvasController {
             if let id = lookup[.gantt]?[chord] { return id }
             if let id = lookup[.canvas]?[chord], Self.ganttPassThrough.contains(id) { return id }
             return lookup[.global]?[chord]
+        }
+        // The selected legend's keys win; everything else works as on the canvas.
+        if activeScope == .legend {
+            return lookup[.legend]?[chord] ?? lookup[.canvas]?[chord] ?? lookup[.global]?[chord]
         }
         return lookup[activeScope]?[chord] ?? lookup[.global]?[chord]
     }
@@ -576,7 +585,9 @@ public final class CanvasController {
         aiNotice = nil
         if ghosts != nil, handleGhostKey(chord) { return .handled }
         // Esc climbs out of Focus, then leaves ZEN, before collapsing the selection.
-        if chord.key == .escape, chord.modifiers.isEmpty, mode == .select, selectedElement == nil, slash == nil {
+        if chord.key == .escape, chord.modifiers.isEmpty, mode == .select, selectedElement == nil, slash == nil,
+            !legendActive
+        {
             if focusRoot != nil {
                 climbFocus()
                 return .handled
@@ -590,6 +601,8 @@ public final class CanvasController {
         if mode == .connect { return handleConnectKey(chord, characters: characters) ? .handled : .ignored }
         if selectedElement != nil, let r = handleElementKey(chord) { return r }
         if let id = command(for: chord) {
+            // A topic command takes the keyboard back from the legend.
+            if legendActive, registry[id]?.scope == .canvas { deselectLegend() }
             if perform(id) { return .handled }
             if canPerform(id) == false, registry[id]?.standardAction != nil { return .ignored }
         }
@@ -598,6 +611,7 @@ public final class CanvasController {
             c.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) }),
             !c.unicodeScalars.contains(where: { $0.value >= 0xF700 && $0.value <= 0xF8FF })
         {
+            if legendActive { deselectLegend() }
             return .beginTyping
         }
         return .ignored

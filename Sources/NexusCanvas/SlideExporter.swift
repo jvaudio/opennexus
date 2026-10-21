@@ -10,10 +10,17 @@ import NexusTheme
 public enum SlideExporter {
     public static let size = CGSize(width: 1920, height: 1080)
 
-    /// One image per playing slide (skipped slides are left out), with kicker and title.
-    public static func renderSlides(_ model: DocumentModel, canvas id: CanvasID, size: CGSize = size) -> [CGImage] {
+    /// One image per playing slide (skipped slides are left out), with kicker and title,
+    /// the task line, the corner legend and Timeline charts (M21). `prefs` and `today`
+    /// default to the app's.
+    public static func renderSlides(
+        _ model: DocumentModel, canvas id: CanvasID, size: CGSize = size, prefs: Preferences? = nil,
+        today: TaskDate? = nil
+    ) -> [CGImage] {
         let store = DocumentStore(model: model)
         let controller = CanvasController(store: store)
+        if let prefs { controller.prefs = prefs }
+        controller.today = today
         controller.rendersThemeAsNamed = true
         controller.switchCanvas(to: id)
         let view = CanvasView(controller: controller)
@@ -31,9 +38,7 @@ public enum SlideExporter {
             controller.present?.stageOnly = true
             controller.showSlide()
             view.layoutSubtreeIfNeeded()
-            if let img = render(
-                view, size: size, slide: s, theme: controller.scene.theme, canvas: controller.scene.canvasColor)
-            {
+            if let img = render(view, controller, size: size, slide: s) {
                 out.append(img)
             }
         }
@@ -42,7 +47,9 @@ public enum SlideExporter {
         return out
     }
 
-    static func render(_ view: CanvasView, size: CGSize, slide: Slide, theme: Theme, canvas: RGBA) -> CGImage? {
+    static func render(_ view: CanvasView, _ controller: CanvasController, size: CGSize, slide: Slide) -> CGImage? {
+        let theme = controller.scene.theme
+        let canvas = controller.scene.canvasColor
         let w = Int(size.width)
         let h = Int(size.height)
         guard
@@ -80,10 +87,14 @@ public enum SlideExporter {
                 .kern: 2.4,
             ]
         ).draw(at: CGPoint(x: 84, y: 56))
-        NSAttributedString(
-            string: slide.title,
-            attributes: [.font: NSFont.systemFont(ofSize: 64, weight: .bold), .foregroundColor: ink]
-        ).draw(with: CGRect(x: 84, y: 92, width: size.width - 168, height: 160), options: [.usesLineFragmentOrigin])
+        let title = NSAttributedString(
+            string: controller.slideTitle(slide),
+            attributes: [.font: NSFont.systemFont(ofSize: 64, weight: .bold), .foregroundColor: ink])
+        let titleBox = CGRect(x: 84, y: 92, width: size.width - 168, height: 160)
+        title.draw(with: titleBox, options: [.usesLineFragmentOrigin])
+        let titleHeight = min(
+            ceil(title.boundingRect(with: titleBox.size, options: [.usesLineFragmentOrigin]).height), titleBox.height)
+        drawExtras(controller, slide: slide, size: size, titleBottom: titleBox.minY + titleHeight)
         NSGraphicsContext.restoreGraphicsState()
         ctx.restoreGState()
         return ctx.makeImage()
