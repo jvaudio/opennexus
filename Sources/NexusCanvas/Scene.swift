@@ -5,11 +5,12 @@ import NexusTheme
 
 /// Small icons at the end of a topic's title row (artboard 07 slot 6).
 public enum Indicator: String, Sendable, CaseIterable {
-    case note, link, topicLink, file, attachment, audio, ai
+    case note, comment, link, topicLink, file, attachment, audio, ai
 
     public var glyph: String {
         switch self {
         case .note: "≡"
+        case .comment: "❝"
         case .link: "↗"
         case .topicLink: "⤳"
         case .file: "▤"
@@ -22,6 +23,7 @@ public enum Indicator: String, Sendable, CaseIterable {
     public var label: String {
         switch self {
         case .note: Loc.t("Note")
+        case .comment: Loc.t("Comments")
         case .link: Loc.t("Web link")
         case .topicLink: Loc.t("Topic link")
         case .file: Loc.t("File link")
@@ -77,6 +79,8 @@ public struct SceneNode: Equatable {
     public var blurred = false
     public var glow = false
     public var matchRanges: [NSRange] = []
+    /// Comments on the topic, shown as a count on the comment indicator when above one (M14).
+    public var commentCount = 0
 }
 
 /// What the current view emphasises. Never stored in the document and never undone.
@@ -533,6 +537,7 @@ public struct SceneBuilder {
                 lead += iconW + leadTextW
                 var indicators: [Indicator] = []
                 if node.note != nil { indicators.append(.note) }
+                if !node.comments.isEmpty { indicators.append(.comment) }
                 if let link = node.link {
                     indicators.append(
                         TopicLink.parse(link) != nil ? .topicLink : link.hasPrefix("file:") ? .file : .link)
@@ -863,6 +868,7 @@ public struct SceneBuilder {
                     textRect: p.textRect, leadRect: p.leadRect, stickerRect: p.stickerRect, imageRect: p.imageRect,
                     indicatorRects: p.indicatorRects, labelRects: p.labelRects, pinnedRect: p.pinnedRect,
                     tech: p.tech)
+                scene.nodes[id]?.commentCount = node.comments.count
                 scene.order.append(id)
                 if technical {
                     if let parent = allParents[id], frames[parent] != nil, !(titleRoot && parent == canvas.root),

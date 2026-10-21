@@ -611,7 +611,7 @@ struct MaskSheet: View {
     func maskPreview(_ h: Masker.Hit) -> some View {
         let c = controller.canvas
         let field = { (c: NexusCore.Canvas) in
-            (h.field == "note" ? c.nodes[h.node]?.note?.text : c.nodes[h.node]?.text) ?? ""
+            c.nodes[h.node].map { Masker.text(of: h.field, in: $0) } ?? ""
         }
         let after = field(Masker.maskedCopy(c, hits: [h], id: c.id))
         return VStack(spacing: 6) {

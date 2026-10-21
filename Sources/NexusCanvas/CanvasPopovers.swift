@@ -23,6 +23,8 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
         switch r {
         case .note(let id):
             show(NotePopover(controller: c, node: id, close: close), at: id, size: CGSize(width: 380, height: 320))
+        case .comments(let id):
+            show(CommentsPopover(controller: c, node: id, close: close), at: id, size: CGSize(width: 380, height: 440))
         case .link(let id):
             show(LinkPopover(controller: c, node: id, close: close), at: id, size: CGSize(width: 380, height: 420))
         case .labels(let id):

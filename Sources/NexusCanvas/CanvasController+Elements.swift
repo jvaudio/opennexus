@@ -7,6 +7,8 @@ import NexusKeys
 /// Things the canvas asks its host to present (popovers, sheets, panels).
 public enum CanvasRequest: Equatable, Sendable {
     case note(NodeID)
+    /// The comment thread (M14).
+    case comments(NodeID)
     case link(NodeID)
     case image(NodeID)
     case labels(NodeID)

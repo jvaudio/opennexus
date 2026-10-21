@@ -30,12 +30,20 @@ public enum XmindFormat {
                 throw ImportError.invalid(name, "content.json is not valid JSON")
             }
             var z = Zen(files: files, report: report, zone: timeZone)
+            if let cj = files["comments.json"], let any = try? JSONSerialization.jsonObject(with: cj) {
+                z.pending = XmindComments.byTopic(json: any)
+            }
             sheets = z.sheets(any)
+            z.reportUnplaced()
             report = z.report
             assets = z.assets
         } else if let xml = files["content.xml"] {
             var x = Legacy(files: files, report: report, zone: timeZone)
+            if let cx = files["comments.xml"], let root = try? XML.parse(cx, name: "comments.xml") {
+                x.pending = XmindComments.byTopic(xml: root)
+            }
             sheets = try x.sheets(xml, name: name)
+            x.reportUnplaced()
             report = x.report
             assets = x.assets
         } else {
@@ -133,6 +141,13 @@ public enum XmindFormat {
         var summaries: [ICanvas.Brace] = []
         var callouts: [ICanvas.Bubble] = []
         var seenSheets = Set<String>()
+        /// Comments from a separate `comments.json`, by topic id, until their topic is read.
+        var pending: [String: [TopicComment]] = [:]
+
+        mutating func reportUnplaced() {
+            let n = pending.values.reduce(0) { $0 + $1.count }
+            if n > 0 { report.skip("Comment on a sheet or a missing topic", n) }
+        }
 
         mutating func sheets(_ any: Any) -> [ICanvas] {
             var out: [ICanvas] = []
@@ -249,7 +264,11 @@ public enum XmindFormat {
             if t["branch"] as? String == "folded" { it.folded = true }
             it.structure = XmindFormat.structure(t["structureClass"] as? String)
             if t["numbering"] != nil { report.skip("Numbering format") }
-            if t["comments"] != nil { report.skip("Comment") }
+            if let raw = t["comments"] {
+                it.comments = XmindComments.list(raw)
+                if it.comments.isEmpty, !XmindComments.isEmpty(raw) { report.skip("Comment in an unknown form") }
+            }
+            if let id = it.ref, let more = pending.removeValue(forKey: id) { it.comments += more }
             for e in (t["extensions"] as? [[String: Any]]) ?? [] {
                 if let p = e["provider"] as? String, p.contains("task"), let content = e["content"] as? [String: Any] {
                     var task = it.task ?? ITask()
@@ -310,6 +329,13 @@ public enum XmindFormat {
         var assets: [String: Data] = [:]
         var groups: [ICanvas.Group] = []
         var summaries: [ICanvas.Brace] = []
+        /// Comments from `comments.xml`, by topic id, until their topic is read.
+        var pending: [String: [TopicComment]] = [:]
+
+        mutating func reportUnplaced() {
+            let n = pending.values.reduce(0) { $0 + $1.count }
+            if n > 0 { report.skip("Comment on a sheet or a missing topic", n) }
+        }
 
         mutating func sheets(_ xml: Data, name: String) throws -> [ICanvas] {
             let root = try XML.parse(xml, name: name)
@@ -387,6 +413,7 @@ public enum XmindFormat {
                 }
             }
             if e.attr("branch") == "folded" { it.folded = true }
+            if let id = it.ref, let more = pending.removeValue(forKey: id) { it.comments = more }
             it.structure = XmindFormat.structure(e.attr("structure-class"))
             for x in e.kid("extensions")?.kids("extension") ?? [] {
                 if x.attr("provider")?.contains("task") == true, let content = x.kid("content") {
@@ -435,6 +462,106 @@ public enum XmindFormat {
             }
             return it
         }
+    }
+}
+
+/// Xmind's topic comments (M14), read tolerantly (D161). Zen files carry them on the
+/// topic (`comments`) or in a top-level `comments.json`; XMind 8 in `comments.xml`
+/// (`<comment object-id author time><content>`). Replies follow the comment they answer.
+enum XmindComments {
+    static let authorKeys = ["author", "authorName", "creator", "creatorName", "user", "userName", "name"]
+    static let textKeys = ["content", "text", "body", "title", "message"]
+    static let timeKeys = ["creationTime", "createdTime", "createTime", "created", "time", "date", "modifiedTime"]
+
+    /// A `comments` value: a list of comments, one comment, or an object holding a list.
+    static func list(_ v: Any) -> [TopicComment] {
+        if let a = v as? [Any] { return a.flatMap(list) }
+        guard let o = v as? [String: Any] else {
+            if let s = v as? String, !s.trimmed.isEmpty { return [TopicComment(author: "", date: "", text: s.trimmed)] }
+            return []
+        }
+        if textKeys.contains(where: { o[$0] != nil }) { return comment(o) }
+        for k in ["comments", "items", "list", "data"] { if let inner = o[k] { return list(inner) } }
+        return []
+    }
+
+    static func comment(_ o: [String: Any]) -> [TopicComment] {
+        let text =
+            textKeys.lazy.compactMap { k -> String? in
+                if let s = o[k] as? String { return s }
+                // Rich text: {"plain": {"content": …}} or runs [{"text": …}].
+                if let d = o[k] as? [String: Any] {
+                    return ((d["plain"] as? [String: Any])?["content"] as? String) ?? (d["content"] as? String)
+                }
+                if let runs = o[k] as? [[String: Any]] { return runs.compactMap { $0["text"] as? String }.joined() }
+                return nil
+            }.first?.trimmed ?? ""
+        let author =
+            authorKeys.lazy.compactMap { k -> String? in
+                if let s = o[k] as? String { return s }
+                if let d = o[k] as? [String: Any] { return (d["name"] ?? d["displayName"] ?? d["email"]) as? String }
+                return nil
+            }.first?.trimmed ?? ""
+        let date = timeKeys.lazy.compactMap { o[$0] }.compactMap(Self.date).first ?? ""
+        var out = text.isEmpty ? [] : [TopicComment(author: author, date: date, text: text)]
+        for k in ["replies", "children", "comments"] { if let r = o[k] { out += list(r) } }
+        return out
+    }
+
+    static func isEmpty(_ v: Any) -> Bool {
+        if let a = v as? [Any] { return a.isEmpty }
+        if let o = v as? [String: Any] { return o.isEmpty }
+        return (v as? String)?.trimmed.isEmpty ?? true
+    }
+
+    /// Epoch milliseconds (or seconds), or ISO 8601, as a UTC ISO 8601 string.
+    static func date(_ v: Any) -> String? {
+        if let s = v as? String {
+            let x = s.trimmed
+            if !x.isEmpty, x.allSatisfy(\.isNumber), let n = Double(x) { return epoch(n) }
+            let c = TopicComment(author: "", date: x, text: "")
+            return c.instant.map(TopicComment.format)
+        }
+        return XmindTask.number(v).flatMap(epoch)
+    }
+
+    static func epoch(_ n: Double) -> String? {
+        let seconds = abs(n) < 1e11 ? n : n / 1000
+        guard seconds > 0, seconds < 2.5e11 else { return nil }
+        return TopicComment.format(Date(timeIntervalSince1970: seconds))
+    }
+
+    /// A top-level `comments.json`: `{topicId: [comments]}` or a list naming each topic.
+    static func byTopic(json v: Any) -> [String: [TopicComment]] {
+        var out: [String: [TopicComment]] = [:]
+        if let o = v as? [String: Any] {
+            if let inner = o["comments"] ?? o["items"] { return byTopic(json: inner) }
+            for (k, list) in o.sorted(by: { $0.key < $1.key }) {
+                let cs = Self.list(list)
+                if !cs.isEmpty { out[k, default: []] += cs }
+            }
+        } else if let a = v as? [[String: Any]] {
+            for o in a {
+                guard let id = (o["objectId"] ?? o["topicId"] ?? o["targetId"] ?? o["object-id"]) as? String else {
+                    continue
+                }
+                out[id, default: []] += comment(o)
+            }
+        }
+        return out
+    }
+
+    /// XMind 8's `comments.xml`.
+    static func byTopic(xml root: XMLElement) -> [String: [TopicComment]] {
+        var out: [String: [TopicComment]] = [:]
+        for c in root.descendants("comment") {
+            guard let id = c.attr("object-id"), let text = (c.kid("content")?.stringValue ?? c.stringValue)?.trimmed,
+                !text.isEmpty
+            else { continue }
+            let date = c.attr("time").flatMap { Self.date($0) } ?? ""
+            out[id, default: []].append(TopicComment(author: c.attr("author")?.trimmed ?? "", date: date, text: text))
+        }
+        return out
     }
 }
 

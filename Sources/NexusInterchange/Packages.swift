@@ -375,6 +375,17 @@ public enum WordFormat {
                 }
                 if let note = n.note?.text, !note.trimmed.isEmpty { body += para(note.trimmed, indent: max(d - 6, 0)) }
             }
+            // Comments as an appendix after each canvas's outline (M14, D162).
+            var comments: [(String, TopicComment)] = []
+            c.walk { _, n, _ in comments += n.comments.map { (n.text, $0) } }
+            if !comments.isEmpty {
+                body += para("Comments", style: "Heading1")
+                for (topic, cm) in comments {
+                    let who = [cm.author, String(cm.date.prefix(10))].filter { !$0.isEmpty }.joined(separator: " · ")
+                    body += para(topic + (who.isEmpty ? "" : " · " + who), style: "CommentHead")
+                    body += para(cm.text.trimmed, indent: 1)
+                }
+            }
         }
         let ns =
             "xmlns:w=\"http://schemas.openxmlformats.org/wordprocessingml/2006/main\" xmlns:r=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships\" xmlns:wp=\"http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing\""
@@ -408,6 +419,8 @@ public enum WordFormat {
             "<w:style w:type=\"paragraph\" w:default=\"1\" w:styleId=\"Normal\"><w:name w:val=\"Normal\"/><w:rPr><w:sz w:val=\"22\"/></w:rPr></w:style>"
         styles +=
             "<w:style w:type=\"paragraph\" w:styleId=\"Title\"><w:name w:val=\"Title\"/><w:basedOn w:val=\"Normal\"/><w:pPr><w:spacing w:after=\"240\"/></w:pPr><w:rPr><w:b/><w:sz w:val=\"52\"/></w:rPr></w:style>"
+        styles +=
+            "<w:style w:type=\"paragraph\" w:styleId=\"CommentHead\"><w:name w:val=\"Comment Heading\"/><w:basedOn w:val=\"Normal\"/><w:pPr><w:keepNext/><w:spacing w:before=\"120\"/></w:pPr><w:rPr><w:b/></w:rPr></w:style>"
         for (i, size) in [36, 30, 26, 24, 22, 22].enumerated() {
             styles +=
                 "<w:style w:type=\"paragraph\" w:styleId=\"Heading\(i + 1)\"><w:name w:val=\"heading \(i + 1)\"/><w:basedOn w:val=\"Normal\"/><w:pPr><w:keepNext/><w:spacing w:before=\"240\" w:after=\"80\"/><w:outlineLvl w:val=\"\(i)\"/></w:pPr><w:rPr><w:b/><w:sz w:val=\"\(size)\"/></w:rPr></w:style>"

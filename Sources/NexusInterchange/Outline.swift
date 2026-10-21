@@ -11,6 +11,8 @@ public enum MarkdownFormat {
         /// Heading levels before switching to bullets (root is `#`).
         public var headingDepth = 2
         public var notes = true
+        /// Topic comments as a "Comments" appendix after the outline (M14, D162).
+        public var comments = true
         public var mermaidBlock = false
         public init() {}
     }
@@ -54,8 +56,30 @@ public enum MarkdownFormat {
                 c.walk(from: f) { _, n, d in out += String(repeating: "  ", count: d) + "- " + line(n) + "\n" }
             }
         }
+        if o.comments {
+            let ids = top.map { c.subtree($0) } ?? c.tops.flatMap { c.subtree($0) }
+            let appendix = commentsAppendix(c, topics: ids)
+            if !appendix.isEmpty { out += "\n## Comments\n\n" + appendix }
+        }
         if o.mermaidBlock {
             out += "\n```mermaid\n" + MermaidFormat.export(c) + "```\n"
+        }
+        return out
+    }
+
+    /// "- **Pricing** · Ana · 2026-10-20: Drop the annual tier?", one line per comment, in
+    /// outline order. A comment's later lines are indented under it.
+    static func commentsAppendix(_ c: Canvas, topics: [NodeID]) -> String {
+        var out = ""
+        for id in topics {
+            guard let n = c.nodes[id] else { continue }
+            for cm in n.comments {
+                let who = [cm.author, String(cm.date.prefix(10))].filter { !$0.isEmpty }.joined(separator: " · ")
+                let lines = cm.text.trimmed.split(separator: "\n", omittingEmptySubsequences: false)
+                let head = "**\(n.text.replacingOccurrences(of: "\n", with: " "))**" + (who.isEmpty ? "" : " · \(who)")
+                out += "- \(head): \(lines.first ?? "")\n"
+                for l in lines.dropFirst() { out += "  \(l)\n" }
+            }
         }
         return out
     }

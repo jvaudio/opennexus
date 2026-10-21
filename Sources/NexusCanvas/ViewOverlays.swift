@@ -359,6 +359,7 @@ struct CountsCard: View {
                 row(Loc.t("Words"), "\(all.words.formatted()) · \(sel.words.formatted())")
                 row(Loc.t("Characters"), "\(all.characters.formatted()) · \(sel.characters.formatted())")
                 row(Loc.t("Notes"), "\(all.notes)")
+                row(Loc.t("Comments"), "\(all.comments)")
                 row("AI-created", "\(all.aiCreated)")
             }
         }
@@ -555,19 +556,26 @@ struct SearchTab: View {
     func resultRow(_ m: SearchMatch, current: Bool) -> some View {
         let c = controller.store.canvas(m.canvas)
         let n = c?.nodes[m.node]
+        let prefix =
+            switch m.field {
+            case .note: Loc.t("Note: “")
+            case .comment: Loc.t("Comment: “")
+            default: ""
+            }
         let source: String =
             switch m.field {
             case .text: n?.text ?? ""
-            case .note: Loc.t("Note: “") + (n?.note?.text ?? "") + "”"
+            case .note: prefix + (n?.note?.text ?? "") + "”"
+            case .comment: prefix + (n?.comments[safe: m.index]?.text ?? "") + "”"
             case .label: n?.labels[safe: m.index] ?? ""
             }
-        let offset = m.field == .note ? 7 : 0
-        let start = m.range.location + offset
+        let start = m.range.location + (prefix as NSString).length
         let matched = Array(start..<start + m.range.length)
         let path =
             ([c?.title ?? ""]
             + (c.map { cv in cv.path(to: m.node).dropFirst().compactMap { cv.nodes[$0]?.text } } ?? []))
-            .joined(separator: " › ") + (m.field == .note ? Loc.t(" › note") : "")
+            .joined(separator: " › ")
+            + (m.field == .note ? Loc.t(" › note") : m.field == .comment ? Loc.t(" › comment") : "")
         return HStack(alignment: .top, spacing: 10) {
             RoundedRectangle(cornerRadius: 2).fill(Color.accentColor.opacity(0.7)).frame(width: 8, height: 8).padding(
                 .top, 5)
@@ -631,10 +639,16 @@ struct NotesTab: View {
 
     var body: some View {
         let c = controller.canvas
-        let notes = c.tops.flatMap { c.subtree($0) }.filter { c.nodes[$0]?.note != nil }
+        // Notes and comments (M14), in outline order.
+        let notes = c.tops.flatMap { c.subtree($0) }.filter {
+            c.nodes[$0]?.note != nil || !(c.nodes[$0]?.comments.isEmpty ?? true)
+        }
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
-                if notes.isEmpty { Text("No notes yet. ⇧⌘N adds one.").foregroundStyle(.secondary).padding(12) }
+                if notes.isEmpty {
+                    Text("No notes or comments yet. ⇧⌘N adds a note, ⌃⌘N a comment.").foregroundStyle(.secondary)
+                        .padding(12)
+                }
                 ForEach(notes, id: \.self) { id in
                     VStack(alignment: .leading, spacing: 3) {
                         Text(
@@ -644,8 +658,22 @@ struct NotesTab: View {
                             .joined(separator: " › ")
                         )
                         .font(.chrome(13.5, weight: .semibold))
-                        Text(c.nodes[id]?.note?.text ?? "").font(.chrome(12.5)).foregroundStyle(.secondary)
-                            .lineLimit(3)
+                        if let note = c.nodes[id]?.note?.text {
+                            Text(note).font(.chrome(12.5)).foregroundStyle(.secondary).lineLimit(3)
+                        }
+                        ForEach(Array((c.nodes[id]?.comments ?? []).enumerated()), id: \.offset) { _, cm in
+                            HStack(alignment: .firstTextBaseline, spacing: 6) {
+                                Text("❝").font(.chrome(12.5, weight: .semibold)).foregroundStyle(.secondary)
+                                    .accessibilityHidden(true)
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(CanvasController.commentByline(cm)).font(.chrome(11.5, weight: .medium))
+                                        .foregroundStyle(.secondary)
+                                    Text(cm.text).font(.chrome(12.5)).lineLimit(3)
+                                }
+                            }
+                            .accessibilityElement(children: .combine)
+                            .accessibilityLabel(CommentsPopover.spoken(cm))
+                        }
                     }
                     .padding(12)
                     .frame(maxWidth: .infinity, alignment: .leading)

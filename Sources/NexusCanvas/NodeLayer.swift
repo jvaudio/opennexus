@@ -549,6 +549,12 @@ final class DecorLayer: CALayer {
                     .paragraphStyle: NodeLayer.centered,
                 ]
             ).draw(in: r.offsetBy(dx: 0, dy: 1))
+            if ind == .comment, n.commentCount > 1 {
+                NSAttributedString(
+                    string: "\(min(n.commentCount, 99))",
+                    attributes: [.font: NSFont.systemFont(ofSize: 7.5, weight: .bold), .foregroundColor: color]
+                ).draw(at: CGPoint(x: r.maxX - 5, y: r.minY - 2))
+            }
         }
         // Label pills.
         for (i, l) in n.labels.enumerated() where i < n.labelRects.count {

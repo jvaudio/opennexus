@@ -40,6 +40,7 @@ public struct NodeFilter: Hashable, Sendable, JSONRepresentable {
 
     public static let fields = [
         "type", "risk", "status", "marker", "label", "text", "todo", "note", "ai", "owner", "due", "task",
+        "comment",
     ]
 
     /// Parses one chip: `field: value`, `field = value`, `field != value`, `field ≠ value`,
@@ -74,6 +75,8 @@ public struct NodeFilter: Hashable, Sendable, JSONRepresentable {
         // M11: `owner: Ana`, `due: overdue` (or `week`, `none`, a date), `task: yes`.
         case "owner": return [n.todo?.owner ?? ""]
         case "task": return [n.todo?.isScheduled == true ? "yes" : "no"]
+        // M14: `comment: yes`, `comment: Ana` (an author), `comment: budget` (words in the text).
+        case "comment": return [n.comments.isEmpty ? "no" : "yes"] + n.comments.flatMap { [$0.author, $0.text] }
         case "due":
             guard let s = canvas.span(of: id) else { return n.todo == nil ? [] : ["none"] }
             let today = TaskDate.today()
@@ -98,6 +101,7 @@ public struct NodeFilter: Hashable, Sendable, JSONRepresentable {
                     vals.contains {
                         $0 == v || (c.field == "marker" && $0.hasPrefix(v))
                             || (c.field == "risk" && !$0.isEmpty && v.hasPrefix($0))
+                            || (c.field == "comment" && v.count > 2 && $0.contains(v))
                     }
                 }
             return c.op == .notEquals ? !hit : hit
@@ -140,11 +144,11 @@ public struct SearchOptions: Hashable, Sendable {
 }
 
 public struct SearchMatch: Hashable, Sendable, Identifiable {
-    public enum Field: String, Sendable { case text, note, label }
+    public enum Field: String, Sendable { case text, note, label, comment }
     public var canvas: CanvasID
     public var node: NodeID
     public var field: Field
-    /// Label index for `.label`.
+    /// Label index for `.label`, comment index for `.comment`.
     public var index: Int = 0
     /// UTF-16 range inside the field.
     public var range: NSRange
@@ -178,6 +182,8 @@ public enum TextSearch {
                 }
                 scan(n.text, .text)
                 if o.notes, let note = n.note?.text { scan(note, .note) }
+                // "+ Notes" covers comments too (M14).
+                if o.notes { for (i, cm) in n.comments.enumerated() { scan(cm.text, .comment, i) } }
                 if o.labels { for (i, l) in n.labels.enumerated() { scan(l, .label, i) } }
             }
         }
@@ -227,6 +233,11 @@ public enum TextSearch {
                 let t = replaced(note.text, m, re, with: template, o)
                 e.update(m.node) { $0.note?.text = t }
                 count += 1
+            case .comment:
+                guard m.index < n.comments.count else { continue }
+                let t = replaced(n.comments[m.index].text, m, re, with: template, o)
+                e.update(m.node) { $0.comments[m.index].text = t }
+                count += 1
             case .label:
                 guard m.index < n.labels.count else { continue }
                 let t = replaced(n.labels[m.index], m, re, with: template, o)
@@ -245,6 +256,9 @@ public struct CanvasCounts: Equatable, Sendable {
     public var words = 0
     public var characters = 0
     public var notes = 0
+    /// Topics with comments, and the comments on them (M14).
+    public var commented = 0
+    public var comments = 0
     public var aiCreated = 0
 
     public init(_ canvas: Canvas, nodes: [NodeID]? = nil) {
@@ -255,6 +269,10 @@ public struct CanvasCounts: Equatable, Sendable {
             words += n.text.split { $0.isWhitespace || $0.isNewline }.count
             characters += n.text.count
             if n.note != nil { notes += 1 }
+            if !n.comments.isEmpty {
+                commented += 1
+                comments += n.comments.count
+            }
             if n.ai { aiCreated += 1 }
         }
     }

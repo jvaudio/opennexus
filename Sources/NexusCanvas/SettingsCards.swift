@@ -616,6 +616,7 @@ public enum Spoken {
         if let todo = n.todo { parts.append(todo.done ? Loc.t("Done") : Loc.t("To do")) }
         if let task = TaskFormat.spoken(c, id, today: TaskDate.today()) { parts.append(task) }
         if n.note != nil { parts.append(Loc.t("Has note")) }
+        if !n.comments.isEmpty { parts.append(Loc.n("%lld comment", "%lld comments", n.comments.count)) }
         if prefs.string("accessibility.readEdges") == "source" {
             for r in c.relationships where r.from == id || r.to == id {
                 let other = r.from == id ? r.to : r.from

@@ -983,6 +983,7 @@ extension ExportState {
         if let v = d["flavour"] as? String { s.mermaid = MermaidFormat.Flavour(rawValue: v) }
         if let v = d["headings"] as? Bool { s.markdown.headings = v }
         if let v = d["notes"] as? Bool { s.markdown.notes = v }
+        if let v = d["comments"] as? Bool { s.markdown.comments = v }
         if let v = d["mermaidBlock"] as? Bool { s.markdown.mermaidBlock = v }
         if let v = d["yaml"] as? Bool { s.yaml = v }
         if let v = d["pretty"] as? Bool { s.prettyJSON = v }
@@ -1000,7 +1001,8 @@ extension ExportState {
             "scope": image.scope == .zone ? "canvas" : image.scope.rawValue, "scale": image.scale,
             "background": image.background.rawValue,
             "padding": image.padding, "quality": jpegQuality, "outline": svg.outlineText, "metadata": svg.metadata,
-            "headings": markdown.headings, "notes": markdown.notes, "mermaidBlock": markdown.mermaidBlock, "yaml": yaml,
+            "headings": markdown.headings, "notes": markdown.notes, "comments": markdown.comments,
+            "mermaidBlock": markdown.mermaidBlock, "yaml": yaml,
             "pretty": prettyJSON, "pdfScope": pdfScope, "ganttScale": gantt.scale,
             "ganttSelection": gantt.selectionOnly, "ganttPaper": gantt.paper,
         ]

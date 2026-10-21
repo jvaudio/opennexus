@@ -254,6 +254,9 @@ public enum SettingsSchema {
                     T(
                         "editing.taskDetails", "Show task details on topics", true,
                         "Owner, dates and progress under a task’s title"),
+                    X(
+                        "editing.commentAuthor", "Comment author", "",
+                        "Your name on new comments. Empty uses this Mac’s account name."),
                 ]),
             sec(
                 "Layout & guides", 0,

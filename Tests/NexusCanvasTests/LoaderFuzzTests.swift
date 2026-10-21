@@ -43,6 +43,13 @@ import Testing
         e.updateTask(kids[2]) { $0.due = TaskDate("2026-11-10") }
         try? e.addDependency(kids[2], on: kids[1], type: .startToFinish, lag: 2)
         e.updateMeta { $0.schedule.holidays = [TaskDate("2026-12-25")!] }
+        // M14 comments.
+        e.update(kids[0]) {
+            $0.comments = [
+                TopicComment(author: "Ana", date: "2026-10-20T14:03:00Z", text: "Why?"),
+                TopicComment(author: "", date: "", text: "Because"),
+            ]
+        }
         c = e.canvas
         doc.canvases["c1"] = c
         return doc

@@ -1476,6 +1476,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         for (i, r) in n.indicatorRects.enumerated() where r.insetBy(dx: -2, dy: -2).contains(local) {
             switch n.indicators[i] {
             case .note: controller.onRequest?(.note(id))
+            case .comment: controller.onRequest?(.comments(id))
             case .link, .topicLink, .file: controller.followLink(of: id)
             case .attachment: controller.onRequest?(.attachment(id, 0))
             case .audio: controller.onRequest?(.audio(id))

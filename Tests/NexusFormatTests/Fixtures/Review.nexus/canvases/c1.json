@@ -1,0 +1,61 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n3"
+      ],
+      "kind": "root",
+      "text": "Pricing"
+    },
+    "n2": {
+      "children": [],
+      "comments": [
+        {
+          "author": "Ana",
+          "date": "2026-10-20T14:03:00Z",
+          "text": "Drop it?"
+        },
+        {
+          "author": "Sam",
+          "date": "2026-10-20T16:30:05+02:00",
+          "text": "Keep it,\nbut discount it."
+        }
+      ],
+      "kind": "topic",
+      "markers": [
+        "priority-1",
+        "flag-red"
+      ],
+      "text": "Annual tier"
+    },
+    "n3": {
+      "children": [],
+      "comments": [
+        {
+          "author": "Lee",
+          "resolved": true,
+          "text": "Check margins"
+        }
+      ],
+      "kind": "topic",
+      "text": "Pro"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Pricing review",
+  "type": "mindmap"
+}

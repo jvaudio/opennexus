@@ -39,7 +39,7 @@ public enum Masker {
     public struct Hit: Hashable, Sendable, Identifiable {
         public var kind: Kind
         public var node: NodeID
-        /// text or note
+        /// text, note, comment.N or author.N
         public var field: String
         public var range: NSRange
         public var text: String
@@ -61,6 +61,14 @@ public enum Masker {
             guard let n = c.nodes[id] else { continue }
             out += scan(n.text, node: id, field: "text", options: options)
             if let note = n.note?.text { out += scan(note, node: id, field: "note", options: options) }
+            // Comments (M14): the text, and the author as a name when names are masked.
+            for (i, cm) in n.comments.enumerated() {
+                out += scan(cm.text, node: id, field: "comment.\(i)", options: options)
+                if options.kinds.contains(.names), !cm.author.isEmpty {
+                    let r = NSRange(location: 0, length: (cm.author as NSString).length)
+                    out.append(Hit(kind: .names, node: id, field: "author.\(i)", range: r, text: cm.author))
+                }
+            }
         }
         return out
     }
@@ -111,6 +119,18 @@ public enum Masker {
         return hits
     }
 
+    /// The text a hit's field names on a topic.
+    public static func text(of field: String, in n: Node) -> String {
+        let parts = field.split(separator: ".")
+        let i = parts.count == 2 ? Int(parts[1]).flatMap { n.comments.indices.contains($0) ? $0 : nil } : nil
+        switch (parts.first, i) {
+        case ("comment"?, let i?): return n.comments[i].text
+        case ("author"?, let i?): return n.comments[i].author
+        case ("note"?, _): return n.note?.text ?? ""
+        default: return n.text
+        }
+    }
+
     public static func counts(_ hits: [Hit]) -> [(Kind, Int)] {
         Kind.allCases.map { k in (k, hits.filter { $0.kind == k }.count) }
     }
@@ -123,12 +143,25 @@ public enum Masker {
         let byField = Dictionary(grouping: hits) { "\($0.node.rawValue)/\($0.field)" }
         for (_, hs) in byField {
             guard let h0 = hs.first, var n = copy.nodes[h0.node] else { continue }
-            var s = (h0.field == "note" ? n.note?.text ?? "" : n.text) as NSString
+            let parts = h0.field.split(separator: ".")
+            let index = parts.count == 2 ? Int(parts[1]).flatMap { n.comments.indices.contains($0) ? $0 : nil } : nil
+            var s: NSString
+            switch (parts.first, index) {
+            case ("comment"?, let i?): s = n.comments[i].text as NSString
+            case ("author"?, let i?): s = n.comments[i].author as NSString
+            case ("note"?, _): s = (n.note?.text ?? "") as NSString
+            default: s = n.text as NSString
+            }
             for h in hs.sorted(by: { $0.range.location > $1.range.location })
             where h.range.location + h.range.length <= s.length {
                 s = s.replacingCharacters(in: h.range, with: options.mask(h.range.length)) as NSString
             }
-            if h0.field == "note" { n.note?.text = s as String } else { n.text = s as String }
+            switch (parts.first, index) {
+            case ("comment"?, let i?): n.comments[i].text = s as String
+            case ("author"?, let i?): n.comments[i].author = s as String
+            case ("note"?, _): n.note?.text = s as String
+            default: n.text = s as String
+            }
             n.marks = []
             copy.nodes[h0.node] = n
         }

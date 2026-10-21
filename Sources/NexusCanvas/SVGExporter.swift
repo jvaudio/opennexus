@@ -238,6 +238,11 @@ public enum SVGExporter {
             w.text(
                 ind.glyph, at: CGPoint(x: ir.midX, y: ir.midY + 4.5), font: .systemFont(ofSize: 12, weight: .semibold),
                 color: ind == .ai ? theme.ai : a.text.alpha(0.6), anchor: "middle")
+            if ind == .comment, sn.commentCount > 1 {
+                w.text(
+                    "\(min(sn.commentCount, 99))", at: CGPoint(x: ir.maxX - 2, y: ir.minY + 4),
+                    font: .systemFont(ofSize: 7.5, weight: .bold), color: a.text.alpha(0.6), anchor: "start")
+            }
         }
         for (i, l) in sn.labels.enumerated() where i < sn.labelRects.count {
             let lr = sn.labelRects[i]

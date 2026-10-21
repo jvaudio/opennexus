@@ -174,13 +174,14 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
     // MARK: Rotors
 
     enum RotorKind: String, CaseIterable {
-        case topics = "Topics", notes = "Notes", edges = "Edges", boundaries = "Boundaries"
+        case topics = "Topics", notes = "Notes", comments = "Comments", edges = "Edges", boundaries = "Boundaries"
         case suggestions = "AI suggestions", connect = "Connect targets"
 
         var title: String {
             switch self {
             case .topics: Loc.t("Topics")
             case .notes: Loc.t("Notes")
+            case .comments: Loc.t("Comments")
             case .edges: Loc.t("Edges")
             case .boundaries: Loc.t("Boundaries")
             case .suggestions: Loc.t("AI suggestions")
@@ -210,6 +211,8 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
         switch kind {
         case .topics: return preorder().compactMap { element($0) }
         case .notes: return preorder().filter { c.canvas.nodes[$0]?.note != nil }.compactMap { element($0) }
+        case .comments:
+            return preorder().filter { !(c.canvas.nodes[$0]?.comments.isEmpty ?? true) }.compactMap { element($0) }
         case .edges: return edgeItems()
         case .boundaries: return boundaryItems()
         case .suggestions:
@@ -308,6 +311,10 @@ final class TopicElement: NSAccessibilityElement {
             NSAccessibilityCustomAction(name: Loc.t("Connect from here")) { [weak self] in
                 guard let self else { return false }
                 return self.tree.run(.connect, on: self.id)
+            },
+            NSAccessibilityCustomAction(name: Loc.t("Comments")) { [weak self] in
+                guard let self else { return false }
+                return self.tree.run(.comment, on: self.id)
             },
         ]
         if hasChildren {

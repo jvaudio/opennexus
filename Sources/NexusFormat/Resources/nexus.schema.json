@@ -428,6 +428,27 @@
       ],
       "type": "object"
     },
+    "comment": {
+      "description": "A review comment on a topic (M14): author, date (ISO 8601 with a time zone; omitted when unknown) and text.",
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "date": {
+          "description": "ISO 8601 date and time with a time zone, for example 2026-10-20T14:03:00Z.",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}",
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "author",
+        "text"
+      ],
+      "type": "object"
+    },
     "date": {
       "description": "A calendar date with no time or time zone.",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$",
@@ -589,6 +610,13 @@
           },
           "type": "array",
           "uniqueItems": true
+        },
+        "comments": {
+          "description": "Review comments, oldest first (M14).",
+          "items": {
+            "$ref": "#/$defs/comment"
+          },
+          "type": "array"
         },
         "edgeLabel": {
           "description": "Label on the tree edge into this node: Yes / No, a data flow, a protocol.",

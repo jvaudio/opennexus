@@ -326,6 +326,11 @@ private struct ExportSheet: View {
                         isOn: Binding(get: { state.markdown.notes }, set: { v in set { $0.markdown.notes = v } })
                     ).toggleStyle(.switch)
                     Toggle(
+                        "Comments",
+                        isOn: Binding(
+                            get: { state.markdown.comments }, set: { v in set { $0.markdown.comments = v } })
+                    ).toggleStyle(.switch)
+                    Toggle(
                         "Mermaid block",
                         isOn: Binding(
                             get: { state.markdown.mermaidBlock }, set: { v in set { $0.markdown.mermaidBlock = v } })

@@ -96,6 +96,63 @@ public struct Note: Hashable, Sendable, JSONRepresentable {
     }
 }
 
+/// A comment on a topic (M14): who wrote it, when, and what. Comments are a review
+/// thread beside the topic, unlike the note, which is part of the content.
+public struct TopicComment: Hashable, Sendable, JSONRepresentable {
+    public var author: String
+    /// ISO 8601 with a time zone, kept as written so files round-trip byte-identically
+    /// (D160). `instant` parses it. Empty when unknown (some imports), and then omitted.
+    public var date: String
+    public var text: String
+    public var extra: [String: JSONValue] = [:]
+
+    public init(author: String, date: String, text: String) {
+        self.author = author
+        self.date = date
+        self.text = text
+    }
+
+    public init(author: String, at instant: Date, text: String) {
+        self.init(author: author, date: TopicComment.format(instant), text: text)
+    }
+
+    /// `2026-10-20T14:03:00Z`: whole seconds in UTC.
+    public static func format(_ d: Date) -> String {
+        let f = ISO8601DateFormatter()
+        f.formatOptions = [.withInternetDateTime]
+        f.timeZone = TimeZone(identifier: "UTC")
+        return f.string(from: Date(timeIntervalSince1970: d.timeIntervalSince1970.rounded(.down)))
+    }
+
+    /// The moment the comment was written, or nil if `date` isn't ISO 8601.
+    public var instant: Date? {
+        let f = ISO8601DateFormatter()
+        for o: ISO8601DateFormatter.Options in [
+            [.withInternetDateTime], [.withInternetDateTime, .withFractionalSeconds],
+        ] {
+            f.formatOptions = o
+            if let d = f.date(from: date) { return d }
+        }
+        return nil
+    }
+
+    public init(json: JSONValue, path: String) throws {
+        var r = try ObjectReader(json, path: path)
+        author = try r.optionalString("author") ?? ""
+        date = try r.optionalString("date") ?? ""
+        text = try r.optionalString("text") ?? ""
+        extra = r.leftovers
+    }
+
+    public var json: JSONValue {
+        var w = ObjectWriter(extra: extra)
+        w.set("author", author)
+        if !date.isEmpty { w.set("date", date) }
+        w.set("text", text)
+        return w.value
+    }
+}
+
 /// One topic. Every slot except text, role and children is optional.
 public struct Node: Hashable, Sendable {
     public var text: String
@@ -120,6 +177,8 @@ public struct Node: Hashable, Sendable {
     public var image: AssetRef?
     public var attachments: [AssetRef] = []
     public var audio: AudioNote?
+    /// Review comments, oldest first (M14). Omitted from the file when empty.
+    public var comments: [TopicComment] = []
     /// Created by AI and not yet edited by the user (shows a sparkle).
     public var ai: Bool = false
     /// Per-branch structure override (Option-Command-1…9).
@@ -192,6 +251,9 @@ extension Node: JSONRepresentable {
             try AssetRef(json: $1, path: "\(path).attachments[\($0)]")
         }
         if let a = r.raw("audio"), a != .null { audio = try AudioNote(json: a, path: "\(path).audio") }
+        comments = try r.array("comments").enumerated().map {
+            try TopicComment(json: $1, path: "\(path).comments[\($0)]")
+        }
         ai = try r.bool("ai", default: false)
         structure = try r.optionalString("structure").map(LayoutStructure.init(rawValue:))
         nodeType = try r.optionalString("nodeType").map(NodeType.init(rawValue:))
@@ -224,6 +286,7 @@ extension Node: JSONRepresentable {
         if let image { w.set("image", image.json) }
         if !attachments.isEmpty { w.set("attachments", .array(attachments.map(\.json))) }
         if let audio { w.set("audio", audio.json) }
+        if !comments.isEmpty { w.set("comments", .array(comments.map(\.json))) }
         w.set("ai", ai, omitting: false)
         w.set("structure", structure?.rawValue)
         w.set("nodeType", nodeType?.rawValue)

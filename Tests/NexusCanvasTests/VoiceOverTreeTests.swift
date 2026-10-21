@@ -58,7 +58,7 @@ import Testing
         let risks = try #require(v.accessibilityTree.element(node(h, "Risks")))
         #expect(risks.accessibilityPerformPress() && h.controller.selection.primary == risks.id)
         let names = risks.accessibilityCustomActions()?.map(\.name) ?? []
-        #expect(names == ["Edit", "Add child", "Add sibling", "Connect from here", "Fold"])
+        #expect(names == ["Edit", "Add child", "Add sibling", "Connect from here", "Comments", "Fold"])
         let before = h.canvas.nodes.count
         let depth = h.undo.stack.undoStack.count
         _ = risks.accessibilityCustomActions()?.first { $0.name == "Add child" }?.handler?()
@@ -81,7 +81,10 @@ import Testing
         let h = CanvasHarness(model: doc)
         let v = h.host.canvasView
         let rotors = v.accessibilityCustomRotors()
-        #expect(rotors.map(\.label) == ["Topics", "Notes", "Edges", "Boundaries", "AI suggestions", "Connect targets"])
+        #expect(
+            rotors.map(\.label) == [
+                "Topics", "Notes", "Comments", "Edges", "Boundaries", "AI suggestions", "Connect targets",
+            ])
         func walk(_ label: String) -> [String] {
             let r = rotors.first { $0.label == label }!
             var out: [String] = []

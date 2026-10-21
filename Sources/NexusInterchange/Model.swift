@@ -19,6 +19,8 @@ public struct ITopic: Sendable, Equatable {
     public var todo: Bool?
     /// Task planning data (M11); wins over `todo` when both are set.
     public var task: ITask?
+    /// Review comments, oldest first (M14).
+    public var comments: [TopicComment] = []
     public var nodeType: NodeType?
     public var edgeLabel: String?
     public var structure: LayoutStructure?
@@ -141,6 +143,8 @@ public struct ImportReport: Sendable, Equatable {
     /// Topics with task data, and the dependencies between them (M11).
     public var tasks = 0
     public var dependencies = 0
+    /// Comments on topics (M14).
+    public var comments = 0
     /// Things not converted, in first-seen order, with how often each occurred.
     public private(set) var skipped: [(String, Int)] = []
 
@@ -165,7 +169,7 @@ public struct ImportReport: Sendable, Equatable {
     public static func == (a: ImportReport, b: ImportReport) -> Bool {
         a.source == b.source && a.format == b.format && a.sheets == b.sheets && a.canvases == b.canvases
             && a.topics == b.topics && a.markers == b.markers && a.notes == b.notes && a.tasks == b.tasks
-            && a.dependencies == b.dependencies
+            && a.dependencies == b.dependencies && a.comments == b.comments
             && a.skipped.map(\.0) == b.skipped.map(\.0) && a.skipped.map(\.1) == b.skipped.map(\.1)
     }
 
@@ -174,6 +178,7 @@ public struct ImportReport: Sendable, Equatable {
         var s = "\(source) · \(format)\n"
         s += "\(sheets) sheets → \(canvases) canvases · \(topics) topics, \(markers) markers, \(notes) notes"
         if tasks > 0 { s += ", \(tasks) tasks, \(dependencies) dependencies" }
+        if comments > 0 { s += ", \(comments) comments" }
         s += "\n"
         s += "\(notConverted) not converted\n"
         for l in lines { s += "· \(l)\n" }
@@ -252,6 +257,8 @@ public enum CanvasBuilder {
                 if let p = task.priority, (1...9).contains(p), n.priority == nil { n.priority = p }
                 report.tasks += 1
             }
+            n.comments = t.comments
+            report.comments += t.comments.count
             n.nodeType = t.nodeType
             n.edgeLabel = t.edgeLabel
             n.structure = t.structure

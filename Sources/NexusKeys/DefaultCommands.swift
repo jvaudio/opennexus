@@ -86,6 +86,8 @@ extension CommandID {
     public static let callout: CommandID = "element.callout"
     public static let note: CommandID = "element.note"
     public static let hyperlink: CommandID = "element.hyperlink"
+    /// Topic comments (M14).
+    public static let comment: CommandID = "element.comment"
     public static let image: CommandID = "element.image"
     public static let label: CommandID = "element.label"
     public static func priority(_ n: Int) -> CommandID { CommandID(rawValue: "marker.priority\(n)") }
@@ -388,6 +390,9 @@ public enum DefaultCommands {
             C(.callout, "Callout", .elements, keys: [k("shift+cmd+c")], menu: .insert, xmind: true),
             C(.note, "Note", .elements, keys: [k("shift+cmd+n")], menu: .insert, xmind: true),
             C(.hyperlink, "Hyperlink…", .elements, keys: [k("shift+cmd+k")], menu: .insert, xmind: true),
+            C(
+                .comment, "Comment…", .elements, keys: [k("ctrl+cmd+n")], menu: .insert,
+                note: "Add, edit and delete review comments"),
             C(.image, "Image…", .elements, keys: [k("shift+cmd+i")], menu: .insert, xmind: true),
             C(
                 .label, "Label", .elements, keys: [k("shift+cmd+t")], hyper: k("hyper+l"), menu: .insert,

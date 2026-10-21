@@ -97,7 +97,77 @@ func taskPlanDocument() -> DocumentModel {
     return DocumentModel(canvases: [c], theme: ["name": "classic"])
 }
 
+/// A reviewed map (M14): comments on two topics, one with an unknown key and one
+/// without a date (the Review golden).
+func reviewDocument() -> DocumentModel {
+    var c = Canvas(id: "c1", title: "Pricing review", rootText: "Pricing")
+    var undo = UndoStack()
+    c.edit("Sample", undo: &undo) { e in
+        let annual = try! e.addChild(of: e.canvas.root, text: "Annual tier")
+        let pro = try! e.addChild(of: e.canvas.root, text: "Pro")
+        e.update(annual) {
+            $0.markers = ["priority-1", "flag-red"]
+            $0.comments = [
+                TopicComment(author: "Ana", date: "2026-10-20T14:03:00Z", text: "Drop it?"),
+                TopicComment(author: "Sam", date: "2026-10-20T16:30:05+02:00", text: "Keep it,\nbut discount it."),
+            ]
+        }
+        e.update(pro) {
+            var c = TopicComment(author: "Lee", date: "", text: "Check margins")
+            c.extra["resolved"] = true
+            $0.comments = [c]
+        }
+    }
+    return DocumentModel(canvases: [c], theme: ["name": "classic"])
+}
+
 @Suite struct FormatTests {
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["REGENERATE_FIXTURES"] == "1"))
+    func regenerateReviewFixture() throws {
+        let dir = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
+            .appendingPathComponent("Fixtures/Review.nexus")
+        try? FileManager.default.removeItem(at: dir)
+        try NexusPackage.write(reviewDocument(), to: dir)
+    }
+
+    /// M14: comments round-trip byte-identically (dates as written, unknown keys kept) and
+    /// match the schema.
+    @Test func reviewGoldenRoundTrips() throws {
+        let files = try fixtureFiles("Review")
+        let doc = try NexusPackage.read(files: files)
+        let out = NexusPackage.files(for: doc)
+        #expect(out.keys.sorted() == files.keys.sorted())
+        for (path, data) in files { #expect(out[path] == data, "\(path) changed on round trip") }
+        for (path, data) in NexusPackage.files(for: reviewDocument()) where files[path] != nil {
+            #expect(files[path] == data, "\(path) differs from the golden fixture")
+        }
+        let issues = SchemaValidator.bundled.validate(package: files)
+        #expect(issues.isEmpty, "\(issues)")
+        let c = try #require(doc.canvases["c1"])
+        let annual = try #require(c.nodes.values.first { $0.text == "Annual tier" })
+        #expect(annual.comments[1].date == "2026-10-20T16:30:05+02:00")
+        #expect(annual.comments[1].instant == Date(timeIntervalSince1970: 1_792_506_605))
+        let pro = try #require(c.nodes.values.first { $0.text == "Pro" })
+        #expect(pro.comments[0].extra["resolved"] == true)
+        let json = String(decoding: try #require(files["canvases/c1.json"]), as: UTF8.self)
+        #expect(!json.contains("\"date\": \"\""), "an unknown date is omitted")
+    }
+
+    @Test func schemaRejectsBadComments() {
+        let v = SchemaValidator.bundled
+        func node(_ comment: JSONValue) -> JSONValue {
+            ["text": "a", "kind": "topic", "children": [], "comments": [comment]]
+        }
+        #expect(
+            v.validate(node(["author": "Ana", "text": "ok", "date": "2026-10-20T14:03:00Z"]), definition: "node")
+                .isEmpty)
+        #expect(!v.validate(node(["author": "Ana", "text": "ok", "date": "20/10/2026"]), definition: "node").isEmpty)
+        #expect(!v.validate(node(["author": "Ana"]), definition: "node").isEmpty)
+        #expect(
+            TopicComment(author: "", at: Date(timeIntervalSince1970: 1_792_504_980.7), text: "").date
+                == "2026-10-20T14:03:00Z")
+    }
+
     @Test(.enabled(if: ProcessInfo.processInfo.environment["REGENERATE_FIXTURES"] == "1"))
     func regenerateTaskPlanFixture() throws {
         let dir = URL(fileURLWithPath: #filePath).deletingLastPathComponent()

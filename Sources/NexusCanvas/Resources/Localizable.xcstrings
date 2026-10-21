@@ -5,6 +5,10 @@
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
+    " › comment" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
     " › note" : {
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
@@ -334,6 +338,30 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld children, collapsed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld comments" : {
+      "comment" : "Count phrase with plural variants (SettingsCards.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld comment"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld comments"
                 }
               }
             }
@@ -1225,6 +1253,10 @@
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "⌘↩ adds the comment" : {
+      "comment" : "UI text (CommentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "⌘↩ run and keep open" : {
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
@@ -1689,6 +1721,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Add Comment" : {
+      "comment" : "UI text (CommentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Add Cut-out" : {
       "comment" : "UI text (CanvasController+AIMedia.swift)",
       "extractionState" : "migrated"
@@ -1743,6 +1779,10 @@
     },
     "Add Topic + buttons" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Add, edit and delete review comments" : {
+      "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "Advanced layout" : {
@@ -2817,6 +2857,38 @@
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "Comment as %@" : {
+      "comment" : "Text with values filled in (CommentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Comment author" : {
+      "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Comment by %@: %@" : {
+      "comment" : "Text with values filled in (CommentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Comment text" : {
+      "comment" : "UI text (CommentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Comment thread" : {
+      "comment" : "UI text (CommentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Comment: “" : {
+      "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Comment…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Comments" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Commit" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -3401,6 +3473,14 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Delete Comment" : {
+      "comment" : "UI text (CanvasController+Comments.swift)",
+      "extractionState" : "migrated"
+    },
+    "Delete comment by %@" : {
+      "comment" : "Text with values filled in (CommentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Delete Theme" : {
       "comment" : "UI text (CanvasController+Styling.swift)",
       "extractionState" : "migrated"
@@ -3615,6 +3695,14 @@
     },
     "Edit colour theme" : {
       "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edit Comment" : {
+      "comment" : "UI text (CanvasController+Comments.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edit comment by %@" : {
+      "comment" : "Text with values filled in (CommentViews.swift)",
       "extractionState" : "migrated"
     },
     "Edit Fields" : {
@@ -5945,6 +6033,10 @@
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
+    "New comment" : {
+      "comment" : "UI text (CommentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "New Document of Type…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -6001,6 +6093,10 @@
       "comment" : "Text with values filled in (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "No comments yet." : {
+      "comment" : "UI text (CommentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "No dates" : {
       "comment" : "UI text (GanttView.swift)",
       "extractionState" : "migrated"
@@ -6033,7 +6129,7 @@
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
-    "No notes yet. ⇧⌘N adds one." : {
+    "No notes or comments yet. ⇧⌘N adds a note, ⌃⌘N a comment." : {
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
@@ -9215,6 +9311,10 @@
     },
     "Your keys already work here." : {
       "comment" : "UI text (OnboardingViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Your name on new comments. Empty uses this Mac’s account name." : {
+      "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
     "Your tutorial map is here. Press " : {
