@@ -262,6 +262,8 @@ public final class CanvasController {
     @ObservationIgnored public var viewCommandValidator: ((CommandID) -> Bool)?
     /// Where a new floating topic goes when created from the keyboard.
     @ObservationIgnored public var floatingPlacement: (() -> CGPoint)?
+    /// Where the empty-canvas menu's Add Floating Topic puts the topic (M17).
+    @ObservationIgnored var menuFloatingPoint: CGPoint?
 
     public init(
         store: DocumentStore, canvasID: CanvasID? = nil, registry: CommandRegistry = .standard,

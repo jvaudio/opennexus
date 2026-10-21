@@ -1363,6 +1363,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                 && !(item.action == #selector(cut(_:)) && controller.selection.nodes == [controller.canvas.root])
         }
         if item.action == #selector(paste(_:)) { return controller.mode == .select }
+        if item.action == #selector(performMenuAction(_:)) { return controller.mode != .connect }
         if item.action == #selector(performRegistryCommand(_:)), let raw = item.representedObject as? String {
             if controller.canPerform(CommandID(rawValue: raw)) { return true }
             return (nextHandler() as? any NSMenuItemValidation)?.validateMenuItem(item) ?? false
@@ -1415,6 +1416,13 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         let p = convert(event.locationInWindow, from: nil)
         let w = camera.toWorld(p)
         window?.makeFirstResponder(self)
+        // Control-click opens the context menu, as a right-click does.
+        if event.modifierFlags.intersection(.deviceIndependentFlagsMask).subtracting(.capsLock) == .control,
+            let menu = menu(for: event)
+        {
+            presentContextMenu(menu, event)
+            return
+        }
         if controller.mode == .connect { controller.cancelConnect() }
         // Clicking a ghost accepts it (one undo), like ⌃↩.
         if let id = node(at: p), let i = CanvasController.ghostIndex(id) {
@@ -1832,24 +1840,101 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         let moved = rightPan?.moved ?? false
         rightPan = nil
         // A right-click without a drag still opens the context menu.
-        if !moved, let menu = menu(for: event) { NSMenu.popUpContextMenu(menu, with: event, for: self) }
+        if !moved, let menu = menu(for: event) { presentContextMenu(menu, event) }
     }
 
-    /// A zone's context menu: Export Zone… and Print Zone… (D155). Elsewhere the canvas has
-    /// no context menu yet.
+    /// Shows a context menu at the pointer (tests record it instead: the real one runs a
+    /// modal tracking loop).
+    lazy var presentContextMenu: (NSMenu, NSEvent) -> Void = { [unowned self] menu, event in
+        NSMenu.popUpContextMenu(menu, with: event, for: self)
+    }
+
+    /// What a right-click at a point in the view lands on (M17), or nil for no menu (AI
+    /// suggestions, Present, Map Shot).
+    func menuTarget(at p: CGPoint) -> CanvasMenuTarget? {
+        let c = controller
+        guard c.present == nil, c.mapShot == nil, c.palette == nil, c.jump == nil else { return nil }
+        let w = camera.toWorld(p)
+        if let l = c.scene.legend, l.rect.contains(w) { return .legend }
+        if let id = node(at: p) {
+            guard CanvasController.ghostIndex(id) == nil else { return nil }
+            if let k = c.canvas.callouts.first(where: { $0.topic == id }) { return .element(.callout(k.id)) }
+            if let n = c.scene.nodes[id], n.image != nil, let f = animatedFrame(id) {
+                let local = CGPoint(x: w.x - f.rect.minX, y: w.y - f.rect.minY)
+                if n.imageRect.contains(local) { return .image(id) }
+            }
+            return .topic(id)
+        }
+        if let el = elements.hitTest(w) { return .element(el) }
+        return .canvas(w)
+    }
+
+    /// The context menu for whatever is under the pointer (M17): topics, images,
+    /// relationships, boundaries, summaries, callouts, zones, the legend and empty canvas.
+    /// Right-clicking selects first, as a click would (D176).
     public override func menu(for event: NSEvent) -> NSMenu? {
-        let w = camera.toWorld(convert(event.locationInWindow, from: nil))
-        guard node(at: convert(event.locationInWindow, from: nil)) == nil, case .zone(let id)? = elements.hitTest(w)
-        else { return super.menu(for: event) }
-        controller.selectElement(.zone(id))
-        let menu = NSMenu()
-        for (title, command) in [(Loc.t("Export Zone…"), CommandID.exportZone), (Loc.t("Print Zone…"), .printZone)] {
-            let item = NSMenuItem(title: title, action: #selector(performRegistryCommand(_:)), keyEquivalent: "")
-            item.target = self
-            item.representedObject = command.rawValue
-            menu.addItem(item)
+        guard let target = menuTarget(at: convert(event.locationInWindow, from: nil)) else { return nil }
+        controller.prepareContextMenu(target)
+        refreshOverlays()
+        let entries = controller.contextMenu(for: target)
+        return entries.isEmpty ? nil : makeMenu(entries)
+    }
+
+    /// Entries as an `NSMenu`. Commands go through `performRegistryCommand` (window
+    /// commands such as Export… and Format Panel continue up the responder chain); the
+    /// few other items through `performMenuAction` (D173, D174).
+    func makeMenu(_ entries: [CanvasMenuEntry], title: String = "") -> NSMenu {
+        let menu = NSMenu(title: title)
+        for e in entries {
+            switch e {
+            case .separator:
+                menu.addItem(.separator())
+            case .submenu(let title, let children):
+                let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
+                item.submenu = makeMenu(children, title: title)
+                menu.addItem(item)
+            case .item(let i):
+                let item: NSMenuItem
+                if case .command(let id) = i.action {
+                    item = NSMenuItem(title: i.title, action: #selector(performRegistryCommand(_:)), keyEquivalent: "")
+                    item.representedObject = id.rawValue
+                } else {
+                    item = NSMenuItem(title: i.title, action: #selector(performMenuAction(_:)), keyEquivalent: "")
+                    item.representedObject = MenuActionBox(i.action)
+                }
+                item.target = self
+                if let chord = i.key {
+                    item.keyEquivalent = chord.key.keyEquivalent
+                    item.keyEquivalentModifierMask = chord.menuModifierMask
+                }
+                item.state = i.checked ? .on : .off
+                menu.addItem(item)
+            }
         }
         return menu
+    }
+
+    /// Context-menu items that aren't plain commands (Add Floating Topic at the pointer,
+    /// Edit Label, Collapse Zone, Remove Image, Sticker…).
+    @objc func performMenuAction(_ sender: Any?) {
+        guard let box = (sender as? NSMenuItem)?.representedObject as? MenuActionBox else { return }
+        if let id = box.action.command, let t = NSApp.currentEvent?.type,
+            [.leftMouseUp, .leftMouseDown, .rightMouseUp, .otherMouseUp].contains(t)
+        {
+            controller.noteMouseUse(id)
+        }
+        controller.runMenuAction(box.action)
+        refreshOverlays()
+    }
+
+    /// Shows the menu for a target at a rectangle in the view (VoiceOver's Show Menu).
+    func showContextMenu(_ target: CanvasMenuTarget, at rect: CGRect) -> Bool {
+        controller.prepareContextMenu(target)
+        refreshOverlays()
+        let entries = controller.contextMenu(for: target)
+        guard !entries.isEmpty else { return false }
+        makeMenu(entries).popUp(positioning: nil, at: CGPoint(x: rect.minX, y: rect.maxY), in: self)
+        return true
     }
 
     public override func scrollWheel(with event: NSEvent) {
@@ -1900,6 +1985,15 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     /// The canvas is always usable (otherwise VoiceOver reads it as dimmed).
     public override func isAccessibilityEnabled() -> Bool { true }
     public override func accessibilityCustomRotors() -> [NSAccessibilityCustomRotor] { accessibilityTree.rotors() }
+    /// The empty-canvas menu's items (paste, a floating topic, a zone, select all, fit,
+    /// export and print), and Show Menu opens that menu (M17, D179).
+    public override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
+        accessibilityTree.menuActions(.canvas(camera.toWorld(CGPoint(x: bounds.midX, y: bounds.midY))))
+    }
+    public override func accessibilityPerformShowMenu() -> Bool {
+        let p = CGPoint(x: bounds.midX, y: bounds.midY)
+        return showContextMenu(.canvas(camera.toWorld(p)), at: CGRect(origin: p, size: .zero))
+    }
     /// Read when asked (not on every edit): the selection's description.
     public override func accessibilityValue() -> Any? { accessibilityTree.label(controller.selection.primary) }
 
@@ -1941,6 +2035,12 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             announcedConnect = false
         }
     }
+}
+
+/// Carries a context-menu action on an `NSMenuItem`.
+final class MenuActionBox: NSObject {
+    let action: CanvasMenuAction
+    init(_ action: CanvasMenuAction) { self.action = action }
 }
 
 /// A flipped layer-hosting view: AppKit keeps the hosted layer's geometry in step with

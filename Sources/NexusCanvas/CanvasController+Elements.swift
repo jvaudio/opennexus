@@ -126,9 +126,7 @@ extension CanvasController {
         else { return nil }
         switch chord.key {
         case .delete, .forwardDelete:
-            perform(Loc.t("Delete")) { $0.removeElement(ref) }
-            selectedElement = nil
-            onSceneChange?(true)
+            deleteElement(ref)
             return .handled
         case .escape:
             selectElement(nil)
@@ -145,6 +143,13 @@ extension CanvasController {
         default:
             return nil
         }
+    }
+
+    /// Removes a relationship, boundary, summary, callout or zone (one undo step).
+    public func deleteElement(_ ref: ElementRef) {
+        perform(Loc.t("Delete")) { $0.removeElement(ref) }
+        selectedElement = nil
+        onSceneChange?(true)
     }
 
     public func beginEditingElement(_ ref: ElementRef) {
