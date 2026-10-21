@@ -4,7 +4,7 @@ import NexusLayout
 import NexusTheme
 @preconcurrency import QuartzCore
 
-/// Relationship geometry: a curve between two topics, clipped to their edges.
+/// Relationship geometry: a curve between two topics or zones, clipped to their edges.
 enum RelationshipGeometry {
     struct Result {
         var path: CGPath
@@ -33,6 +33,7 @@ enum RelationshipGeometry {
 
     /// `obstacles` are other topics: a curve bows to whichever side crosses fewer of them.
     static func make(_ r: Relationship, from a: CGRect, to b: CGRect, obstacles: [CGRect] = []) -> Result {
+        if b.contains(a) || a.contains(b) { return nested(r, from: a, to: b) }
         let ca = CGPoint(x: a.midX, y: a.midY)
         let cb = CGPoint(x: b.midX, y: b.midY)
         let p = CGMutablePath()
@@ -124,6 +125,37 @@ enum RelationshipGeometry {
                 path: p, start: s, end: e, startAngle: atan2(s.y - c.y, s.x - c.x),
                 endAngle: atan2(e.y - c.y, e.x - c.x), control: c)
         }
+    }
+
+    /// A topic and the zone around it: a short line from the topic to the zone's nearest
+    /// edge, bowed by any hand-dragged bend.
+    static func nested(_ r: Relationship, from a: CGRect, to b: CGRect) -> Result {
+        let outerIsEnd = b.contains(a)
+        let inner = outerIsEnd ? a : b
+        let outer = outerIsEnd ? b : a
+        let ci = CGPoint(x: inner.midX, y: inner.midY)
+        let gaps = [ci.x - outer.minX, outer.maxX - ci.x, ci.y - outer.minY, outer.maxY - ci.y]
+        let side = gaps.indices.min { gaps[$0] < gaps[$1] }!
+        let edge: CGPoint =
+            switch side {
+            case 0: CGPoint(x: outer.minX, y: ci.y)
+            case 1: CGPoint(x: outer.maxX, y: ci.y)
+            case 2: CGPoint(x: ci.x, y: outer.minY)
+            default: CGPoint(x: ci.x, y: outer.maxY)
+            }
+        let near = clip(ci, inner, toward: edge)
+        let (s, e) = outerIsEnd ? (near, edge) : (edge, near)
+        var c = CGPoint(x: (s.x + e.x) / 2, y: (s.y + e.y) / 2)
+        if let bend = r.bend {
+            c.x += bend.x
+            c.y += bend.y
+        }
+        let p = CGMutablePath()
+        p.move(to: s)
+        p.addQuadCurve(to: e, control: c)
+        return Result(
+            path: p, start: s, end: e, startAngle: atan2(s.y - c.y, s.x - c.x),
+            endAngle: atan2(e.y - c.y, e.x - c.x), control: c)
     }
 
     /// How many obstacles a quadratic curve passes through (sampled).
@@ -378,7 +410,7 @@ final class ElementRenderer {
     private var summaryLayers: [String: CAShapeLayer] = [:]
     private var zoneLayers: [String: CALayer] = [:]
     private var pointerLayers: [String: CAShapeLayer] = [:]
-    private var hintLayers: [NodeID: CALayer] = [:]
+    private var hintLayers: [RelationshipEnd: CALayer] = [:]
     private let preview = CAShapeLayer()
     private let guides = CAShapeLayer()
     private let guideLabel = TextLayer()
@@ -426,8 +458,8 @@ final class ElementRenderer {
     /// Per-frame geometry for things tied to animated topic frames.
     func updateGeometry(selected: ElementRef?, connect: ConnectState?, frame: (NodeID) -> CGRect?) {
         for r in scene.relationships {
-            guard let l = relLayers[r.relationship.id], let a = frame(r.relationship.from),
-                let b = frame(r.relationship.to)
+            guard let l = relLayers[r.relationship.id], let a = rect(r.relationship.from, frame),
+                let b = rect(r.relationship.to, frame)
             else { continue }
             layoutRelationship(l, r, a, b, selected: selected == .relationship(r.relationship.id))
         }
@@ -649,7 +681,7 @@ final class ElementRenderer {
                     relLayers[id] = n
                     return n
                 }()
-            guard let a = frame(r.relationship.from), let b = frame(r.relationship.to) else { continue }
+            guard let a = rect(r.relationship.from, frame), let b = rect(r.relationship.to, frame) else { continue }
             layoutRelationship(l, r, a, b, selected: selected == .relationship(id))
             if isNew && animated && !drawnRelationships.contains(id) {
                 // The edge draws on from source to target, with a brief glow trail.
@@ -889,12 +921,12 @@ final class ElementRenderer {
             preview.isHidden = true
             return
         }
-        let visible = Set(c.matchedHints ? c.matches.map(\.node) : c.matches.map(\.node))
+        let visible = Set(c.matches.map(\.end))
         for cand in c.candidates {
-            let show = visible.contains(cand.node) && c.matchedHints
+            let show = visible.contains(cand.end) && c.matchedHints
             if show {
                 let chip =
-                    hintLayers[cand.node]
+                    hintLayers[cand.end]
                     ?? {
                         let g = CALayer()
                         g.actions = NodeLayer.noActions
@@ -903,7 +935,7 @@ final class ElementRenderer {
                         t.actions = NodeLayer.noActions
                         g.addSublayer(t)
                         overlayLayer.addSublayer(g)
-                        hintLayers[cand.node] = g
+                        hintLayers[cand.end] = g
                         if fresh {
                             // Chips pop in nearest-first, 40 ms apart.
                             let pop = CABasicAnimation(keyPath: "transform.scale")
@@ -917,7 +949,7 @@ final class ElementRenderer {
                         }
                         return g
                     }()
-                let on = c.target?.node == cand.node
+                let on = c.target?.end == cand.end
                 chip.backgroundColor = (on ? theme.amber : RGBA(hex: "#FFE3A3")).cgColor
                 chip.borderColor = RGBA(hex: "#17171C").alpha(0.15).cgColor
                 chip.borderWidth = 0.5
@@ -934,9 +966,9 @@ final class ElementRenderer {
                 let w = max(18, ceil(attr.size().width) + 8)
                 chip.bounds = CGRect(x: 0, y: 0, width: w, height: 18)
                 t.frame = CGRect(x: 0, y: 2, width: w, height: 14)
-            } else if let chip = hintLayers[cand.node] {
+            } else if let chip = hintLayers[cand.end] {
                 chip.removeFromSuperlayer()
-                hintLayers[cand.node] = nil
+                hintLayers[cand.end] = nil
             }
         }
         preview.strokeColor = theme.amber.cgColor
@@ -945,12 +977,13 @@ final class ElementRenderer {
 
     private func layoutConnect(_ c: ConnectState?, frame: (NodeID) -> CGRect?) {
         guard let c else { return }
-        for (id, chip) in hintLayers {
-            if let r = frame(id) { chip.position = CGPoint(x: r.minX + 2, y: r.minY + 2) }
+        for (end, chip) in hintLayers {
+            if let r = rect(end, frame) { chip.position = CGPoint(x: r.minX + 2, y: r.minY + 2) }
         }
-        if let t = c.target, let a = frame(c.source), let b = frame(t.node) {
-            let s = RelationshipGeometry.clip(CGPoint(x: a.midX, y: a.midY), a, toward: CGPoint(x: b.midX, y: b.midY))
-            let e = RelationshipGeometry.clip(CGPoint(x: b.midX, y: b.midY), b, toward: CGPoint(x: a.midX, y: a.midY))
+        if let t = c.target, let a = rect(c.source, frame), let b = rect(t.end, frame) {
+            let g = RelationshipGeometry.make(
+                Relationship(id: "", from: c.source, to: t.end, line: "straight"), from: a, to: b)
+            let (s, e) = (g.start, g.end)
             let p = CGMutablePath()
             p.move(to: s)
             p.addLine(to: e)
@@ -966,9 +999,25 @@ final class ElementRenderer {
         }
     }
 
-    /// Moves a zone's frame while it is dragged (members move with their springs).
+    /// Moves a zone's frame while it is dragged (members move with their springs, and
+    /// relationships to the zone follow on the next `updateGeometry`).
     func offsetZone(_ id: String, by d: CGSize) {
         zoneLayers[id]?.setAffineTransform(CGAffineTransform(translationX: d.width, y: d.height))
+        zoneOffsets[id] = d == .zero ? nil : d
+    }
+
+    private var zoneOffsets: [String: CGSize] = [:]
+
+    /// A relationship end's rectangle: its topic's (animated) frame, or its zone's frame
+    /// moved by any drag in progress.
+    func rect(_ end: RelationshipEnd, _ frame: (NodeID) -> CGRect?) -> CGRect? {
+        switch end {
+        case .topic(let id): return frame(id)
+        case .zone(let id):
+            guard let r = scene.rect(of: end) else { return nil }
+            let d = zoneOffsets[id] ?? .zero
+            return r.offsetBy(dx: d.width, dy: d.height)
+        }
     }
 
     // MARK: Smart guides

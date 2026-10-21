@@ -149,21 +149,21 @@ import Testing
         h.type("Sign in")
         h.press("return")
         let m1 = h.canvas.relationships[0]
-        #expect(m1.from == user && m1.to == web && m1.label == "Sign in" && m1.kind == "message")
+        #expect(m1.from == .topic(user) && m1.to == .topic(web) && m1.label == "Sign in" && m1.kind == "message")
         #expect(h.controller.selectedElement == .relationship(m1.id))
         h.press("opt+return")
         h.type("dashboard")
         h.press("return")
         #expect(h.canvas.relationships.count == 2)
         let ret = h.canvas.relationships[1]
-        #expect(ret.from == web && ret.to == user && ret.kind == "return")
+        #expect(ret.from == .topic(web) && ret.to == .topic(user) && ret.kind == "return")
         // Tab from the first message continues the chain to the next participant, inserted in time.
         h.controller.selectElement(.relationship(m1.id))
         h.press("tab")
         h.type("POST /token")
         h.press("return")
         #expect(h.canvas.relationships.map(\.label) == ["Sign in", "POST /token", "dashboard"])
-        #expect(h.canvas.relationships[1].to == node(h, "Auth service"))
+        #expect(h.canvas.relationships[1].to == .topic(node(h, "Auth service")))
         #expect(Mermaid.sequence(h.canvas).contains("P2->>P3: POST /token"))
         // The scene numbers calls and draws activation bars.
         #expect(

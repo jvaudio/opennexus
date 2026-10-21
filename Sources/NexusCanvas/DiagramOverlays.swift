@@ -274,9 +274,9 @@ struct WireframePreview: View {
                     for p in pts.dropFirst() { lines.addLine(to: CGPoint(x: p.x * k + dx, y: p.y * k + dy)) }
                     continue
                 }
-                guard let a = scene.nodes[r.relationship.from]?.frame.rect,
-                    let c = scene.nodes[r.relationship.to]?.frame.rect
-                else { continue }
+                guard let a = scene.rect(of: r.relationship.from), let c = scene.rect(of: r.relationship.to) else {
+                    continue
+                }
                 lines.move(to: CGPoint(x: t(a).midX, y: t(a).midY))
                 lines.addLine(to: CGPoint(x: t(c).midX, y: t(c).midY))
             }

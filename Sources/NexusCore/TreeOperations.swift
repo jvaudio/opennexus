@@ -270,6 +270,12 @@ extension CanvasEditor {
     /// Adds a relationship and returns its id.
     @discardableResult
     public mutating func connect(_ from: NodeID, to: NodeID, label: String = "") -> String {
+        connect(.topic(from), to: .topic(to), label: label)
+    }
+
+    /// Adds a relationship between topics or zones and returns its id.
+    @discardableResult
+    public mutating func connect(_ from: RelationshipEnd, to: RelationshipEnd, label: String = "") -> String {
         let used = Set(canvas.relationships.map(\.id))
         var i = canvas.relationships.count + 1
         while used.contains("r\(i)") { i += 1 }

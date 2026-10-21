@@ -198,8 +198,10 @@ final class OutlineDocumentView: NSView, NSTextViewDelegate {
                 y += lh + 6
             }
             if let note = n.note?.text, !note.isEmpty || noteNode == id { line(Loc.f("Note · %@", note), .note) }
-            for r in c.relationships where r.from == id {
-                let target = c.nodes[r.to]?.text ?? ""
+            for r in c.relationships where r.from == .topic(id) {
+                let target =
+                    r.to.zone.map { z in Loc.f("zone %@", c.zones.first { $0.id == z }?.title ?? "") }
+                    ?? r.to.topic.flatMap { c.nodes[$0]?.text } ?? ""
                 line(
                     r.label.isEmpty
                         ? Loc.f("→ links to %@", target) : Loc.f("→ links to %@ (“%@”)", target, r.label), .link)

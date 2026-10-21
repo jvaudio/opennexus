@@ -421,7 +421,8 @@ extension CanvasController {
     public var protocolSuggestions: [String] {
         guard canvas.type == .architecture, let e = edit, case .relationship(let rid)? = e.element else { return [] }
         let target: NodeID? =
-            rid.hasPrefix("t:") ? NodeID(String(rid.dropFirst(2))) : canvas.relationships.first { $0.id == rid }?.to
+            rid.hasPrefix("t:")
+            ? NodeID(String(rid.dropFirst(2))) : canvas.relationships.first { $0.id == rid }?.to.topic
         let t = target.flatMap { DiagramCatalog.effectiveType($0, in: canvas) }
         let all = DiagramCatalog.protocolSuggestions(for: t)
         let q = e.text.lowercased()
@@ -487,7 +488,9 @@ extension CanvasController {
 
     /// Keys on a selected sequence message.
     func sequenceMessageKey(_ chord: KeyChord, _ id: String) -> KeyResult? {
-        guard canvas.type == .sequence, let r = canvas.relationships.first(where: { $0.id == id }) else { return nil }
+        guard canvas.type == .sequence, let r = canvas.relationships.first(where: { $0.id == id })?.topics else {
+            return nil
+        }
         let messages = Mermaid.messages(canvas)
         let i = messages.firstIndex { $0.id == id } ?? 0
         let mods = chord.modifiers

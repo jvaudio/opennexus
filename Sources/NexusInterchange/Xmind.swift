@@ -264,10 +264,11 @@ public enum XmindFormat {
             it.children = attached.map { topic($0) }
             let kidRefs = it.children.map { $0.ref ?? "" }
             for b in (t["boundaries"] as? [[String: Any]]) ?? [] {
+                let title = (b["title"] as? String) ?? ""
                 if let r = XmindFormat.range(b["range"] as? String, count: kidRefs.count) {
-                    groups.append(ICanvas.Group(refs: Array(kidRefs[r]), title: (b["title"] as? String) ?? ""))
+                    groups.append(ICanvas.Group(refs: Array(kidRefs[r]), title: title, ref: b["id"] as? String))
                 } else if let parent = it.ref, b["range"] as? String == "master" {
-                    groups.append(ICanvas.Group(refs: [parent], title: (b["title"] as? String) ?? ""))
+                    groups.append(ICanvas.Group(refs: [parent], title: title, ref: b["id"] as? String))
                 }
             }
             let summaryTopics = (children["summary"] as? [[String: Any]]) ?? []
@@ -422,7 +423,8 @@ public enum XmindFormat {
             let kidRefs = it.children.map { $0.ref ?? "" }
             for b in e.kid("boundaries")?.kids("boundary") ?? [] {
                 if let r = XmindFormat.range(b.attr("range"), count: kidRefs.count) {
-                    groups.append(ICanvas.Group(refs: Array(kidRefs[r]), title: b.kid("title")?.stringValue ?? ""))
+                    let title = b.kid("title")?.stringValue ?? ""
+                    groups.append(ICanvas.Group(refs: Array(kidRefs[r]), title: title, ref: b.attr("id")))
                 }
             }
             for s in e.kid("summaries")?.kids("summary") ?? [] {

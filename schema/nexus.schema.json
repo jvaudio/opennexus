@@ -776,7 +776,15 @@
           "type": "array"
         },
         "from": {
-          "$ref": "#/$defs/id"
+          "$ref": "#/$defs/id",
+          "description": "A topic id, or a zone id when fromKind is zone."
+        },
+        "fromKind": {
+          "description": "What from names: topic (the default, omitted) or zone (D160).",
+          "enum": [
+            "topic",
+            "zone"
+          ]
         },
         "id": {
           "$ref": "#/$defs/id"
@@ -798,7 +806,15 @@
           "type": "string"
         },
         "to": {
-          "$ref": "#/$defs/id"
+          "$ref": "#/$defs/id",
+          "description": "A topic id, or a zone id when toKind is zone."
+        },
+        "toKind": {
+          "description": "What to names: topic (the default, omitted) or zone (D160).",
+          "enum": [
+            "topic",
+            "zone"
+          ]
         },
         "width": {
           "minimum": 0,

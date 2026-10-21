@@ -238,11 +238,45 @@ extension Node: JSONRepresentable {
     }
 }
 
-/// A free connector between two nodes (Xmind's Relationship, a technical diagram's edge).
+/// One end of a relationship: a topic or a zone (Xmind 26.03 connects both, D160).
+public enum RelationshipEnd: Hashable, Sendable, CustomStringConvertible {
+    case topic(NodeID)
+    case zone(String)
+
+    public var topic: NodeID? {
+        if case .topic(let id) = self { return id }
+        return nil
+    }
+
+    public var zone: String? {
+        if case .zone(let id) = self { return id }
+        return nil
+    }
+
+    /// The id as a file stores it in `from` / `to`.
+    public var rawValue: String {
+        switch self {
+        case .topic(let id): id.rawValue
+        case .zone(let id): id
+        }
+    }
+
+    /// `topic` or `zone`, as a file stores it in `fromKind` / `toKind`.
+    public var kind: String { zone == nil ? "topic" : "zone" }
+
+    public init(kind: String?, id: String) {
+        self = kind == "zone" ? .zone(id) : .topic(NodeID(id))
+    }
+
+    public var description: String { zone.map { "zone \($0)" } ?? rawValue }
+}
+
+/// A free connector between two topics or zones (Xmind's Relationship, a technical
+/// diagram's edge).
 public struct Relationship: Hashable, Sendable, JSONRepresentable {
     public var id: String
-    public var from: NodeID
-    public var to: NodeID
+    public var from: RelationshipEnd
+    public var to: RelationshipEnd
     public var label: String
     /// curved, straight, elbow, zigzag
     public var line: String
@@ -265,7 +299,7 @@ public struct Relationship: Hashable, Sendable, JSONRepresentable {
     public var extra: [String: JSONValue] = [:]
 
     public init(
-        id: String, from: NodeID, to: NodeID, label: String = "", line: String = "curved",
+        id: String, from: RelationshipEnd, to: RelationshipEnd, label: String = "", line: String = "curved",
         ends: [String] = ["none", "arrow"]
     ) {
         self.id = id
@@ -276,11 +310,44 @@ public struct Relationship: Hashable, Sendable, JSONRepresentable {
         self.ends = ends
     }
 
+    /// A relationship between two topics.
+    public init(
+        id: String, from: NodeID, to: NodeID, label: String = "", line: String = "curved",
+        ends: [String] = ["none", "arrow"]
+    ) {
+        self.init(id: id, from: .topic(from), to: .topic(to), label: label, line: line, ends: ends)
+    }
+
+    /// Both topics when neither end is a zone (technical rules and text formats only
+    /// know topic-to-topic edges).
+    public var topics: (from: NodeID, to: NodeID)? {
+        guard let a = from.topic, let b = to.topic else { return nil }
+        return (a, b)
+    }
+
+    /// The topics among its ends.
+    public var endTopics: [NodeID] { [from.topic, to.topic].compactMap(\.self) }
+
+    /// The zones among its ends.
+    public var endZones: [String] { [from.zone, to.zone].compactMap(\.self) }
+
+    /// True when either end is the topic.
+    public func touches(_ id: NodeID) -> Bool { from == .topic(id) || to == .topic(id) }
+
+    /// True when either end is the zone.
+    public func touches(zone id: String) -> Bool { from == .zone(id) || to == .zone(id) }
+
+    /// True when both ends are topics in `keep`.
+    public func connects(within keep: Set<NodeID>) -> Bool {
+        guard let (a, b) = topics else { return false }
+        return keep.contains(a) && keep.contains(b)
+    }
+
     public init(json: JSONValue, path: String) throws {
         var r = try ObjectReader(json, path: path)
         id = try r.string("id")
-        from = NodeID(try r.string("from"))
-        to = NodeID(try r.string("to"))
+        from = RelationshipEnd(kind: try r.optionalString("fromKind"), id: try r.string("from"))
+        to = RelationshipEnd(kind: try r.optionalString("toKind"), id: try r.string("to"))
         label = try r.optionalString("label") ?? ""
         line = try r.optionalString("line") ?? "curved"
         let e = try r.strings("ends")
@@ -299,7 +366,9 @@ public struct Relationship: Hashable, Sendable, JSONRepresentable {
         var w = ObjectWriter(extra: extra)
         w.set("id", id)
         w.set("from", from.rawValue)
+        if from.zone != nil { w.set("fromKind", from.kind) }
         w.set("to", to.rawValue)
+        if to.zone != nil { w.set("toKind", to.kind) }
         w.set("label", label)
         w.set("line", line)
         w.set("ends", ends, omitEmpty: false)

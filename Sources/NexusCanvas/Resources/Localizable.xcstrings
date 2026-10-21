@@ -157,6 +157,10 @@
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
+    "%@. Zone." : {
+      "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "%@’s next level has %@." : {
       "comment" : "Text with values filled in (DFD.swift)",
       "extractionState" : "migrated"
@@ -725,7 +729,7 @@
       "comment" : "Text with values filled in (CanvasView.swift)",
       "extractionState" : "migrated"
     },
-    "%lld relationships to missing topics" : {
+    "%lld relationships to missing topics or zones" : {
       "comment" : "Count phrase with plural variants (Repair.swift)",
       "extractionState" : "migrated",
       "localizations" : {
@@ -735,13 +739,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld relationship to a missing topic"
+                  "value" : "%lld relationship to a missing topic or zone"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld relationships to missing topics"
+                  "value" : "%lld relationships to missing topics or zones"
                 }
               }
             }
@@ -1562,6 +1566,10 @@
       "extractionState" : "migrated"
     },
     "a topic" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "a zone" : {
       "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
@@ -9245,12 +9253,20 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "zone %@" : {
+      "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Zone Style" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Zone Title" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Zone: %@" : {
+      "comment" : "Text with values filled in (CanvasController+Connect.swift)",
       "extractionState" : "migrated"
     },
     "Zoom" : {

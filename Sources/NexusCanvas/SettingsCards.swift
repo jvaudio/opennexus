@@ -617,9 +617,14 @@ public enum Spoken {
         if let task = TaskFormat.spoken(c, id, today: TaskDate.today()) { parts.append(task) }
         if n.note != nil { parts.append(Loc.t("Has note")) }
         if prefs.string("accessibility.readEdges") == "source" {
-            for r in c.relationships where r.from == id || r.to == id {
-                let other = r.from == id ? r.to : r.from
-                let name = c.nodes[other]?.text ?? Loc.t("a topic")
+            for r in c.relationships where r.touches(id) {
+                let other = r.from == .topic(id) ? r.to : r.from
+                let name =
+                    switch other {
+                    case .topic(let t): c.nodes[t]?.text ?? Loc.t("a topic")
+                    case .zone(let z):
+                        (c.zones.first { $0.id == z }?.title).map { Loc.f("zone %@", $0) } ?? Loc.t("a zone")
+                    }
                 parts.append(
                     r.label.isEmpty
                         ? Loc.f("Connected to %@", name) : Loc.f("Connected to %@ by ‘%@’", name, r.label))

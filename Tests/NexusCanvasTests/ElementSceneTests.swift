@@ -86,6 +86,67 @@ import Testing
         #expect(h.controller.scene.nodes[pro] == nil)
     }
 
+    /// D160: a relationship ends on a zone's rectangle, follows the zone, survives save
+    /// and load, exports, and goes when the zone is removed.
+    @Test func relationshipToAZone() throws {
+        let h = CanvasHarness(model: launchPlanDocument())
+        let zone = try #require(
+            h.controller.perform("Zone") { $0.addZone(title: "Ideas", origin: CanvasPoint(x: 900, y: -400)) })
+        let pro = node(h, "Pro")
+        let risks = node(h, "Risks")
+        h.controller.perform("Detach") { try $0.detach(pro, at: CanvasPoint(x: 1000, y: -300)) }
+        h.controller.perform("Drag") { try $0.moveFloating(pro, to: CanvasPoint(x: 1000, y: -300)) }
+        #expect(h.canvas.zones[0].members == [pro])
+        h.controller.perform("Connect") { e in
+            e.connect(.topic(risks), to: .zone(zone), label: "parked")
+            e.connect(.topic(pro), to: .zone(zone))
+        }
+        #expect(h.canvas.validate().isEmpty)
+        let scene = h.controller.scene
+        #expect(scene.relationships.map(\.relationship.to) == [.zone(zone), .zone(zone)])
+        func onEdge(_ p: CGPoint, _ r: CGRect) -> Bool {
+            let x = abs(p.x - r.minX) < 0.6 || abs(p.x - r.maxX) < 0.6
+            let y = abs(p.y - r.minY) < 0.6 || abs(p.y - r.maxY) < 0.6
+            let r = r.insetBy(dx: -0.6, dy: -0.6)
+            return (x && p.y >= r.minY && p.y <= r.maxY) || (y && p.x >= r.minX && p.x <= r.maxX)
+        }
+        // From outside: the end sits on the zone's frame (plus the usual 6 pt gap).
+        let zr = try #require(scene.rect(of: .zone(zone)))
+        let a = try #require(scene.rect(of: .topic(risks)))
+        let outside = RelationshipGeometry.make(h.canvas.relationships[0], from: a, to: zr)
+        #expect(onEdge(outside.end, zr.insetBy(dx: -6, dy: -6)))
+        // From a member: a short line to the zone's nearest edge.
+        let p = try #require(scene.rect(of: .topic(pro)))
+        let inside = RelationshipGeometry.make(h.canvas.relationships[1], from: p, to: zr)
+        #expect(onEdge(inside.end, zr) && !p.contains(inside.start) && zr.contains(inside.start))
+
+        // The anchor follows the zone.
+        h.controller.moveZone(zone, by: CGSize(width: 40, height: 30))
+        let moved = try #require(h.controller.scene.rect(of: .zone(zone)))
+        #expect(abs(moved.minX - zr.minX - 40) < 0.6 && abs(moved.minY - zr.minY - 30) < 0.6)
+
+        // Save and load.
+        let decoded = try Canvas(json: h.canvas.json, path: "c")
+        #expect(decoded.relationships == h.canvas.relationships)
+
+        // Zone export keeps member → zone, not the one from outside (D155).
+        var o = ImageExporter.Options()
+        o.scope = .zone
+        o.zone = zone
+        let isolated = ImageExporter.controller(h.store.model, canvas: h.canvas.id, o).scene
+        #expect(isolated.relationships.map(\.relationship.from) == [.topic(pro)])
+        let svg = SVGExporter.export(h.store.model, canvas: h.canvas.id, ImageExporter.Options())
+        #expect(try XMLDocument(data: Data(svg.utf8)).rootElement() != nil)
+        #expect(svg.contains("data-nexus-to=\"\(zone)\" data-nexus-to-kind=\"zone\""))
+        #expect(svg.components(separatedBy: "class=\"relationship\"").count == 3)
+
+        // Removing the zone removes its relationships; one undo brings both back.
+        h.controller.perform("Remove") { $0.removeElement(.zone(zone)) }
+        #expect(h.canvas.relationships.isEmpty && h.canvas.validate().isEmpty)
+        h.undo.undo(h.store)
+        #expect(h.canvas.relationships.count == 2)
+    }
+
     @Test func relationshipSceneFollowsColourModes() {
         let h = CanvasHarness(model: launchPlanDocument())
         let a = node(h, "Channels")

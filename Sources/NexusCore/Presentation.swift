@@ -127,11 +127,12 @@ public enum Deck {
         ]
         let s = c.presentation
         if c.type == .sequence {
-            for (i, r) in Mermaid.messages(c).enumerated() where visible(r.from) && visible(r.to) {
+            for (i, r) in Mermaid.messages(c).enumerated() {
+                guard let (from, to) = r.topics, visible(from) && visible(to) else { continue }
                 out.append(
                     Slide(
                         id: "msg:\(r.id)", kicker: kicker, title: r.label.isEmpty ? "Message \(i + 1)" : r.label,
-                        focus: all, highlight: [r.from, r.to], flow: r.id, note: c.nodes[r.to]?.note?.text))
+                        focus: all, highlight: [from, to], flow: r.id, note: c.nodes[to]?.note?.text))
             }
             return out
         }

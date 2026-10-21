@@ -176,7 +176,7 @@ extension SceneBuilder {
 
         if type == .sequence {
             let ps = (canvas.nodes[canvas.root]?.children ?? []).filter { set.contains($0) }
-            let msgs = canvas.relationships.filter { ps.contains($0.from) && ps.contains($0.to) }
+            let msgs = canvas.relationships.filter { $0.connects(within: Set(ps)) }
             let font = NSFont.monospacedSystemFont(ofSize: 12.5, weight: .regular)
             var numbered = 0
             let messages = msgs.enumerated().map { i, r -> SequenceLayout.Message in
@@ -184,12 +184,12 @@ extension SceneBuilder {
                 if !isReturn { numbered += 1 }
                 let text = isReturn ? r.label : "\(i + 1) · \(r.label)"
                 let w = ceil((text as NSString).size(withAttributes: [.font: font]).width)
-                return SequenceLayout.Message(from: r.from, to: r.to, isReturn: isReturn, labelWidth: w)
+                return SequenceLayout.Message(from: r.from.topic!, to: r.to.topic!, isReturn: isReturn, labelWidth: w)
             }
             let r = SequenceLayout.layout(participants: ps, sizes: sizes, messages: messages)
             out.frames = r.frames
             for (i, m) in msgs.enumerated() {
-                guard let a = r.frames[m.from], let b = r.frames[m.to] else { continue }
+                guard let (from, to) = m.topics, let a = r.frames[from], let b = r.frames[to] else { continue }
                 let y = r.messageY[i]
                 let half = SequenceLayout.activationWidth / 2
                 if m.from == m.to {
@@ -215,9 +215,10 @@ extension SceneBuilder {
             for id in included {
                 if let p = parents[id], set.contains(p) { edges.append((p, id)) }
             }
-            for r in canvas.relationships where set.contains(r.from) && set.contains(r.to) {
+            for r in canvas.relationships {
                 // Returns and feedback loops shouldn't pull ranks backwards.
-                edges.append((r.from, r.to))
+                guard let (from, to) = r.topics, set.contains(from) && set.contains(to) else { continue }
+                edges.append((from, to))
             }
             var o = GraphLayout.Options()
             o.direction = type == .flowchart ? .down : .right
@@ -293,8 +294,8 @@ extension SceneBuilder {
             switch types[child] {
             case .threat?:
                 // A threat points at the element it threatens.
-                r.from = child
-                r.to = parent
+                r.from = .topic(child)
+                r.to = .topic(parent)
                 r.dash = "dashed"
                 color = t.critical
                 r.line = "curved"

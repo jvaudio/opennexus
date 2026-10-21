@@ -330,7 +330,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                 sticker: n.sticker.flatMap { $0.hasPrefix("emoji:") ? nil : image(for: $0) })
             layer.connectState(
                 controller.connect.map { c in
-                    c.source == id
+                    c.source == .topic(id)
                         ? .source
                         : c.target?.node == id ? .target : c.matches.contains { $0.node == id } ? .candidate : .dimmed
                 }, theme: theme)
@@ -968,7 +968,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     }
 
     private func updateConnectField() {
-        guard let c = controller.connect, let src = animatedFrame(c.source) else {
+        guard let c = controller.connect,
+            let src = c.source.topic.flatMap({ animatedFrame($0)?.rect }) ?? controller.scene.rect(of: c.source)
+        else {
             connectField?.removeFromSuperview()
             connectField = nil
             return
@@ -976,15 +978,15 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         let host: NSHostingView<ConnectFieldView>
         if let existing = connectField as? NSHostingView<ConnectFieldView> {
             host = existing
-            host.rootView = ConnectFieldView(state: c, texts: controller.nodeTexts, theme: controller.theme)
+            host.rootView = ConnectFieldView(state: c, texts: controller.connectTexts, theme: controller.theme)
         } else {
             host = NSHostingView(
-                rootView: ConnectFieldView(state: c, texts: controller.nodeTexts, theme: controller.theme))
+                rootView: ConnectFieldView(state: c, texts: controller.connectTexts, theme: controller.theme))
             host.sizingOptions = [.intrinsicContentSize]
             addSubview(host)
             connectField = host
         }
-        let r = camera.toView(src.rect)
+        let r = camera.toView(src)
         let size = host.fittingSize
         host.frame = CGRect(x: r.midX - 40, y: r.maxY + 12, width: max(280, size.width), height: size.height)
     }
@@ -1636,6 +1638,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             drag = .zone(id: zid, start: start, members: members, origins: origins, active: active)
             zoneDragOffset = CGSize(width: dx, height: dy)
             elements.offsetZone(zid, by: zoneDragOffset)
+            elements.updateGeometry(
+                selected: controller.selectedElement, connect: nil,
+                frame: { [weak self] in self?.animatedFrame($0)?.rect })
         case nil:
             break
         }
@@ -1885,8 +1890,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         if let s = controller.connect, !announcedConnect {
             announcedConnect = true
             if controller.prefs.bool("accessibility.announceConnect") {
+                let texts = controller.connectTexts
                 let targets = s.candidates.prefix(6).compactMap { cand in
-                    c.nodes[cand.node].map { "\(cand.hint.uppercased()), \($0.text)" }
+                    texts[cand.end].map { "\(cand.hint.uppercased()), \($0)" }
                 }
                 NSAccessibility.post(
                     element: self, notification: .announcementRequested,

@@ -2,18 +2,22 @@ import Foundation
 import NexusCore
 import NexusKeys
 
-/// One possible Connect target.
+/// One possible Connect target: a topic or a zone.
 public struct ConnectCandidate: Equatable, Sendable {
-    public var node: NodeID
+    public var end: RelationshipEnd
     public var hint: String
-    /// Distance rank: 0 is the nearest topic.
+    /// Distance rank: 0 is the nearest topic or zone.
     public var rank: Int
+
+    /// The topic, when the candidate is one.
+    public var node: NodeID? { end.topic }
 }
 
 /// Connect mode (F2): hint chips nearest-first, type hint letters or text to filter,
-/// arrows move the highlight, ↩ draws the edge, Esc changes nothing.
+/// arrows move the highlight, ↩ draws the edge, Esc changes nothing. Zones are targets
+/// too, and a selected zone is the source (D161).
 public struct ConnectState: Equatable, Sendable {
-    public var source: NodeID
+    public var source: RelationshipEnd
     public var query: String = ""
     public var highlighted: Int = 0
     public var candidates: [ConnectCandidate]
@@ -52,7 +56,7 @@ extension ConnectState {
         return out
     }
 
-    mutating func refilter(texts: [NodeID: String]) {
+    mutating func refilter(texts: [RelationshipEnd: String]) {
         let q = query.uppercased()
         highlighted = 0
         guard !q.isEmpty else {
@@ -68,30 +72,39 @@ extension ConnectState {
             return
         }
         let needle = query.lowercased()
-        matches = candidates.filter { (texts[$0.node] ?? "").lowercased().contains(needle) }
+        matches = candidates.filter { (texts[$0.end] ?? "").lowercased().contains(needle) }
         matchedHints = false
     }
 }
 
 @MainActor
 extension CanvasController {
-    /// ⇧⌘L: enter Connect mode from the primary selection.
+    /// ⇧⌘L: enter Connect mode from the selected zone, or else the primary selection.
+    /// Topics and zones are candidates, nearest centre first.
     public func startConnect() {
         if mode == .edit { commitEdit() }
-        let source = selection.primary
-        guard let s = scene.nodes[source]?.frame.center else { return }
-        let others = scene.order.filter { $0 != source }
-        let ranked = others.sorted {
-            let a = scene.nodes[$0]!.frame.center
-            let b = scene.nodes[$1]!.frame.center
-            let da = hypot(a.x - s.x, a.y - s.y)
-            let db = hypot(b.x - s.x, b.y - s.y)
-            return da == db ? $0 < $1 : da < db
+        let source: RelationshipEnd =
+            if case .zone(let z)? = selectedElement { .zone(z) } else { .topic(selection.primary) }
+        guard let sr = scene.rect(of: source) else { return }
+        let s = CGPoint(x: sr.midX, y: sr.midY)
+        let topics: [RelationshipEnd] = scene.order.map { .topic($0) }
+        let zones: [RelationshipEnd] = scene.zones.map { .zone($0.zone.id) }
+        let others = (topics + zones).filter { $0 != source }
+        let scene = scene
+        func distance(_ e: RelationshipEnd) -> CGFloat {
+            guard let r = scene.rect(of: e) else { return .infinity }
+            return hypot(r.midX - s.x, r.midY - s.y)
         }
+        let measured: [(end: RelationshipEnd, d: CGFloat)] = others.map { ($0, distance($0)) }
+        func before(_ a: RelationshipEnd, _ b: RelationshipEnd) -> Bool {
+            if let x = a.topic, let y = b.topic { return x < y }
+            return a.topic != nil || (b.topic == nil && a.rawValue < b.rawValue)
+        }
+        let ranked = measured.sorted { a, b in a.d == b.d ? before(a.end, b.end) : a.d < b.d }.map(\.end)
         let hints = ConnectState.hints(count: ranked.count)
         var state = ConnectState(
             source: source,
-            candidates: ranked.enumerated().map { ConnectCandidate(node: $1, hint: hints[$0], rank: $0) })
+            candidates: ranked.enumerated().map { ConnectCandidate(end: $1, hint: hints[$0], rank: $0) })
         state.matches = state.candidates
         connect = state
         selectedElement = nil
@@ -105,7 +118,12 @@ extension CanvasController {
         onSceneChange?(false)
     }
 
-    var nodeTexts: [NodeID: String] { canvas.nodes.mapValues(\.text) }
+    /// What Connect mode shows and filters on: topic text, and a zone's title.
+    var connectTexts: [RelationshipEnd: String] {
+        var out = Dictionary(uniqueKeysWithValues: canvas.nodes.map { (RelationshipEnd.topic($0.key), $0.value.text) })
+        for z in canvas.zones { out[.zone(z.id)] = Loc.f("Zone: %@", z.title) }
+        return out
+    }
 
     /// Connect-mode keys. Returns true when handled.
     func handleConnectKey(_ chord: KeyChord, characters: String?) -> Bool {
@@ -119,7 +137,7 @@ extension CanvasController {
         case .delete:
             guard !c.query.isEmpty else { return true }
             c.query.removeLast()
-            c.refilter(texts: nodeTexts)
+            c.refilter(texts: connectTexts)
             connect = c
         case .down, .right:
             if !c.matches.isEmpty { c.highlighted = (c.highlighted + 1) % c.matches.count }
@@ -132,7 +150,7 @@ extension CanvasController {
                 ch.unicodeScalars.allSatisfy({ !CharacterSet.controlCharacters.contains($0) })
             else { return true }
             c.query += ch
-            c.refilter(texts: nodeTexts)
+            c.refilter(texts: connectTexts)
             connect = c
         }
         onSceneChange?(false)
@@ -144,7 +162,7 @@ extension CanvasController {
     public func finishConnect() {
         guard let c = connect else { return }
         let source = c.source
-        let target = c.target?.node
+        let target = c.target?.end
         let newText = c.query.trimmingCharacters(in: .whitespaces)
         guard target != nil || c.offersCreate else {
             cancelConnect()
@@ -153,15 +171,17 @@ extension CanvasController {
         connect = nil
         mode = .select
         let root = canvas.root
-        let result = perform(Loc.t("Relationship"), selectionAfter: { (r: (NodeID, String)) in Selection(r.0) }) { e in
-            let to = try target ?? e.addChild(of: root, text: newText)
-            let rid = e.connect(source, to: to)
-            return (to, rid)
+        let primary = source.topic ?? selection.primary
+        let result = perform(
+            Loc.t("Relationship"), selectionAfter: { (r: (RelationshipEnd, String)) in Selection(r.0.topic ?? primary) }
+        ) { e in
+            let to = try target ?? .topic(e.addChild(of: root, text: newText))
+            return (to, e.connect(source, to: to))
         }
         guard let (_, rid) = result else { return }
-        selection = Selection(source)
+        selection = Selection(primary)
         selectedElement = .relationship(rid)
-        var session = EditSession(node: source, text: "", selectAll: false)
+        var session = EditSession(node: primary, text: "", selectAll: false)
         session.element = .relationship(rid)
         edit = session
         mode = .edit

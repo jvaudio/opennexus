@@ -36,8 +36,10 @@ public struct FlowGraph: Sendable {
             }
         }
         let present = Set(elements)
-        for r in canvas.relationships where present.contains(r.from) && present.contains(r.to) {
-            flows.append(Flow(id: r.id, from: r.from, to: r.to, label: r.label, isTree: false))
+        // Zones aren't DFD elements: only topic-to-topic relationships are flows.
+        for r in canvas.relationships {
+            guard let (from, to) = r.topics, present.contains(from) && present.contains(to) else { continue }
+            flows.append(Flow(id: r.id, from: from, to: to, label: r.label, isTree: false))
         }
     }
 
@@ -274,24 +276,27 @@ extension CanvasEditor {
                 }
                 return p
             }
-            guard let r = canvas.relationships.first(where: { $0.id == flowID }) else { return nil }
-            let p = try addChild(of: r.from, text: "New process")
+            guard let r = canvas.relationships.first(where: { $0.id == flowID }), let source = r.from.topic else {
+                return nil
+            }
+            let p = try addChild(of: source, text: "New process")
             update(p) {
                 $0.nodeType = .process
                 $0.edgeLabel = r.label.isEmpty ? nil : r.label
             }
-            updateRelationship(flowID) { $0.from = p }
+            updateRelationship(flowID) { $0.from = .topic(p) }
             return p
         case .rerouteVia(let flowID, let process):
             if flowID.hasPrefix("t:") {
                 try move(NodeID(String(flowID.dropFirst(2))), toParent: process)
-            } else if let r = canvas.relationships.first(where: { $0.id == flowID }) {
-                if r.from != process && canvas.relationships.contains(where: { $0.from == r.from && $0.to == process })
-                    || canvas.parent(of: process) == r.from
+            } else if let r = canvas.relationships.first(where: { $0.id == flowID }), let source = r.from.topic {
+                if source != process
+                    && canvas.relationships.contains(where: { $0.from == r.from && $0.to == .topic(process) })
+                    || canvas.parent(of: process) == source
                 {
-                    updateRelationship(flowID) { $0.from = process }
+                    updateRelationship(flowID) { $0.from = .topic(process) }
                 } else {
-                    updateRelationship(flowID) { $0.to = process }
+                    updateRelationship(flowID) { $0.to = .topic(process) }
                 }
             }
             return nil

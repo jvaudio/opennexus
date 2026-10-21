@@ -20,7 +20,7 @@ public enum Mermaid {
     /// Messages: relationships between participants, in time order.
     public static func messages(_ canvas: Canvas) -> [Relationship] {
         let ps = Set(participants(canvas))
-        return canvas.relationships.filter { ps.contains($0.from) && ps.contains($0.to) }
+        return canvas.relationships.filter { $0.connects(within: ps) }
     }
 
     public static func sequence(_ canvas: Canvas) -> String {
@@ -35,7 +35,7 @@ public enum Mermaid {
         }
         for m in messages(canvas) {
             let arrow = m.kind == "return" ? "-->>" : "->>"
-            lines.append("    \(alias[m.from]!)\(arrow)\(alias[m.to]!): \(label(m.label))")
+            lines.append("    \(alias[m.from.topic!]!)\(arrow)\(alias[m.to.topic!]!): \(label(m.label))")
         }
         return lines.joined(separator: "\n") + "\n"
     }
@@ -63,10 +63,19 @@ public enum Mermaid {
                 edges.append("    \(p.rawValue) -->\(l) \(id.rawValue)")
             }
         }
-        for r in canvas.relationships where canvas.nodes[r.from] != nil && canvas.nodes[r.to] != nil {
+        // Zones are subgraphs holding their members' branches, so relationships can end on them.
+        for z in canvas.zones {
+            lines.append("    subgraph \(ref(.zone(z.id))) [\(quote(z.title))]")
+            for m in z.members { lines += canvas.subtree(m).map { "        \($0.rawValue)" } }
+            lines.append("    end")
+        }
+        for r in canvas.relationships where canvas.has(r.from) && canvas.has(r.to) {
             let l = r.label.isEmpty ? "" : "|\(label(r.label))|"
-            edges.append("    \(r.from.rawValue) -.->\(l) \(r.to.rawValue)")
+            edges.append("    \(ref(r.from)) -.->\(l) \(ref(r.to))")
         }
         return (lines + edges).joined(separator: "\n") + "\n"
     }
+
+    /// A topic's id, or `zone_<id>` for a zone's subgraph (zone ids could match topic ids).
+    static func ref(_ end: RelationshipEnd) -> String { end.zone.map { "zone_\($0)" } ?? end.rawValue }
 }

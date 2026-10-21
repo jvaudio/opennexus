@@ -17,6 +17,7 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
     private var topics: [NodeID: TopicElement] = [:]
     private var edges: [String: ElementItem] = [:]
     private var boxes: [String: ElementItem] = [:]
+    private var zoneItems: [String: ElementItem] = [:]
     private var revision = -1
     private var depths: [NodeID: Int] = [:]
     private var maxDepth = 0
@@ -144,15 +145,40 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
             let id = r.relationship.id
             let e = edges[id] ?? ElementItem(ref: .relationship(id), tree: self)
             edges[id] = e
-            let from = c.canvas.nodes[r.relationship.from]?.text ?? Loc.t("a topic")
-            let to = c.canvas.nodes[r.relationship.to]?.text ?? Loc.t("a topic")
+            let canvas = c.canvas
+            func name(_ end: RelationshipEnd) -> String {
+                switch end {
+                case .topic(let t): return canvas.nodes[t]?.text ?? Loc.t("a topic")
+                case .zone(let z):
+                    let title = canvas.zones.first { $0.id == z }?.title ?? ""
+                    return title.isEmpty ? Loc.t("a zone") : Loc.f("zone %@", title)
+                }
+            }
+            let from = name(r.relationship.from)
+            let to = name(r.relationship.to)
             e.text =
                 r.relationship.label.isEmpty
                 ? Loc.f("%@ to %@. Relationship.", from, to)
                 : Loc.f("%@ to %@, %@. Relationship.", from, to, r.relationship.label)
-            let a = c.scene.nodes[r.relationship.from]?.frame.rect ?? .null
-            let b = c.scene.nodes[r.relationship.to]?.frame.rect ?? .null
+            let a = c.scene.rect(of: r.relationship.from) ?? .null
+            let b = c.scene.rect(of: r.relationship.to) ?? .null
             e.world = a.union(b)
+            return e
+        }
+    }
+
+    /// A Connect candidate: its topic's element, or an item for a zone.
+    func connectItem(_ cand: ConnectCandidate) -> NSAccessibilityElement? {
+        guard let c = controller else { return nil }
+        switch cand.end {
+        case .topic(let id): return element(id)
+        case .zone(let id):
+            guard let z = c.scene.zones.first(where: { $0.zone.id == id }) else { return nil }
+            let e = zoneItems[id] ?? ElementItem(ref: .zone(id), tree: self)
+            zoneItems[id] = e
+            let title = z.zone.title.isEmpty ? Loc.t("Zone") : z.zone.title
+            e.text = Loc.f("Hint %@. ", cand.hint.uppercased()) + Loc.f("%@. Zone.", title)
+            e.world = z.rect
             return e
         }
     }
@@ -214,7 +240,7 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
         case .boundaries: return boundaryItems()
         case .suggestions:
             return (c.ghosts?.ideas.indices).map { $0.compactMap { element(CanvasController.ghostID($0)) } } ?? []
-        case .connect: return c.connect?.candidates.compactMap { element($0.node) } ?? []
+        case .connect: return c.connect?.candidates.compactMap(connectItem) ?? []
         }
     }
 
@@ -337,8 +363,11 @@ final class ElementItem: NSAccessibilityElement {
 
     override func accessibilityRole() -> NSAccessibility.Role? { .group }
     override func accessibilityRoleDescription() -> String? {
-        if case .boundary = ref { return "boundary" }
-        return "relationship"
+        switch ref {
+        case .boundary: return "boundary"
+        case .zone: return "zone"
+        default: return "relationship"
+        }
     }
     override func accessibilityLabel() -> String? { text }
     override func accessibilityFrame() -> NSRect { world.isNull ? .zero : tree.screenRect(world) }
