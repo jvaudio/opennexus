@@ -2902,7 +2902,7 @@
       "extractionState" : "migrated"
     },
     "Collapse Zone" : {
-      "comment" : "UI text (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasMenu.swift)",
       "extractionState" : "migrated"
     },
     "Collapsed" : {
@@ -3857,6 +3857,10 @@
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
+    "Edit Label" : {
+      "comment" : "UI text (CanvasMenu.swift)",
+      "extractionState" : "migrated"
+    },
     "Edit Legend" : {
       "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
@@ -3893,8 +3897,16 @@
       "comment" : "Command category",
       "extractionState" : "migrated"
     },
+    "Edit Text" : {
+      "comment" : "UI text (CanvasMenu.swift)",
+      "extractionState" : "migrated"
+    },
     "Edit Theme" : {
       "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edit Title" : {
+      "comment" : "UI text (CanvasMenu.swift)",
       "extractionState" : "migrated"
     },
     "Edit Topic" : {
@@ -4105,6 +4117,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Expand Zone" : {
+      "comment" : "UI text (CanvasMenu.swift)",
+      "extractionState" : "migrated"
+    },
     "Export" : {
       "comment" : "Settings pane",
       "extractionState" : "migrated"
@@ -4136,6 +4152,10 @@
           }
         }
       }
+    },
+    "Export Branch" : {
+      "comment" : "UI text (CanvasMenu.swift)",
+      "extractionState" : "migrated"
     },
     "Export Branch as Markdown…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
@@ -7522,7 +7542,7 @@
       "extractionState" : "migrated"
     },
     "Remove Image" : {
-      "comment" : "UI text (CanvasController+Elements.swift)",
+      "comment" : "UI text (CanvasMenu.swift)",
       "extractionState" : "migrated"
     },
     "Remove Image Background" : {
@@ -7591,6 +7611,10 @@
     },
     "Replace all ⌥⌘↩" : {
       "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Replace Image…" : {
+      "comment" : "UI text (CanvasMenu.swift)",
       "extractionState" : "migrated"
     },
     "Replace original" : {
@@ -8541,6 +8565,10 @@
       "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
+    "Sticker…" : {
+      "comment" : "UI text (CanvasMenu.swift)",
+      "extractionState" : "migrated"
+    },
     "Stickers" : {
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
@@ -8595,6 +8623,10 @@
     },
     "Stroke" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Structure" : {
+      "comment" : "UI text (CanvasMenu.swift)",
       "extractionState" : "migrated"
     },
     "Structure · this branch" : {

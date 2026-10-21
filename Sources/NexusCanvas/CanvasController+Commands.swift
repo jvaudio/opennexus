@@ -110,7 +110,11 @@ extension CanvasController {
             .moveDown: { c in c.restructure(Loc.t("Move Down")) { try $0.reorder(c.selection.primary, by: 1) } },
             .promote: { c in c.restructure(Loc.t("Promote")) { try $0.promote(c.selection.primary) } },
             .demote: { c in c.restructure(Loc.t("Demote")) { try $0.demote(c.selection.primary) } },
-            .delete: { $0.deleteSelection(keepChildren: false) },
+            // With a relationship, boundary, summary, callout or zone selected, Delete and
+            // Reset Style act on it (D178), as the Delete key and the Format panel do.
+            .delete: { c in
+                if let ref = c.selectedElement { c.deleteElement(ref) } else { c.deleteSelection(keepChildren: false) }
+            },
             .deleteKeepChildren: { $0.deleteSelection(keepChildren: true) },
             .fold: { c in c.restructure(Loc.t("Fold")) { try $0.toggleFold(c.selection.primary) } },
             .foldAll: { c in c.restructure(Loc.t("Fold All")) { try $0.toggleFoldAll() } },
@@ -135,7 +139,7 @@ extension CanvasController {
             .flyBack: { c in if !c.climbLevel() { c.flyBack() } },
             .copyStyle: { $0.copyStyle() },
             .pasteStyle: { $0.pasteStyle() },
-            .resetStyle: { $0.resetStyle() },
+            .resetStyle: { c in if let ref = c.selectedElement { c.resetElementStyle(ref) } else { c.resetStyle() } },
         ]
         for n in 1...8 { h[.quickStyle(n)] = { $0.applyQuickStyle(index: n) } }
         for n in 1...9 {
@@ -271,7 +275,7 @@ extension CanvasController {
     }
 
     public func addFloating(at point: CGPoint?) {
-        let p = point ?? floatingPlacement?() ?? defaultFloatingPoint()
+        let p = point ?? menuFloatingPoint ?? floatingPlacement?() ?? defaultFloatingPoint()
         create(Loc.t("Add Floating Topic")) { $0.addFloating(at: CanvasPoint(x: p.x, y: p.y)) }
     }
 

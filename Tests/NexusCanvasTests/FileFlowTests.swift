@@ -377,12 +377,14 @@ import Testing
                 with: .rightMouseDown, location: at, modifierFlags: [], timestamp: 0,
                 windowNumber: h.window.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1))
         let menu = try #require(v.menu(for: event))
-        #expect(menu.items.map(\.title) == ["Export Zone…", "Print Zone…"])
+        let titles = menu.items.map(\.title)
+        #expect(titles.contains("Export Zone…") && titles.contains("Print Zone…"))
         #expect(h.controller.selectedElement == .zone(zone))
-        #expect(v.validateMenuItem(menu.items[0]))
+        let export = try #require(menu.items.first { $0.title == "Export Zone…" })
+        #expect(v.validateMenuItem(export))
 
         // Export Zone…: the sheet opens on a visual format, scoped to the zone.
-        v.performRegistryCommand(menu.items[0])
+        v.performRegistryCommand(export)
         let s = try #require(h.controller.exportState)
         #expect(s.format.isVisual && s.image.scope == .zone && s.image.zone == zone)
         // Switching format keeps the zone; the scope isn't remembered for next time.

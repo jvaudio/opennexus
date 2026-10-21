@@ -58,7 +58,10 @@ import Testing
         let risks = try #require(v.accessibilityTree.element(node(h, "Risks")))
         #expect(risks.accessibilityPerformPress() && h.controller.selection.primary == risks.id)
         let names = risks.accessibilityCustomActions()?.map(\.name) ?? []
-        #expect(names == ["Edit", "Add child", "Add sibling", "Connect from here", "Comments", "Fold"])
+        #expect(
+            Array(names.prefix(6)) == ["Edit", "Add child", "Add sibling", "Connect from here", "Comments", "Fold"])
+        // Then the rest of the topic's context menu (M17).
+        #expect(names.contains("Add Parent Topic") && names.contains("Delete"))
         let before = h.canvas.nodes.count
         let depth = h.undo.stack.undoStack.count
         _ = risks.accessibilityCustomActions()?.first { $0.name == "Add child" }?.handler?()

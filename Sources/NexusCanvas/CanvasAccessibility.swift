@@ -153,6 +153,45 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
         controller?.beginEditing(id)
     }
 
+    // MARK: Context menus as actions (M17, D179)
+
+    /// The target's context-menu items as custom actions, minus commands an element
+    /// already offers and the Structure submenu (⌥⌘1–9 and the Format panel cover it).
+    func menuActions(_ target: CanvasMenuTarget, skipping: Set<CommandID> = []) -> [NSAccessibilityCustomAction] {
+        guard let c = controller else { return [] }
+        var entries = c.contextMenu(previewing: target)
+        if case .topic(let id) = target, c.canvas.nodes[id]?.image != nil {
+            entries += c.contextMenu(previewing: .image(id))
+        }
+        var seen: [CanvasMenuAction] = []
+        return entries.flatMap(\.items).compactMap { item in
+            if let id = item.action.command, skipping.contains(id) || id.rawValue.hasPrefix("structure.") { return nil }
+            // Replace Image… is Insert › Image… again.
+            guard !seen.contains(item.action) else { return nil }
+            seen.append(item.action)
+            return NSAccessibilityCustomAction(name: item.title) { [weak self] in
+                self?.runMenu(item.action, on: target) ?? false
+            }
+        }
+    }
+
+    /// Selects the target (that topic alone, or the element), then runs the item.
+    func runMenu(_ action: CanvasMenuAction, on target: CanvasMenuTarget) -> Bool {
+        guard let c = controller else { return false }
+        switch target {
+        case .topic(let id), .image(let id): c.select(id)
+        case .element(let ref): c.selectElement(ref)
+        case .legend, .canvas: break
+        }
+        return c.runMenuAction(action)
+    }
+
+    /// VoiceOver's Show Menu (VO-Shift-M): the same menu a right-click opens.
+    func showMenu(_ target: CanvasMenuTarget, world: CGRect) -> Bool {
+        guard let v = view, !world.isNull else { return false }
+        return v.showContextMenu(target, at: v.camera.toView(world))
+    }
+
     // MARK: Edges and boundaries
 
     func edgeItems() -> [ElementItem] {
@@ -369,7 +408,19 @@ final class TopicElement: NSAccessibilityElement {
                     return self.tree.run(.fold, on: self.id)
                 })
         }
-        return actions
+        // The rest of the topic's context menu (D179).
+        let (t, i) = (tree, id)
+        return actions + onMain { t.menuActions(.topic(i), skipping: Self.ownActions) }
+    }
+
+    /// Commands the actions above already cover.
+    static let ownActions: Set<CommandID> = [.editKeepText, .addChild, .addSiblingAfter, .connect, .comment, .fold]
+
+    override func accessibilityPerformShowMenu() -> Bool {
+        guard CanvasController.ghostIndex(id) == nil, let r = tree.controller?.scene.nodes[id]?.frame.rect else {
+            return false
+        }
+        return tree.showMenu(.topic(id), world: r)
     }
 }
 
@@ -411,6 +462,7 @@ final class LegendItem: NSAccessibilityElement {
             },
         ]
     }
+    override func accessibilityPerformShowMenu() -> Bool { tree.showMenu(.legend, world: world) }
 }
 
 /// A relationship or boundary, reached through the rotors.
@@ -447,4 +499,10 @@ final class ElementItem: NSAccessibilityElement {
         tree.controller?.selectElement(ref)
         return true
     }
+    /// Edit, style and delete, as on the element's context menu (D179).
+    override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
+        let (t, r) = (tree, ref)
+        return onMain { t.menuActions(.element(r)) }
+    }
+    override func accessibilityPerformShowMenu() -> Bool { tree.showMenu(.element(ref), world: world) }
 }
