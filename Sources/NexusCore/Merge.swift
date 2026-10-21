@@ -85,7 +85,8 @@ public struct DocumentMerge: Sendable {
             clashes.append("canvas settings on “\(c.title.isEmpty ? c.id.rawValue : c.title)”")
         }
         // Relationships whose ends were removed by the other side go too.
-        out.relationships.removeAll { out.nodes[$0.from] == nil || out.nodes[$0.to] == nil }
+        let ends = out
+        out.relationships.removeAll { !ends.has($0.from) || !ends.has($0.to) }
         out.floating.removeAll { out.nodes[$0] == nil }
         return (out, clashes)
     }

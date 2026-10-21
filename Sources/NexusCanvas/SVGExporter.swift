@@ -105,9 +105,9 @@ public enum SVGExporter {
         }
         // Relationships.
         for r in scene.relationships {
-            guard let a = scene.nodes[r.relationship.from]?.frame.rect,
-                let bb = scene.nodes[r.relationship.to]?.frame.rect
-            else { continue }
+            guard let a = scene.rect(of: r.relationship.from), let bb = scene.rect(of: r.relationship.to) else {
+                continue
+            }
             let g =
                 r.points.map { RelationshipGeometry.polyline($0) }
                 ?? RelationshipGeometry.make(r.relationship, from: a, to: bb)
@@ -115,7 +115,7 @@ public enum SVGExporter {
                 r.relationship.dash == "dashed"
                 ? " stroke-dasharray=\"6 5\"" : r.relationship.dash == "dotted" ? " stroke-dasharray=\"1.5 4\"" : ""
             w.line(
-                "<g class=\"relationship\"\(o.metadata ? " data-nexus-from=\"\(r.relationship.from.rawValue)\" data-nexus-to=\"\(r.relationship.to.rawValue)\"" : "")\(opacity(r.opacity))>"
+                "<g class=\"relationship\"\(o.metadata ? " data-nexus-from=\"\(esc(r.relationship.from.rawValue))\" data-nexus-to=\"\(esc(r.relationship.to.rawValue))\"\(r.relationship.from.zone != nil ? " data-nexus-from-kind=\"zone\"" : "")\(r.relationship.to.zone != nil ? " data-nexus-to-kind=\"zone\"" : "")" : "")\(opacity(r.opacity))>"
             )
             w.indent += 1
             w.line(

@@ -38,6 +38,31 @@ public enum DrawIOFormat {
         for id in c.floating { fallback[id] = Frame(x: 0, y: Double(row) * 60, width: 140, height: 40); row += 1 }
         let parents = c.parentMap()
         let ids = [c.root] + c.tops.flatMap { c.subtree($0) }.filter { $0 != c.root }
+        // Zones first so they sit behind their topics; relationships can end on them.
+        for z in c.zones {
+            var x = z.origin.x
+            var y = z.origin.y
+            var w = z.width
+            var h = z.height
+            if z.autoResize {
+                let fs = z.members.flatMap { c.subtree($0) }.compactMap { frames[$0] ?? fallback[$0] }
+                if let x0 = fs.map(\.x).min(), let y0 = fs.map(\.y).min(), let x1 = fs.map({ $0.x + $0.width }).max(),
+                    let y1 = fs.map({ $0.y + $0.height }).max()
+                {
+                    let (r, b) = (max(x + w, x1 + 24), max(y + h, y1 + 24))
+                    (x, y) = (min(x, x0 - 24), min(y, y0 - 44))
+                    (w, h) = (r - x, b - y)
+                }
+            }
+            let style = [
+                "rounded=1", "arcSize=4", "whiteSpace=wrap", "html=1", "fillColor=none", "verticalAlign=top",
+                "align=left", "spacingLeft=12", "fontStyle=1", "strokeColor=\(z.color ?? "#7A4CC2")",
+            ]
+            cells.append(
+                "    <mxCell id=\"\(ref(.zone(z.id)))\" value=\"\(XML.escape(z.title))\" style=\"\(style.joined(separator: ";"))\(z.frame == "dashed" ? ";dashed=1" : "");\" vertex=\"1\" parent=\"1\">\n"
+                    + "      <mxGeometry x=\"\(fmt(x))\" y=\"\(fmt(y))\" width=\"\(fmt(w))\" height=\"\(fmt(h))\" as=\"geometry\"/>\n    </mxCell>"
+            )
+        }
         for id in ids {
             guard let n = c.nodes[id], let f = frames[id] ?? fallback[id] else { continue }
             var style = ["whiteSpace=wrap", "html=1"]
@@ -62,11 +87,12 @@ public enum DrawIOFormat {
         for id in ids {
             guard let p = parents[id], let n = c.nodes[id] else { continue }
             e += 1
-            cells.append(edge("e\(e)", p, id, n.edgeLabel ?? "", dashed: false, color: frames[id]?.stroke))
+            cells.append(
+                edge("e\(e)", p.rawValue, id.rawValue, n.edgeLabel ?? "", dashed: false, color: frames[id]?.stroke))
         }
-        for r in c.relationships where c.nodes[r.from] != nil && c.nodes[r.to] != nil {
+        for r in c.relationships where c.has(r.from) && c.has(r.to) {
             e += 1
-            cells.append(edge("e\(e)", r.from, r.to, r.label, dashed: true, color: nil))
+            cells.append(edge("e\(e)", ref(r.from), ref(r.to), r.label, dashed: true, color: nil))
         }
         let name = XML.escape(c.title.isEmpty ? "Page-1" : c.title)
         return """
@@ -86,12 +112,15 @@ public enum DrawIOFormat {
 
     static func fmt(_ v: Double) -> String { v == v.rounded() ? String(Int(v)) : String(format: "%.1f", v) }
 
-    static func edge(_ id: String, _ a: NodeID, _ b: NodeID, _ label: String, dashed: Bool, color: String?) -> String {
+    /// A topic's cell id, or `zone_<id>` for a zone's cell.
+    static func ref(_ end: RelationshipEnd) -> String { end.zone.map { "zone_\($0)" } ?? end.rawValue }
+
+    static func edge(_ id: String, _ a: String, _ b: String, _ label: String, dashed: Bool, color: String?) -> String {
         var style = ["edgeStyle=orthogonalEdgeStyle", "curved=1", "html=1", "endArrow=\(dashed ? "classic" : "none")"]
         if dashed { style.append("dashed=1") }
         if let color { style.append("strokeColor=\(color)") }
         return
-            "    <mxCell id=\"\(id)\" value=\"\(XML.escape(label))\" style=\"\(style.joined(separator: ";"));\" edge=\"1\" parent=\"1\" source=\"\(a.rawValue)\" target=\"\(b.rawValue)\">\n"
+            "    <mxCell id=\"\(id)\" value=\"\(XML.escape(label))\" style=\"\(style.joined(separator: ";"));\" edge=\"1\" parent=\"1\" source=\"\(XML.escape(a))\" target=\"\(XML.escape(b))\">\n"
             + "      <mxGeometry relative=\"1\" as=\"geometry\"/>\n    </mxCell>"
     }
 

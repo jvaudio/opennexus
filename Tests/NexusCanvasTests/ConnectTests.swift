@@ -38,7 +38,7 @@ func launchPlanDocument() -> DocumentModel {
         h.press("shift+cmd+l")
         #expect(h.controller.mode == .connect)
         let state = try #require(h.controller.connect)
-        #expect(state.source == channels)
+        #expect(state.source == .topic(channels))
         // Nearest first, unique, prefix-free.
         let hints = state.candidates.map(\.hint)
         #expect(Set(hints).count == hints.count)
@@ -50,7 +50,7 @@ func launchPlanDocument() -> DocumentModel {
         #expect(h.controller.mode == .edit)
         #expect(h.controller.edit?.element != nil)
         let rel = try #require(h.canvas.relationships.first)
-        #expect(rel.from == channels && rel.to == timeline)
+        #expect(rel.from == .topic(channels) && rel.to == .topic(timeline))
         h.type("drives")
         h.press("return")
         #expect(h.controller.mode == .select)
@@ -72,7 +72,7 @@ func launchPlanDocument() -> DocumentModel {
         #expect(!c.matchedHints)
         #expect(c.matches.map(\.node) == [node(h, "Newsletter")])
         h.press("return")
-        #expect(h.canvas.relationships.first?.to == node(h, "Newsletter"))
+        #expect(h.canvas.relationships.first?.to == .topic(node(h, "Newsletter")))
         h.press("esc")  // commits the (empty) label
         #expect(h.controller.mode == .select)
         #expect(h.canvas.relationships.count == 1)
@@ -89,7 +89,7 @@ func launchPlanDocument() -> DocumentModel {
         h.press("up")
         #expect(h.controller.connect?.target?.node == first)
         h.press("return")
-        #expect(h.canvas.relationships.first?.to == first)
+        #expect(h.canvas.relationships.first?.to.topic == first)
     }
 
     /// Esc at any point: nothing changed.
@@ -119,11 +119,53 @@ func launchPlanDocument() -> DocumentModel {
         h.press("return")
         let created = node(h, "Billing team")
         #expect(h.canvas.parent(of: created) == h.canvas.root)
-        #expect(h.canvas.relationships.first?.to == created)
+        #expect(h.canvas.relationships.first?.to == .topic(created))
         h.press("return")
         h.undo.undo(h.store)
         h.undo.undo(h.store)
         #expect(h.canvas.nodes.values.contains { $0.text == "Billing team" } == false)
+    }
+
+    /// D171: zones are hint targets, their titles filter, and a selected zone is the source.
+    @Test func connectToAndFromAZone() throws {
+        let h = CanvasHarness(model: launchPlanDocument())
+        let zone = try #require(
+            h.controller.perform("Zone") { $0.addZone(title: "Parking lot", origin: CanvasPoint(x: 700, y: -360)) })
+        let risks = node(h, "Risks")
+        h.controller.select(risks)
+        h.press("shift+cmd+l")
+        let state = try #require(h.controller.connect)
+        let hint = try #require(state.candidates.first { $0.end == .zone(zone) }?.hint)
+        h.type(hint.lowercased())
+        #expect(h.controller.connect?.target?.end == .zone(zone))
+        h.press("return")
+        #expect(h.controller.mode == .edit)
+        h.type("parked")
+        h.press("return")
+        let rel = try #require(h.canvas.relationships.first)
+        #expect(rel.from == .topic(risks) && rel.to == .zone(zone) && rel.label == "parked")
+        #expect(h.controller.scene.relationships.count == 1)
+
+        // Typing the zone's title finds it.
+        h.controller.select(node(h, "Pricing"))
+        h.press("shift+cmd+l")
+        h.type("parking")
+        #expect(h.controller.connect?.matches.map(\.end) == [.zone(zone)])
+        h.press("esc")
+
+        // From the zone: back to a topic.
+        h.controller.selectElement(.zone(zone))
+        h.press("shift+cmd+l")
+        #expect(h.controller.connect?.source == .zone(zone))
+        #expect(h.controller.connect?.candidates.contains { $0.end == .zone(zone) } == false)
+        h.type("newsl")
+        h.press("return")
+        let back = try #require(h.canvas.relationships.last)
+        #expect(back.from == .zone(zone) && back.to == .topic(node(h, "Newsletter")))
+        h.press("esc")
+        #expect(h.canvas.relationships.count == 2)
+        h.undo.undo(h.store)
+        #expect(h.canvas.relationships.count == 1)
     }
 
     @Test func hintsArePrefixFreeAtScale() {

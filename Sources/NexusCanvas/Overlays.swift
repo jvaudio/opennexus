@@ -204,7 +204,7 @@ public struct CheatSheetView: View {
 /// The Connect mode search field (F2 step 2–3).
 struct ConnectFieldView: View {
     let state: ConnectState
-    let texts: [NodeID: String]
+    let texts: [RelationshipEnd: String]
     let theme: Theme
 
     var body: some View {
@@ -222,7 +222,7 @@ struct ConnectFieldView: View {
                 row(hint: "↩", text: Loc.f("Create new node “%@”", state.query), on: true)
             } else {
                 ForEach(Array(state.matches.prefix(5).enumerated()), id: \.offset) { i, m in
-                    row(hint: m.hint, text: texts[m.node] ?? "", on: i == state.highlighted)
+                    row(hint: m.hint, text: texts[m.end] ?? "", on: i == state.highlighted)
                 }
             }
         }
@@ -237,7 +237,7 @@ struct ConnectFieldView: View {
 
     var accessibility: String {
         if state.offersCreate { return Loc.f("Connect to new node %@", state.query) }
-        let names = state.matches.prefix(5).map { "\($0.hint), \(texts[$0.node] ?? "")" }
+        let names = state.matches.prefix(5).map { "\($0.hint), \(texts[$0.end] ?? "")" }
         return Loc.f("Connect to. %@", names.joined(separator: "; "))
     }
 

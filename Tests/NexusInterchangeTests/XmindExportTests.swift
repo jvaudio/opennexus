@@ -121,7 +121,8 @@ import Testing
             for k in n.children { dump(k) }
         }
         for t in c.tops { dump(t) }
-        for r in c.relationships { out.append("relationship \(path(r.from)) → \(path(r.to)) \(r.label)") }
+        func end(_ e: RelationshipEnd) -> String { e.topic.map(path) ?? "zone \(e.rawValue)" }
+        for r in c.relationships { out.append("relationship \(end(r.from)) → \(end(r.to)) \(r.label)") }
         for b in c.boundaries { out.append("boundary \(b.title) \(b.nodes.map(path).sorted())") }
         for s in c.summaries { out.append("summary \(path(s.from))…\(path(s.to)) = \(path(s.topic))") }
         for k in c.callouts { out.append("callout \(path(k.host)) = \(path(k.topic))") }
@@ -203,6 +204,7 @@ import Testing
         c.nodes[build]!.sticker = AssetRef(asset: "emoji:🚀")
         c.nodes[build]!.style = try TopicStyle(json: ["fill": "#FF0000"], path: "s")
         c.zones = [Zone(id: "z1", title: "Area", origin: CanvasPoint(x: 0, y: 0), width: 200, height: 200)]
+        c.relationships.append(Relationship(id: "rz", from: .topic(build), to: .zone("z1")))
         c.layout.structure = .flowDown
         doc.canvases["c1"] = c
         let r = XmindWriter.export(doc, timeZone: utc).report
@@ -212,6 +214,7 @@ import Testing
         #expect(lines.contains("Sticker"))
         #expect(lines.contains("Topic style (Xmind uses its default theme)"))
         #expect(lines.contains("Zone (no Xmind equivalent; its topics are kept)"))
+        #expect(lines.contains("Relationship to a zone (zones aren't exported)"), "M16 ends on a zone")
         #expect(lines.contains("Layout “flow.down” written as an Xmind org.xmind.ui.logic.right"))
         #expect(lines.contains("Theme, colours and topic shapes (Xmind uses its default theme)"))
         #expect(XmindWriter.report(doc) == r)

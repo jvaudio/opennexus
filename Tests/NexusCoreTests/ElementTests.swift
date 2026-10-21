@@ -157,6 +157,61 @@ private func id(_ c: Canvas, _ text: String) -> NodeID { c.nodes.first { $0.valu
         #expect(decoded.json == c.json)
     }
 
+    /// D170: a relationship can end on a zone. Files without endpoint kinds still read as
+    /// topics, a zone end writes `fromKind`/`toKind`, and repair, validation, removing the
+    /// zone and merging all drop relationships to a missing zone.
+    @Test func zoneRelationshipEnds() throws {
+        var c = sampleCanvas()
+        var undo = UndoStack()
+        let (pricing, risks) = (id(c, "Pricing"), id(c, "Risks"))
+        var zone = ""
+        try c.edit("Setup", undo: &undo) { e in
+            zone = e.addZone(title: "Later", origin: CanvasPoint(x: 600, y: -300))
+            e.connect(.topic(pricing), to: .zone(zone), label: "parks")
+            e.connect(.zone(zone), to: .topic(risks))
+        }
+        #expect(c.validate().isEmpty)
+        let json = c.relationships[0].json
+        #expect(json.objectValue?["toKind"] == .string("zone") && json.objectValue?["fromKind"] == nil)
+        #expect(c.relationships[1].json.objectValue?["fromKind"] == .string("zone"))
+        let decoded = try Canvas(json: c.json, path: "c")
+        #expect(decoded == c && decoded.json == c.json)
+        // An older file: no kinds, both ends are topics, and nothing new is written.
+        let old: JSONValue = [
+            "id": "r9", "from": "n1", "to": "n2", "label": "", "line": "curved", "ends": ["none", "arrow"],
+        ]
+        let r = try Relationship(json: old, path: "r")
+        #expect(r.from == .topic(NodeID("n1")) && r.to == .topic(NodeID("n2")) && r.json == old)
+        #expect(r.topics?.from == NodeID("n1") && r.endZones.isEmpty)
+
+        // Removing the zone takes its relationships, in the same undo step.
+        let before = c
+        try c.edit("Remove", undo: &undo) { $0.removeElement(.zone(zone)) }
+        #expect(c.relationships.isEmpty && c.validate().isEmpty)
+        undo.undo()!.apply(to: &c)
+        #expect(c == before)
+
+        // A hand-edited file whose zone is gone: validation says so, repair drops it.
+        var broken = c
+        broken.zones = []
+        #expect(broken.validate().contains { $0.contains("missing topic or zone") })
+        let fixes = broken.repair()
+        #expect(broken.relationships.isEmpty && broken.validate().isEmpty)
+        #expect(fixes.contains { $0.contains("zone") })
+
+        // Merge: the disk removed the zone while the app renamed a topic.
+        var disk = c
+        try disk.edit("Remove", undo: &undo) { $0.removeElement(.zone(zone)) }
+        var current = c
+        try current.edit("Rename", undo: &undo) { $0.setText(pricing, "Prices") }
+        let merged = DocumentMerge(
+            base: DocumentModel(canvases: [c]), current: DocumentModel(canvases: [current]),
+            disk: DocumentModel(canvases: [disk])
+        ).model.canvases[c.id]
+        #expect(merged?.zones.isEmpty == true && merged?.relationships.isEmpty == true)
+        #expect(merged?.nodes[pricing]?.text == "Prices" && merged?.validate().isEmpty == true)
+    }
+
     @Test func topicLinksParse() {
         let link = TopicLink.make(canvas: "c2", node: "n7")
         #expect(link == "nexus:topic/c2/n7")

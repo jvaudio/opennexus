@@ -9,7 +9,7 @@ extension Canvas {
     ///   tree order keeps it.
     /// - Topics no tree reaches become floating topics.
     /// - Relationships, boundaries, summaries, callouts and zones that point at missing
-    ///   topics are dropped or trimmed.
+    ///   topics are dropped or trimmed, and so are relationships to missing zones.
     ///
     /// Returns what was repaired (empty for a valid canvas). Afterwards `validate()` is empty.
     @discardableResult
@@ -123,11 +123,12 @@ extension Canvas {
         }
 
         let relCount = relationships.count
-        relationships.removeAll { nodes[$0.from] == nil || nodes[$0.to] == nil }
+        let ends = self
+        relationships.removeAll { !ends.has($0.from) || !ends.has($0.to) }
         if relationships.count < relCount {
             fixes.append(
                 CoreText.n(
-                    "%lld relationship to a missing topic", "%lld relationships to missing topics",
+                    "%lld relationship to a missing topic or zone", "%lld relationships to missing topics or zones",
                     relCount - relationships.count))
         }
         var trimmed = 0

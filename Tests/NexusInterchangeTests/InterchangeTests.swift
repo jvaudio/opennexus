@@ -361,6 +361,70 @@ import Testing
     }
 }
 
+/// D170, D172: relationships that end on a zone, in and out of other formats.
+@Suite struct ZoneRelationshipInterchangeTests {
+    /// An Xmind relationship naming a boundary around a floating branch keeps its end as a
+    /// zone; one naming a boundary in the main tree is reported.
+    @Test func xmindRelationshipToABoundary() throws {
+        var z = ZipWriter()
+        z.add(
+            "content.json",
+            """
+            [{"id": "s1", "title": "Plan", "rootTopic": {"id": "root", "title": "Release",
+              "boundaries": [{"id": "bb", "range": "(0,0)", "title": "Core"}],
+              "children": {
+                "attached": [{"id": "p", "title": "Pricing"}],
+                "detached": [{"id": "f", "title": "Later idea", "position": {"x": 400, "y": -200},
+                  "children": {"attached": [{"id": "f1", "title": "Detail"}]},
+                  "boundaries": [{"id": "bz", "range": "master", "title": "Parking lot"}]}]}},
+              "relationships": [{"id": "r1", "end1Id": "p", "end2Id": "bz", "title": "parks"},
+                                {"id": "r2", "end1Id": "bz", "end2Id": "bb"}]}]
+            """)
+        z.add("manifest.json", #"{"file-entries": {"content.json": {}}}"#)
+        let im = try XmindFormat.parse(z.finish(), name: "plan.xmind")
+        let c = try #require(im.canvases.first)
+        #expect(c.validate().isEmpty)
+        let later = try #require(c.nodes.first { $0.value.text == "Later idea" }?.key)
+        let pricing = try #require(c.nodes.first { $0.value.text == "Pricing" }?.key)
+        #expect(c.zones.map(\.title) == ["Parking lot"] && c.zones[0].members == [later])
+        #expect(c.boundaries.map(\.title) == ["Core"])
+        #expect(c.relationships.count == 1)
+        #expect(c.relationships[0].from == .topic(pricing) && c.relationships[0].to == .zone(c.zones[0].id))
+        #expect(c.relationships[0].label == "parks")
+        #expect(im.report.skipped.map(\.0).contains("Relationship to a boundary"))
+    }
+
+    /// Mermaid subgraphs, PlantUML rectangles and draw.io cells stand for zones, so edges
+    /// can end on them.
+    @Test func textFormatsDrawZoneEnds() throws {
+        var c = Canvas(id: "c1", title: "Flow", type: .flowchart, rootText: "Start")
+        var undo = UndoStack()
+        var zone = ""
+        try c.edit("Setup", undo: &undo) { e in
+            let step = try e.addChild(of: e.canvas.root, text: "Check")
+            let idea = try e.addChild(of: e.canvas.root, text: "Idea")
+            try e.detach(idea, at: CanvasPoint(x: 500, y: 0))
+            zone = e.addZone(title: "Backlog", origin: CanvasPoint(x: 420, y: -80), members: [idea])
+            e.connect(.topic(step), to: .zone(zone), label: "defer")
+        }
+        #expect(c.validate().isEmpty && c.zones[0].members.count == 1)
+        let mmd = Mermaid.flowchart(c)
+        #expect(mmd.contains("    subgraph zone_\(zone) [\"Backlog\"]"))
+        #expect(mmd.contains("-.->|defer| zone_\(zone)"))
+        let puml = PlantUMLFormat.graph(c)
+        #expect(puml.contains("rectangle \"Backlog\" as zone_\(zone) {"))
+        #expect(puml.contains("..> zone_\(zone) : defer"))
+        let drawio = DrawIOFormat.export(c)
+        let doc = try XMLDocument(data: Data(drawio.utf8))
+        let cells = try doc.nodes(forXPath: "//mxCell[@id='zone_\(zone)']")
+        #expect(cells.count == 1)
+        #expect(try doc.nodes(forXPath: "//mxCell[@target='zone_\(zone)' and @value='defer']").count == 1)
+        // An exported file opens again.
+        _ = try Interchange.importFile(name: "f.drawio", data: Data(drawio.utf8))
+        _ = try Interchange.importFile(name: "f.mmd", data: Data(mmd.utf8))
+    }
+}
+
 @Suite struct ZipTests {
     @Test func roundTripStoreAndDeflate() throws {
         let big = Data(String(repeating: "OpenNexus ", count: 2000).utf8)

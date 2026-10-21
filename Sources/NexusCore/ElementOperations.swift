@@ -150,9 +150,12 @@ extension CanvasEditor {
         updateZone(id) { $0.origin = CanvasPoint(x: $0.origin.x + dx, y: $0.origin.y + dy) }
     }
 
-    /// Remove zone (keep content).
+    /// Remove zone (keep content). Relationships to the zone go with it.
     public mutating func removeZone(_ id: String) {
-        updateMeta { $0.zones.removeAll { $0.id == id } }
+        updateMeta {
+            $0.zones.removeAll { $0.id == id }
+            $0.relationships.removeAll { $0.touches(zone: id) }
+        }
     }
 
     // MARK: Z-order (zones and floating topics)
@@ -212,7 +215,7 @@ extension CanvasEditor {
         let deadCallouts = c.callouts.filter { removed.contains($0.host) || removed.contains($0.topic) }
         let touchesBoundaries = c.boundaries.contains { $0.nodes.contains(where: removed.contains) }
         let touchesZones = c.zones.contains { $0.members.contains(where: removed.contains) }
-        let touchesRels = c.relationships.contains { removed.contains($0.from) || removed.contains($0.to) }
+        let touchesRels = c.relationships.contains { $0.endTopics.contains(where: removed.contains) }
         if !deadSummaries.isEmpty || !deadCallouts.isEmpty || touchesBoundaries || touchesZones || touchesRels {
             updateMeta { m in
                 m.summaries.removeAll { s in deadSummaries.contains(s) }
@@ -220,7 +223,7 @@ extension CanvasEditor {
                 for i in m.boundaries.indices { m.boundaries[i].nodes.removeAll(where: removed.contains) }
                 m.boundaries.removeAll { $0.nodes.isEmpty }
                 for i in m.zones.indices { m.zones[i].members.removeAll(where: removed.contains) }
-                m.relationships.removeAll { removed.contains($0.from) || removed.contains($0.to) }
+                m.relationships.removeAll { $0.endTopics.contains(where: removed.contains) }
             }
         }
         // Summary and callout topics whose element died go too.

@@ -102,6 +102,25 @@ final class Session {
         #expect(s.response(5)?["result"]?["protocolVersion"] == "2025-06-18", "unknown versions get our newest")
     }
 
+    /// D170: add_edge takes "zone:" ends, and read_map lists zones and zone ends.
+    @Test func zoneEnds() throws {
+        var c = Canvas(id: "c1", title: "Plan", rootText: "Plan")
+        var undo = UndoStack()
+        var (pricing, zone) = (NodeID("x"), "")
+        try c.edit("Setup", undo: &undo) { e in
+            pricing = try e.addChild(of: e.canvas.root, text: "Pricing")
+            zone = e.addZone(title: "Later", origin: CanvasPoint(x: 400, y: 0))
+            e.connect(.topic(pricing), to: .zone(zone))
+        }
+        #expect(try MapTools.end("zone:Later", in: c) == .zone(zone))
+        #expect(try MapTools.end("ZONE:\(zone)", in: c) == .zone(zone))
+        #expect(try MapTools.end("Pricing", in: c) == .topic(pricing))
+        #expect(throws: MapTools.ToolError.self) { try MapTools.end("zone:Nowhere", in: c) }
+        let outline = MapTools.outline(c)
+        #expect(outline.contains("Zones:\n- Later [zone:\(zone)]"))
+        #expect(outline.contains("- Pricing [\(pricing.rawValue)] → Later [zone:\(zone)]"))
+    }
+
     @Test func disabledServerSaysWhere() {
         let s = Session(.disabled(NexusCLI.offMessage), [Session.initialize, Session.request(2, "tools/list")])
         _ = s.run()
@@ -148,7 +167,8 @@ final class Session {
         #expect(
             c.nodes[c.nodes[churn]!.children[0]]!.text == "Week-4 retention" && c.nodes[c.nodes[churn]!.children[0]]!.ai
         )
-        #expect(c.relationships.contains { $0.from == churn && $0.to == pricing && $0.label == "informs" })
+        #expect(
+            c.relationships.contains { $0.from == .topic(churn) && $0.to == .topic(pricing) && $0.label == "informs" })
         #expect(c.style.theme == "graphite" && c.style.nodeStyle == "capsule")
         #expect(
             c.nodes[pricing]!.style?.shape == "hexagon" && c.nodes[pricing]!.style?.fillColor == "#D6408B"

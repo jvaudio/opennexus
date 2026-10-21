@@ -65,7 +65,7 @@ public enum MermaidFormat {
             return o
         }()
         for r in c.relationships {
-            guard let a = owner[r.from], let b = owner[r.to], a != b else { continue }
+            guard let (from, to) = r.topics, let a = owner[from], let b = owner[to], a != b else { continue }
             out += "    \(name(a)) --> \(name(b))" + (r.label.isEmpty ? "" : " : \(Mermaid.label(r.label))") + "\n"
         }
         return out
@@ -426,7 +426,8 @@ public enum PlantUMLFormat {
         }
         let alias = Dictionary(uniqueKeysWithValues: ps.enumerated().map { ($1, "P\($0 + 1)") })
         for m in Mermaid.messages(c) {
-            out += "\(alias[m.from]!) \(m.kind == "return" ? "-->" : "->") \(alias[m.to]!) : \(clean(m.label))\n"
+            out +=
+                "\(alias[m.from.topic!]!) \(m.kind == "return" ? "-->" : "->") \(alias[m.to.topic!]!) : \(clean(m.label))\n"
         }
         out += "@enduml\n"
         return out
@@ -436,8 +437,8 @@ public enum PlantUMLFormat {
         var out = "@startuml\n"
         let parents = c.parentMap()
         let ids = c.tops.flatMap { c.subtree($0) }
-        for id in ids {
-            guard let n = c.nodes[id] else { continue }
+        func declare(_ id: NodeID, indent: String = "") {
+            guard let n = c.nodes[id] else { return }
             let t = DiagramCatalog.effectiveType(id, in: c, parents: parents)
             let kind: String =
                 switch t {
@@ -446,7 +447,15 @@ public enum PlantUMLFormat {
                 case .decision?: "agent"
                 default: c.type == .architecture ? "component" : "rectangle"
                 }
-            out += "\(kind) \"\(clean(n.text))\" as \(id.rawValue)\n"
+            out += "\(indent)\(kind) \"\(clean(n.text))\" as \(id.rawValue)\n"
+        }
+        // Zones are rectangles holding their members' branches, so relationships can end on them.
+        let zoned = Set(c.zones.flatMap { $0.members.flatMap { c.subtree($0) } })
+        for id in ids where !zoned.contains(id) { declare(id) }
+        for z in c.zones {
+            out += "rectangle \"\(clean(z.title))\" as \(ref(.zone(z.id))) {\n"
+            for m in z.members { for id in c.subtree(m) { declare(id, indent: "  ") } }
+            out += "}\n"
         }
         for id in ids {
             guard let p = parents[id], let n = c.nodes[id] else { continue }
@@ -454,12 +463,15 @@ public enum PlantUMLFormat {
                 "\(p.rawValue) --> \(id.rawValue)" + (n.edgeLabel.map { $0.isEmpty ? "" : " : \(clean($0))" } ?? "")
                 + "\n"
         }
-        for r in c.relationships where c.nodes[r.from] != nil && c.nodes[r.to] != nil {
-            out += "\(r.from.rawValue) ..> \(r.to.rawValue)" + (r.label.isEmpty ? "" : " : \(clean(r.label))") + "\n"
+        for r in c.relationships where c.has(r.from) && c.has(r.to) {
+            out += "\(ref(r.from)) ..> \(ref(r.to))" + (r.label.isEmpty ? "" : " : \(clean(r.label))") + "\n"
         }
         out += "@enduml\n"
         return out
     }
+
+    /// A topic's alias, or `zone_<id>` for a zone's rectangle.
+    static func ref(_ end: RelationshipEnd) -> String { end.zone.map { "zone_\($0)" } ?? end.rawValue }
 
     /// The `@startmindmap` / `@startwbs` subset (`*`/`+`/`-` depth markers, `:multiline;`)
     /// and simple sequence diagrams.

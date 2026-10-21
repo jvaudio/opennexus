@@ -27,7 +27,7 @@ extension Canvas {
         f.root = placeholder
         f.nodes[placeholder] = Node(text: "", kind: .root, children: roots)
         if keep.contains(root) { f.nodes[root]?.kind = .topic }
-        f.relationships = relationships.filter { keep.contains($0.from) && keep.contains($0.to) }
+        f.relationships = relationships.filter { $0.connects(within: keep) }
         f.boundaries = boundaries.filter { !$0.nodes.isEmpty && Set($0.nodes).isSubset(of: keep) }
         f.summaries = summaries.filter {
             keep.contains($0.parent) && keep.contains($0.from) && keep.contains($0.to) && keep.contains($0.topic)
@@ -85,7 +85,7 @@ extension CanvasEditor {
                 $0.children.append(newTop)
             }
         }
-        let rels = src.relationships.filter { map[$0.from] != nil && map[$0.to] != nil }
+        let rels = src.relationships.filter { $0.connects(within: Set(map.keys)) }
         let bounds = src.boundaries.filter { !$0.nodes.isEmpty && $0.nodes.allSatisfy { map[$0] != nil } }
         let sums = src.summaries.filter { map[$0.parent] != nil && map[$0.from] != nil && map[$0.to] != nil }
         if !rels.isEmpty || !bounds.isEmpty || !sums.isEmpty {
@@ -93,8 +93,8 @@ extension CanvasEditor {
                 for r in rels {
                     var x = r
                     x.id = Self.fresh("r", c.relationships.map(\.id))
-                    x.from = map[r.from]!
-                    x.to = map[r.to]!
+                    x.from = .topic(map[r.from.topic!]!)
+                    x.to = .topic(map[r.to.topic!]!)
                     c.relationships.append(x)
                 }
                 for b in bounds {

@@ -208,8 +208,14 @@ public enum XmindWriter {
             ]
             var rels: [[String: Any]] = []
             for r in c.relationships {
-                guard c.nodes[r.from] != nil, c.nodes[r.to] != nil else { continue }
-                var o: [String: Any] = ["id": "\(c.id.rawValue)-\(r.id)", "end1Id": id(r.from), "end2Id": id(r.to)]
+                // Zones aren't written (no Xmind equivalent), so neither is a relationship
+                // that ends on one (M16).
+                guard let from = r.from.topic, let to = r.to.topic else {
+                    report.skip("Relationship to a zone (zones aren't exported)")
+                    continue
+                }
+                guard c.nodes[from] != nil, c.nodes[to] != nil else { continue }
+                var o: [String: Any] = ["id": "\(c.id.rawValue)-\(r.id)", "end1Id": id(from), "end2Id": id(to)]
                 if !r.label.isEmpty { o["title"] = r.label }
                 rels.append(o)
                 if r.line != "curved" || r.ends != ["none", "arrow"] || r.dash != "dashed" || r.color != "theme"

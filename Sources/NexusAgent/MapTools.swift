@@ -51,6 +51,7 @@ public struct MapTools {
     ]
     static let topicDesc =
         "A topic: its id (from read_map, e.g. \"n3\"), a path of titles from the central topic (\"Launch > Pricing\"), or a unique title."
+    static let endDesc = topicDesc + " Or a zone: \"zone:\" and its id or title (\"zone:z1\")."
 
     public static let definitions: [JSONValue] = [
         tool(
@@ -85,13 +86,13 @@ public struct MapTools {
                     "labels": ["type": "array", "items": ["type": "string"]],
                 ], required: ["path", "parent", "text"]), readOnly: false),
         tool(
-            "add_edge", "Connect two topics",
-            "Draws a relationship between two topics, with an optional label (e.g. \"drives\", \"POST /cart\").",
+            "add_edge", "Connect two topics or zones",
+            "Draws a relationship between two topics or zones, with an optional label (e.g. \"drives\", \"POST /cart\").",
             schema(
                 [
                     "path": pathProp, "canvas": canvasProp,
-                    "from": ["type": "string", "description": .string(topicDesc)],
-                    "to": ["type": "string", "description": .string(topicDesc)], "label": ["type": "string"],
+                    "from": ["type": "string", "description": .string(endDesc)],
+                    "to": ["type": "string", "description": .string(endDesc)], "label": ["type": "string"],
                 ], required: ["path", "from", "to"]), readOnly: false),
         tool(
             "set_style", "Set style",
@@ -236,6 +237,25 @@ public struct MapTools {
         )
     }
 
+    /// "Title [id]" for a topic, "Title [zone:id]" for a zone.
+    static func name(_ end: RelationshipEnd, in c: Canvas) -> String {
+        switch end {
+        case .topic(let id): "\(c.nodes[id]?.text ?? id.rawValue) [\(id.rawValue)]"
+        case .zone(let id): "\(c.zones.first { $0.id == id }?.title ?? id) [zone:\(id)]"
+        }
+    }
+
+    /// "zone:" and a zone's id or unique title, or anything `topic` takes.
+    static func end(_ ref: String, in c: Canvas) throws -> RelationshipEnd {
+        guard ref.lowercased().hasPrefix("zone:") else { return .topic(try topic(ref, in: c)) }
+        let key = ref.dropFirst(5).trimmingCharacters(in: .whitespaces)
+        if c.zones.contains(where: { $0.id == key }) { return .zone(key) }
+        let hits = c.zones.filter { $0.title.caseInsensitiveCompare(key) == .orderedSame }
+        if hits.count == 1 { return .zone(hits[0].id) }
+        if hits.isEmpty { throw ToolError("No zone “\(key)”. Use read_map to see zone ids.") }
+        throw ToolError("“\(key)” matches \(hits.count) zones (\(hits.map(\.id).joined(separator: ", "))); use an id.")
+    }
+
     /// An id, a "A > B" path from the central topic, or a unique title.
     static func topic(_ ref: String, in c: Canvas) throws -> NodeID {
         if c.nodes[NodeID(ref)] != nil { return NodeID(ref) }
@@ -338,12 +358,20 @@ public struct MapTools {
         }
         c.walk(line)
         for f in c.floating { c.walk(from: f) { line($0, $1, $2 + 1) } }
+        if !c.zones.isEmpty {
+            out.append("Zones:")
+            for z in c.zones {
+                let members = z.members.map { "\(c.nodes[$0]?.text ?? "") [\($0.rawValue)]" }
+                out.append(
+                    "- \(z.title.isEmpty ? "Zone" : z.title) [zone:\(z.id)]\(members.isEmpty ? "" : " holds \(members.joined(separator: ", "))")"
+                )
+            }
+        }
         if !c.relationships.isEmpty {
             out.append("Relationships:")
             for r in c.relationships {
-                out.append(
-                    "- \(c.nodes[r.from]?.text ?? r.from.rawValue) [\(r.from.rawValue)] → \(c.nodes[r.to]?.text ?? r.to.rawValue) [\(r.to.rawValue)]\(r.label.isEmpty ? "" : " “\(r.label)”") [\(r.id)]"
-                )
+                let label = r.label.isEmpty ? "" : " “\(r.label)”"
+                out.append("- \(name(r.from, in: c)) → \(name(r.to, in: c))\(label) [\(r.id)]")
             }
         }
         return out.joined(separator: "\n")
@@ -382,14 +410,19 @@ public struct MapTools {
         var doc = try load(url)
         let cid = try Self.canvasID(args, in: doc)
         var e = CanvasEditor(doc.canvases[cid]!)
-        let from = try Self.topic(try string(args, "from"), in: e.canvas)
-        let to = try Self.topic(try string(args, "to"), in: e.canvas)
-        guard from != to else { throw ToolError("A relationship needs two different topics.") }
+        let from = try Self.end(try string(args, "from"), in: e.canvas)
+        let to = try Self.end(try string(args, "to"), in: e.canvas)
+        guard from != to else { throw ToolError("A relationship needs two different ends.") }
         let rid = e.connect(from, to: to, label: args["label"]?.stringValue ?? "")
         doc.canvases[cid] = e.canvas
         try save(doc, url)
-        return Output(
-            text: "Connected “\(e.canvas.nodes[from]?.text ?? "")” → “\(e.canvas.nodes[to]?.text ?? "")” [\(rid)].")
+        func title(_ end: RelationshipEnd) -> String {
+            switch end {
+            case .topic(let id): "“\(e.canvas.nodes[id]?.text ?? "")”"
+            case .zone(let id): "zone “\(e.canvas.zones.first { $0.id == id }?.title ?? id)”"
+            }
+        }
+        return Output(text: "Connected \(title(from)) → \(title(to)) [\(rid)].")
     }
 
     func setStyle(_ args: [String: JSONValue]) throws -> Output {

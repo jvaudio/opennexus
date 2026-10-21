@@ -250,6 +250,14 @@ public struct Scene {
     public var canvasColor: RGBA = Theme.classic.canvas
     public var grid: Theme.Grid = Theme.classic.grid
 
+    /// Where a relationship end sits: its topic's frame or its zone's rectangle.
+    public func rect(of end: RelationshipEnd) -> CGRect? {
+        switch end {
+        case .topic(let id): nodes[id]?.frame.rect
+        case .zone(let id): zones.first { $0.zone.id == id }?.rect
+        }
+    }
+
     public var bounds: CGRect {
         var b = nodes.values.reduce(CGRect.null) { $0.union($1.frame.rect) }
         for z in zones { b = b.union(z.rect) }
@@ -898,12 +906,40 @@ public struct SceneBuilder {
             }
         }
 
+        // Zones (back to front), before relationships so those can end on them.
+        for z in canvas.zones {
+            var rect = CGRect(x: z.origin.x, y: z.origin.y, width: z.width, height: z.height)
+            var hidden = 0
+            if z.collapsed {
+                rect.size.height = 40
+                hidden = z.members.reduce(0) { $0 + canvas.subtree($1).count }
+            } else if z.autoResize, !z.members.isEmpty {
+                var content = CGRect.null
+                for m in z.members {
+                    for d in canvas.subtree(m, includeFolded: false) {
+                        if let f = frames[d] { content = content.union(f.rect) }
+                    }
+                }
+                if !content.isNull {
+                    let fit = CGRect(
+                        x: content.minX - 24, y: content.minY - 44, width: content.width + 48,
+                        height: content.height + 68)
+                    rect = rect.union(fit)
+                    rect.size.width = max(rect.width, Zone.minimumSize)
+                    rect.size.height = max(rect.height, Zone.minimumSize)
+                }
+            }
+            let color = z.color.flatMap(RGBA.init(hexString:)) ?? RGBA(hex: "#7A4CC2")
+            scene.zones.append(SceneZone(zone: z, rect: rect, hidden: hidden, color: color))
+        }
         var messageIndex = 0
-        // Relationships between visible topics.
-        for r in canvas.relationships where scene.nodes[r.from] != nil && scene.nodes[r.to] != nil {
+        // Relationships between visible topics and zones.
+        for r in canvas.relationships where scene.rect(of: r.from) != nil && scene.rect(of: r.to) != nil {
             let color: RGBA =
                 switch r.color {
-                case "source": scene.nodes[r.from]!.branchColor
+                case "source":
+                    r.from.topic.flatMap { scene.nodes[$0]?.branchColor }
+                        ?? scene.zones.first { $0.zone.id == r.from.zone }?.color ?? env.theme.relationship
                 case "theme": env.theme.relationship
                 default: RGBA(hexString: r.color) ?? env.theme.relationship
                 }
@@ -985,32 +1021,6 @@ public struct SceneBuilder {
         }
         scene.boundaries.sort { $0.level > $1.level }
 
-        // Zones (back to front).
-        for z in canvas.zones {
-            var rect = CGRect(x: z.origin.x, y: z.origin.y, width: z.width, height: z.height)
-            var hidden = 0
-            if z.collapsed {
-                rect.size.height = 40
-                hidden = z.members.reduce(0) { $0 + canvas.subtree($1).count }
-            } else if z.autoResize, !z.members.isEmpty {
-                var content = CGRect.null
-                for m in z.members {
-                    for d in canvas.subtree(m, includeFolded: false) {
-                        if let f = frames[d] { content = content.union(f.rect) }
-                    }
-                }
-                if !content.isNull {
-                    let fit = CGRect(
-                        x: content.minX - 24, y: content.minY - 44, width: content.width + 48,
-                        height: content.height + 68)
-                    rect = rect.union(fit)
-                    rect.size.width = max(rect.width, Zone.minimumSize)
-                    rect.size.height = max(rect.height, Zone.minimumSize)
-                }
-            }
-            let color = z.color.flatMap(RGBA.init(hexString:)) ?? RGBA(hex: "#7A4CC2")
-            scene.zones.append(SceneZone(zone: z, rect: rect, hidden: hidden, color: color))
-        }
         // The legend lists the canvas's own markers and labels (never ghosts'), beside the
         // map unless dragged; branch, selection and zone exports leave it out.
         if let legend = source.legend, legend.visible, view.isolate == nil {
@@ -1034,9 +1044,17 @@ public struct SceneBuilder {
         scene.nodes = scene.nodes.filter { keep.contains($0.key) }
         scene.order = scene.order.filter(keep.contains)
         scene.edges = scene.edges.filter { keep.contains($0.parent) && keep.contains($0.child) }
-        scene.relationships = scene.relationships.filter {
-            keep.contains($0.relationship.from) && keep.contains($0.relationship.to)
+        let zones = scene.zones.filter {
+            $0.zone.id == zone || (!$0.zone.members.isEmpty && Set($0.zone.members).isSubset(of: keep))
         }
+        let keptZones = Set(zones.map(\.zone.id))
+        func kept(_ end: RelationshipEnd) -> Bool {
+            switch end {
+            case .topic(let id): keep.contains(id)
+            case .zone(let id): keptZones.contains(id)
+            }
+        }
+        scene.relationships = scene.relationships.filter { kept($0.relationship.from) && kept($0.relationship.to) }
         scene.boundaries = scene.boundaries.filter {
             !$0.boundary.nodes.isEmpty && Set($0.boundary.nodes).isSubset(of: keep)
         }
@@ -1044,9 +1062,7 @@ public struct SceneBuilder {
             keep.contains($0.summary.topic) && keep.contains($0.summary.from) && keep.contains($0.summary.to)
         }
         scene.callouts = scene.callouts.filter { keep.contains($0.callout.host) && keep.contains($0.callout.topic) }
-        scene.zones = scene.zones.filter {
-            $0.zone.id == zone || (!$0.zone.members.isEmpty && Set($0.zone.members).isSubset(of: keep))
-        }
+        scene.zones = zones
         // Structure decor (timeline spines, lanes) belongs to the whole map.
         if !keep.contains(root) { scene.decor = [] }
     }
@@ -1095,6 +1111,7 @@ public struct SceneBuilder {
             scene.nodes[id]?.matchRanges = view.matches[id] ?? []
         }
         func opacity(_ id: NodeID) -> Double { scene.nodes[id]?.opacity ?? 1 }
+        func opacity(_ end: RelationshipEnd) -> Double { end.topic.map(opacity) ?? 1 }
         for i in scene.edges.indices {
             scene.edges[i].opacity = min(opacity(scene.edges[i].parent), opacity(scene.edges[i].child))
         }
