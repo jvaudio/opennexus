@@ -201,8 +201,11 @@ public enum XmindFormat {
             ic.callouts = callouts
             for r in (s["relationships"] as? [[String: Any]]) ?? [] {
                 guard let a = r["end1Id"] as? String, let b = r["end2Id"] as? String else { continue }
-                ic.links.append(ICanvas.Link(from: a, to: b, label: (r["title"] as? String) ?? ""))
+                var link = ICanvas.Link(from: a, to: b, label: (r["title"] as? String) ?? "")
+                if let p = Self.properties(r) { XmindStyle.apply(p, to: &link) }
+                ic.links.append(link)
             }
+            if let theme = s["theme"] as? [String: Any] { ic.style = XmindStyle.canvasStyle(theme, report: &report) }
             for e in (s["extensions"] as? [[String: Any]]) ?? [] { ext(e, on: title) }
             if let l = s["legend"] { ic.legend = XmindLegend.read(l, report: &report) }
             return ic
@@ -264,6 +267,7 @@ public enum XmindFormat {
             }
             if t["branch"] as? String == "folded" { it.folded = true }
             it.structure = XmindFormat.structure(t["structureClass"] as? String)
+            it.style = Self.properties(t).flatMap(XmindStyle.style)
             if t["numbering"] != nil { report.skip("Numbering format") }
             if let raw = t["comments"] {
                 it.comments = XmindComments.list(raw)
@@ -306,6 +310,11 @@ public enum XmindFormat {
                 if let host = it.ref { callouts.append(ICanvas.Bubble(host: host, topic: topic(c))) }
             }
             return it
+        }
+
+        /// An object's `style.properties` (topics and relationships).
+        static func properties(_ o: [String: Any]) -> [String: Any]? {
+            ((o["style"] as? [String: Any])?["properties"] as? [String: Any]).flatMap { $0.isEmpty ? nil : $0 }
         }
 
         func file(_ src: String) -> Data? {

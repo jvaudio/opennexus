@@ -23,11 +23,17 @@ import Testing
         #expect(back.canvases.map(\.title) == h.store.model.orderedCanvases.map(\.title))
         #expect(h.controller.exportSizeLine(s) == "1 sheet · 16 topics")
         #expect(h.controller.exportPreview(s) != nil, "the preview shows the canvas")
+        // The theme now travels (M18), so a plain map carries over whole.
         let report = XmindWriter.report(h.controller.exportModel(s))
-        #expect(report.lines.contains("Theme, colours and topic shapes (Xmind uses its default theme)"))
+        #expect(report.lines.isEmpty, "\(report.lines)")
+        let theme = try #require(
+            (try JSONSerialization.jsonObject(with: files["content.json"]!) as? [[String: Any]])?.first?["theme"]
+                as? [String: Any])
+        #expect(theme["id"] as? String == "opennexus.\(h.canvas.style.theme)")
         var saved: [String] = []
         h.controller.onSaveFile = { _, name in saved.append(name) }
         h.controller.runExport(s)
         #expect(saved == ["Launch plan.xmind"])
+        #expect(h.controller.toast?.text == "Saved for Xmind 2020 or later")
     }
 }

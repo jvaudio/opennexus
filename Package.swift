@@ -41,7 +41,9 @@ let package = Package(
         .target(name: "NexusKeys", swiftSettings: strict),
         // Import and export of other formats (.xmind, OPML, Markdown, Mermaid, PlantUML,
         // draw.io, FreeMind, MindManager, Word, CSV, JSON/YAML). Pure and headless.
-        .target(name: "NexusInterchange", dependencies: ["NexusCore", "NexusFormat"], swiftSettings: strict),
+        // Uses the themes to write and read Xmind styles (M18).
+        .target(
+            name: "NexusInterchange", dependencies: ["NexusCore", "NexusFormat", "NexusTheme"], swiftSettings: strict),
         // Thin wrappers around Apple's on-device frameworks (Foundation Models, Translation,
         // NaturalLanguage, Vision, Image Playground, SpeechAnalyzer). No network.
         .target(name: "NexusAI", dependencies: ["NexusCore"], swiftSettings: strict),
@@ -81,7 +83,7 @@ let package = Package(
         .testTarget(name: "NexusAgentTests", dependencies: ["NexusAgent", "NexusCanvas", "NexusFormat", "NexusCore"]),
         .testTarget(
             name: "NexusInterchangeTests",
-            dependencies: ["NexusInterchange", "NexusFormat", "NexusCore"],
+            dependencies: ["NexusInterchange", "NexusFormat", "NexusCore", "NexusTheme"],
             exclude: ["Fixtures", "Goldens"]
         ),
     ]

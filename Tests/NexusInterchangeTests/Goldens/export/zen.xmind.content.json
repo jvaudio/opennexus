@@ -179,6 +179,131 @@
       "structureClass" : "org.xmind.ui.map.unbalanced",
       "title" : "Strategy 2026"
     },
+    "theme" : {
+      "boundary" : {
+        "id" : "sheet-c1-theme-boundary",
+        "properties" : {
+          "line-color" : "#5850EC",
+          "line-pattern" : "dash"
+        }
+      },
+      "calloutTopic" : {
+        "id" : "sheet-c1-theme-calloutTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#2C2C33",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "normal",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#EDEDEC"
+        }
+      },
+      "centralTopic" : {
+        "id" : "sheet-c1-theme-centralTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#FFFFFF",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "bold",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#17171C"
+        }
+      },
+      "floatingTopic" : {
+        "id" : "sheet-c1-theme-floatingTopic",
+        "properties" : {
+          "border-line-pattern" : "solid",
+          "border-line-width" : "2pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#17171C",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "500",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#FFFFFF"
+        }
+      },
+      "id" : "opennexus.classic",
+      "mainTopic" : {
+        "id" : "sheet-c1-theme-mainTopic",
+        "properties" : {
+          "border-line-pattern" : "solid",
+          "border-line-width" : "2pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#17171C",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "500",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#FFFFFF"
+        }
+      },
+      "map" : {
+        "id" : "sheet-c1-theme-map",
+        "properties" : {
+          "line-tapered" : "none",
+          "multi-line-colors" : "#5850EC #E4572E #0F9F9A #E0A100 #D6408B #1E8BE0 #5AA02C #9B51E0",
+          "svg:fill" : "#F7F7F5"
+        }
+      },
+      "relationship" : {
+        "id" : "sheet-c1-theme-relationship",
+        "properties" : {
+          "line-color" : "#E8A317",
+          "line-pattern" : "dash",
+          "line-width" : "2pt"
+        }
+      },
+      "subTopic" : {
+        "id" : "sheet-c1-theme-subTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#2C2C33",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "normal",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#EDEDEC"
+        }
+      },
+      "summaryTopic" : {
+        "id" : "sheet-c1-theme-summaryTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#2C2C33",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "normal",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#EDEDEC"
+        }
+      },
+      "title" : "Classic (OpenNexus)"
+    },
     "title" : "Strategy 2026"
   },
   {
@@ -212,6 +337,131 @@
       "structureClass" : "org.xmind.ui.org-chart.down",
       "title" : "Team"
     },
+    "theme" : {
+      "boundary" : {
+        "id" : "sheet-c2-theme-boundary",
+        "properties" : {
+          "line-color" : "#5850EC",
+          "line-pattern" : "dash"
+        }
+      },
+      "calloutTopic" : {
+        "id" : "sheet-c2-theme-calloutTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#2C2C33",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "normal",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#EDEDEC"
+        }
+      },
+      "centralTopic" : {
+        "id" : "sheet-c2-theme-centralTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#FFFFFF",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "bold",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#17171C"
+        }
+      },
+      "floatingTopic" : {
+        "id" : "sheet-c2-theme-floatingTopic",
+        "properties" : {
+          "border-line-pattern" : "solid",
+          "border-line-width" : "2pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#17171C",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "500",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#FFFFFF"
+        }
+      },
+      "id" : "opennexus.classic",
+      "mainTopic" : {
+        "id" : "sheet-c2-theme-mainTopic",
+        "properties" : {
+          "border-line-pattern" : "solid",
+          "border-line-width" : "2pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#17171C",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "500",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#FFFFFF"
+        }
+      },
+      "map" : {
+        "id" : "sheet-c2-theme-map",
+        "properties" : {
+          "line-tapered" : "none",
+          "multi-line-colors" : "#5850EC #E4572E #0F9F9A #E0A100 #D6408B #1E8BE0 #5AA02C #9B51E0",
+          "svg:fill" : "#F7F7F5"
+        }
+      },
+      "relationship" : {
+        "id" : "sheet-c2-theme-relationship",
+        "properties" : {
+          "line-color" : "#E8A317",
+          "line-pattern" : "dash",
+          "line-width" : "2pt"
+        }
+      },
+      "subTopic" : {
+        "id" : "sheet-c2-theme-subTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#2C2C33",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "normal",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#EDEDEC"
+        }
+      },
+      "summaryTopic" : {
+        "id" : "sheet-c2-theme-summaryTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#2C2C33",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "normal",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#EDEDEC"
+        }
+      },
+      "title" : "Classic (OpenNexus)"
+    },
     "title" : "Org"
   },
   {
@@ -230,6 +480,131 @@
       "id" : "c3-n1",
       "structureClass" : "org.xmind.ui.map.unbalanced",
       "title" : "Copy"
+    },
+    "theme" : {
+      "boundary" : {
+        "id" : "sheet-c3-theme-boundary",
+        "properties" : {
+          "line-color" : "#5850EC",
+          "line-pattern" : "dash"
+        }
+      },
+      "calloutTopic" : {
+        "id" : "sheet-c3-theme-calloutTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#2C2C33",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "normal",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#EDEDEC"
+        }
+      },
+      "centralTopic" : {
+        "id" : "sheet-c3-theme-centralTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#FFFFFF",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "bold",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#17171C"
+        }
+      },
+      "floatingTopic" : {
+        "id" : "sheet-c3-theme-floatingTopic",
+        "properties" : {
+          "border-line-pattern" : "solid",
+          "border-line-width" : "2pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#17171C",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "500",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#FFFFFF"
+        }
+      },
+      "id" : "opennexus.classic",
+      "mainTopic" : {
+        "id" : "sheet-c3-theme-mainTopic",
+        "properties" : {
+          "border-line-pattern" : "solid",
+          "border-line-width" : "2pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#17171C",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "500",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#FFFFFF"
+        }
+      },
+      "map" : {
+        "id" : "sheet-c3-theme-map",
+        "properties" : {
+          "line-tapered" : "none",
+          "multi-line-colors" : "#5850EC #E4572E #0F9F9A #E0A100 #D6408B #1E8BE0 #5AA02C #9B51E0",
+          "svg:fill" : "#F7F7F5"
+        }
+      },
+      "relationship" : {
+        "id" : "sheet-c3-theme-relationship",
+        "properties" : {
+          "line-color" : "#E8A317",
+          "line-pattern" : "dash",
+          "line-width" : "2pt"
+        }
+      },
+      "subTopic" : {
+        "id" : "sheet-c3-theme-subTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#2C2C33",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "normal",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#EDEDEC"
+        }
+      },
+      "summaryTopic" : {
+        "id" : "sheet-c3-theme-summaryTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#2C2C33",
+          "fo:font-style" : "normal",
+          "fo:font-weight" : "normal",
+          "fo:text-align" : "center",
+          "fo:text-decoration" : "none",
+          "fo:text-transform" : "none",
+          "line-class" : "org.xmind.branchConnection.curve",
+          "shape-class" : "org.xmind.topicShape.roundedRect",
+          "svg:fill" : "#EDEDEC"
+        }
+      },
+      "title" : "Classic (OpenNexus)"
     },
     "title" : "Copy"
   }

@@ -4,6 +4,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusInterchange
+@testable import NexusTheme
 
 /// M15: `.xmind` export. OpenNexus → .xmind → OpenNexus keeps what Xmind can hold, the
 /// archive is well formed, and the sample Xmind files survive a re-export.
@@ -223,7 +224,8 @@ import Testing
         let build = c.nodes.first { $0.value.text == "Build" }!.key
         c.nodes[build]!.markers.append("people-external")
         c.nodes[build]!.sticker = AssetRef(asset: "emoji:🚀")
-        c.nodes[build]!.style = try TopicStyle(json: ["fill": "#FF0000"], path: "s")
+        c.nodes[build]!.style = try TopicStyle(json: ["shape": "star", "shadow": "soft"], path: "s")
+        c.style.nodeStyle = "brutal"
         c.zones = [Zone(id: "z1", title: "Area", origin: CanvasPoint(x: 0, y: 0), width: 200, height: 200)]
         c.relationships.append(Relationship(id: "rz", from: .topic(build), to: .zone("z1")))
         c.layout.structure = .flowDown
@@ -233,13 +235,147 @@ import Testing
         let lines = r.lines
         #expect(lines.contains("Marker “people-external” (no Xmind equivalent)"))
         #expect(lines.contains("Sticker"))
-        #expect(lines.contains("Topic style (Xmind uses its default theme)"))
+        #expect(lines.contains("Topic shape “star” (no Xmind equivalent)"))
+        #expect(lines.contains("Topic shadow"))
         #expect(lines.contains("Zone (no Xmind equivalent; its topics are kept)"))
         #expect(lines.contains("Relationship to a zone (zones aren't exported)"), "M16 ends on a zone")
         #expect(lines.contains("Layout “flow.down” written as an Xmind org.xmind.ui.logic.right"))
-        #expect(lines.contains("Theme, colours and topic shapes (Xmind uses its default theme)"))
+        #expect(lines.contains("Node style, colour mode and background pattern (Xmind keeps the theme's colours)"))
         #expect(XmindWriter.report(doc) == r)
         #expect(r.text.hasPrefix("Xmind · 2 sheets · 15 topics\n"))
+    }
+
+    /// M18, D185, D186: the theme, topic styles and relationship styles go out as Xmind's
+    /// style properties and come back.
+    @Test func stylesAndThemeRoundTrip() throws {
+        var c = Canvas(id: "c1", title: "Styled", rootText: "Plan")
+        var u = UndoStack()
+        var (a, b, d) = (NodeID(""), NodeID(""), NodeID(""))
+        c.edit("Sample", undo: &u) { e in
+            a = try! e.addChild(of: e.canvas.root, text: "Styled")
+            b = try! e.addChild(of: e.canvas.root, text: "Quick")
+            d = try! e.addChild(of: a, text: "Bare")
+            e.connect(a, to: b, label: "rel")
+            e.updateMeta {
+                $0.style.theme = "graphite"
+                $0.style.background = "#101820"
+                $0.style.font = "serif"
+                $0.style.lineShape = "elbow"
+            }
+        }
+        var styled = TopicStyle()
+        styled.shape = "hexagon"
+        styled.fill = "solid"
+        styled.fillColor = "#FFCC00"
+        styled.border = "dashed"
+        styled.borderWidth = 3
+        styled.borderColor = "#112233"
+        styled.font = "mono"
+        styled.fontSize = 18
+        styled.fontWeight = "bold"
+        styled.italic = true
+        styled.underline = true
+        styled.strikethrough = false
+        styled.textCase = "upper"
+        styled.align = "leading"
+        styled.textColor = "#334455"
+        styled.line = LineStyle(shape: "straight", color: "#AA0000", width: 4, dash: "dotted")
+        c.nodes[a]!.style = styled
+        c.nodes[b]!.quickStyle = "very-important"
+        var bare = TopicStyle()
+        bare.fill = "none"
+        bare.border = "none"
+        c.nodes[d]!.style = bare
+        c.relationships[0].line = "straight"
+        c.relationships[0].ends = ["dot", "filled-arrow"]
+        c.relationships[0].dash = "solid"
+        c.relationships[0].width = 3
+        c.relationships[0].color = "#00AA00"
+        let doc = DocumentModel(canvases: [c])
+        let (out, back) = try roundTrip(doc)
+        #expect(out.report.skipped.isEmpty, "\(out.report.lines)")
+        #expect(back.report.skipped.isEmpty, "\(back.report.lines)")
+
+        // The file: Xmind's keys on the topic, the relationship and the sheet's theme.
+        let files = try Zip.read(out.data)
+        let sheet = try #require(
+            (try JSONSerialization.jsonObject(with: files["content.json"]!) as? [[String: Any]])?.first)
+        let theme = try #require(sheet["theme"] as? [String: Any])
+        #expect(theme["id"] as? String == "opennexus.graphite")
+        func props(_ o: Any?) -> [String: String] {
+            ((o as? [String: Any])?["properties"] as? [String: String]) ?? [:]
+        }
+        #expect(props(theme["map"])["svg:fill"] == "#101820")
+        #expect(props(theme["map"])["multi-line-colors"]?.hasPrefix("#8F89FF #F06C4B") == true)
+        #expect(props(theme["centralTopic"])["svg:fill"] == "#F2F2F5")
+        #expect(props(theme["centralTopic"])["fo:font-family"] == "Georgia")
+        #expect(props(theme["mainTopic"])["line-class"] == "org.xmind.branchConnection.elbow")
+        let kids = try #require(
+            ((sheet["rootTopic"] as? [String: Any])?["children"] as? [String: Any])?["attached"] as? [[String: Any]])
+        let p = props(kids[0]["style"])
+        #expect(p["shape-class"] == "org.xmind.topicShape.hexagon" && p["svg:fill"] == "#FFCC00")
+        #expect(
+            p["border-line-pattern"] == "dash" && p["border-line-width"] == "3pt" && p["border-line-color"] == "#112233"
+        )
+        #expect(p["fo:font-family"] == "Menlo" && p["fo:font-size"] == "18pt" && p["fo:font-weight"] == "bold")
+        #expect(p["fo:font-style"] == "italic" && p["fo:text-decoration"] == "underline")
+        #expect(p["fo:text-transform"] == "uppercase" && p["fo:text-align"] == "left" && p["fo:color"] == "#334455")
+        #expect(p["line-class"] == "org.xmind.branchConnection.straight" && p["line-color"] == "#AA0000")
+        #expect(p["line-width"] == "4pt" && p["line-pattern"] == "dot")
+        #expect(props(kids[1]["style"])["svg:fill"] == "#C62F35", "a quick style is written as the topic's own")
+        let rp = props((sheet["relationships"] as? [[String: Any]])?.first?["style"])
+        #expect(rp["shape-class"] == "org.xmind.relationshipShape.straight")
+        #expect(rp["arrow-begin-class"] == "org.xmind.arrowShape.dot")
+        #expect(rp["arrow-end-class"] == "org.xmind.arrowShape.triangle")
+        #expect(rp["line-pattern"] == "solid" && rp["line-width"] == "3pt" && rp["line-color"] == "#00AA00")
+
+        // Back in OpenNexus.
+        let r = try #require(back.canvases.first)
+        #expect(r.style == c.style)
+        func node(_ text: String) throws -> Node { try #require(r.nodes.values.first { $0.text == text }) }
+        #expect(try node("Styled").style == styled)
+        #expect(try node("Bare").style == bare)
+        let quick = try #require(QuickStyle.named("very-important")).style
+        #expect(try node("Quick").style == quick)
+        let rel = try #require(r.relationships.first)
+        #expect(rel.line == "straight" && rel.ends == ["dot", "filled-arrow"] && rel.dash == "solid")
+        #expect(rel.width == 3 && rel.color == "#00AA00")
+        // A second trip changes nothing.
+        let again = try XmindFormat.parse(
+            XmindWriter.export(back.document, timeZone: utc).data, name: "x", timeZone: utc)
+        #expect(again.canvases.first?.style == r.style)
+        #expect(again.canvases.first.map(Self.outline) == Self.outline(r))
+    }
+
+    /// A theme Xmind wrote: OpenNexus keeps its own theme and takes the background and the
+    /// topics' own styles.
+    @Test func xmindThemeAndTopicStylesImport() throws {
+        var z = ZipWriter()
+        z.add(
+            "content.json",
+            """
+            [{"id": "s1", "title": "Plan", "theme": {"id": "abc123", "title": "Snowbrush",
+                "map": {"properties": {"svg:fill": "#FAFAF0", "multi-line-colors": "#FF0000 #00FF00"}},
+                "centralTopic": {"properties": {"fo:font-family": "NeverMind", "svg:fill": "#000000"}}},
+              "rootTopic": {"id": "root", "title": "Release",
+                "style": {"id": "st1", "properties": {"svg:fill": "#ff8800", "shape-class": "org.xmind.topicShape.diamond",
+                  "fo:font-weight": "700", "border-line-width": "2px", "border-line-color": "#000000"}},
+                "children": {"attached": [{"id": "p", "title": "Pricing",
+                  "style": {"properties": {"fo:font-weight": "normal", "fo:text-decoration": "line-through",
+                    "line-class": "org.xmind.branchConnection.roundedElbow"}}}]}}}]
+            """)
+        z.add("manifest.json", #"{"file-entries": {"content.json": {}}}"#)
+        let im = try XmindFormat.parse(z.finish(), name: "plan.xmind")
+        let c = try #require(im.canvases.first)
+        #expect(c.style.theme == "classic" && c.style.background == "#FAFAF0" && c.style.font == "NeverMind")
+        #expect(im.report.skipped.map(\.0) == ["Xmind theme (its background is kept; OpenNexus’s theme is used)"])
+        let root = try #require(c.nodes[c.root]?.style)
+        #expect(root.fill == "solid" && root.fillColor == "#FF8800" && root.shape == "diamond")
+        #expect(
+            root.fontWeight == "bold" && root.border == nil && root.borderWidth == 2 && root.borderColor == "#000000")
+        let pricing = try #require(c.nodes.values.first { $0.text == "Pricing" }?.style)
+        #expect(pricing.fontWeight == "regular" && pricing.strikethrough == true && pricing.underline == false)
+        #expect(pricing.line?.shape == "rounded")
     }
 
     @Test(arguments: ["zen.xmind", "xmind8.xmind"]) func sampleFilesSurviveAReExport(_ name: String) throws {

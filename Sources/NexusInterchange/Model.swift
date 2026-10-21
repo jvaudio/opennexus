@@ -24,6 +24,8 @@ public struct ITopic: Sendable, Equatable {
     public var nodeType: NodeType?
     public var edgeLabel: String?
     public var structure: LayoutStructure?
+    /// The topic's own style (Xmind's style properties, M18).
+    public var style: TopicStyle?
     public var folded = false
     public var position: CanvasPoint?
     public var children: [ITopic] = []
@@ -69,6 +71,12 @@ public struct ICanvas: Sendable, Equatable {
         public var to: String
         public var label: String
         public var kind: String?
+        /// Line, caps, dash, width and colour when the source sets them (nil: defaults).
+        public var line: String?
+        public var ends: [String]?
+        public var dash: String?
+        public var width: Double?
+        public var color: String?
         public init(from: String, to: String, label: String = "", kind: String? = nil) {
             self.from = from
             self.to = to
@@ -122,6 +130,8 @@ public struct ICanvas: Sendable, Equatable {
     public var callouts: [Bubble] = []
     /// The marker legend (M14).
     public var legend: Legend?
+    /// Theme and canvas-wide style, when the source has them (M18).
+    public var style: CanvasStyle?
     /// The root was made up to hold several top-level topics (pasting drops it).
     public var synthesizedRoot = false
 
@@ -239,6 +249,7 @@ public enum CanvasBuilder {
     public static func build(_ ic: ICanvas, id: CanvasID, report: inout ImportReport) -> Canvas {
         var c = Canvas(id: id, title: ic.title, type: ic.type, rootText: ic.root.text)
         if let s = ic.structure { c.layout.structure = s }
+        if let s = ic.style { c.style = s }
         c.legend = ic.legend
         var refs: [String: NodeID] = [:]
         /// Source ids of boundaries and summaries, for relationships that end on them.
@@ -273,6 +284,7 @@ public enum CanvasBuilder {
             n.nodeType = t.nodeType
             n.edgeLabel = t.edgeLabel
             n.structure = t.structure
+            n.style = t.style
             n.folded = t.folded && !t.children.isEmpty
             c.nodes[id] = n
             if let r = t.ref { refs[r] = id }
@@ -338,6 +350,11 @@ public enum CanvasBuilder {
             }
             var r = Relationship(id: "r\(c.relationships.count + 1)", from: from, to: to, label: l.label)
             r.kind = l.kind
+            if let v = l.line { r.line = v }
+            if let v = l.ends, v.count == 2 { r.ends = v }
+            if let v = l.dash { r.dash = v }
+            if let v = l.width { r.width = v }
+            if let v = l.color { r.color = v }
             c.relationships.append(r)
         }
         // Task dependencies name their predecessors by ref.

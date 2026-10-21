@@ -1,6 +1,7 @@
 import Foundation
 import NexusCore
 import NexusFormat
+import NexusTheme
 
 /// What an export couldn't carry into the other format, by kind, with counts (M15).
 public struct ExportReport: Sendable, Equatable {
@@ -91,7 +92,6 @@ public enum XmindWriter {
         var w = Writer(doc: doc, zone: zone)
         let sheets = doc.orderedCanvases.map { w.sheet($0) }
         if !doc.chats.isEmpty { w.report.skip("AI chats") }
-        if !sheets.isEmpty { w.report.skip("Theme, colours and topic shapes (Xmind uses its default theme)") }
         return (w, sheets)
     }
 
@@ -170,10 +170,53 @@ public enum XmindWriter {
         var callouts: [NodeID: [NodeID]] = [:]
         /// Boundaries and summaries this sheet writes, which relationships can name.
         var written = Set<RelationshipEnd>()
+        /// The document's custom themes, palettes and quick styles.
+        let library: StyleLibrary
+        /// The sheet's theme and canvas style, as the canvas resolves them (M18).
+        var env: StyleEnvironment
 
         init(doc: DocumentModel, zone: TimeZone) {
             self.doc = doc
             self.zone = zone
+            library = StyleLibrary(json: doc.theme)
+            env = StyleEnvironment(theme: .classic, canvasStyle: CanvasStyle())
+        }
+
+        mutating func lose(_ lost: [String]) { for l in lost { report.skip(l) } }
+
+        /// A colour token on `nid` as hex: its branch colour for `branch`, theme tokens,
+        /// or the hex itself.
+        func color(_ token: String, on nid: NodeID) -> String? {
+            let branch: RGBA =
+                if nid == canvas.root {
+                    env.theme.ring
+                } else if let m = canvas.mainBranch(of: nid, parents: parents),
+                    let mains = canvas.nodes[canvas.root]?.children, let i = mains.firstIndex(of: m)
+                {
+                    env.branchColor(
+                        mainIndex: i, count: mains.count,
+                        siblingIndex: parents[nid].flatMap { canvas.nodes[$0]?.children.firstIndex(of: nid) })
+                } else {
+                    env.theme.ink2
+                }
+            return StyleResolver.resolveColor(token, branch: branch, env: env).map {
+                $0.composited(over: env.canvas).hex
+            }
+        }
+
+        /// The topic's own style in Xmind properties: its level style, quick style and
+        /// overrides (the theme's part is in the sheet's theme).
+        mutating func style(_ nid: NodeID, _ n: Node) -> [String: String] {
+            var s = canvas.style.levels[canvas.depth(of: nid, parents: parents)] ?? TopicStyle()
+            if let q = n.quickStyle {
+                if let qs = QuickStyle.named(q, custom: library.quickStyles) { s = qs.style.merged(over: s) }
+            }
+            if let o = n.style { s = o.merged(over: s) }
+            guard !s.isEmpty else { return [:] }
+            var lost: [String] = []
+            let p = XmindStyle.properties(s, color: { color($0, on: nid) }, lost: &lost)
+            lose(lost)
+            return p
         }
 
         func id(_ n: NodeID) -> String { "\(canvas.id.rawValue)-\(n.rawValue)" }
@@ -182,6 +225,9 @@ public enum XmindWriter {
         mutating func sheet(_ c: Canvas) -> [String: Any] {
             canvas = c
             parents = c.parentMap()
+            env = StyleEnvironment(
+                theme: Theme.named(c.style.theme, custom: library.themes), canvasStyle: c.style,
+                customPalettes: library.palettes, customQuickStyles: library.quickStyles)
             report.sheets += 1
             boundaries = [:]
             summaries = [:]
@@ -201,9 +247,13 @@ public enum XmindWriter {
                 kids["detached"] = detached
                 root["children"] = kids
             }
+            var lost: [String] = []
+            let theme = XmindStyle.theme(env, sheet: "sheet-\(c.id.rawValue)", lost: &lost)
+            lose(lost)
             var s: [String: Any] = [
                 "id": "sheet-\(c.id.rawValue)", "class": "sheet",
                 "title": c.title.isEmpty ? (c.nodes[c.root]?.text ?? "") : c.title, "rootTopic": root,
+                "theme": theme,
                 "extensions": [
                     ["provider": "org.xmind.ui.skeleton.structure.style", "content": ["centralTopic": cls]]
                 ],
@@ -219,12 +269,11 @@ public enum XmindWriter {
                 guard let from = end(r.from), let to = end(r.to) else { continue }
                 var o: [String: Any] = ["id": "\(c.id.rawValue)-\(r.id)", "end1Id": from, "end2Id": to]
                 if !r.label.isEmpty { o["title"] = r.label }
+                var lost: [String] = []
+                let p = XmindStyle.properties(r, lost: &lost)
+                lose(lost)
+                if !p.isEmpty { o["style"] = ["id": "\(c.id.rawValue)-\(r.id)-style", "properties": p] }
                 rels.append(o)
-                if r.line != "curved" || r.ends != ["none", "arrow"] || r.dash != "dashed" || r.color != "theme"
-                    || r.kind != nil
-                {
-                    report.skip("Relationship line, arrow and colour styles")
-                }
             }
             if !rels.isEmpty { s["relationships"] = rels }
             if let l = c.legend { s["legend"] = legend(l) }
@@ -346,6 +395,8 @@ public enum XmindWriter {
                 }
             }
             if let todo = n.todo { t["extensions"] = [["provider": "org.xmind.ui.task", "content": task(todo)]] }
+            let props = style(nid, n)
+            if !props.isEmpty { t["style"] = ["id": "\(id(nid))-style", "properties": props] }
             unsupported(n)
             var kids: [String: Any] = [:]
             if !n.children.isEmpty { kids["attached"] = n.children.map { topic($0) } }
@@ -368,7 +419,6 @@ public enum XmindWriter {
 
         /// What Xmind can't hold, reported once per kind.
         mutating func unsupported(_ n: Node) {
-            if n.style != nil || n.quickStyle != nil { report.skip("Topic style (Xmind uses its default theme)") }
             if !n.marks.isEmpty { report.skip("Bold, italic and other text formatting") }
             if !n.metadata.isEmpty { report.skip("Data fields") }
             if n.sticker != nil { report.skip("Sticker") }
