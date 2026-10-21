@@ -51,7 +51,9 @@ public struct MapTools {
     ]
     static let topicDesc =
         "A topic: its id (from read_map, e.g. \"n3\"), a path of titles from the central topic (\"Launch > Pricing\"), or a unique title."
-    static let endDesc = topicDesc + " Or a zone: \"zone:\" and its id or title (\"zone:z1\")."
+    static let endDesc =
+        topicDesc
+        + " Or a zone, boundary or summary: \"zone:\", \"boundary:\" or \"summary:\" and its id or title (\"zone:z1\", \"boundary:b2\", \"summary:s1\"; a summary's title is its topic's)."
 
     public static let definitions: [JSONValue] = [
         tool(
@@ -86,8 +88,8 @@ public struct MapTools {
                     "labels": ["type": "array", "items": ["type": "string"]],
                 ], required: ["path", "parent", "text"]), readOnly: false),
         tool(
-            "add_edge", "Connect two topics or zones",
-            "Draws a relationship between two topics or zones, with an optional label (e.g. \"drives\", \"POST /cart\").",
+            "add_edge", "Connect two topics or elements",
+            "Draws a relationship between two topics, zones, boundaries or summaries, with an optional label (e.g. \"drives\", \"POST /cart\").",
             schema(
                 [
                     "path": pathProp, "canvas": canvasProp,
@@ -237,23 +239,44 @@ public struct MapTools {
         )
     }
 
-    /// "Title [id]" for a topic, "Title [zone:id]" for a zone.
+    /// "Title [id]" for a topic, "Title [zone:id]" for a zone, and likewise
+    /// `[boundary:id]` and `[summary:id]`.
     static func name(_ end: RelationshipEnd, in c: Canvas) -> String {
-        switch end {
-        case .topic(let id): "\(c.nodes[id]?.text ?? id.rawValue) [\(id.rawValue)]"
-        case .zone(let id): "\(c.zones.first { $0.id == id }?.title ?? id) [zone:\(id)]"
-        }
+        if let id = end.topic { return "\(c.nodes[id]?.text ?? id.rawValue) [\(id.rawValue)]" }
+        return "\(title(end, in: c)) [\(end.kind):\(end.rawValue)]"
     }
 
-    /// "zone:" and a zone's id or unique title, or anything `topic` takes.
+    /// A zone's or boundary's title, or a summary's topic text (the id when it's gone).
+    static func title(_ end: RelationshipEnd, in c: Canvas) -> String {
+        let t: String? =
+            switch end {
+            case .topic(let id): c.nodes[id]?.text
+            case .zone(let id): c.zones.first { $0.id == id }?.title
+            case .boundary(let id): c.boundaries.first { $0.id == id }?.title
+            case .summary(let id): c.summaries.first { $0.id == id }.flatMap { c.nodes[$0.topic]?.text }
+            }
+        return t ?? end.rawValue
+    }
+
+    /// "zone:", "boundary:" or "summary:" and an id or unique title, or anything `topic`
+    /// takes.
     static func end(_ ref: String, in c: Canvas) throws -> RelationshipEnd {
-        guard ref.lowercased().hasPrefix("zone:") else { return .topic(try topic(ref, in: c)) }
-        let key = ref.dropFirst(5).trimmingCharacters(in: .whitespaces)
-        if c.zones.contains(where: { $0.id == key }) { return .zone(key) }
-        let hits = c.zones.filter { $0.title.caseInsensitiveCompare(key) == .orderedSame }
-        if hits.count == 1 { return .zone(hits[0].id) }
-        if hits.isEmpty { throw ToolError("No zone “\(key)”. Use read_map to see zone ids.") }
-        throw ToolError("“\(key)” matches \(hits.count) zones (\(hits.map(\.id).joined(separator: ", "))); use an id.")
+        let kinds: [(String, [(String, String)], (String) -> RelationshipEnd)] = [
+            ("zone", c.zones.map { ($0.id, $0.title) }, RelationshipEnd.zone),
+            ("boundary", c.boundaries.map { ($0.id, $0.title) }, RelationshipEnd.boundary),
+            ("summary", c.summaries.map { ($0.id, c.nodes[$0.topic]?.text ?? "") }, RelationshipEnd.summary),
+        ]
+        guard let (kind, items, make) = kinds.first(where: { ref.lowercased().hasPrefix($0.0 + ":") }) else {
+            return .topic(try topic(ref, in: c))
+        }
+        let key = ref.dropFirst(kind.count + 1).trimmingCharacters(in: .whitespaces)
+        if items.contains(where: { $0.0 == key }) { return make(key) }
+        let hits = items.filter { $0.1.caseInsensitiveCompare(key) == .orderedSame }
+        if hits.count == 1 { return make(hits[0].0) }
+        if hits.isEmpty { throw ToolError("No \(kind) “\(key)”. Use read_map to see \(kind) ids.") }
+        throw ToolError(
+            "“\(key)” matches \(hits.count) \(kind == "summary" ? "summaries" : kind + "s") (\(hits.map(\.0).joined(separator: ", "))); use an id."
+        )
     }
 
     /// An id, a "A > B" path from the central topic, or a unique title.
@@ -367,6 +390,23 @@ public struct MapTools {
                 )
             }
         }
+        func topics(_ ids: [NodeID]) -> String {
+            ids.map { "\(c.nodes[$0]?.text ?? "") [\($0.rawValue)]" }.joined(separator: ", ")
+        }
+        if !c.boundaries.isEmpty {
+            out.append("Boundaries:")
+            for b in c.boundaries {
+                out.append("- \(b.title.isEmpty ? "Boundary" : b.title) [boundary:\(b.id)] around \(topics(b.nodes))")
+            }
+        }
+        if !c.summaries.isEmpty {
+            out.append("Summaries:")
+            for s in c.summaries {
+                out.append(
+                    "- \(c.nodes[s.topic]?.text ?? "Summary") [summary:\(s.id)] over \(topics([s.from])) to \(topics([s.to])), topic [\(s.topic.rawValue)]"
+                )
+            }
+        }
         if !c.relationships.isEmpty {
             out.append("Relationships:")
             for r in c.relationships {
@@ -417,10 +457,8 @@ public struct MapTools {
         doc.canvases[cid] = e.canvas
         try save(doc, url)
         func title(_ end: RelationshipEnd) -> String {
-            switch end {
-            case .topic(let id): "“\(e.canvas.nodes[id]?.text ?? "")”"
-            case .zone(let id): "zone “\(e.canvas.zones.first { $0.id == id }?.title ?? id)”"
-            }
+            let t = "“\(Self.title(end, in: e.canvas))”"
+            return end.topic == nil ? "\(end.kind) \(t)" : t
         }
         return Output(text: "Connected \(title(from)) → \(title(to)) [\(rid)].")
     }

@@ -250,11 +250,24 @@ public struct Scene {
     public var canvasColor: RGBA = Theme.classic.canvas
     public var grid: Theme.Grid = Theme.classic.grid
 
-    /// Where a relationship end sits: its topic's frame or its zone's rectangle.
+    /// Where a relationship end sits: its topic's frame, its zone's or boundary's
+    /// rectangle, or a summary's bracket.
     public func rect(of end: RelationshipEnd) -> CGRect? {
         switch end {
         case .topic(let id): nodes[id]?.frame.rect
         case .zone(let id): zones.first { $0.zone.id == id }?.rect
+        case .boundary(let id): boundaries.first { $0.boundary.id == id }?.rect
+        case .summary(let id): summaries.first { $0.summary.id == id }?.bracket
+        }
+    }
+
+    /// The colour a relationship takes from its source end ("source" colour).
+    func sourceColor(_ end: RelationshipEnd) -> RGBA? {
+        switch end {
+        case .topic(let id): nodes[id]?.branchColor
+        case .zone(let id): zones.first { $0.zone.id == id }?.color
+        case .boundary(let id): boundaries.first { $0.boundary.id == id }?.color
+        case .summary(let id): summaries.first { $0.summary.id == id }?.color
         }
     }
 
@@ -932,14 +945,42 @@ public struct SceneBuilder {
             let color = z.color.flatMap(RGBA.init(hexString:)) ?? RGBA(hex: "#7A4CC2")
             scene.zones.append(SceneZone(zone: z, rect: rect, hidden: hidden, color: color))
         }
+        // Boundaries around their branches (outer ones pad around inner ones), before
+        // relationships so those can end on them.
+        var boxes: [(Boundary, Set<NodeID>, CGRect)] = []
+        for b in canvas.boundaries {
+            var members = Set<NodeID>()
+            var rect = CGRect.null
+            for n in b.nodes {
+                for d in canvas.subtree(n, includeFolded: false) {
+                    members.insert(d)
+                    if let f = frames[d] { rect = rect.union(f.rect) }
+                }
+            }
+            if !rect.isNull { boxes.append((b, members, rect)) }
+        }
+        for (b, members, rect) in boxes {
+            let level = boxes.filter { $0.0.id != b.id && $0.1.isSubset(of: members) && $0.1 != members }.count
+            let pad = Self.boundaryPad + CGFloat(level) * 12
+            var r = rect.insetBy(dx: -pad, dy: -pad)
+            if b.hasTitleBand {
+                r.origin.y -= Self.boundaryTitle
+                r.size.height += Self.boundaryTitle
+            }
+            let color: RGBA =
+                b.color.flatMap(RGBA.init(hexString:))
+                ?? (b.meaning == "trust"
+                    ? env.theme.critical
+                    : b.meaning == "vpc" || b.meaning == "subnet" ? env.theme.entityLine : env.theme.ring)
+            scene.boundaries.append(SceneBoundary(boundary: b, rect: r, color: color, level: level))
+        }
+        scene.boundaries.sort { $0.level > $1.level }
         var messageIndex = 0
-        // Relationships between visible topics and zones.
+        // Relationships between visible topics, zones, boundaries and summaries.
         for r in canvas.relationships where scene.rect(of: r.from) != nil && scene.rect(of: r.to) != nil {
             let color: RGBA =
                 switch r.color {
-                case "source":
-                    r.from.topic.flatMap { scene.nodes[$0]?.branchColor }
-                        ?? scene.zones.first { $0.zone.id == r.from.zone }?.color ?? env.theme.relationship
+                case "source": scene.sourceColor(r.from) ?? env.theme.relationship
                 case "theme": env.theme.relationship
                 default: RGBA(hexString: r.color) ?? env.theme.relationship
                 }
@@ -991,36 +1032,6 @@ public struct SceneBuilder {
             }
         }
 
-        // Boundaries around their branches; outer boundaries pad around inner ones.
-        var boxes: [(Boundary, Set<NodeID>, CGRect)] = []
-        for b in canvas.boundaries {
-            var members = Set<NodeID>()
-            var rect = CGRect.null
-            for n in b.nodes {
-                for d in canvas.subtree(n, includeFolded: false) {
-                    members.insert(d)
-                    if let f = frames[d] { rect = rect.union(f.rect) }
-                }
-            }
-            if !rect.isNull { boxes.append((b, members, rect)) }
-        }
-        for (b, members, rect) in boxes {
-            let level = boxes.filter { $0.0.id != b.id && $0.1.isSubset(of: members) && $0.1 != members }.count
-            let pad = Self.boundaryPad + CGFloat(level) * 12
-            var r = rect.insetBy(dx: -pad, dy: -pad)
-            if b.hasTitleBand {
-                r.origin.y -= Self.boundaryTitle
-                r.size.height += Self.boundaryTitle
-            }
-            let color: RGBA =
-                b.color.flatMap(RGBA.init(hexString:))
-                ?? (b.meaning == "trust"
-                    ? env.theme.critical
-                    : b.meaning == "vpc" || b.meaning == "subnet" ? env.theme.entityLine : env.theme.ring)
-            scene.boundaries.append(SceneBoundary(boundary: b, rect: r, color: color, level: level))
-        }
-        scene.boundaries.sort { $0.level > $1.level }
-
         // The legend lists the canvas's own markers and labels (never ghosts'), beside the
         // map unless dragged; branch, selection and zone exports leave it out.
         if let legend = source.legend, legend.visible, view.isolate == nil {
@@ -1047,22 +1058,19 @@ public struct SceneBuilder {
         let zones = scene.zones.filter {
             $0.zone.id == zone || (!$0.zone.members.isEmpty && Set($0.zone.members).isSubset(of: keep))
         }
-        let keptZones = Set(zones.map(\.zone.id))
-        func kept(_ end: RelationshipEnd) -> Bool {
-            switch end {
-            case .topic(let id): keep.contains(id)
-            case .zone(let id): keptZones.contains(id)
-            }
-        }
-        scene.relationships = scene.relationships.filter { kept($0.relationship.from) && kept($0.relationship.to) }
         scene.boundaries = scene.boundaries.filter {
             !$0.boundary.nodes.isEmpty && Set($0.boundary.nodes).isSubset(of: keep)
         }
         scene.summaries = scene.summaries.filter {
             keep.contains($0.summary.topic) && keep.contains($0.summary.from) && keep.contains($0.summary.to)
         }
-        scene.callouts = scene.callouts.filter { keep.contains($0.callout.host) && keep.contains($0.callout.topic) }
         scene.zones = zones
+        // A relationship stays when both its ends do.
+        let s = scene
+        scene.relationships = scene.relationships.filter {
+            s.rect(of: $0.relationship.from) != nil && s.rect(of: $0.relationship.to) != nil
+        }
+        scene.callouts = scene.callouts.filter { keep.contains($0.callout.host) && keep.contains($0.callout.topic) }
         // Structure decor (timeline spines, lanes) belongs to the whole map.
         if !keep.contains(root) { scene.decor = [] }
     }

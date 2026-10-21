@@ -161,6 +161,14 @@
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
+    "%@. Boundary." : {
+      "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@. Summary." : {
+      "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "%@. Zone." : {
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
@@ -781,7 +789,7 @@
       "comment" : "Text with values filled in (CanvasView.swift)",
       "extractionState" : "migrated"
     },
-    "%lld relationships to missing topics or zones" : {
+    "%lld relationships to missing topics or elements" : {
       "comment" : "Count phrase with plural variants (Repair.swift)",
       "extractionState" : "migrated",
       "localizations" : {
@@ -791,13 +799,13 @@
               "one" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld relationship to a missing topic or zone"
+                  "value" : "%lld relationship to a missing topic or element"
                 }
               },
               "other" : {
                 "stringUnit" : {
                   "state" : "translated",
-                  "value" : "%lld relationships to missing topics or zones"
+                  "value" : "%lld relationships to missing topics or elements"
                 }
               }
             }
@@ -1593,6 +1601,10 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "a boundary" : {
+      "comment" : "UI text (CanvasController+Connect.swift)",
+      "extractionState" : "migrated"
+    },
     "A data flow must touch a process" : {
       "comment" : "UI text (DFD.swift)",
       "extractionState" : "migrated"
@@ -1641,16 +1653,20 @@
       "comment" : "UI text (DFD.swift)",
       "extractionState" : "migrated"
     },
+    "a summary" : {
+      "comment" : "UI text (CanvasController+Connect.swift)",
+      "extractionState" : "migrated"
+    },
     "A task can’t depend on itself" : {
       "comment" : "UI text (Schedule.swift)",
       "extractionState" : "migrated"
     },
     "a topic" : {
-      "comment" : "UI text (CanvasAccessibility.swift)",
+      "comment" : "UI text (CanvasController+Connect.swift)",
       "extractionState" : "migrated"
     },
     "a zone" : {
-      "comment" : "UI text (CanvasAccessibility.swift)",
+      "comment" : "UI text (CanvasController+Connect.swift)",
       "extractionState" : "migrated"
     },
     "A3" : {
@@ -2361,12 +2377,20 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "boundary %@" : {
+      "comment" : "Text with values filled in (CanvasController+Connect.swift)",
+      "extractionState" : "migrated"
+    },
     "Boundary Style" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Boundary Title" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Boundary: %@" : {
+      "comment" : "Text with values filled in (CanvasController+Connect.swift)",
       "extractionState" : "migrated"
     },
     "Boxed" : {
@@ -2543,6 +2567,10 @@
     },
     "Callout" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "callout %@" : {
+      "comment" : "Text with values filled in (CanvasController+Connect.swift)",
       "extractionState" : "migrated"
     },
     "Callout Shape" : {
@@ -8585,12 +8613,20 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "summary %@" : {
+      "comment" : "Text with values filled in (CanvasController+Connect.swift)",
+      "extractionState" : "migrated"
+    },
     "summary %@ reuses a topic" : {
       "comment" : "Text with values filled in (Repair.swift)",
       "extractionState" : "migrated"
     },
     "Summary Style" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Summary: %@" : {
+      "comment" : "Text with values filled in (CanvasController+Connect.swift)",
       "extractionState" : "migrated"
     },
     "Swap" : {
@@ -9578,7 +9614,7 @@
       "extractionState" : "migrated"
     },
     "zone %@" : {
-      "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "comment" : "Text with values filled in (CanvasController+Connect.swift)",
       "extractionState" : "migrated"
     },
     "Zone Style" : {

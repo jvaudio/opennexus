@@ -1008,8 +1008,8 @@ final class ElementRenderer {
 
     private var zoneOffsets: [String: CGSize] = [:]
 
-    /// A relationship end's rectangle: its topic's (animated) frame, or its zone's frame
-    /// moved by any drag in progress.
+    /// A relationship end's rectangle: its topic's (animated) frame, its zone's frame
+    /// moved by any drag in progress, or a boundary's or summary bracket's rectangle.
     func rect(_ end: RelationshipEnd, _ frame: (NodeID) -> CGRect?) -> CGRect? {
         switch end {
         case .topic(let id): return frame(id)
@@ -1017,6 +1017,7 @@ final class ElementRenderer {
             guard let r = scene.rect(of: end) else { return nil }
             let d = zoneOffsets[id] ?? .zero
             return r.offsetBy(dx: d.width, dy: d.height)
+        case .boundary, .summary: return scene.rect(of: end)
         }
     }
 

@@ -125,7 +125,7 @@ extension Canvas {
             problems.append("\(id) is unreachable")
         }
         for r in relationships where !has(r.from) || !has(r.to) {
-            problems.append("relationship \(r.id) points at a missing topic or zone")
+            problems.append("relationship \(r.id) points at a missing topic or element")
         }
         for (id, n) in nodes {
             for d in n.todo?.after ?? [] where d.task == id || nodes[d.task] == nil {
@@ -137,11 +137,13 @@ extension Canvas {
 }
 
 extension Canvas {
-    /// True when a relationship end's topic or zone is on this canvas.
+    /// True when a relationship end's topic, zone, boundary or summary is on this canvas.
     public func has(_ end: RelationshipEnd) -> Bool {
         switch end {
         case .topic(let id): nodes[id] != nil
         case .zone(let id): zones.contains { $0.id == id }
+        case .boundary(let id): boundaries.contains { $0.id == id }
+        case .summary(let id): summaries.contains { $0.id == id }
         }
     }
 

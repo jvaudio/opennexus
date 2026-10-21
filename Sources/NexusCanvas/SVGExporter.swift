@@ -115,7 +115,7 @@ public enum SVGExporter {
                 r.relationship.dash == "dashed"
                 ? " stroke-dasharray=\"6 5\"" : r.relationship.dash == "dotted" ? " stroke-dasharray=\"1.5 4\"" : ""
             w.line(
-                "<g class=\"relationship\"\(o.metadata ? " data-nexus-from=\"\(esc(r.relationship.from.rawValue))\" data-nexus-to=\"\(esc(r.relationship.to.rawValue))\"\(r.relationship.from.zone != nil ? " data-nexus-from-kind=\"zone\"" : "")\(r.relationship.to.zone != nil ? " data-nexus-to-kind=\"zone\"" : "")" : "")\(opacity(r.opacity))>"
+                "<g class=\"relationship\"\(o.metadata ? " data-nexus-from=\"\(esc(r.relationship.from.rawValue))\" data-nexus-to=\"\(esc(r.relationship.to.rawValue))\"\(r.relationship.from.topic == nil ? " data-nexus-from-kind=\"\(r.relationship.from.kind)\"" : "")\(r.relationship.to.topic == nil ? " data-nexus-to-kind=\"\(r.relationship.to.kind)\"" : "")" : "")\(opacity(r.opacity))>"
             )
             w.indent += 1
             w.line(

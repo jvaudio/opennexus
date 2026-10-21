@@ -36,6 +36,15 @@ public enum DrawIOFormat {
             row += 1
         }
         for id in c.floating { fallback[id] = Frame(x: 0, y: Double(row) * 60, width: 140, height: 40); row += 1 }
+        // Branches under floating, summary and callout topics, so relationships can reach them.
+        for top in c.tops.dropFirst() {
+            c.walk(from: top) { id, n, d in
+                guard fallback[id] == nil else { return }
+                fallback[id] = Frame(
+                    x: Double(d) * 220, y: Double(row) * 60, width: max(120, Double(n.text.count) * 8), height: 40)
+                row += 1
+            }
+        }
         let parents = c.parentMap()
         let ids = [c.root] + c.tops.flatMap { c.subtree($0) }.filter { $0 != c.root }
         // Zones first so they sit behind their topics; relationships can end on them.
@@ -59,8 +68,25 @@ public enum DrawIOFormat {
                 "align=left", "spacingLeft=12", "fontStyle=1", "strokeColor=\(z.color ?? "#7A4CC2")",
             ]
             cells.append(
-                "    <mxCell id=\"\(ref(.zone(z.id)))\" value=\"\(XML.escape(z.title))\" style=\"\(style.joined(separator: ";"))\(z.frame == "dashed" ? ";dashed=1" : "");\" vertex=\"1\" parent=\"1\">\n"
+                "    <mxCell id=\"\(c.textRef(.zone(z.id)))\" value=\"\(XML.escape(z.title))\" style=\"\(style.joined(separator: ";"))\(z.frame == "dashed" ? ";dashed=1" : "");\" vertex=\"1\" parent=\"1\">\n"
                     + "      <mxGeometry x=\"\(fmt(x))\" y=\"\(fmt(y))\" width=\"\(fmt(w))\" height=\"\(fmt(h))\" as=\"geometry\"/>\n    </mxCell>"
+            )
+        }
+        // Boundaries that relationships end on get a cell behind their branches too (D182).
+        let ended = Set(c.relationships.flatMap { [$0.from.boundary, $0.to.boundary] }.compactMap(\.self))
+        for b in c.boundaries where ended.contains(b.id) {
+            let fs = b.nodes.flatMap { c.subtree($0) }.compactMap { frames[$0] ?? fallback[$0] }
+            guard let x0 = fs.map(\.x).min(), let y0 = fs.map(\.y).min(), let x1 = fs.map({ $0.x + $0.width }).max(),
+                let y1 = fs.map({ $0.y + $0.height }).max()
+            else { continue }
+            let band = b.title.isEmpty ? 0.0 : 20
+            let style = [
+                "rounded=1", "arcSize=8", "whiteSpace=wrap", "html=1", "fillColor=none", "verticalAlign=top",
+                "align=left", "spacingLeft=8", "dashed=1", "strokeColor=\(b.color ?? "#5850EC")",
+            ]
+            cells.append(
+                "    <mxCell id=\"\(c.textRef(.boundary(b.id)))\" value=\"\(XML.escape(b.title))\" style=\"\(style.joined(separator: ";"));\" vertex=\"1\" parent=\"1\">\n"
+                    + "      <mxGeometry x=\"\(fmt(x0 - 16))\" y=\"\(fmt(y0 - 16 - band))\" width=\"\(fmt(x1 - x0 + 32))\" height=\"\(fmt(y1 - y0 + 32 + band))\" as=\"geometry\"/>\n    </mxCell>"
             )
         }
         for id in ids {
@@ -92,7 +118,7 @@ public enum DrawIOFormat {
         }
         for r in c.relationships where c.has(r.from) && c.has(r.to) {
             e += 1
-            cells.append(edge("e\(e)", ref(r.from), ref(r.to), r.label, dashed: true, color: nil))
+            cells.append(edge("e\(e)", c.textRef(r.from), c.textRef(r.to), r.label, dashed: true, color: nil))
         }
         let name = XML.escape(c.title.isEmpty ? "Page-1" : c.title)
         return """
@@ -111,9 +137,6 @@ public enum DrawIOFormat {
     }
 
     static func fmt(_ v: Double) -> String { v == v.rounded() ? String(Int(v)) : String(format: "%.1f", v) }
-
-    /// A topic's cell id, or `zone_<id>` for a zone's cell.
-    static func ref(_ end: RelationshipEnd) -> String { end.zone.map { "zone_\($0)" } ?? end.rawValue }
 
     static func edge(_ id: String, _ a: String, _ b: String, _ label: String, dashed: Bool, color: String?) -> String {
         var style = ["edgeStyle=orthogonalEdgeStyle", "curved=1", "html=1", "endArrow=\(dashed ? "classic" : "none")"]

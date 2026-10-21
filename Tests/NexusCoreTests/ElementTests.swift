@@ -194,10 +194,10 @@ private func id(_ c: Canvas, _ text: String) -> NodeID { c.nodes.first { $0.valu
         // A hand-edited file whose zone is gone: validation says so, repair drops it.
         var broken = c
         broken.zones = []
-        #expect(broken.validate().contains { $0.contains("missing topic or zone") })
+        #expect(broken.validate().contains { $0.contains("missing topic or element") })
         let fixes = broken.repair()
         #expect(broken.relationships.isEmpty && broken.validate().isEmpty)
-        #expect(fixes.contains { $0.contains("zone") })
+        #expect(fixes.contains { $0.contains("to missing topics or elements") })
 
         // Merge: the disk removed the zone while the app renamed a topic.
         var disk = c
@@ -210,6 +210,105 @@ private func id(_ c: Canvas, _ text: String) -> NodeID { c.nodes.first { $0.valu
         ).model.canvases[c.id]
         #expect(merged?.zones.isEmpty == true && merged?.relationships.isEmpty == true)
         #expect(merged?.nodes[pricing]?.text == "Prices" && merged?.validate().isEmpty == true)
+    }
+
+    /// D180, D181: relationships can end on a boundary or a summary's bracket.
+    @Test func boundaryAndSummaryRelationshipEnds() throws {
+        var c = sampleCanvas()
+        var undo = UndoStack()
+        let (pricing, risks, channels) = (id(c, "Pricing"), id(c, "Risks"), id(c, "Channels"))
+        let kids = c.nodes[pricing]!.children
+        var (boundary, summary) = ("", "")
+        try c.edit("Setup", undo: &undo) { e in
+            boundary = try e.addBoundary(around: [channels], title: "Reach")
+            _ = try e.addSummary(over: Array(kids.prefix(2)), text: "Paid")
+            summary = e.canvas.summaries[0].id
+            e.connect(.topic(risks), to: .boundary(boundary), label: "watches")
+            e.connect(.summary(summary), to: .boundary(boundary))
+        }
+        #expect(c.validate().isEmpty)
+        let first = c.relationships[0].json.objectValue
+        #expect(first?["toKind"] == .string("boundary") && first?["fromKind"] == nil)
+        let second = c.relationships[1].json.objectValue
+        #expect(second?["fromKind"] == .string("summary") && second?["toKind"] == .string("boundary"))
+        #expect(second?["from"] == .string(summary) && second?["to"] == .string(boundary))
+        let decoded = try Canvas(json: c.json, path: "c")
+        #expect(decoded == c && decoded.json == c.json)
+        #expect(RelationshipEnd(kind: "boundary", id: "b1") == .boundary("b1"))
+        #expect(RelationshipEnd(kind: "summary", id: "s1").kind == "summary")
+        // A kind from a newer build reads as a topic id, so repair drops it.
+        var future = c
+        future.relationships[0].to = RelationshipEnd(kind: "lane", id: "l1")
+        #expect(!future.validate().isEmpty)
+        future.repair()
+        #expect(future.relationships.count == 1 && future.validate().isEmpty)
+
+        // Removing the boundary or the summary takes their relationships, in one undo step.
+        let before = c
+        try c.edit("Remove", undo: &undo) { $0.removeElement(.boundary(boundary)) }
+        #expect(c.relationships.isEmpty && c.validate().isEmpty)
+        undo.undo()!.apply(to: &c)
+        #expect(c == before)
+        try c.edit("Remove", undo: &undo) { $0.removeElement(.summary(summary)) }
+        #expect(c.relationships.map(\.to) == [.boundary(boundary)] && c.validate().isEmpty)
+        undo.undo()!.apply(to: &c)
+        #expect(c == before)
+
+        // Deleting the boundary's topics, or a summarised sibling, goes the same way.
+        try c.edit("Delete", undo: &undo) { _ = try $0.delete([channels]) }
+        #expect(c.boundaries.isEmpty && c.relationships.isEmpty && c.validate().isEmpty)
+        undo.undo()!.apply(to: &c)
+        try c.edit("Delete", undo: &undo) { _ = try $0.delete([kids[0]]) }
+        #expect(c.summaries.isEmpty && c.relationships.map(\.from) == [.topic(risks)] && c.validate().isEmpty)
+        undo.undo()!.apply(to: &c)
+        #expect(c == before)
+
+        // A hand-edited file whose boundary is gone: validation says so, repair drops it.
+        var broken = c
+        broken.boundaries = []
+        #expect(broken.validate().count == 2)
+        broken.repair()
+        #expect(broken.relationships.isEmpty && broken.validate().isEmpty)
+        // A boundary that repair empties takes its relationships too.
+        var emptied = c
+        emptied.nodes[channels] = nil
+        emptied.nodes[c.root]!.children.removeAll { $0 == channels }
+        emptied.repair()
+        #expect(emptied.boundaries.isEmpty && emptied.relationships.isEmpty && emptied.validate().isEmpty)
+
+        // Merge: the disk removed the summary while the app renamed a topic.
+        var disk = c
+        try disk.edit("Remove", undo: &undo) { $0.removeElement(.summary(summary)) }
+        var current = c
+        try current.edit("Rename", undo: &undo) { $0.setText(risks, "Threats") }
+        let merged = DocumentMerge(
+            base: DocumentModel(canvases: [c]), current: DocumentModel(canvases: [current]),
+            disk: DocumentModel(canvases: [disk])
+        ).model.canvases[c.id]
+        #expect(merged?.summaries.isEmpty == true && merged?.relationships.count == 1)
+        #expect(merged?.validate().isEmpty == true)
+    }
+
+    /// D181: copying a branch brings relationships whose boundaries and summaries come too.
+    @Test func copiedBranchesKeepElementEnds() throws {
+        var c = sampleCanvas()
+        var undo = UndoStack()
+        let (pricing, risks) = (id(c, "Pricing"), id(c, "Risks"))
+        let kids = c.nodes[pricing]!.children
+        try c.edit("Setup", undo: &undo) { e in
+            let b = try e.addBoundary(around: [kids[2]])
+            _ = try e.addSummary(over: Array(kids.prefix(2)))
+            e.connect(.summary(e.canvas.summaries[0].id), to: .boundary(b), label: "inside")
+            e.connect(.topic(risks), to: .boundary(b), label: "outside")
+        }
+        let f = c.fragment([pricing])
+        #expect(f.relationships.map(\.label) == ["inside"] && f.summaries.count == 1 && f.boundaries.count == 1)
+        try c.edit("Paste", undo: &undo) { e in _ = try e.paste(f, under: risks) }
+        #expect(c.validate().isEmpty)
+        #expect(c.boundaries.count == 2 && c.summaries.count == 2)
+        let pasted = try #require(c.relationships.last)
+        #expect(pasted.label == "inside" && pasted.from == .summary(c.summaries[1].id))
+        #expect(pasted.to == .boundary(c.boundaries[1].id))
     }
 
     @Test func topicLinksParse() {

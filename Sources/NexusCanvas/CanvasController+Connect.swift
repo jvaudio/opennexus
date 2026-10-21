@@ -2,11 +2,11 @@ import Foundation
 import NexusCore
 import NexusKeys
 
-/// One possible Connect target: a topic or a zone.
+/// One possible Connect target: a topic, zone, boundary or summary.
 public struct ConnectCandidate: Equatable, Sendable {
     public var end: RelationshipEnd
     public var hint: String
-    /// Distance rank: 0 is the nearest topic or zone.
+    /// Distance rank: 0 is the nearest target.
     public var rank: Int
 
     /// The topic, when the candidate is one.
@@ -14,8 +14,8 @@ public struct ConnectCandidate: Equatable, Sendable {
 }
 
 /// Connect mode (F2): hint chips nearest-first, type hint letters or text to filter,
-/// arrows move the highlight, ↩ draws the edge, Esc changes nothing. Zones are targets
-/// too, and a selected zone is the source (D171).
+/// arrows move the highlight, ↩ draws the edge, Esc changes nothing. Zones, boundaries
+/// and summary brackets are targets too, and a selected one is the source (D171, D184).
 public struct ConnectState: Equatable, Sendable {
     public var source: RelationshipEnd
     public var query: String = ""
@@ -79,17 +79,24 @@ extension ConnectState {
 
 @MainActor
 extension CanvasController {
-    /// ⇧⌘L: enter Connect mode from the selected zone, or else the primary selection.
-    /// Topics and zones are candidates, nearest centre first.
+    /// ⇧⌘L: enter Connect mode from the selected zone, boundary or summary, or else the
+    /// primary selection. Topics and those elements are candidates, nearest centre first.
     public func startConnect() {
         if mode == .edit { commitEdit() }
         let source: RelationshipEnd =
-            if case .zone(let z)? = selectedElement { .zone(z) } else { .topic(selection.primary) }
+            switch selectedElement {
+            case .zone(let id)?: .zone(id)
+            case .boundary(let id)?: .boundary(id)
+            case .summary(let id)?: .summary(id)
+            default: .topic(selection.primary)
+            }
         guard let sr = scene.rect(of: source) else { return }
         let s = CGPoint(x: sr.midX, y: sr.midY)
         let topics: [RelationshipEnd] = scene.order.map { .topic($0) }
-        let zones: [RelationshipEnd] = scene.zones.map { .zone($0.zone.id) }
-        let others = (topics + zones).filter { $0 != source }
+        let elements: [RelationshipEnd] =
+            scene.zones.map { .zone($0.zone.id) } + scene.boundaries.map { .boundary($0.boundary.id) }
+            + scene.summaries.map { .summary($0.summary.id) }
+        let others = (topics + elements).filter { $0 != source }
         let scene = scene
         func distance(_ e: RelationshipEnd) -> CGFloat {
             guard let r = scene.rect(of: e) else { return .infinity }
@@ -98,7 +105,7 @@ extension CanvasController {
         let measured: [(end: RelationshipEnd, d: CGFloat)] = others.map { ($0, distance($0)) }
         func before(_ a: RelationshipEnd, _ b: RelationshipEnd) -> Bool {
             if let x = a.topic, let y = b.topic { return x < y }
-            return a.topic != nil || (b.topic == nil && a.rawValue < b.rawValue)
+            return a.topic != nil || (b.topic == nil && (a.kind, a.rawValue) < (b.kind, b.rawValue))
         }
         let ranked = measured.sorted { a, b in a.d == b.d ? before(a.end, b.end) : a.d < b.d }.map(\.end)
         let hints = ConnectState.hints(count: ranked.count)
@@ -118,10 +125,13 @@ extension CanvasController {
         onSceneChange?(false)
     }
 
-    /// What Connect mode shows and filters on: topic text, and a zone's title.
+    /// What Connect mode shows and filters on: topic text, "Zone: title", "Boundary: title"
+    /// and "Summary: its topic's text".
     var connectTexts: [RelationshipEnd: String] {
         var out = Dictionary(uniqueKeysWithValues: canvas.nodes.map { (RelationshipEnd.topic($0.key), $0.value.text) })
         for z in canvas.zones { out[.zone(z.id)] = Loc.f("Zone: %@", z.title) }
+        for b in canvas.boundaries { out[.boundary(b.id)] = Loc.f("Boundary: %@", canvas.boundaryTitle(b)) }
+        for s in canvas.summaries { out[.summary(s.id)] = Loc.f("Summary: %@", canvas.nodes[s.topic]?.text ?? "") }
         return out
     }
 
@@ -187,5 +197,43 @@ extension CanvasController {
         mode = .edit
         onEditChange?(edit)
         onSceneChange?(true)
+    }
+}
+
+extension Canvas {
+    /// A topic standing for a relationship end (jumping to it): the topic, a zone's first
+    /// member, a boundary's first topic or a summary's own topic.
+    func anchorTopic(_ end: RelationshipEnd) -> NodeID? {
+        switch end {
+        case .topic(let id): id
+        case .zone(let id): zones.first { $0.id == id }?.members.first
+        case .boundary(let id): boundaries.first { $0.id == id }?.nodes.first
+        case .summary(let id): summaries.first { $0.id == id }?.topic
+        }
+    }
+
+    /// A boundary's title, or the first topic it wraps when it has none.
+    func boundaryTitle(_ b: Boundary) -> String {
+        b.title.isEmpty ? (b.nodes.first.flatMap { nodes[$0]?.text } ?? "") : b.title
+    }
+
+    /// How VoiceOver, the outline and "read edges" name a relationship end: a topic's
+    /// text ("callout …" for a callout's bubble), "zone …", "boundary …" or "summary …"
+    /// (D171, D184).
+    func spokenName(_ end: RelationshipEnd) -> String {
+        switch end {
+        case .topic(let t):
+            guard let n = nodes[t] else { return Loc.t("a topic") }
+            return n.kind == .callout ? Loc.f("callout %@", n.text) : n.text
+        case .zone(let z):
+            let title = zones.first { $0.id == z }?.title ?? ""
+            return title.isEmpty ? Loc.t("a zone") : Loc.f("zone %@", title)
+        case .boundary(let b):
+            let title = boundaries.first { $0.id == b }.map(boundaryTitle) ?? ""
+            return title.isEmpty ? Loc.t("a boundary") : Loc.f("boundary %@", title)
+        case .summary(let s):
+            let text = summaries.first { $0.id == s }.flatMap { nodes[$0.topic]?.text } ?? ""
+            return text.isEmpty ? Loc.t("a summary") : Loc.f("summary %@", text)
+        }
     }
 }

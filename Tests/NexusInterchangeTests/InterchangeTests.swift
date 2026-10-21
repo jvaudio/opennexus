@@ -363,8 +363,9 @@ import Testing
 
 /// D170, D172: relationships that end on a zone, in and out of other formats.
 @Suite struct ZoneRelationshipInterchangeTests {
-    /// An Xmind relationship naming a boundary around a floating branch keeps its end as a
-    /// zone; one naming a boundary in the main tree is reported.
+    /// An Xmind relationship naming a boundary (in the main tree or a floating branch) or a
+    /// summary ends on it; one naming a callout's or summary's topic ends on that topic
+    /// (D183, which replaces D172's boundary-to-zone conversion).
     @Test func xmindRelationshipToABoundary() throws {
         var z = ZipWriter()
         z.add(
@@ -372,26 +373,33 @@ import Testing
             """
             [{"id": "s1", "title": "Plan", "rootTopic": {"id": "root", "title": "Release",
               "boundaries": [{"id": "bb", "range": "(0,0)", "title": "Core"}],
+              "summaries": [{"id": "ss", "range": "(0,1)", "topicId": "st"}],
               "children": {
-                "attached": [{"id": "p", "title": "Pricing"}],
+                "attached": [{"id": "p", "title": "Pricing", "children": {"callout": [{"id": "co", "title": "Check"}]}},
+                             {"id": "q", "title": "Quality"}],
+                "summary": [{"id": "st", "title": "Both"}],
                 "detached": [{"id": "f", "title": "Later idea", "position": {"x": 400, "y": -200},
                   "children": {"attached": [{"id": "f1", "title": "Detail"}]},
                   "boundaries": [{"id": "bz", "range": "master", "title": "Parking lot"}]}]}},
               "relationships": [{"id": "r1", "end1Id": "p", "end2Id": "bz", "title": "parks"},
-                                {"id": "r2", "end1Id": "bz", "end2Id": "bb"}]}]
+                                {"id": "r2", "end1Id": "bz", "end2Id": "bb"},
+                                {"id": "r3", "end1Id": "ss", "end2Id": "co"},
+                                {"id": "r4", "end1Id": "st", "end2Id": "q"},
+                                {"id": "r5", "end1Id": "p", "end2Id": "gone"}]}]
             """)
         z.add("manifest.json", #"{"file-entries": {"content.json": {}}}"#)
         let im = try XmindFormat.parse(z.finish(), name: "plan.xmind")
         let c = try #require(im.canvases.first)
         #expect(c.validate().isEmpty)
-        let later = try #require(c.nodes.first { $0.value.text == "Later idea" }?.key)
-        let pricing = try #require(c.nodes.first { $0.value.text == "Pricing" }?.key)
-        #expect(c.zones.map(\.title) == ["Parking lot"] && c.zones[0].members == [later])
-        #expect(c.boundaries.map(\.title) == ["Core"])
-        #expect(c.relationships.count == 1)
-        #expect(c.relationships[0].from == .topic(pricing) && c.relationships[0].to == .zone(c.zones[0].id))
+        func id(_ text: String) throws -> NodeID { try #require(c.nodes.first { $0.value.text == text }?.key) }
+        #expect(c.zones.isEmpty && c.boundaries.map(\.title) == ["Core", "Parking lot"])
+        #expect(c.boundaries[1].nodes == [try id("Later idea")])
+        let (core, lot) = (RelationshipEnd.boundary(c.boundaries[0].id), RelationshipEnd.boundary(c.boundaries[1].id))
+        let summary = RelationshipEnd.summary(c.summaries[0].id)
+        #expect(c.relationships.map(\.from) == [.topic(try id("Pricing")), lot, summary, .topic(try id("Both"))])
+        #expect(c.relationships.map(\.to) == [lot, core, .topic(try id("Check")), .topic(try id("Quality"))])
         #expect(c.relationships[0].label == "parks")
-        #expect(im.report.skipped.map(\.0).contains("Relationship to a boundary"))
+        #expect(im.report.skipped.map(\.0) == ["Relationship to a missing topic"])
     }
 
     /// Mermaid subgraphs, PlantUML rectangles and draw.io cells stand for zones, so edges
@@ -422,6 +430,70 @@ import Testing
         // An exported file opens again.
         _ = try Interchange.importFile(name: "f.drawio", data: Data(drawio.utf8))
         _ = try Interchange.importFile(name: "f.mmd", data: Data(mmd.utf8))
+    }
+}
+
+/// D182: relationships that end on a boundary or a summary, in text formats.
+@Suite struct ElementEndInterchangeTests {
+    @Test func textFormatsDrawBoundaryAndSummaryEnds() throws {
+        var c = Canvas(id: "c1", title: "Flow", type: .flowchart, rootText: "Start")
+        var undo = UndoStack()
+        var (zone, boundary, inner, summary) = ("", "", "", "")
+        var check = NodeID("")
+        try c.edit("Setup", undo: &undo) { e in
+            check = try e.addChild(of: e.canvas.root, text: "Check")
+            let ship = try e.addChild(of: e.canvas.root, text: "Ship")
+            let idea = try e.addChild(of: e.canvas.root, text: "Idea")
+            try e.addChild(of: idea, text: "Detail")
+            try e.detach(idea, at: CanvasPoint(x: 500, y: 0))
+            zone = e.addZone(title: "Backlog", origin: CanvasPoint(x: 420, y: -80), members: [idea])
+            boundary = try e.addBoundary(around: [check, ship], title: "Release")
+            inner = try e.addBoundary(around: [idea], title: "Maybe")
+            _ = try e.addSummary(over: [check, ship], text: "Gate")
+            summary = e.canvas.summaries[0].id
+            e.connect(.summary(summary), to: .boundary(boundary), label: "covers")
+            e.connect(.topic(check), to: .boundary(inner), label: "later")
+            e.connect(.zone(zone), to: .boundary(boundary))
+        }
+        #expect(c.validate().isEmpty)
+        let gate = c.summaries[0].topic.rawValue
+        // Mermaid: boundaries are subgraphs, nested in the zone that holds them.
+        let mmd = Mermaid.flowchart(c)
+        #expect(mmd.contains("    subgraph boundary_\(boundary) [\"Release\"]\n        \(check.rawValue)\n"))
+        #expect(
+            mmd.contains("    subgraph zone_\(zone) [\"Backlog\"]\n        subgraph boundary_\(inner) [\"Maybe\"]\n"))
+        #expect(mmd.contains("    \(gate) -.->|covers| boundary_\(boundary)"))
+        #expect(mmd.contains("    zone_\(zone) -.-> boundary_\(boundary)"))
+        // PlantUML: each topic declared once, inside its innermost rectangle.
+        let puml = PlantUMLFormat.graph(c)
+        #expect(
+            puml.contains("rectangle \"Backlog\" as zone_\(zone) {\n  rectangle \"Maybe\" as boundary_\(inner) {\n"))
+        #expect(puml.contains("rectangle \"Release\" as boundary_\(boundary) {"))
+        #expect(puml.contains("\(gate) ..> boundary_\(boundary) : covers"))
+        #expect(puml.contains("\(check.rawValue) ..> boundary_\(inner) : later"))
+        for n in c.nodes.keys where n != c.root {
+            #expect(puml.components(separatedBy: " as \(n.rawValue)\n").count == 2, "\(n) declared once")
+        }
+        // draw.io: a cell per boundary end, behind the topics.
+        let drawio = DrawIOFormat.export(c)
+        let doc = try XMLDocument(data: Data(drawio.utf8))
+        #expect(try doc.nodes(forXPath: "//mxCell[@id='boundary_\(boundary)']").count == 1)
+        #expect(try doc.nodes(forXPath: "//mxCell[@source='\(gate)' and @target='boundary_\(boundary)']").count == 1)
+        #expect(try doc.nodes(forXPath: "//mxCell[@id='\(gate)']").count == 1)
+        // Every edge points at a cell that exists.
+        let ids = Set(try doc.nodes(forXPath: "//mxCell/@id").compactMap(\.stringValue))
+        for e in try doc.nodes(forXPath: "//mxCell[@edge='1']") {
+            let el = try #require(e as? XMLElement)
+            #expect(
+                ids.contains(el.attribute(forName: "source")?.stringValue ?? "")
+                    && ids.contains(el.attribute(forName: "target")?.stringValue ?? ""))
+        }
+        _ = try Interchange.importFile(name: "f.drawio", data: Data(drawio.utf8))
+        _ = try Interchange.importFile(name: "f.mmd", data: Data(mmd.utf8))
+        // Without element ends, output is as before: no boundary groups.
+        var plain = c
+        plain.relationships = []
+        #expect(!Mermaid.flowchart(plain).contains("boundary_") && !PlantUMLFormat.graph(plain).contains("boundary_"))
     }
 }
 

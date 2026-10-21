@@ -449,14 +449,19 @@ public enum PlantUMLFormat {
                 }
             out += "\(indent)\(kind) \"\(clean(n.text))\" as \(id.rawValue)\n"
         }
-        // Zones are rectangles holding their members' branches, so relationships can end on them.
-        let zoned = Set(c.zones.flatMap { $0.members.flatMap { c.subtree($0) } })
-        for id in ids where !zoned.contains(id) { declare(id) }
-        for z in c.zones {
-            out += "rectangle \"\(clean(z.title))\" as \(ref(.zone(z.id))) {\n"
-            for m in z.members { for id in c.subtree(m) { declare(id, indent: "  ") } }
-            out += "}\n"
+        // Zones, and boundaries that relationships end on, are rectangles holding their
+        // branches (nested when one holds another), so relationships can end on them.
+        let groups = c.endGroups()
+        func members(_ g: EndGroup) -> [NodeID] { g.nodes + g.groups.flatMap(members) }
+        let grouped = Set(groups.flatMap(members))
+        for id in ids where !grouped.contains(id) { declare(id) }
+        func group(_ g: EndGroup, _ indent: String) {
+            out += "\(indent)rectangle \"\(clean(g.title))\" as \(g.ref) {\n"
+            for id in g.nodes { declare(id, indent: indent + "  ") }
+            for inner in g.groups { group(inner, indent + "  ") }
+            out += "\(indent)}\n"
         }
+        for g in groups { group(g, "") }
         for id in ids {
             guard let p = parents[id], let n = c.nodes[id] else { continue }
             out +=
@@ -464,14 +469,12 @@ public enum PlantUMLFormat {
                 + "\n"
         }
         for r in c.relationships where c.has(r.from) && c.has(r.to) {
-            out += "\(ref(r.from)) ..> \(ref(r.to))" + (r.label.isEmpty ? "" : " : \(clean(r.label))") + "\n"
+            out +=
+                "\(c.textRef(r.from)) ..> \(c.textRef(r.to))" + (r.label.isEmpty ? "" : " : \(clean(r.label))") + "\n"
         }
         out += "@enduml\n"
         return out
     }
-
-    /// A topic's alias, or `zone_<id>` for a zone's rectangle.
-    static func ref(_ end: RelationshipEnd) -> String { end.zone.map { "zone_\($0)" } ?? end.rawValue }
 
     /// The `@startmindmap` / `@startwbs` subset (`*`/`+`/`-` depth markers, `:multiline;`)
     /// and simple sequence diagrams.

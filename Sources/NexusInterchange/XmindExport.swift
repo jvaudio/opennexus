@@ -168,6 +168,8 @@ public enum XmindWriter {
         var boundaries: [NodeID: [[String: Any]]] = [:]
         var summaries: [NodeID: [(range: String, topic: NodeID, id: String)]] = [:]
         var callouts: [NodeID: [NodeID]] = [:]
+        /// Boundaries and summaries this sheet writes, which relationships can name.
+        var written = Set<RelationshipEnd>()
 
         init(doc: DocumentModel, zone: TimeZone) {
             self.doc = doc
@@ -209,13 +211,13 @@ public enum XmindWriter {
             var rels: [[String: Any]] = []
             for r in c.relationships {
                 // Zones aren't written (no Xmind equivalent), so neither is a relationship
-                // that ends on one (M16).
-                guard let from = r.from.topic, let to = r.to.topic else {
+                // that ends on one (M16). Boundaries and summaries are, by id (D183).
+                if r.from.zone != nil || r.to.zone != nil {
                     report.skip("Relationship to a zone (zones aren't exported)")
                     continue
                 }
-                guard c.nodes[from] != nil, c.nodes[to] != nil else { continue }
-                var o: [String: Any] = ["id": "\(c.id.rawValue)-\(r.id)", "end1Id": id(from), "end2Id": id(to)]
+                guard let from = end(r.from), let to = end(r.to) else { continue }
+                var o: [String: Any] = ["id": "\(c.id.rawValue)-\(r.id)", "end1Id": from, "end2Id": to]
                 if !r.label.isEmpty { o["title"] = r.label }
                 rels.append(o)
                 if r.line != "curved" || r.ends != ["none", "arrow"] || r.dash != "dashed" || r.color != "theme"
@@ -230,8 +232,19 @@ public enum XmindWriter {
             return s
         }
 
+        /// A relationship end's Xmind id: a topic's, or a written boundary's or summary's.
+        func end(_ e: RelationshipEnd) -> String? {
+            switch e {
+            case .topic(let n): canvas.nodes[n] == nil ? nil : id(n)
+            case .boundary(let b): written.contains(e) ? "\(canvas.id.rawValue)-\(b)" : nil
+            case .summary(let s): written.contains(e) ? "\(canvas.id.rawValue)-\(s)" : nil
+            case .zone: nil
+            }
+        }
+
         /// Boundaries, summaries and callouts hang off their parent topic in Xmind.
         mutating func prepareElements() {
+            written = []
             for b in canvas.boundaries {
                 let ids = b.nodes.filter { canvas.nodes[$0] != nil }
                 guard let first = ids.first else { continue }
@@ -241,6 +254,7 @@ public enum XmindWriter {
                     // Around a central or floating topic: the whole branch.
                     o["range"] = "master"
                     boundaries[first, default: []].append(o)
+                    written.insert(.boundary(b.id))
                     continue
                 }
                 let ps = Set(ids.map { parents[$0] })
@@ -255,6 +269,7 @@ public enum XmindWriter {
                 }
                 o["range"] = "(\(lo),\(hi))"
                 boundaries[p, default: []].append(o)
+                written.insert(.boundary(b.id))
             }
             for s in canvas.summaries {
                 guard let kids = canvas.nodes[s.parent]?.children, let a = kids.firstIndex(of: s.from),
@@ -265,6 +280,7 @@ public enum XmindWriter {
                 }
                 summaries[s.parent, default: []].append(
                     ("(\(min(a, b)),\(max(a, b)))", s.topic, "\(canvas.id.rawValue)-\(s.id)"))
+                written.insert(.summary(s.id))
             }
             for k in canvas.callouts where canvas.nodes[k.topic] != nil {
                 callouts[k.host, default: []].append(k.topic)

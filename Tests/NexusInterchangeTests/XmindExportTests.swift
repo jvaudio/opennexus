@@ -60,11 +60,15 @@ import Testing
             try! e.addDependency(code, on: design)
             try! e.addDependency(docs, on: code, type: .startToStart, lag: 1)
             try! e.addDependency(launch, on: docs, type: .finishToFinish, lag: -2)
-            _ = try! e.addBoundary(around: [design, code], title: "Engineering")
-            _ = try! e.addBoundary(around: [root], title: "")
+            let eng = try! e.addBoundary(around: [design, code], title: "Engineering")
+            let all = try! e.addBoundary(around: [root], title: "")
             _ = try! e.addSummary(over: [design, docs], text: "Six weeks")
-            _ = try! e.addCallout(on: launch, text: "Press embargo")
+            let embargo = try! e.addCallout(on: launch, text: "Press embargo")
             _ = e.connect(code, to: launch, label: "ships")
+            // Relationships to a boundary, a summary's bracket and a callout (D183).
+            _ = e.connect(.summary(e.canvas.summaries[0].id), to: .boundary(eng), label: "paces")
+            _ = e.connect(.topic(churn), to: .topic(embargo), label: "leaks")
+            _ = e.connect(.boundary(all), to: .topic(risks))
             let f = e.addFloating(at: CanvasPoint(x: -380, y: 220.5), text: "Parking lot")
             _ = try! e.addChild(of: f, text: "Dark mode")
             e.updateMeta {
@@ -121,7 +125,15 @@ import Testing
             for k in n.children { dump(k) }
         }
         for t in c.tops { dump(t) }
-        func end(_ e: RelationshipEnd) -> String { e.topic.map(path) ?? "zone \(e.rawValue)" }
+        func end(_ e: RelationshipEnd) -> String {
+            switch e {
+            case .topic(let id): path(id)
+            case .zone(let id): "zone \(id)"
+            case .boundary(let id):
+                c.boundaries.first { $0.id == id }.map { "boundary \($0.title) \($0.nodes.map(path).sorted())" } ?? "?"
+            case .summary(let id): c.summaries.first { $0.id == id }.map { "summary \(path($0.topic))" } ?? "?"
+            }
+        }
         for r in c.relationships { out.append("relationship \(end(r.from)) → \(end(r.to)) \(r.label)") }
         for b in c.boundaries { out.append("boundary \(b.title) \(b.nodes.map(path).sorted())") }
         for s in c.summaries { out.append("summary \(path(s.from))…\(path(s.to)) = \(path(s.topic))") }
@@ -183,14 +195,23 @@ import Testing
         _ = try XMLDocument(data: files["META-INF/manifest.xml"]!)
         // Every topic id is unique, and relationships, summaries and dependencies point at them.
         var ids: [String] = []
+        var elements: [String] = []
         func walk(_ t: [String: Any]) {
             ids.append(t["id"] as! String)
+            for key in ["boundaries", "summaries"] {
+                elements += ((t[key] as? [[String: Any]]) ?? []).compactMap { $0["id"] as? String }
+            }
             for (_, v) in (t["children"] as? [String: Any]) ?? [:] { for k in v as! [[String: Any]] { walk(k) } }
         }
         for s in content { walk(s["rootTopic"] as! [String: Any]) }
-        #expect(Set(ids).count == ids.count)
-        let rel = try #require((content[0]["relationships"] as? [[String: Any]])?.first)
-        #expect(ids.contains(rel["end1Id"] as! String) && ids.contains(rel["end2Id"] as! String))
+        #expect(Set(ids).count == ids.count && Set(ids + elements).count == ids.count + elements.count)
+        // Relationships end on topics, boundaries or summaries (D183).
+        let rels = try #require(content[0]["relationships"] as? [[String: Any]])
+        #expect(rels.count == 4)
+        for rel in rels {
+            #expect((ids + elements).contains(rel["end1Id"] as! String))
+            #expect((ids + elements).contains(rel["end2Id"] as! String))
+        }
         // Task dates are noon in the writer's time zone (D168).
         let json = String(decoding: files["content.json"]!, as: UTF8.self)
         #expect(json.contains("\"start\":1793620800000"), "2026-11-02T12:00Z")

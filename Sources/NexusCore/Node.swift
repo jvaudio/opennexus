@@ -301,10 +301,14 @@ extension Node: JSONRepresentable {
     }
 }
 
-/// One end of a relationship: a topic or a zone (Xmind 26.03 connects both, D170).
+/// One end of a relationship: a topic, a zone (D170), a boundary or a summary's bracket
+/// (D180). Xmind connects all of them. A callout's bubble and a summary's own topic are
+/// topics, so they are `.topic` ends.
 public enum RelationshipEnd: Hashable, Sendable, CustomStringConvertible {
     case topic(NodeID)
     case zone(String)
+    case boundary(String)
+    case summary(String)
 
     public var topic: NodeID? {
         if case .topic(let id) = self { return id }
@@ -316,26 +320,50 @@ public enum RelationshipEnd: Hashable, Sendable, CustomStringConvertible {
         return nil
     }
 
+    public var boundary: String? {
+        if case .boundary(let id) = self { return id }
+        return nil
+    }
+
+    public var summary: String? {
+        if case .summary(let id) = self { return id }
+        return nil
+    }
+
     /// The id as a file stores it in `from` / `to`.
     public var rawValue: String {
         switch self {
         case .topic(let id): id.rawValue
-        case .zone(let id): id
+        case .zone(let id), .boundary(let id), .summary(let id): id
         }
     }
 
-    /// `topic` or `zone`, as a file stores it in `fromKind` / `toKind`.
-    public var kind: String { zone == nil ? "topic" : "zone" }
-
-    public init(kind: String?, id: String) {
-        self = kind == "zone" ? .zone(id) : .topic(NodeID(id))
+    /// `topic`, `zone`, `boundary` or `summary`, as a file stores it in `fromKind` /
+    /// `toKind` (written only when it isn't `topic`).
+    public var kind: String {
+        switch self {
+        case .topic: "topic"
+        case .zone: "zone"
+        case .boundary: "boundary"
+        case .summary: "summary"
+        }
     }
 
-    public var description: String { zone.map { "zone \($0)" } ?? rawValue }
+    /// An unknown kind (from a newer build) reads as a topic id, which repair then drops.
+    public init(kind: String?, id: String) {
+        switch kind {
+        case "zone": self = .zone(id)
+        case "boundary": self = .boundary(id)
+        case "summary": self = .summary(id)
+        default: self = .topic(NodeID(id))
+        }
+    }
+
+    public var description: String { topic == nil ? "\(kind) \(rawValue)" : rawValue }
 }
 
-/// A free connector between two topics or zones (Xmind's Relationship, a technical
-/// diagram's edge).
+/// A free connector between topics, zones, boundaries and summaries (Xmind's
+/// Relationship, a technical diagram's edge).
 public struct Relationship: Hashable, Sendable, JSONRepresentable {
     public var id: String
     public var from: RelationshipEnd
@@ -381,7 +409,7 @@ public struct Relationship: Hashable, Sendable, JSONRepresentable {
         self.init(id: id, from: .topic(from), to: .topic(to), label: label, line: line, ends: ends)
     }
 
-    /// Both topics when neither end is a zone (technical rules and text formats only
+    /// Both topics when both ends are topics (technical rules and text formats only
     /// know topic-to-topic edges).
     public var topics: (from: NodeID, to: NodeID)? {
         guard let a = from.topic, let b = to.topic else { return nil }
@@ -398,7 +426,10 @@ public struct Relationship: Hashable, Sendable, JSONRepresentable {
     public func touches(_ id: NodeID) -> Bool { from == .topic(id) || to == .topic(id) }
 
     /// True when either end is the zone.
-    public func touches(zone id: String) -> Bool { from == .zone(id) || to == .zone(id) }
+    public func touches(zone id: String) -> Bool { touches(end: .zone(id)) }
+
+    /// True when either end is `end`.
+    public func touches(end: RelationshipEnd) -> Bool { from == end || to == end }
 
     /// True when both ends are topics in `keep`.
     public func connects(within keep: Set<NodeID>) -> Bool {
@@ -429,9 +460,9 @@ public struct Relationship: Hashable, Sendable, JSONRepresentable {
         var w = ObjectWriter(extra: extra)
         w.set("id", id)
         w.set("from", from.rawValue)
-        if from.zone != nil { w.set("fromKind", from.kind) }
+        if from.topic == nil { w.set("fromKind", from.kind) }
         w.set("to", to.rawValue)
-        if to.zone != nil { w.set("toKind", to.kind) }
+        if to.topic == nil { w.set("toKind", to.kind) }
         w.set("label", label)
         w.set("line", line)
         w.set("ends", ends, omitEmpty: false)

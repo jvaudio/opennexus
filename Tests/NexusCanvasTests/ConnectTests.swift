@@ -168,6 +168,70 @@ func launchPlanDocument() -> DocumentModel {
         #expect(h.canvas.relationships.count == 1)
     }
 
+    /// D184: boundaries and summary brackets are Connect targets and sources; a callout's
+    /// bubble is a topic target. VoiceOver names each kind of end.
+    @Test func connectToBoundariesSummariesAndCallouts() throws {
+        let h = CanvasHarness(model: launchPlanDocument())
+        let channels = node(h, "Channels")
+        let risks = node(h, "Risks")
+        let kids = h.canvas.nodes[node(h, "Pricing")]!.children
+        let boundary = try #require(
+            h.controller.perform("Boundary") { try $0.addBoundary(around: [channels], title: "Reach") })
+        h.controller.perform("Summary") { _ = try $0.addSummary(over: Array(kids.prefix(2)), text: "Paid plans") }
+        let summary = h.canvas.summaries[0].id
+        let callout = try #require(h.controller.perform("Callout") { try $0.addCallout(on: risks, text: "Ask legal") })
+
+        // A hint reaches the boundary.
+        h.controller.select(risks)
+        h.press("shift+cmd+l")
+        let state = try #require(h.controller.connect)
+        let ends = Set(state.candidates.map(\.end))
+        #expect(ends.isSuperset(of: [.boundary(boundary), .summary(summary), .topic(callout)]))
+        let hint = try #require(state.candidates.first { $0.end == .boundary(boundary) }?.hint)
+        h.type(hint.lowercased())
+        #expect(h.controller.connect?.target?.end == .boundary(boundary))
+        h.press("return")
+        h.type("watches")
+        h.press("return")
+        let rel = try #require(h.canvas.relationships.last)
+        #expect(rel.from == .topic(risks) && rel.to == .boundary(boundary) && rel.label == "watches")
+
+        // Titles filter: "Boundary: Reach", "Summary: Paid plans".
+        h.controller.select(node(h, "Timeline"))
+        h.press("shift+cmd+l")
+        h.type("reach")
+        #expect(h.controller.connect?.matches.map(\.end) == [.boundary(boundary)])
+        h.press("esc")
+        h.press("shift+cmd+l")
+        h.type("paid plans")
+        #expect(h.controller.connect?.matches.map(\.end) == [.summary(summary), .topic(h.canvas.summaries[0].topic)])
+        h.press("esc")
+
+        // From the summary's bracket to the callout's bubble.
+        h.controller.selectElement(.summary(summary))
+        h.press("shift+cmd+l")
+        #expect(h.controller.connect?.source == .summary(summary))
+        h.type("ask legal")
+        h.press("return")
+        let back = try #require(h.canvas.relationships.last)
+        #expect(back.from == .summary(summary) && back.to == .topic(callout))
+        h.press("esc")
+
+        // From a selected boundary.
+        h.controller.selectElement(.boundary(boundary))
+        h.press("shift+cmd+l")
+        #expect(h.controller.connect?.source == .boundary(boundary))
+        h.press("esc")
+        #expect(h.canvas.relationships.count == 2 && h.canvas.validate().isEmpty)
+
+        // VoiceOver reads the ends by kind.
+        let edges = h.host.canvasView.accessibilityTree.edgeItems().map(\.text)
+        #expect(edges.contains("Risks to boundary Reach, watches. Relationship."))
+        #expect(edges.contains("summary Paid plans to callout Ask legal. Relationship."))
+        h.undo.undo(h.store)
+        #expect(h.canvas.relationships.count == 1)
+    }
+
     @Test func hintsArePrefixFreeAtScale() {
         for n in [1, 5, 26, 27, 60, 200, 676] {
             let hs = ConnectState.hints(count: n)

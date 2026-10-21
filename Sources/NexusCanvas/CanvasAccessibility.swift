@@ -17,7 +17,8 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
     private var topics: [NodeID: TopicElement] = [:]
     private var edges: [String: ElementItem] = [:]
     private var boxes: [String: ElementItem] = [:]
-    private var zoneItems: [String: ElementItem] = [:]
+    /// Connect targets that aren't topics.
+    private var endItems: [RelationshipEnd: ElementItem] = [:]
     private var revision = -1
     private var depths: [NodeID: Int] = [:]
     private var maxDepth = 0
@@ -160,17 +161,8 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
             let id = r.relationship.id
             let e = edges[id] ?? ElementItem(ref: .relationship(id), tree: self)
             edges[id] = e
-            let canvas = c.canvas
-            func name(_ end: RelationshipEnd) -> String {
-                switch end {
-                case .topic(let t): return canvas.nodes[t]?.text ?? Loc.t("a topic")
-                case .zone(let z):
-                    let title = canvas.zones.first { $0.id == z }?.title ?? ""
-                    return title.isEmpty ? Loc.t("a zone") : Loc.f("zone %@", title)
-                }
-            }
-            let from = name(r.relationship.from)
-            let to = name(r.relationship.to)
+            let from = c.canvas.spokenName(r.relationship.from)
+            let to = c.canvas.spokenName(r.relationship.to)
             e.text =
                 r.relationship.label.isEmpty
                 ? Loc.f("%@ to %@. Relationship.", from, to)
@@ -182,20 +174,32 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
         }
     }
 
-    /// A Connect candidate: its topic's element, or an item for a zone.
+    /// A Connect candidate: its topic's element, or an item for a zone, boundary or summary.
     func connectItem(_ cand: ConnectCandidate) -> NSAccessibilityElement? {
         guard let c = controller else { return nil }
+        let ref: ElementRef
+        let spoken: String
         switch cand.end {
         case .topic(let id): return element(id)
         case .zone(let id):
-            guard let z = c.scene.zones.first(where: { $0.zone.id == id }) else { return nil }
-            let e = zoneItems[id] ?? ElementItem(ref: .zone(id), tree: self)
-            zoneItems[id] = e
-            let title = z.zone.title.isEmpty ? Loc.t("Zone") : z.zone.title
-            e.text = Loc.f("Hint %@. ", cand.hint.uppercased()) + Loc.f("%@. Zone.", title)
-            e.world = z.rect
-            return e
+            let title = c.canvas.zones.first { $0.id == id }?.title ?? ""
+            ref = .zone(id)
+            spoken = Loc.f("%@. Zone.", title.isEmpty ? Loc.t("Zone") : title)
+        case .boundary(let id):
+            let title = c.canvas.boundaries.first { $0.id == id }.map(c.canvas.boundaryTitle) ?? ""
+            ref = .boundary(id)
+            spoken = Loc.f("%@. Boundary.", title.isEmpty ? Loc.t("Boundary") : title)
+        case .summary(let id):
+            let text = c.canvas.summaries.first { $0.id == id }.flatMap { c.canvas.nodes[$0.topic]?.text } ?? ""
+            ref = .summary(id)
+            spoken = Loc.f("%@. Summary.", text.isEmpty ? Loc.t("Summary") : text)
         }
+        guard let rect = c.scene.rect(of: cand.end) else { return nil }
+        let e = endItems[cand.end] ?? ElementItem(ref: ref, tree: self)
+        endItems[cand.end] = e
+        e.text = Loc.f("Hint %@. ", cand.hint.uppercased()) + spoken
+        e.world = rect
+        return e
     }
 
     func boundaryItems() -> [ElementItem] {
@@ -428,6 +432,7 @@ final class ElementItem: NSAccessibilityElement {
         switch ref {
         case .boundary: return "boundary"
         case .zone: return "zone"
+        case .summary: return "summary"
         default: return "relationship"
         }
     }

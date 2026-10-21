@@ -121,6 +121,30 @@ final class Session {
         #expect(outline.contains("- Pricing [\(pricing.rawValue)] → Later [zone:\(zone)]"))
     }
 
+    /// D180: add_edge takes "boundary:" and "summary:" ends, and read_map lists both.
+    @Test func boundaryAndSummaryEnds() throws {
+        var c = Canvas(id: "c1", title: "Plan", rootText: "Plan")
+        var undo = UndoStack()
+        var (pricing, boundary, summary) = (NodeID("x"), "", "")
+        try c.edit("Setup", undo: &undo) { e in
+            pricing = try e.addChild(of: e.canvas.root, text: "Pricing")
+            let q = try e.addChild(of: e.canvas.root, text: "Quality")
+            boundary = try e.addBoundary(around: [q], title: "Core")
+            _ = try e.addSummary(over: [pricing, q], text: "Both")
+            summary = e.canvas.summaries[0].id
+            e.connect(.summary(summary), to: .boundary(boundary), label: "covers")
+        }
+        #expect(try MapTools.end("boundary:Core", in: c) == .boundary(boundary))
+        #expect(try MapTools.end("Boundary:\(boundary)", in: c) == .boundary(boundary))
+        #expect(try MapTools.end("summary:both", in: c) == .summary(summary))
+        #expect(throws: MapTools.ToolError.self) { try MapTools.end("summary:Nothing", in: c) }
+        let outline = MapTools.outline(c)
+        #expect(outline.contains("Boundaries:\n- Core [boundary:\(boundary)] around Quality ["))
+        #expect(
+            outline.contains("Summaries:\n- Both [summary:\(summary)] over Pricing [\(pricing.rawValue)] to Quality ["))
+        #expect(outline.contains("- Both [summary:\(summary)] → Core [boundary:\(boundary)] “covers”"))
+    }
+
     @Test func disabledServerSaysWhere() {
         let s = Session(.disabled(NexusCLI.offMessage), [Session.initialize, Session.request(2, "tools/list")])
         _ = s.run()

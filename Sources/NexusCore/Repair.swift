@@ -9,7 +9,8 @@ extension Canvas {
     ///   tree order keeps it.
     /// - Topics no tree reaches become floating topics.
     /// - Relationships, boundaries, summaries, callouts and zones that point at missing
-    ///   topics are dropped or trimmed, and so are relationships to missing zones.
+    ///   topics are dropped or trimmed, and so are relationships to missing zones,
+    ///   boundaries or summaries.
     ///
     /// Returns what was repaired (empty for a valid canvas). Afterwards `validate()` is empty.
     @discardableResult
@@ -122,15 +123,6 @@ extension Canvas {
                     CoreText.n("%lld branch", "%lld branches", lifted), Canvas.maxDepth))
         }
 
-        let relCount = relationships.count
-        let ends = self
-        relationships.removeAll { !ends.has($0.from) || !ends.has($0.to) }
-        if relationships.count < relCount {
-            fixes.append(
-                CoreText.n(
-                    "%lld relationship to a missing topic or zone", "%lld relationships to missing topics or zones",
-                    relCount - relationships.count))
-        }
         var trimmed = 0
         for i in boundaries.indices {
             let before = boundaries[i].nodes.count
@@ -148,6 +140,16 @@ extension Canvas {
                 CoreText.n(
                     "%lld boundary or zone member that is missing", "%lld boundary or zone members that are missing",
                     trimmed))
+        }
+        // After boundaries are trimmed, so a relationship to an emptied boundary goes too.
+        let relCount = relationships.count
+        let ends = self
+        relationships.removeAll { !ends.has($0.from) || !ends.has($0.to) }
+        if relationships.count < relCount {
+            fixes.append(
+                CoreText.n(
+                    "%lld relationship to a missing topic or element",
+                    "%lld relationships to missing topics or elements", relCount - relationships.count))
         }
         var badDeps = 0
         for (id, n) in nodes {

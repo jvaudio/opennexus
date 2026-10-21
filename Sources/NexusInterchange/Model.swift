@@ -92,11 +92,14 @@ public struct ICanvas: Sendable, Equatable {
         public var from: String
         public var to: String
         public var topic: ITopic
-        public init(parent: String, from: String, to: String, topic: ITopic) {
+        /// The source's id for the summary itself, which relationships can name.
+        public var ref: String?
+        public init(parent: String, from: String, to: String, topic: ITopic, ref: String? = nil) {
             self.parent = parent
             self.from = from
             self.to = to
             self.topic = topic
+            self.ref = ref
         }
     }
     public struct Bubble: Sendable, Equatable {
@@ -238,6 +241,8 @@ public enum CanvasBuilder {
         if let s = ic.structure { c.layout.structure = s }
         c.legend = ic.legend
         var refs: [String: NodeID] = [:]
+        /// Source ids of boundaries and summaries, for relationships that end on them.
+        var elementRefs: [String: RelationshipEnd] = [:]
         func apply(_ t: ITopic, to id: NodeID) {
             var n = c.nodes[id] ?? Node(text: t.text)
             n.text = t.text
@@ -305,7 +310,9 @@ public enum CanvasBuilder {
             apply(s.topic, to: tid)
             c.nodes[tid]!.kind = .summary
             for ch in s.topic.children { _ = add(ch, under: tid) }
-            c.summaries.append(Summary(id: "s\(c.summaries.count + 1)", parent: parent, from: from, to: to, topic: tid))
+            let sid = "s\(c.summaries.count + 1)"
+            c.summaries.append(Summary(id: sid, parent: parent, from: from, to: to, topic: tid))
+            if let ref = s.ref { elementRefs[ref] = .summary(sid) }
         }
         for b in ic.callouts {
             guard let host = refs[b.host] else { continue }
@@ -315,43 +322,18 @@ public enum CanvasBuilder {
             c.nodes[tid]!.kind = .callout
             c.callouts.append(Callout(id: "k\(c.callouts.count + 1)", host: host, topic: tid))
         }
-        // A relationship may end on a boundary. OpenNexus boundaries aren't relationship
-        // ends, so a boundary a relationship names, inside floating branches only, becomes
-        // a zone around those branches (D172).
-        let linked = Set(ic.links.flatMap { [$0.from, $0.to] })
-        var zoneRefs: [String: String] = [:]
-        var boundaryRefs = Set<String>()
-        let parents = c.parentMap()
-        func top(_ id: NodeID) -> NodeID { c.path(to: id, parents: parents).first ?? id }
+        // Relationships may end on a boundary or a summary, which they name by id (D183).
         for g in ic.groups {
             let ids = g.refs.compactMap { refs[$0] }
             guard !ids.isEmpty else { continue }
-            let zoned = Set(c.zones.flatMap(\.members))
-            var tops: [NodeID] = []
-            for t in ids.map(top) where !tops.contains(t) { tops.append(t) }
-            if let ref = g.ref, linked.contains(ref), refs[ref] == nil, zoneRefs[ref] == nil,
-                tops.allSatisfy({ c.floating.contains($0) && !zoned.contains($0) })
-            {
-                let points = tops.compactMap { c.nodes[$0]?.position }
-                let origin = CanvasPoint(
-                    x: (points.map(\.x).min() ?? 0) - 60, y: (points.map(\.y).min() ?? 0) - 70)
-                var z = Zone(id: "z\(c.zones.count + 1)", title: g.title, origin: origin)
-                z.members = tops
-                c.zones.append(z)
-                zoneRefs[ref] = z.id
-                continue
-            }
-            if let ref = g.ref { boundaryRefs.insert(ref) }
-            c.boundaries.append(Boundary(id: "b\(c.boundaries.count + 1)", nodes: ids, title: g.title))
+            let bid = "b\(c.boundaries.count + 1)"
+            c.boundaries.append(Boundary(id: bid, nodes: ids, title: g.title))
+            if let ref = g.ref, elementRefs[ref] == nil { elementRefs[ref] = .boundary(bid) }
         }
-        func end(_ ref: String) -> RelationshipEnd? {
-            refs[ref].map(RelationshipEnd.topic) ?? zoneRefs[ref].map(RelationshipEnd.zone)
-        }
+        func end(_ ref: String) -> RelationshipEnd? { refs[ref].map(RelationshipEnd.topic) ?? elementRefs[ref] }
         for l in ic.links {
             guard let from = end(l.from), let to = end(l.to) else {
-                report.skip(
-                    boundaryRefs.contains(l.from) || boundaryRefs.contains(l.to)
-                        ? "Relationship to a boundary" : "Relationship to a missing topic")
+                report.skip("Relationship to a missing topic")
                 continue
             }
             var r = Relationship(id: "r\(c.relationships.count + 1)", from: from, to: to, label: l.label)

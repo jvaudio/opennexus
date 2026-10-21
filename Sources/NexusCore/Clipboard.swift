@@ -27,12 +27,14 @@ extension Canvas {
         f.root = placeholder
         f.nodes[placeholder] = Node(text: "", kind: .root, children: roots)
         if keep.contains(root) { f.nodes[root]?.kind = .topic }
-        f.relationships = relationships.filter { $0.connects(within: keep) }
         f.boundaries = boundaries.filter { !$0.nodes.isEmpty && Set($0.nodes).isSubset(of: keep) }
-        f.summaries = summaries.filter {
-            keep.contains($0.parent) && keep.contains($0.from) && keep.contains($0.to) && keep.contains($0.topic)
+        // A summary over copied siblings comes with its own topic (which isn't their child).
+        f.summaries = summaries.filter { keep.contains($0.parent) && keep.contains($0.from) && keep.contains($0.to) }
+        // Relationships whose ends all travel: topics, boundaries and summaries (D181).
+        f.relationships = relationships.filter { r in
+            [r.from, r.to].allSatisfy { end in end.zone == nil && (end.topic.map(keep.contains) ?? f.has(end)) }
         }
-        for s in f.summaries { f.nodes[s.topic] = nodes[s.topic] }
+        for s in f.summaries { for d in subtree(s.topic) { f.nodes[d] = nodes[d] } }
         f.nextSequence = Canvas.seed(for: f.nodes.keys)
         return f
     }
@@ -85,23 +87,23 @@ extension CanvasEditor {
                 $0.children.append(newTop)
             }
         }
-        let rels = src.relationships.filter { $0.connects(within: Set(map.keys)) }
         let bounds = src.boundaries.filter { !$0.nodes.isEmpty && $0.nodes.allSatisfy { map[$0] != nil } }
         let sums = src.summaries.filter { map[$0.parent] != nil && map[$0.from] != nil && map[$0.to] != nil }
+        // Relationships come along when every end does: a topic, boundary or summary of the
+        // branch (D181). Zones stay behind, and so do relationships to them.
+        let carried = Set(bounds.map { RelationshipEnd.boundary($0.id) } + sums.map { .summary($0.id) })
+        let rels = src.relationships.filter { r in
+            [r.from, r.to].allSatisfy { $0.topic.map { map[$0] != nil } ?? carried.contains($0) }
+        }
         if !rels.isEmpty || !bounds.isEmpty || !sums.isEmpty {
             updateMeta { c in
-                for r in rels {
-                    var x = r
-                    x.id = Self.fresh("r", c.relationships.map(\.id))
-                    x.from = .topic(map[r.from.topic!]!)
-                    x.to = .topic(map[r.to.topic!]!)
-                    c.relationships.append(x)
-                }
+                var ends: [RelationshipEnd: RelationshipEnd] = [:]
                 for b in bounds {
                     var x = b
                     x.id = Self.fresh("b", c.boundaries.map(\.id))
                     x.nodes = b.nodes.compactMap { map[$0] }
                     c.boundaries.append(x)
+                    ends[.boundary(b.id)] = .boundary(x.id)
                 }
                 for s in sums {
                     var x = s
@@ -111,6 +113,15 @@ extension CanvasEditor {
                     x.to = map[s.to]!
                     x.topic = map[s.topic]!
                     c.summaries.append(x)
+                    ends[.summary(s.id)] = .summary(x.id)
+                }
+                func moved(_ e: RelationshipEnd) -> RelationshipEnd { e.topic.map { .topic(map[$0]!) } ?? ends[e]! }
+                for r in rels {
+                    var x = r
+                    x.id = Self.fresh("r", c.relationships.map(\.id))
+                    x.from = moved(r.from)
+                    x.to = moved(r.to)
+                    c.relationships.append(x)
                 }
             }
         }

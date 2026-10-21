@@ -386,9 +386,9 @@ extension CanvasController {
                 }
             }
             for r in c.relationships where !r.label.isEmpty {
-                // A zone-to-zone relationship jumps to a member of its zone.
-                let member = c.zones.first { r.touches(zone: $0.id) }?.members.first
-                guard let (score, idx) = Fuzzy.match(q, in: r.label), let node = r.to.topic ?? r.from.topic ?? member
+                // A relationship between elements jumps to a topic of one of its ends.
+                guard let (score, idx) = Fuzzy.match(q, in: r.label),
+                    let node = c.anchorTopic(r.to) ?? c.anchorTopic(r.from)
                 else { continue }
                 rows.append(
                     (

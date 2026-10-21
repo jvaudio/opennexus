@@ -186,12 +186,19 @@ extension CanvasEditor {
     public mutating func removeElement(_ ref: ElementRef) {
         switch ref {
         case .relationship(let id): updateMeta { $0.relationships.removeAll { $0.id == id } }
-        case .boundary(let id): updateMeta { $0.boundaries.removeAll { $0.id == id } }
+        case .boundary(let id):
+            updateMeta {
+                $0.boundaries.removeAll { $0.id == id }
+                $0.relationships.removeAll { $0.touches(end: .boundary(id)) }
+            }
         case .zone(let id): removeZone(id)
         case .summary(let id):
             guard let s = canvas.summaries.first(where: { $0.id == id }) else { return }
             let gone = Set(canvas.subtree(s.topic))
-            updateMeta { $0.summaries.removeAll { $0.id == id } }
+            updateMeta {
+                $0.summaries.removeAll { $0.id == id }
+                $0.relationships.removeAll { $0.touches(end: .summary(id)) }
+            }
             for d in gone { remove(d) }
             cleanUpElements(removed: gone)
         case .callout(let id):
@@ -215,7 +222,14 @@ extension CanvasEditor {
         let deadCallouts = c.callouts.filter { removed.contains($0.host) || removed.contains($0.topic) }
         let touchesBoundaries = c.boundaries.contains { $0.nodes.contains(where: removed.contains) }
         let touchesZones = c.zones.contains { $0.members.contains(where: removed.contains) }
-        let touchesRels = c.relationships.contains { $0.endTopics.contains(where: removed.contains) }
+        // Relationships to those topics, and to boundaries and summaries that go with them.
+        let deadBoundaries = c.boundaries.filter { $0.nodes.allSatisfy(removed.contains) }
+        let deadEnds = Set(
+            deadSummaries.map { RelationshipEnd.summary($0.id) } + deadBoundaries.map { .boundary($0.id) })
+        func dead(_ r: Relationship) -> Bool {
+            r.endTopics.contains(where: removed.contains) || deadEnds.contains(r.from) || deadEnds.contains(r.to)
+        }
+        let touchesRels = c.relationships.contains(where: dead)
         if !deadSummaries.isEmpty || !deadCallouts.isEmpty || touchesBoundaries || touchesZones || touchesRels {
             updateMeta { m in
                 m.summaries.removeAll { s in deadSummaries.contains(s) }
@@ -223,7 +237,7 @@ extension CanvasEditor {
                 for i in m.boundaries.indices { m.boundaries[i].nodes.removeAll(where: removed.contains) }
                 m.boundaries.removeAll { $0.nodes.isEmpty }
                 for i in m.zones.indices { m.zones[i].members.removeAll(where: removed.contains) }
-                m.relationships.removeAll { $0.endTopics.contains(where: removed.contains) }
+                m.relationships.removeAll(where: dead)
             }
         }
         // Summary and callout topics whose element died go too.

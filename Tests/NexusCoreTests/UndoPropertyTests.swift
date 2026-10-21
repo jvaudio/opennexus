@@ -21,7 +21,7 @@ func randomOperation(_ c: inout Canvas, _ undo: inout UndoStack, _ rng: inout Sp
     let ids = c.nodes.keys.sorted()
     let target = ids.randomElement(using: &rng)!
     let other = ids.randomElement(using: &rng)!
-    let op = Int.random(in: 0..<26, using: &rng)
+    let op = Int.random(in: 0..<28, using: &rng)
     let label = "op\(op) target \(target) other \(other)"
     _ = try? c.edit("op\(op)", undo: &undo) { e -> Void in
         switch op {
@@ -62,6 +62,19 @@ func randomOperation(_ c: inout Canvas, _ undo: inout UndoStack, _ rng: inout Sp
             }
         case 25:
             if let z = e.canvas.zones.first { e.removeElement(.zone(z.id)) }
+        // Boundary and summary ends (D180).
+        case 26:
+            let ends: [RelationshipEnd] =
+                e.canvas.boundaries.map { .boundary($0.id) } + e.canvas.summaries.map { .summary($0.id) }
+            if let end = ends.randomElement(using: &rng) {
+                if Bool.random(using: &rng) {
+                    e.connect(.topic(target), to: end)
+                } else {
+                    e.connect(end, to: .topic(target))
+                }
+            }
+        case 27:
+            if let s = e.canvas.summaries.first { e.removeElement(.summary(s.id)) }
         default:
             if let k = e.canvas.callouts.first { e.removeElement(.callout(k.id)) }
         }

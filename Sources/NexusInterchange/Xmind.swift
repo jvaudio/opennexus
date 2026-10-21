@@ -299,7 +299,8 @@ public enum XmindFormat {
                 else { continue }
                 summaries.append(
                     ICanvas.Brace(
-                        parent: parent, from: kidRefs[r.lowerBound], to: kidRefs[r.upperBound], topic: topic(st)))
+                        parent: parent, from: kidRefs[r.lowerBound], to: kidRefs[r.upperBound], topic: topic(st),
+                        ref: s["id"] as? String))
             }
             for c in (children["callout"] as? [[String: Any]]) ?? [] {
                 if let host = it.ref { callouts.append(ICanvas.Bubble(host: host, topic: topic(c))) }
@@ -468,7 +469,8 @@ public enum XmindFormat {
                 else { continue }
                 summaries.append(
                     ICanvas.Brace(
-                        parent: parent, from: kidRefs[r.lowerBound], to: kidRefs[r.upperBound], topic: topic(st)))
+                        parent: parent, from: kidRefs[r.lowerBound], to: kidRefs[r.upperBound], topic: topic(st),
+                        ref: s.attr("id")))
             }
             return it
         }

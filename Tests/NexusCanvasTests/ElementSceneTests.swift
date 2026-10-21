@@ -147,6 +147,75 @@ import Testing
         #expect(h.canvas.relationships.count == 2)
     }
 
+    /// D180, D184: a boundary end anchors on the boundary's rectangle and a summary end on
+    /// its bracket, in the scene, in exports and when the boundary's branch is exported.
+    @Test func relationshipToABoundaryAndASummary() throws {
+        let h = CanvasHarness(model: launchPlanDocument())
+        let channels = node(h, "Channels")
+        let risks = node(h, "Risks")
+        let hunt = node(h, "Product Hunt")
+        let kids = h.canvas.nodes[node(h, "Pricing")]!.children
+        let boundary = try #require(
+            h.controller.perform("Boundary") { try $0.addBoundary(around: [channels], title: "Reach") })
+        h.controller.perform("Summary") { _ = try $0.addSummary(over: Array(kids.prefix(2)), text: "Paid") }
+        let summary = h.canvas.summaries[0].id
+        h.controller.perform("Connect") { e in
+            e.connect(.topic(risks), to: .boundary(boundary), label: "watches")
+            e.connect(.summary(summary), to: .boundary(boundary))
+            e.connect(.topic(hunt), to: .boundary(boundary))
+        }
+        #expect(h.canvas.validate().isEmpty)
+        let scene = h.controller.scene
+        #expect(scene.relationships.count == 3)
+        let br = try #require(scene.rect(of: .boundary(boundary)))
+        let sr = try #require(scene.rect(of: .summary(summary)))
+        #expect(br == scene.boundaries[0].rect && sr == scene.summaries[0].bracket)
+        func onEdge(_ p: CGPoint, _ r: CGRect) -> Bool {
+            let x = abs(p.x - r.minX) < 0.6 || abs(p.x - r.maxX) < 0.6
+            let y = abs(p.y - r.minY) < 0.6 || abs(p.y - r.maxY) < 0.6
+            let r = r.insetBy(dx: -0.6, dy: -0.6)
+            return (x && p.y >= r.minY && p.y <= r.maxY) || (y && p.x >= r.minX && p.x <= r.maxX)
+        }
+        // From outside: on the boundary's edge (plus the 6 pt gap); from the bracket too.
+        let a = try #require(scene.rect(of: .topic(risks)))
+        let outside = RelationshipGeometry.make(h.canvas.relationships[0], from: a, to: br)
+        #expect(onEdge(outside.end, br.insetBy(dx: -6, dy: -6)))
+        let bracket = RelationshipGeometry.make(h.canvas.relationships[1], from: sr, to: br)
+        #expect(onEdge(bracket.start, sr.insetBy(dx: -6, dy: -6)) && onEdge(bracket.end, br.insetBy(dx: -6, dy: -6)))
+        // From a topic inside the boundary: a short line to its nearest edge.
+        let p = try #require(scene.rect(of: .topic(hunt)))
+        let inside = RelationshipGeometry.make(h.canvas.relationships[2], from: p, to: br)
+        #expect(onEdge(inside.end, br) && br.contains(inside.start))
+
+        // "Source" colour on a relationship from a summary is the bracket's colour.
+        h.controller.perform("Colour") { $0.updateRelationship(h.canvas.relationships[1].id) { $0.color = "source" } }
+        #expect(h.controller.scene.relationships[1].color == h.controller.scene.summaries[0].color)
+
+        // Save and load.
+        let decoded = try Canvas(json: h.canvas.json, path: "c")
+        #expect(decoded.relationships == h.canvas.relationships)
+
+        // A branch export of Channels keeps the boundary and its member's relationship only.
+        var o = ImageExporter.Options()
+        o.scope = .branch
+        o.selection = [channels]
+        let isolated = ImageExporter.controller(h.store.model, canvas: h.canvas.id, o).scene
+        #expect(isolated.boundaries.count == 1 && isolated.relationships.map(\.relationship.from) == [.topic(hunt)])
+        let svg = SVGExporter.export(h.store.model, canvas: h.canvas.id, ImageExporter.Options())
+        #expect(try XMLDocument(data: Data(svg.utf8)).rootElement() != nil)
+        #expect(svg.contains("data-nexus-to=\"\(boundary)\" data-nexus-to-kind=\"boundary\""))
+        #expect(
+            svg.contains(
+                "data-nexus-from=\"\(summary)\" data-nexus-to=\"\(boundary)\" data-nexus-from-kind=\"summary\""))
+        #expect(svg.components(separatedBy: "class=\"relationship\"").count == 4)
+
+        // Removing the boundary removes its relationships; one undo brings them back.
+        h.controller.perform("Remove") { $0.removeElement(.boundary(boundary)) }
+        #expect(h.canvas.relationships.isEmpty && h.controller.scene.relationships.isEmpty)
+        h.undo.undo(h.store)
+        #expect(h.canvas.relationships.count == 3 && h.controller.scene.relationships.count == 3)
+    }
+
     @Test func relationshipSceneFollowsColourModes() {
         let h = CanvasHarness(model: launchPlanDocument())
         let a = node(h, "Channels")

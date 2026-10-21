@@ -824,13 +824,15 @@
         },
         "from": {
           "$ref": "#/$defs/id",
-          "description": "A topic id, or a zone id when fromKind is zone."
+          "description": "A topic id, or a zone, boundary or summary id when fromKind says so."
         },
         "fromKind": {
-          "description": "What from names: topic (the default, omitted) or zone (D170).",
+          "description": "What from names: topic (the default, omitted), zone (D170), boundary or summary (D180).",
           "enum": [
             "topic",
-            "zone"
+            "zone",
+            "boundary",
+            "summary"
           ]
         },
         "id": {
@@ -854,13 +856,15 @@
         },
         "to": {
           "$ref": "#/$defs/id",
-          "description": "A topic id, or a zone id when toKind is zone."
+          "description": "A topic id, or a zone, boundary or summary id when toKind says so."
         },
         "toKind": {
-          "description": "What to names: topic (the default, omitted) or zone (D170).",
+          "description": "What to names: topic (the default, omitted), zone (D170), boundary or summary (D180).",
           "enum": [
             "topic",
-            "zone"
+            "zone",
+            "boundary",
+            "summary"
           ]
         },
         "width": {

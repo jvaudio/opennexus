@@ -620,12 +620,7 @@ public enum Spoken {
         if prefs.string("accessibility.readEdges") == "source" {
             for r in c.relationships where r.touches(id) {
                 let other = r.from == .topic(id) ? r.to : r.from
-                let name =
-                    switch other {
-                    case .topic(let t): c.nodes[t]?.text ?? Loc.t("a topic")
-                    case .zone(let z):
-                        (c.zones.first { $0.id == z }?.title).map { Loc.f("zone %@", $0) } ?? Loc.t("a zone")
-                    }
+                let name = c.spokenName(other)
                 parts.append(
                     r.label.isEmpty
                         ? Loc.f("Connected to %@", name) : Loc.f("Connected to %@ by ‘%@’", name, r.label))
