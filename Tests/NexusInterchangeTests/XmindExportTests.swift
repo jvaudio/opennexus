@@ -232,6 +232,12 @@ import Testing
             again.assets.values.sorted { $0.count < $1.count } == first.assets.values.sorted { $0.count < $1.count })
     }
 
+    /// Manual check in Xmind: NEXUS_XMIND_OUT=<folder> writes the sample document.
+    @Test(.enabled(if: ProcessInfo.processInfo.environment["NEXUS_XMIND_OUT"] != nil)) func writeSample() throws {
+        let dir = URL(fileURLWithPath: ProcessInfo.processInfo.environment["NEXUS_XMIND_OUT"]!)
+        try XmindWriter.export(Self.document()).data.write(to: dir.appending(path: "OpenNexus sample.xmind"))
+    }
+
     /// The re-exported Zen sample's content.json, pretty-printed, for review.
     @Test func zenSampleContentGolden() throws {
         let doc = try XmindFormat.parse(try fixture("zen.xmind"), name: "zen.xmind", timeZone: utc).document
