@@ -9,7 +9,7 @@
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
-    " to start fresh or drop an .xmind file anywhere." : {
+    " to start fresh, or drop an .xmind file or a picture anywhere." : {
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
@@ -2889,6 +2889,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Copy a picture or an image file first" : {
+      "comment" : "UI text (ImageToMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Copy a style first (⌥⌘C)" : {
       "comment" : "UI text (CanvasController+Styling.swift)",
       "extractionState" : "migrated"
@@ -2943,6 +2947,10 @@
     },
     "Couldn’t import “%@”" : {
       "comment" : "Text with values filled in (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
+    "Couldn’t import “%@”: %@" : {
+      "comment" : "Text with values filled in (ImageToMap.swift)",
       "extractionState" : "migrated"
     },
     "Couldn’t open the snapshot" : {
@@ -4229,6 +4237,10 @@
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
+    "Group plain lists in imported images with Apple Intelligence" : {
+      "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
     "H" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
@@ -4465,6 +4477,10 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "Image to Map" : {
+      "comment" : "UI text (ImageToMap.swift)",
+      "extractionState" : "migrated"
+    },
     "Image…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -4473,7 +4489,7 @@
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
-    "Import .xmind, OPML, Markdown, Mermaid, PlantUML, draw.io, FreeMind, MindManager, MindNode, Word or text." : {
+    "Import .xmind, OPML, Markdown, Mermaid, PlantUML, draw.io, FreeMind, MindManager, MindNode, Word, text, or a picture or PDF to read as a map." : {
       "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
@@ -6109,6 +6125,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Paste Image as Map" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Paste Outline" : {
       "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
@@ -6119,6 +6139,10 @@
     },
     "Paste Style" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Pasted Image" : {
+      "comment" : "UI text (ImageToMap.swift)",
       "extractionState" : "migrated"
     },
     "Pattern" : {
@@ -6527,6 +6551,14 @@
     },
     "Read maps" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Reading the text in the image…" : {
+      "comment" : "UI text (ImageToMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Reads the text in a copied picture" : {
+      "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "Rear" : {

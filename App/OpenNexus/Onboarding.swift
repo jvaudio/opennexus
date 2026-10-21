@@ -179,6 +179,19 @@ final class HomeWindow {
             self?.window?.orderOut(nil)
         }
         model.onImport = { (NSApp.delegate as? AppDelegate)?.importDocument(nil) }
+        model.onDropFiles = { [weak self] urls in
+            var opened = false
+            for url in urls {
+                if url.pathExtension.lowercased() == "nexus" {
+                    NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, _ in }
+                    opened = true
+                } else if InterchangeFormat.detect(name: url.lastPathComponent) != nil {
+                    (NSApp.delegate as? AppDelegate)?.importFile(url)
+                    opened = true
+                }
+            }
+            if opened { self?.window?.orderOut(nil) }
+        }
         model.onTemplate = { [weak self] t in
             self?.window?.orderOut(nil)
             NewDocument.make(model: t.document())

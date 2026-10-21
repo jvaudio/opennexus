@@ -73,7 +73,11 @@ import Testing
         #expect(throws: ImportError.self) {
             try Interchange.importFile(name: "truncated.xmind", data: try fixture("truncated.xmind"))
         }
-        #expect(throws: ImportError.unrecognised("photo.heic")) {
+        #expect(throws: ImportError.unrecognised("song.mp3")) {
+            try Interchange.importFile(name: "song.mp3", data: Data([1]))
+        }
+        // Pictures import since M12; a broken one says so.
+        #expect(throws: ImportError.invalid("photo.heic", "not a readable image")) {
             try Interchange.importFile(name: "photo.heic", data: Data([1]))
         }
     }

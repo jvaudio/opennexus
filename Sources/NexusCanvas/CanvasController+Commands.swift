@@ -70,6 +70,7 @@ extension CanvasController {
             .copy: { $0.copySelection() },
             .cut: { $0.cutSelection() },
             .paste: { $0.paste() },
+            .pasteImageAsMap: { $0.pasteImageAsMap() },
             .aiBreakdown: { $0.runAction(.breakdown) },
             .aiTodos: { $0.runAction(.todos) },
             .aiFindGaps: { $0.runAction(.findGaps) },

@@ -483,6 +483,7 @@ public enum SettingsSchema {
                         "balanced"),
                     T("ai.discussionDefault", "Start AI chats in Discussion mode (never edits the map)", false),
                     I("ai.frameworks", "Image Playground for stickers · Translation for maps", "on-device"),
+                    T("ai.structureImages", "Group plain lists in imported images with Apple Intelligence", false),
                     T("ai.markAI", "Mark AI-created nodes with ✦ until edited", true),
                     T("ai.statusChip", "Show model status chip in the toolbar", true),
                     K("ai.ghostKeys", "Ghost suggestions", ["⌥Space", "✦ Space"]),
