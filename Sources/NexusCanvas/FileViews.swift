@@ -235,6 +235,8 @@ private struct ExportSheet: View {
 
     @ViewBuilder var options: some View {
         switch state.format.group {
+        case .tasks:
+            taskOptions
         case .visual:
             visualOptions
             if state.format == .svg {
@@ -333,7 +335,9 @@ private struct ExportSheet: View {
                 Text(
                     controller.canvas.type == .threatModel || !Stride.threats(controller.canvas).isEmpty
                         ? Loc.t("Threat table: element, STRIDE category, risk, mitigation, status.")
-                        : Loc.t("Task list: topic, path, status, priority, labels, note.")
+                        : Loc.t(
+                            "Every topic, with its task fields: status, priority, owner, dates, progress, dependencies."
+                        )
                 )
                 .font(.chrome(13)).foregroundStyle(.secondary)
             } else {
@@ -346,6 +350,61 @@ private struct ExportSheet: View {
                 )
                 .font(.chrome(13)).foregroundStyle(.secondary)
             }
+        }
+    }
+
+    /// Gantt image and PDF options, and notes for the task formats (M11).
+    @ViewBuilder var taskOptions: some View {
+        if state.format.isGantt {
+            HStack(spacing: 24) {
+                labelled(Loc.t("Rows")) {
+                    FileSegments(
+                        items: [(false, Loc.t("All tasks")), (true, Loc.t("Selected branches"))],
+                        selection: Binding(
+                            get: { state.gantt.selectionOnly }, set: { v in set { $0.gantt.selectionOnly = v } })
+                    )
+                    .frame(width: 300)
+                }
+                if state.format == .ganttPDF {
+                    labelled(Loc.t("Pages")) {
+                        FileSegments(
+                            items: [("fit", Loc.t("One page")), ("a4", "A4"), ("letter", Loc.t("Letter"))],
+                            selection: Binding(get: { state.gantt.paper }, set: { v in set { $0.gantt.paper = v } })
+                        )
+                        .frame(width: 300)
+                    }
+                } else {
+                    labelled(Loc.t("Scale")) {
+                        FileSegments(
+                            items: [(1.0, "1×"), (2.0, "2×"), (4.0, "4×")],
+                            selection: Binding(get: { state.gantt.scale }, set: { v in set { $0.gantt.scale = v } })
+                        )
+                        .frame(width: 200)
+                    }
+                }
+            }
+            if state.format == .ganttJPEG {
+                HStack {
+                    Text("Quality").frame(width: 70, alignment: .leading)
+                    Slider(
+                        value: Binding(get: { state.jpegQuality }, set: { v in set { $0.jpegQuality = v } }),
+                        in: 0.3...1
+                    )
+                    .frame(width: 260)
+                    .accessibilityLabel(Loc.t("Quality"))
+                    Text("\(Int(state.jpegQuality * 100))%").font(.chrome(12.5, design: .monospaced))
+                }
+            }
+            Text("The timeline scale follows the Gantt view (⌘= and ⌘- while it shows).").font(.chrome(13))
+                .foregroundStyle(.secondary)
+        } else {
+            Text(
+                state.format == .ics
+                    ? Loc.t("One all-day event per dated task, for Calendar or any calendar app.")
+                    : Loc.t(
+                        "Only to-dos and tasks: status, priority, owner, dates, working days, progress, dependencies.")
+            )
+            .font(.chrome(13)).foregroundStyle(.secondary)
         }
     }
 

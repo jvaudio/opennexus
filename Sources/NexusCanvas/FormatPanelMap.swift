@@ -581,6 +581,21 @@ struct DataTab: View {
     }
 
     var body: some View {
+        PanelSection(Loc.t("Task"), key: "task") {
+            let id = controller.selection.primary
+            let c = controller.canvas
+            if let line = TaskFormat.line(c, id, today: controller.todayDate) {
+                Text(line).font(.chrome(12.5)).fixedSize(horizontal: false, vertical: true)
+            } else {
+                Text("No dates, owner or progress yet.").font(.chrome(12)).foregroundStyle(.secondary)
+            }
+            let after = c.nodes[id]?.todo?.after.compactMap { c.nodes[$0.task]?.text } ?? []
+            if !after.isEmpty {
+                Text(Loc.f("After %@", after.joined(separator: ", "))).font(.chrome(12)).foregroundStyle(.secondary)
+            }
+            Button("Edit Task…  ⌃⌘T") { controller.openTaskEditor() }.buttonStyle(.bordered)
+        }
+        Divider()
         PanelSection(Loc.t("Metadata · pin to show on node"), key: "metadata") {
             ForEach(Array(fields.enumerated()), id: \.offset) { i, f in
                 HStack {

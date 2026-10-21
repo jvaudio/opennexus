@@ -158,6 +158,30 @@ extension CommandID {
     public static let quickCapture: CommandID = "app.quickCapture"
     public static let undo: CommandID = "edit.undo"
     public static let redo: CommandID = "edit.redo"
+    // Task planning (M11)
+    public static let taskDetails: CommandID = "task.details"
+    public static let showGantt: CommandID = "view.gantt"
+    public static let exportGantt: CommandID = "file.exportGantt"
+    public static let ganttPrevious: CommandID = "gantt.previous"
+    public static let ganttNext: CommandID = "gantt.next"
+    public static let ganttExtendUp: CommandID = "gantt.extendUp"
+    public static let ganttExtendDown: CommandID = "gantt.extendDown"
+    public static let ganttCollapse: CommandID = "gantt.collapse"
+    public static let ganttExpand: CommandID = "gantt.expand"
+    public static let ganttEarlier: CommandID = "gantt.earlier"
+    public static let ganttLater: CommandID = "gantt.later"
+    public static let ganttWeekEarlier: CommandID = "gantt.weekEarlier"
+    public static let ganttWeekLater: CommandID = "gantt.weekLater"
+    public static let ganttShorten: CommandID = "gantt.shorten"
+    public static let ganttLengthen: CommandID = "gantt.lengthen"
+    public static let ganttToggleDone: CommandID = "gantt.toggleDone"
+    public static func ganttProgress(_ n: Int) -> CommandID { CommandID(rawValue: "gantt.progress\(n)") }
+    public static let ganttLink: CommandID = "gantt.link"
+    public static let ganttUnlink: CommandID = "gantt.unlink"
+    public static let ganttScheduleToday: CommandID = "gantt.scheduleToday"
+    public static let ganttToday: CommandID = "gantt.today"
+    public static let ganttEditTask: CommandID = "gantt.editTask"
+    public static let ganttExit: CommandID = "gantt.exit"
     // Connect mode
     public static let connectConfirm: CommandID = "connect.confirm"
     public static let connectCancel: CommandID = "connect.cancel"
@@ -175,7 +199,7 @@ public enum DefaultCommands {
 
     public static let all: [CommandDescriptor] =
         create + edit + navigate + restructure + elements + style + view + ai
-        + file + connect + diagrams + outline + aiActions
+        + file + connect + diagrams + outline + aiActions + tasks
 
     static let aiActions: [C] = [
         C(.aiBreakdown, "Break Down", .ai, menu: .ai, note: "Phases with priority and duration, as ghosts"),
@@ -190,6 +214,50 @@ public enum DefaultCommands {
         C(.aiSticker, "Make a Sticker…", .ai, menu: .ai, note: "Image Playground"),
         C(.aiRecord, "Record to Map…", .ai, menu: .ai, note: "Live transcript; key points as ghosts"),
     ]
+
+    /// Task planning and the Gantt view (M11). Gantt keys live in their own scope (D146).
+    static let tasks: [C] =
+        [
+            C(
+                .taskDetails, "Task…", .elements, keys: [k("ctrl+cmd+t")], menu: .topic,
+                note: "Start, due, owner, progress, dependencies"),
+            C(
+                .showGantt, "Gantt", .view, scope: .global, keys: [k("cmd+4")], menu: .view,
+                note: "The canvas's tasks on a timeline"),
+            C(.exportGantt, "Export Gantt…", .file, scope: .global, menu: .file, note: "PNG, JPEG, PDF, CSV, Calendar"),
+            C(.ganttPrevious, "Previous Task", .navigate, scope: .gantt, keys: [k("up")], note: "Gantt"),
+            C(.ganttNext, "Next Task", .navigate, scope: .gantt, keys: [k("down")], note: "Gantt"),
+            C(.ganttExtendUp, "Extend Selection Up", .navigate, scope: .gantt, keys: [k("shift+up")], note: "Gantt"),
+            C(
+                .ganttExtendDown, "Extend Selection Down", .navigate, scope: .gantt, keys: [k("shift+down")],
+                note: "Gantt"),
+            C(.ganttCollapse, "Collapse Row", .navigate, scope: .gantt, keys: [k("left")], note: "Gantt"),
+            C(.ganttExpand, "Expand Row", .navigate, scope: .gantt, keys: [k("right")], note: "Gantt"),
+            C(
+                .ganttEarlier, "Move a Working Day Earlier", .restructure, scope: .gantt, keys: [k("opt+left")],
+                note: "Dependants follow"),
+            C(
+                .ganttLater, "Move a Working Day Later", .restructure, scope: .gantt, keys: [k("opt+right")],
+                note: "Dependants follow"),
+            C(.ganttWeekEarlier, "Move a Week Earlier", .restructure, scope: .gantt, keys: [k("opt+cmd+left")]),
+            C(.ganttWeekLater, "Move a Week Later", .restructure, scope: .gantt, keys: [k("opt+cmd+right")]),
+            C(.ganttShorten, "Shorten by a Working Day", .restructure, scope: .gantt, keys: [k("opt+shift+left")]),
+            C(.ganttLengthen, "Lengthen by a Working Day", .restructure, scope: .gantt, keys: [k("opt+shift+right")]),
+            C(.ganttToggleDone, "Mark Done", .elements, scope: .gantt, keys: [k("space")], note: "Gantt"),
+            C(
+                .ganttLink, "Link Tasks", .elements, scope: .gantt, keys: [k("cmd+l")],
+                note: "Selected tasks, finish to start, in row order"),
+            C(.ganttUnlink, "Remove Dependencies", .elements, scope: .gantt, keys: [k("shift+cmd+l")]),
+            C(
+                .ganttScheduleToday, "Schedule from Today", .elements, scope: .gantt, keys: [k("cmd+d")],
+                note: "Undated tasks start today"),
+            C(.ganttToday, "Go to Today", .navigate, scope: .gantt, keys: [k("t")]),
+            C(.ganttEditTask, "Edit Task…", .edit, scope: .gantt, keys: [k("return")], note: "Gantt"),
+            C(.ganttExit, "Back to Canvas", .view, scope: .gantt, keys: [k("esc")], note: "Keeps the selection"),
+        ]
+        + (0...9).map { n in
+            C(.ganttProgress(n), "Progress \(n * 10)%", .elements, scope: .gantt, keys: [k("\(n)")], note: "Gantt")
+        }
 
     static let outline: [C] = [
         C(.outlineSibling, "Add Sibling", .create, scope: .outline, keys: [k("return")], note: "Outline"),

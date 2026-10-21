@@ -251,6 +251,9 @@ public enum SettingsSchema {
                         [("generic", "Main Topic"), ("byType", "By type")], "byType"),
                     T("editing.umlFormat", "Auto-format UML members", true, "“+ name: Type” formats itself"),
                     T("editing.slashEmpty", "Slash menu at start of an empty node", true),
+                    T(
+                        "editing.taskDetails", "Show task details on topics", true,
+                        "Owner, dates and progress under a task’s title"),
                 ]),
             sec(
                 "Layout & guides", 0,

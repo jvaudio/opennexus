@@ -614,6 +614,7 @@ public enum Spoken {
         if let t = n.nodeType, let info = DiagramCatalog.info(t, in: c.type) { parts.append(Loc.t(info.name)) }
         if let b = branchColor { parts.append(Loc.f("Branch colour %@", b)) }
         if let todo = n.todo { parts.append(todo.done ? Loc.t("Done") : Loc.t("To do")) }
+        if let task = TaskFormat.spoken(c, id, today: TaskDate.today()) { parts.append(task) }
         if n.note != nil { parts.append(Loc.t("Has note")) }
         if prefs.string("accessibility.readEdges") == "source" {
             for r in c.relationships where r.from == id || r.to == id {

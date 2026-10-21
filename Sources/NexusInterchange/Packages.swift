@@ -465,11 +465,11 @@ public enum CSVFormat {
     }
 
     /// Threat table on threat models (element, STRIDE category, risk, mitigation, status);
-    /// a task list everywhere else, with M11's planning columns. `tasksOnly` leaves out
-    /// topics that aren't to-dos.
+    /// a task list everywhere else, with M11's planning columns. `tasksOnly` lists only
+    /// to-dos (on any canvas).
     public static func export(_ c: Canvas, tasksOnly: Bool = false) -> String {
         let threats = Stride.threats(c)
-        if c.type == .threatModel || !threats.isEmpty { return Stride.csv(threats) }
+        if !tasksOnly, c.type == .threatModel || !threats.isEmpty { return Stride.csv(threats) }
         var out = "Topic,Path,Status,Priority,Owner,Start,Due,Working days,Progress,Depends on,Labels,Note\n"
         let cal = c.workCalendar
         c.walk { id, n, d in

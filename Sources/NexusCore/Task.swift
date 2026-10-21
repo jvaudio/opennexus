@@ -188,6 +188,9 @@ public struct WorkCalendar: Sendable {
         skip = s.skipNonWorking && !workdays.isEmpty
     }
 
+    /// Working days in a week (5 when weekends are skipped, else 7).
+    public var weekLength: Int { skip ? workdays.count : 7 }
+
     public func isWorking(_ d: TaskDate) -> Bool {
         !skip || (workdays.contains(d.weekday) && !holidays.contains(d))
     }
@@ -195,14 +198,22 @@ public struct WorkCalendar: Sendable {
     /// `d` itself when it works, else the next working day.
     public func snapForward(_ d: TaskDate) -> TaskDate {
         var x = d
-        for _ in 0..<4000 where !isWorking(x) { x = x.adding(days: 1) }
+        var steps = 0
+        while !isWorking(x), steps < 4000 {
+            x = x.adding(days: 1)
+            steps += 1
+        }
         return x
     }
 
     /// `d` itself when it works, else the previous working day.
     public func snapBack(_ d: TaskDate) -> TaskDate {
         var x = d
-        for _ in 0..<4000 where !isWorking(x) { x = x.adding(days: -1) }
+        var steps = 0
+        while !isWorking(x), steps < 4000 {
+            x = x.adding(days: -1)
+            steps += 1
+        }
         return x
     }
 

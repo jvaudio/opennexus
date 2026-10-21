@@ -74,6 +74,8 @@ extension CanvasController {
         let b = Double(prefs.string("accessibility.minText")) ?? 0
         v.minFontSize = max(a, b)
         v.patterns = prefs.bool("accessibility.patterns")
+        v.taskDetails = prefs.bool("editing.taskDetails")
+        v.today = todayDate
     }
 
     /// High Contrast replaces the theme while macOS's Increase Contrast is on.

@@ -146,23 +146,32 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
 
     // MARK: Commands handled at window level
 
-    /// Canvas ⌘1, Outline ⌘2, Split ⌘3: selection is shared, so both panes stay linked.
+    /// Canvas ⌘1, Outline ⌘2, Split ⌘3, Gantt ⌘4: selection is shared, so the views stay linked.
     func applyViewMode(_ mode: CanvasViewMode) {
         for (_, cs) in modeConstraints { NSLayoutConstraint.deactivate(cs) }
-        NSLayoutConstraint.activate(modeConstraints[mode] ?? [])
-        outline.isHidden = mode == .canvas
+        NSLayoutConstraint.activate(modeConstraints[mode == .gantt ? .canvas : mode] ?? [])
+        outline.isHidden = mode == .canvas || mode == .gantt
         host.isHidden = mode == .outline
+        host.showGantt(mode == .gantt)
         window?.subtitle =
-            mode == .split ? Loc.t("Split view") : mode == .outline ? Loc.t("Outline") : window?.subtitle ?? ""
+            mode == .split
+            ? Loc.t("Split view")
+            : mode == .outline ? Loc.t("Outline") : mode == .gantt ? Loc.t("Gantt") : window?.subtitle ?? ""
         if mode == .canvas { updateSubtitle() }
         (window?.toolbar?.items.first { $0.itemIdentifier == .viewSwitcher } as? NSToolbarItemGroup)?.selectedIndex =
-            mode == .canvas ? 0 : mode == .outline ? 1 : 2
+            Self.viewModes.firstIndex(of: mode) ?? 0
         window?.layoutIfNeeded()
-        if mode == .canvas { window?.makeFirstResponder(host.canvasView) } else { outline.focus() }
+        switch mode {
+        case .canvas: window?.makeFirstResponder(host.canvasView)
+        case .gantt: host.ganttView.focus()
+        default: outline.focus()
+        }
     }
 
+    static let viewModes: [CanvasViewMode] = [.canvas, .outline, .split, .gantt]
+
     @objc func switchViewMode(_ sender: NSToolbarItemGroup) {
-        controller.viewMode = [.canvas, .outline, .split][max(0, min(2, sender.selectedIndex))]
+        controller.viewMode = Self.viewModes[max(0, min(Self.viewModes.count - 1, sender.selectedIndex))]
     }
 
     /// ZEN and Present hide every toolbar and panel (and go full screen).
@@ -347,9 +356,9 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         switch id {
         case .viewSwitcher:
             let group = NSToolbarItemGroup(
-                itemIdentifier: id, titles: [Loc.t("Canvas"), Loc.t("Outline"), Loc.t("Split")],
+                itemIdentifier: id, titles: [Loc.t("Canvas"), Loc.t("Outline"), Loc.t("Split"), Loc.t("Gantt")],
                 selectionMode: .selectOne,
-                labels: [Loc.t("Canvas"), Loc.t("Outline"), Loc.t("Split")], target: nil, action: nil)
+                labels: [Loc.t("Canvas"), Loc.t("Outline"), Loc.t("Split"), Loc.t("Gantt")], target: nil, action: nil)
             group.selectedIndex = 0
             group.target = self
             group.action = #selector(switchViewMode(_:))

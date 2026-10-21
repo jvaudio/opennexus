@@ -105,6 +105,10 @@ public struct SceneViewState: Equatable {
     /// Export scope (branch, selection): only these topics and what lies wholly among them
     /// are drawn; positions come from the full layout.
     public var isolate: Set<NodeID>?
+    /// Settings › Editing › Show task details on topics (M11), and the day that decides
+    /// what's overdue.
+    public var taskDetails = true
+    public var today: TaskDate?
 
     public struct Ghost: Equatable {
         /// Under a real topic, or under an earlier ghost (by index).
@@ -551,7 +555,13 @@ public struct SceneBuilder {
                 }
                 let labelsRow = labelWidths.reduce(0, +) + CGFloat(max(0, labelWidths.count - 1)) * 4
                 // Pinned metadata row.
-                let pinned = node.metadata.filter(\.pinned)
+                var pinned = node.metadata.filter(\.pinned)
+                // A task's owner, dates and progress share the pinned row (D147).
+                if view.taskDetails, node.todo != nil,
+                    let line = TaskFormat.line(canvas, id, today: view.today ?? TaskDate.today())
+                {
+                    pinned.append(MetadataField(key: "◷", value: line, pinned: true))
+                }
                 let pinnedText = pinned.map { "\($0.key) \($0.value)" }.joined(separator: "  ·  ")
                 let pinnedW =
                     pinned.isEmpty

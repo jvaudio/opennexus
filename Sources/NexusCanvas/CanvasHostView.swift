@@ -8,6 +8,8 @@ public final class CanvasHostView: NSView {
     /// The AI panel (a keyboard focus region, F6).
     public private(set) var aiPanelView: NSView?
     public let canvasView: CanvasView
+    /// The Gantt view (⌘4, M11): above the canvas, below every overlay.
+    public let ganttView: GanttView
     private var presentHost: NSView?
     private var overlays: [NSView] = []
 
@@ -34,6 +36,7 @@ public final class CanvasHostView: NSView {
 
     public init(controller: CanvasController) {
         canvasView = CanvasView(controller: controller)
+        ganttView = GanttView(controller: controller)
         super.init(frame: .zero)
         canvasView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(canvasView)
@@ -72,7 +75,10 @@ public final class CanvasHostView: NSView {
         let snapshotSheet = NSHostingView(rootView: SnapshotsSheetView(controller: controller))
         let shotBar = NSHostingView(rootView: MapShotBar(controller: controller))
         let shotHint = NSHostingView(rootView: MapShotHintHost(controller: controller))
-        let fileSheets: [NSView] = [exportSheet, printSheet, mergeSheet, passwordSheet, reportSheet, snapshotSheet]
+        let taskSheet = NSHostingView(rootView: TaskEditorSheetView(controller: controller))
+        let fileSheets: [NSView] = [
+            exportSheet, printSheet, mergeSheet, passwordSheet, reportSheet, snapshotSheet, taskSheet,
+        ]
         // Onboarding (M8).
         let tourBar = NSHostingView(rootView: TourOverlay(controller: controller, part: .bar))
         let tourPill = NSHostingView(rootView: TourOverlay(controller: controller, part: .pill))
@@ -94,7 +100,7 @@ public final class CanvasHostView: NSView {
             (aiSheet, "AI"),
             (exportSheet, Loc.t("Export")), (printSheet, Loc.t("Print")), (mergeSheet, Loc.t("Merge documents")),
             (passwordSheet, Loc.t("Password")), (reportSheet, Loc.t("Import report")),
-            (snapshotSheet, Loc.t("Recovery snapshots")),
+            (snapshotSheet, Loc.t("Recovery snapshots")), (taskSheet, Loc.t("Task")),
             (shotBar, Loc.t("Map Shot")), (shotHint, Loc.t("Map Shot hint")), (tourBar, Loc.t("Tutorial")),
             (tourPill, Loc.t("Tutorial paused")),
             (tourFinish, Loc.t("Tutorial finished")), (tipHost, Loc.t("Tip")),
@@ -171,6 +177,7 @@ public final class CanvasHostView: NSView {
             if let h = v as? NSHostingView<PasswordSheetView> { h.sizingOptions = [.intrinsicContentSize] }
             if let h = v as? NSHostingView<ImportReportView> { h.sizingOptions = [.intrinsicContentSize] }
             if let h = v as? NSHostingView<SnapshotsSheetView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<TaskEditorSheetView> { h.sizingOptions = [.intrinsicContentSize] }
             NSLayoutConstraint.activate([
                 v.centerXAnchor.constraint(equalTo: centerXAnchor),
                 v.centerYAnchor.constraint(equalTo: centerYAnchor),
@@ -239,6 +246,21 @@ public final class CanvasHostView: NSView {
             cheat.centerXAnchor.constraint(equalTo: centerXAnchor),
             cheat.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
+        ganttView.translatesAutoresizingMaskIntoConstraints = false
+        ganttView.isHidden = true
+        addSubview(ganttView, positioned: .above, relativeTo: canvasView)
+        NSLayoutConstraint.activate([
+            ganttView.leadingAnchor.constraint(equalTo: canvasView.leadingAnchor),
+            ganttView.trailingAnchor.constraint(equalTo: canvasView.trailingAnchor),
+            ganttView.topAnchor.constraint(equalTo: topAnchor),
+            ganttView.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
+    }
+
+    /// Shows the Gantt over the canvas (⌘4) or hides it again.
+    public func showGantt(_ on: Bool) {
+        ganttView.isHidden = !on
+        canvasView.setAccessibilityElement(!on)
     }
 
     required init?(coder: NSCoder) { fatalError() }

@@ -200,6 +200,7 @@ struct ShortcutsPane: View {
         case .editor: Loc.t("Edit")
         case .outline: Loc.t("Outline")
         case .connect: Loc.t("Connect")
+        case .gantt: Loc.t("Gantt")
         default: s.rawValue.capitalized
         }
     }

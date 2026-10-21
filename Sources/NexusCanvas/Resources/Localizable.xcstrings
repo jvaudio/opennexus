@@ -133,6 +133,10 @@
       "comment" : "Text with values filled in (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "%@ to %@" : {
+      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "%@ to %@, %@. Relationship." : {
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
@@ -158,6 +162,10 @@
       "extractionState" : "migrated"
     },
     "%lld × %lld pt · %@" : {
+      "comment" : "Text with values filled in (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
+    "%lld × %lld px" : {
       "comment" : "Text with values filled in (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
@@ -661,6 +669,10 @@
         }
       }
     },
+    "%lld percent" : {
+      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "%lld problems" : {
       "comment" : "Count phrase with plural variants (NexusDocument.swift)",
       "extractionState" : "migrated",
@@ -905,6 +917,54 @@
         }
       }
     },
+    "%lld task dependencies on missing or repeated topics" : {
+      "comment" : "Count phrase with plural variants (Repair.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld task dependency on a missing or repeated topic"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld task dependencies on missing or repeated topics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld tasks" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Files.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld task"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld tasks"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld topics" : {
       "comment" : "Count phrase with plural variants (CanvasAccessibility.swift)",
       "extractionState" : "migrated",
@@ -1024,6 +1084,34 @@
           }
         }
       }
+    },
+    "%lld working days" : {
+      "comment" : "Count phrase with plural variants (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld working day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld working days"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld%%" : {
+      "comment" : "Text with values filled in (TaskViews.swift)",
+      "extractionState" : "migrated"
     },
     "••••" : {
       "comment" : "Settings option",
@@ -1469,6 +1557,10 @@
       "comment" : "UI text (DFD.swift)",
       "extractionState" : "migrated"
     },
+    "A task can’t depend on itself" : {
+      "comment" : "UI text (Schedule.swift)",
+      "extractionState" : "migrated"
+    },
     "a topic" : {
       "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
@@ -1561,6 +1653,10 @@
       "comment" : "UI text (MouseAids.swift)",
       "extractionState" : "migrated"
     },
+    "Add a dependency" : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Add a hyperlink with ⇧⌘K or drop a file on the topic." : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
@@ -1571,6 +1667,10 @@
     },
     "Add a sibling (↩)" : {
       "comment" : "UI text (MouseAids.swift)",
+      "extractionState" : "migrated"
+    },
+    "Add a task it waits for…" : {
+      "comment" : "UI text (TaskViews.swift)",
       "extractionState" : "migrated"
     },
     "Add Branch" : {
@@ -1647,6 +1747,10 @@
     },
     "Advanced layout" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "After %@" : {
+      "comment" : "Text with values filled in (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "After following a topic link" : {
@@ -1739,6 +1843,10 @@
     },
     "All scopes" : {
       "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
+    "All tasks" : {
+      "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "Allow" : {
@@ -1859,6 +1967,10 @@
     },
     "Applied · ⌘Z undoes" : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Apply" : {
+      "comment" : "UI text (TaskViews.swift)",
       "extractionState" : "migrated"
     },
     "Apply · one undo" : {
@@ -2055,6 +2167,10 @@
     },
     "Back" : {
       "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Back to Canvas" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Background" : {
@@ -2309,6 +2425,10 @@
       "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
     },
+    "Calendar" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
     "Call" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
@@ -2323,6 +2443,14 @@
     },
     "Callout Style" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Can’t read the due date “%@”" : {
+      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
+    "Can’t read the start date “%@”" : {
+      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
     },
     "Cancel" : {
@@ -2517,6 +2645,10 @@
       "comment" : "UI text (AppPreferences.swift)",
       "extractionState" : "migrated"
     },
+    "Clear Dates" : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Clear Menu" : {
       "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
@@ -2594,6 +2726,10 @@
       "extractionState" : "migrated"
     },
     "Collapse \/ Parent" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Collapse Row" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
@@ -3189,6 +3325,10 @@
       "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
     },
+    "Days" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "Decision" : {
       "comment" : "Node type (Flowchart)",
       "extractionState" : "migrated"
@@ -3267,6 +3407,14 @@
     },
     "Denial of service" : {
       "comment" : "STRIDE category",
+      "extractionState" : "migrated"
+    },
+    "Dependants follow" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Depends on" : {
+      "comment" : "UI text (TaskViews.swift)",
       "extractionState" : "migrated"
     },
     "Depth parallax when zoomed out" : {
@@ -3409,6 +3557,10 @@
       "comment" : "Text with values filled in (CanvasView.swift)",
       "extractionState" : "migrated"
     },
+    "Due" : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Duplicate" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
@@ -3467,6 +3619,22 @@
     },
     "Edit summary topic" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edit task" : {
+      "comment" : "UI text (GanttView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edit Task" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edit Task…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Edit Task…  ⌃⌘T" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "Edit text" : {
@@ -3653,6 +3821,10 @@
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
+    "Every topic, with its task fields: status, priority, owner, dates, progress, dependencies." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Everything converted." : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
@@ -3667,6 +3839,10 @@
     },
     "Expand into a sprint plan" : {
       "comment" : "UI text (CanvasController+AI.swift)",
+      "extractionState" : "migrated"
+    },
+    "Expand Row" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Export" : {
@@ -3715,6 +3891,10 @@
     },
     "Export CSV" : {
       "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Export Gantt…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Export JSON" : {
@@ -3925,6 +4105,14 @@
       "comment" : "UI text (TourViews.swift)",
       "extractionState" : "migrated"
     },
+    "Finish to finish" : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Finish to start" : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Firewall" : {
       "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
@@ -4129,6 +4317,10 @@
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
+    "From %@" : {
+      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "Front" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
@@ -4151,6 +4343,26 @@
     },
     "Fwd" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Gantt" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Gantt · JPEG" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
+    "Gantt · PDF" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
+    "Gantt · PNG" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
+    "Gantt chart" : {
+      "comment" : "UI text (GanttView.swift)",
       "extractionState" : "migrated"
     },
     "General" : {
@@ -4195,6 +4407,10 @@
     },
     "Glow trail on new edges" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Go to Today" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Goals, paths and mitigations" : {
@@ -4701,6 +4917,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Keeps the selection" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
     "key" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
@@ -4725,6 +4945,10 @@
       "comment" : "UI text (TourViews.swift)",
       "extractionState" : "migrated"
     },
+    "Kind" : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Label" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -4736,6 +4960,30 @@
     "Labels" : {
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
+    },
+    "Lag %lld days" : {
+      "comment" : "Count phrase with plural variants (TaskViews.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Lag %lld day"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Lag %lld days"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "Lane %lld" : {
       "comment" : "Text with values filled in (SceneTechnical.swift)",
@@ -4775,6 +5023,14 @@
     },
     "Legal" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Lengthen by a Working Day" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Lengthen Task" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
     },
     "Lesson %lld of %lld" : {
@@ -4871,6 +5127,10 @@
     },
     "Link Image" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Link Tasks" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "LINKED FROM %lld TOPICS" : {
@@ -5083,6 +5343,10 @@
     },
     "Mark AI-created nodes with ✦ until edited" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Mark Done" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Markdown" : {
@@ -5301,6 +5565,10 @@
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
+    "Milestone on %@" : {
+      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "Mind Map" : {
       "comment" : "Diagram type",
       "extractionState" : "migrated"
@@ -5401,6 +5669,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Months" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "More" : {
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
@@ -5433,6 +5705,30 @@
       "comment" : "Cheat sheet column",
       "extractionState" : "migrated"
     },
+    "Move a Week Earlier" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move a Week Later" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move a working day earlier" : {
+      "comment" : "UI text (GanttView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Move a Working Day Earlier" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move a working day later" : {
+      "comment" : "UI text (GanttView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Move a Working Day Later" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Move around" : {
       "comment" : "UI text (Tour.swift)",
       "extractionState" : "migrated"
@@ -5445,12 +5741,24 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Move Earlier" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "Move Focus to Next Panel" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Move Focus to Previous Panel" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Move Later" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
+    "Move Task" : {
+      "comment" : "UI text (GanttView.swift)",
       "extractionState" : "migrated"
     },
     "Move to Lane" : {
@@ -5665,8 +5973,20 @@
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
+    "Next Task" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "No command matches “%@”" : {
       "comment" : "Text with values filled in (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "No dates" : {
+      "comment" : "UI text (GanttView.swift)",
+      "extractionState" : "migrated"
+    },
+    "No dates, owner or progress yet." : {
+      "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
     "No folders yet" : {
@@ -5717,6 +6037,10 @@
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "No tasks yet. Select a topic and press ⌃⌘T to give it dates, or ⌃0 to make it a to-do." : {
+      "comment" : "UI text (GanttView.swift)",
+      "extractionState" : "migrated"
+    },
     "No threat recorded" : {
       "comment" : "UI text (FormatPanelStride.swift)",
       "extractionState" : "migrated"
@@ -5742,7 +6066,7 @@
       "extractionState" : "migrated"
     },
     "None" : {
-      "comment" : "UI text (SettingsCards.swift)",
+      "comment" : "UI text (TaskViews.swift)",
       "extractionState" : "migrated"
     },
     "not %@" : {
@@ -5873,8 +6197,16 @@
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
+    "One all-day event per dated task, for Calendar or any calendar app." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "One image per first-level branch" : {
       "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
+    "One page" : {
+      "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "One PNG per main branch, named after it." : {
@@ -5882,6 +6214,10 @@
       "extractionState" : "migrated"
     },
     "One slide per step, as in Present." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Only to-dos and tasks: status, priority, owner, dates, working days, progress, dependencies." : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
@@ -6049,8 +6385,16 @@
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "Overdue" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "Owner" : {
-      "comment" : "UI text (FormatPanelStride.swift)",
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Owner, dates and progress under a task’s title" : {
+      "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
     "Package (.nexus)" : {
@@ -6249,6 +6593,10 @@
       "comment" : "Text with values filled in (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
+    "PNG, JPEG, PDF, CSV, Calendar" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
     "Pointer side" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
@@ -6325,6 +6673,10 @@
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
+    "Previous Task" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Pricing" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -6342,7 +6694,7 @@
       "extractionState" : "migrated"
     },
     "Priority" : {
-      "comment" : "UI text (CanvasController+Elements.swift)",
+      "comment" : "UI text (TaskViews.swift)",
       "extractionState" : "migrated"
     },
     "Priority %lld" : {
@@ -6402,7 +6754,47 @@
       "extractionState" : "migrated"
     },
     "Progress" : {
-      "comment" : "UI text (CanvasController+Elements.swift)",
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Progress 0%" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Progress 10%" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Progress 20%" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Progress 30%" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Progress 40%" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Progress 50%" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Progress 60%" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Progress 70%" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Progress 80%" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Progress 90%" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Progressive tips" : {
@@ -6669,6 +7061,14 @@
       "comment" : "UI text (CanvasController+AIMedia.swift)",
       "extractionState" : "migrated"
     },
+    "Remove Dependencies" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Remove dependency on %@" : {
+      "comment" : "Text with values filled in (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Remove field" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
@@ -6833,6 +7233,10 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "Resize Task" : {
+      "comment" : "UI text (GanttView.swift)",
+      "extractionState" : "migrated"
+    },
     "Resolves Xmind’s ⇧⌘L clash" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
@@ -6989,6 +7393,10 @@
       "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
     },
+    "Rows" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Rule check: %@" : {
       "comment" : "Text with values filled in (DiagramOverlays.swift)",
       "extractionState" : "migrated"
@@ -7093,6 +7501,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Schedule from Today" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Scope" : {
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
@@ -7193,12 +7605,24 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "Select two or more tasks to link" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "Select Up" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Selected branches" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Selected colour" : {
       "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Selected tasks, finish to start, in row order" : {
+      "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "Selection ring" : {
@@ -7267,6 +7691,10 @@
     },
     "Set Password…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Set Progress" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
     },
     "Settings" : {
@@ -7341,11 +7769,23 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Shorten by a Working Day" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Shorten Task" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "Show All" : {
       "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "Show model status chip in the toolbar" : {
+      "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Show task details on topics" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
@@ -7605,6 +8045,18 @@
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
     },
+    "Start to finish" : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Start to start" : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Start, due, owner, progress, dependencies" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
     "Status" : {
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
@@ -7849,8 +8301,20 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
-    "Task list: topic, path, status, priority, labels, note." : {
-      "comment" : "UI text (FileViews.swift)",
+    "Task" : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Task…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Tasks" : {
+      "comment" : "UI text (GanttView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Tasks · CSV" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Tech" : {
@@ -7905,6 +8369,10 @@
       "comment" : "UI text (Tour.swift)",
       "extractionState" : "migrated"
     },
+    "That dependency would make a loop" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "That topic no longer exists" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
@@ -7913,12 +8381,20 @@
       "comment" : "Text with values filled in (Tour.swift)",
       "extractionState" : "migrated"
     },
+    "The canvas's tasks on a timeline" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
     "The central topic can’t be deleted" : {
       "comment" : "UI text (TreeOperations.swift)",
       "extractionState" : "migrated"
     },
     "The central topic has no parent" : {
       "comment" : "UI text (TreeOperations.swift)",
+      "extractionState" : "migrated"
+    },
+    "The due date is before the start" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
     },
     "The flow from %@ to %@ has no label." : {
@@ -7930,6 +8406,18 @@
       "extractionState" : "migrated"
     },
     "The passwords don’t match." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "The selected tasks already have dates" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
+    "The task has no dates yet" : {
+      "comment" : "UI text (Schedule.swift)",
+      "extractionState" : "migrated"
+    },
+    "The timeline scale follows the Gantt view (⌘= and ⌘- while it shows)." : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
@@ -8141,6 +8629,10 @@
       "comment" : "Undo action name (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
+    "today" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "Today %lld:%02lld" : {
       "comment" : "Text with values filled in (ViewOverlays.swift)",
       "extractionState" : "migrated"
@@ -8151,6 +8643,10 @@
     },
     "Toggle Outline" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "tomorrow" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
     },
     "Toolbar" : {
@@ -8167,6 +8663,10 @@
     },
     "Topic" : {
       "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "Topic › Task…  ⌃⌘T" : {
+      "comment" : "UI text (TaskViews.swift)",
       "extractionState" : "migrated"
     },
     "Topic & word count in ZEN" : {
@@ -8313,6 +8813,10 @@
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "Type a date, today, tomorrow, +3 (working days), fri or 2 Nov. Only a due date makes a milestone." : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Type to filter" : {
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
@@ -8343,6 +8847,10 @@
     },
     "Unavailable by design: OpenNexus v1 has no network permission." : {
       "comment" : "Settings footnote",
+      "extractionState" : "migrated"
+    },
+    "Undated tasks start today" : {
+      "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "Under previous sibling" : {
@@ -8513,6 +9021,10 @@
       "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
+    "Weeks" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
     "Welcome to OpenNexus" : {
       "comment" : "UI text (Onboarding.swift)",
       "extractionState" : "migrated"
@@ -8585,6 +9097,10 @@
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "Working days" : {
+      "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Workstreams and tasks" : {
       "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
@@ -8619,6 +9135,10 @@
     },
     "Xmind’s four (Very Important, Important, Cross Out, Default) plus four for technical work." : {
       "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "yesterday" : {
+      "comment" : "UI text (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
     },
     "Yesterday" : {
