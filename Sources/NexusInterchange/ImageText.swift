@@ -1,17 +1,39 @@
 import CoreGraphics
 import Foundation
 import ImageIO
+import UniformTypeIdentifiers
 import Vision
 
-/// Reads the text in an image (PNG, JPEG, HEIC, TIFF, GIF, screenshots) or a PDF's first
-/// page with Vision, on this Mac (D150). Synchronous, so the CLI and the merge sheet can
+/// Reads the text in an image (PNG, JPEG, HEIC, TIFF, GIF, screenshots) or every page of a
+/// PDF with Vision, on this Mac (D150, D190). Synchronous, so the CLI and `Interchange` can
 /// import images like any other file; the app calls it off the main thread.
 public enum ImageText {
-    /// The longest side a PDF page renders at before recognition.
+    /// The longest page side a PDF renders at before recognition.
     static let pdfSide: CGFloat = 2400
+    /// Pages read from one PDF or multi-page TIFF; the import report counts the rest.
+    public static let maxPages = 100
 
-    public static func recognize(_ data: Data, name: String) throws -> RecognisedImage {
-        let (image, pages) = try decode(data, name: name)
+    /// Each page's text: a picture is one page, a PDF or multi-page TIFF up to `maxPages`.
+    /// `progress` gets (pages read, pages to read) after each page. Checks for cancellation
+    /// between pages.
+    public static func recognize(
+        _ data: Data, name: String, progress: (@Sendable (Int, Int) -> Void)? = nil
+    ) throws -> [RecognisedImage] {
+        let source = try Source(data, name: name)
+        let count = min(source.count, maxPages)
+        var pages: [RecognisedImage] = []
+        for i in 0..<count {
+            try Task.checkCancellation()
+            var page = try recognize(try source.image(i, name: name), name: name)
+            page.page = i + 1
+            page.pages = source.count
+            pages.append(page)
+            progress?(i + 1, count)
+        }
+        return pages
+    }
+
+    static func recognize(_ image: CGImage, name: String) throws -> RecognisedImage {
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = true
@@ -32,19 +54,51 @@ public enum ImageText {
                 best.string, x: r.minX * w, y: (1 - r.maxY) * h, width: r.width * w, height: r.height * h,
                 confidence: Double(best.confidence))
         }
-        return RecognisedImage(width: w, height: h, boxes: boxes, pages: pages)
+        return RecognisedImage(width: w, height: h, boxes: boxes)
     }
 
-    /// The picture to read, and how many pages the source has.
-    static func decode(_ data: Data, name: String) throws -> (CGImage, Int) {
-        if data.starts(with: Array("%PDF".utf8)) {
-            guard let provider = CGDataProvider(data: data as CFData), let pdf = CGPDFDocument(provider),
-                let page = pdf.page(at: 1)
-            else { throw ImportError.invalid(name, "not a readable PDF") }
-            if pdf.isEncrypted && !pdf.isUnlocked { throw ImportError.encrypted(name) }
+    /// The pages to read: a PDF's, a TIFF's, or one picture's.
+    struct Source {
+        var pdf: CGPDFDocument?
+        var images: CGImageSource?
+        var count: Int
+        /// One scale for every PDF page, so text sizes compare across pages.
+        var scale: CGFloat = 1
+
+        init(_ data: Data, name: String) throws {
+            if data.starts(with: Array("%PDF".utf8)) {
+                guard let provider = CGDataProvider(data: data as CFData), let pdf = CGPDFDocument(provider),
+                    pdf.numberOfPages > 0
+                else { throw ImportError.invalid(name, "not a readable PDF") }
+                if pdf.isEncrypted && !pdf.isUnlocked { throw ImportError.encrypted(name) }
+                self.pdf = pdf
+                count = pdf.numberOfPages
+                let longest =
+                    (1...min(count, ImageText.maxPages)).compactMap { pdf.page(at: $0) }
+                    .map { $0.getBoxRect(.cropBox) }.map { max($0.width, $0.height) }.max() ?? 1
+                scale = pdfSide / max(longest, 1)
+                return
+            }
+            guard let src = CGImageSourceCreateWithData(data as CFData, nil), CGImageSourceGetCount(src) > 0
+            else { throw ImportError.invalid(name, "not a readable image") }
+            images = src
+            // A TIFF's images are pages; a GIF's are animation frames, read as one picture.
+            let type = CGImageSourceGetType(src).map { $0 as String }
+            count = type.flatMap { UTType($0) }?.conforms(to: .tiff) == true ? CGImageSourceGetCount(src) : 1
+        }
+
+        func image(_ i: Int, name: String) throws -> CGImage {
+            if let images {
+                guard
+                    let image = CGImageSourceCreateImageAtIndex(
+                        images, i, [kCGImageSourceShouldAllowFloat: false] as CFDictionary)
+                else { throw ImportError.invalid(name, "not a readable image") }
+                return image
+            }
+            guard let pdf, let page = pdf.page(at: i + 1) else { throw ImportError.invalid(name, "not a readable PDF") }
             let box = page.getBoxRect(.cropBox)
-            let scale = pdfSide / max(box.width, box.height, 1)
-            let size = CGSize(width: (box.width * scale).rounded(), height: (box.height * scale).rounded())
+            let size = CGSize(
+                width: max(1, (box.width * scale).rounded()), height: max(1, (box.height * scale).rounded()))
             guard
                 let ctx = CGContext(
                     data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 0,
@@ -57,23 +111,23 @@ public enum ImageText {
             ctx.translateBy(x: -box.minX, y: -box.minY)
             ctx.drawPDFPage(page)
             guard let image = ctx.makeImage() else { throw ImportError.invalid(name, "couldn’t render the PDF page") }
-            return (image, pdf.numberOfPages)
+            return image
         }
-        guard let src = CGImageSourceCreateWithData(data as CFData, nil),
-            let image = CGImageSourceCreateImageAtIndex(
-                src, 0, [kCGImageSourceShouldAllowFloat: false] as CFDictionary)
-        else { throw ImportError.invalid(name, "not a readable image") }
-        return (image, 1)
     }
 }
 
 extension ImageOutline {
-    /// Reads an image and rebuilds its structure with the layout heuristics alone.
-    public static func read(_ data: Data, name: String) throws -> ImageOutline {
-        let recognised = try ImageText.recognize(data, name: name)
+    /// Reads an image or every page of a PDF and rebuilds the structure with the layout
+    /// heuristics alone.
+    public static func read(
+        _ data: Data, name: String, progress: (@Sendable (Int, Int) -> Void)? = nil
+    ) throws -> ImageImport {
+        let pages = try ImageText.recognize(data, name: name, progress: progress)
         let base = ((name as NSString).lastPathComponent as NSString).deletingPathExtension
-        let outline = build(recognised, title: base)
-        guard !outline.units.isEmpty else { throw ImportError.invalid(name, "no text found in the image") }
-        return outline
+        let result = build(pages: pages, title: base)
+        guard result.outlines.contains(where: { !$0.units.isEmpty }) else {
+            throw ImportError.invalid(name, "no text found in the image")
+        }
+        return result
     }
 }

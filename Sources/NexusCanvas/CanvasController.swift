@@ -97,6 +97,8 @@ public final class CanvasController {
     }
     public internal(set) var printState: PrintLayout.Options?
     public internal(set) var mergeState: MergeState?
+    /// Pictures the merge sheet is reading, by name (D191).
+    @ObservationIgnored var mergeReads: [String: Task<Void, Never>] = [:]
     public internal(set) var importReport: ImportReport?
     /// File › Set Password… sheet (the app encrypts on save).
     public var passwordSheet = false

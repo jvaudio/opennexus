@@ -40,6 +40,26 @@ import Testing
         #expect(h.canvas.nodes.count == 1)
     }
 
+    /// M19: a PDF's pages land together, the first filling an untouched canvas, as one undo.
+    @Test func everyPageLandsAsOneUndo() {
+        let h = harness(.blank())
+        let pages = ["Kickoff", "Timeline"].enumerated().map { i, title in
+            RecognisedImage(
+                width: 600, height: 800,
+                boxes: [
+                    TextBox(title, x: 40, y: 60, width: 200, height: 40),
+                    TextBox("• One", x: 60, y: 140, width: 80, height: 16),
+                ], page: i + 1, pages: 2)
+        }
+        h.controller.addImageCanvas(ImageOutline.build(pages: pages, title: "deck").imported(source: "deck.pdf"))
+        #expect(h.store.model.canvasOrder.count == 2)
+        #expect(h.store.model.orderedCanvases.map(\.title) == ["Kickoff", "Timeline"])
+        #expect(h.controller.canvasID == h.store.model.canvasOrder[0])
+        #expect(h.undo.stack.undoStack.count == 1)
+        h.undo.undo(h.store)
+        #expect(h.store.model.canvasOrder.count == 1 && h.canvas.nodes.count == 1)
+    }
+
     @Test func addsACanvasNextToAMap() {
         let h = harness(launchPlanDocument())
         let first = h.controller.canvasID
@@ -49,6 +69,37 @@ import Testing
         #expect(h.undo.stack.undoStack.count == 1)
         h.undo.undo(h.store)
         #expect(h.store.model.canvasOrder == [first])
+    }
+
+    /// M19: the merge sheet reads a picture off the main thread. Its row shows progress at
+    /// once, Merge waits for it, and removing the row stops the reading.
+    @Test func mergeSheetReadsPicturesInTheBackground() async throws {
+        let h = harness(launchPlanDocument())
+        var o = ImageExporter.Options()
+        o.scale = 2
+        let png = ImageExporter.png(try #require(ImageExporter.image(launchPlanDocument(), canvas: "c1", o)))
+        let dir = FileManager.default.temporaryDirectory.appending(path: "merge-\(UUID().uuidString)")
+        try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let url = dir.appending(path: "plan.png")
+        try png.write(to: url)
+
+        h.controller.openMerge()
+        let removed = h.controller.addMergeSource(url)
+        h.controller.removeMergeSource("plan.png")
+        await removed?.value
+        #expect(h.controller.mergeState?.sources.isEmpty == true, "a removed picture doesn't come back")
+
+        let task = try #require(h.controller.addMergeSource(url))
+        let row = try #require(h.controller.mergeState?.sources.first)
+        #expect(row.progress == 0 && row.kind == "IM" && h.controller.mergeState?.reading == true)
+        h.controller.applyMerge()
+        #expect(h.controller.mergeState != nil, "Merge waits for the reading")
+        await task.value
+        let read = try #require(h.controller.mergeState?.sources.first)
+        #expect(read.progress == nil && read.canvases.count == 1 && read.canvases[0].nodes.count == 16)
+        h.controller.applyMerge()
+        #expect(h.store.model.canvasOrder.count == 3, "the picture's canvas and the map of content")
     }
 
     @Test func readsPicturesFromThePasteboard() throws {
@@ -84,7 +135,20 @@ import Testing
         for doc in [launchPlanDocument(), offsiteDocument()] { try roundTrip(doc, structure) }
     }
 
-    func roundTrip(_ doc: DocumentModel, _ structure: LayoutStructure) throws {
+    /// M19: a fishbone (Ishikawa) diagram reads back as one, head on either side: the
+    /// categories at the ends of the bones, nearest the head first, with their causes.
+    @Test(arguments: [LayoutStructure.fishboneLeft, .fishboneRight])
+    func exportedFishboneReadsBack(_ structure: LayoutStructure) throws {
+        let template = try #require(TemplateLibrary.all.first { $0.id == "fishbone" }).document()
+        for doc in [launchPlanDocument(), template] {
+            var m = doc
+            m.canvases["c1"]!.type = .fishbone
+            let c = try roundTrip(m, structure)
+            #expect(c.type == .fishbone && c.layout.structure == structure, "\(structure.rawValue)")
+        }
+    }
+
+    @discardableResult func roundTrip(_ doc: DocumentModel, _ structure: LayoutStructure) throws -> Canvas {
         var m = doc
         m.canvases["c1"]!.layout.structure = structure
         var o = ImageExporter.Options()
@@ -94,6 +158,7 @@ import Testing
         let c = im.canvases[0]
         #expect(outline(c, c.root) == outline(m.canvases["c1"]!, m.canvases["c1"]!.root), "\(structure.rawValue)")
         #expect(im.report.format == "Image")
+        return c
     }
 }
 

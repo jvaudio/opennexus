@@ -229,6 +229,208 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
     }
 }
 
+/// M19: every PDF page, fishbones, command lists and other scripts, on synthetic boxes.
+@Suite struct ImagePagesTests {
+    static func page(_ n: Int, of pages: Int, _ boxes: [TextBox]) -> RecognisedImage {
+        RecognisedImage(width: 600, height: 800, boxes: boxes, page: n, pages: pages)
+    }
+
+    @Test func slidesBecomeACanvasEach() {
+        let pages = [
+            Self.page(
+                1, of: 3,
+                [
+                    box("Kickoff", 40, 60, 200, 40), box("• Goals", 60, 140, 90, 16), box("• Team", 60, 164, 80, 16),
+                    box("1", 296, 770, 8, 14),
+                ]),
+            Self.page(2, of: 3, [box("2", 296, 770, 8, 14)]),
+            Self.page(
+                3, of: 3,
+                [
+                    box("Timeline", 40, 60, 220, 40), box("• Beta", 60, 140, 80, 16), box("• Launch", 60, 164, 96, 16),
+                    box("Page 3 of 3", 260, 770, 80, 14),
+                ]),
+        ]
+        let r = ImageOutline.build(pages: pages, title: "deck")
+        #expect(!r.continuous && r.outlines.map(\.canvas.title) == ["Kickoff", "Timeline"])
+        #expect(outlineText(r.outlines[1].canvas.root) == "Timeline\n  Beta\n  Launch\n")
+        #expect(r.blank == 1 && r.furniture == 3)
+        let im = r.imported(source: "deck.pdf")
+        #expect(im.canvases.count == 2 && im.report.sheets == 3)
+        #expect(
+            im.report.lines.contains("Pages with no text")
+                && im.report.lines.contains("Page numbers, headers and footers ×3"))
+    }
+
+    @Test func aContinuingDocumentIsOneList() {
+        let pages = [
+            Self.page(
+                1, of: 2,
+                [
+                    box("Field Guide", 40, 10, 200, 14), box("Birds", 40, 60, 220, 40), box("Waders", 40, 120, 100, 20),
+                    box("• Heron", 60, 150, 80, 16), box("• Stork", 60, 174, 80, 16),
+                ]),
+            Self.page(
+                2, of: 2,
+                [
+                    box("Field Guide", 40, 10, 200, 14), box("• Crane", 60, 60, 80, 16),
+                    box("Songbirds", 40, 100, 120, 20),
+                    box("• Robin", 60, 130, 80, 16),
+                ]),
+        ]
+        let r = ImageOutline.build(pages: pages, title: "guide")
+        #expect(r.continuous && r.outlines.count == 1 && r.furniture == 2)
+        #expect(
+            outlineText(r.outlines[0].canvas.root) == """
+                Birds
+                  Waders
+                    Heron
+                    Stork
+                    Crane
+                  Songbirds
+                    Robin
+
+                """)
+    }
+
+    /// Boxes as Vision reads OpenNexus's own fishbone export (half size): bones lean right
+    /// toward a head on the right.
+    static let fishbone = RecognisedImage(
+        width: 924, height: 402,
+        boxes: [
+            box("Risks", 181, 91, 39, 13), box("Competitor response", 60, 131, 134, 14),
+            box("Channels", 357, 61, 66, 15), box("Product Hunt", 292, 95, 88, 19), box("Newsletter", 330, 131, 71, 16),
+            box("GA • Jan", 345, 197, 56, 16), box("Beta • Nov", 315, 230, 68, 16), box("Timeline", 360, 294, 62, 19),
+            box("Positioning", 585, 60, 79, 16), box("Developers", 546, 98, 74, 16), box("Teams", 592, 132, 43, 14),
+            box("Launch plan", 738, 177, 117, 21), box("Annual discount", 533, 195, 105, 16),
+            box("Pro", 593, 229, 24, 14),
+            box("Free tier", 549, 261, 56, 15), box("Pricing", 585, 325, 52, 19),
+        ])
+
+    @Test func fishboneBecomesAnIshikawaDiagram() {
+        let o = ImageOutline.build(Self.fishbone, title: "x")
+        #expect(o.layout == .fishbone && o.canvas.type == .fishbone && o.canvas.structure == .fishboneLeft)
+        let expected = """
+            Launch plan
+              Positioning
+                Developers
+                Teams
+              Pricing
+                Free tier
+                Pro
+                Annual discount
+              Channels
+                Product Hunt
+                Newsletter
+              Timeline
+                Beta · Nov
+                GA · Jan
+              Risks
+                Competitor response
+
+            """
+        #expect(outlineText(o.canvas.root) == expected)
+        // Mirrored, the head is on the left and the bones lean left.
+        var mirrored = Self.fishbone
+        for i in mirrored.boxes.indices { mirrored.boxes[i].x = 924 - mirrored.boxes[i].maxX }
+        let m = ImageOutline.build(mirrored, title: "x")
+        #expect(m.canvas.structure == .fishboneRight && outlineText(m.canvas.root) == expected)
+    }
+
+    @Test func columnsOfTextAreNotAFishbone() {
+        // A right map: branches stacked in one column beside the root aren't bones.
+        let image = RecognisedImage(
+            width: 900, height: 500,
+            boxes: [
+                box("Trip", 40, 240, 80, 26), box("Packing", 200, 100, 80, 16), box("Tent", 330, 80, 40, 16),
+                box("Stove", 330, 120, 50, 16), box("Food", 200, 200, 50, 16), box("Pasta", 330, 190, 50, 16),
+                box("Route", 200, 300, 60, 16), box("Maps", 330, 290, 50, 16), box("Budget", 200, 400, 70, 16),
+                box("Fuel", 330, 390, 40, 16),
+            ])
+        let o = ImageOutline.build(image, title: "x")
+        #expect(o.layout == .map && o.canvas.type == .mindmap)
+        #expect(outlineText(o.canvas.root).hasPrefix("Trip\n  Packing\n    Tent\n    Stove\n  Food\n    Pasta\n"))
+    }
+
+    /// Commands in a monospaced font, each starting in lowercase, keep their own lines;
+    /// prose that wraps still joins.
+    @Test func commandListsKeepTheirLines() {
+        func mono(_ text: String, _ y: Double) -> TextBox { box(text, 40, y, Double(text.count) * 9.6, 16) }
+        let image = RecognisedImage(
+            width: 600, height: 400,
+            boxes: [
+                box("Setup", 40, 20, 100, 28),
+                mono("git clone https://example.com/app", 64), mono("cd app", 84), mono("npm install", 104),
+                mono("npm test", 124),
+                box("Notes", 40, 170, 100, 28),
+                box("Run the tests before every push, and keep", 40, 214, 400, 16),
+                box("the build green", 40, 234, 150, 16),
+            ])
+        let o = ImageOutline.build(image, title: "x")
+        #expect(
+            outlineText(o.canvas.root) == """
+                x
+                  Setup
+                    git clone https://example.com/app
+                    cd app
+                    npm install
+                    npm test
+                  Notes
+                    Run the tests before every push, and keep the build green
+
+                """)
+        // Short lowercase lines in a proportional font: the next one would have fitted.
+        let short = RecognisedImage(
+            width: 600, height: 300,
+            boxes: [
+                box("Errands", 40, 20, 140, 28), box("call the bank", 40, 64, 120, 16),
+                box("post the parcel", 40, 84, 140, 16), box("buy milk and bread for the week", 40, 104, 300, 16),
+            ])
+        #expect(ImageOutline.build(short, title: "x").canvas.root.children.count == 3)
+    }
+
+    @Test func rightToLeftTextIsMirrored() {
+        // Arabic, as Vision reads it: right-aligned, bullets indented from the right.
+        let image = RecognisedImage(
+            width: 700, height: 360,
+            boxes: [
+                box("خطة المشروع", 441, 36, 217, 43), box("الأهداف", 586, 96, 78, 24),
+                box("• إطلاق النسخة الأولى", 422, 134, 200, 30), box("• الفريق", 544, 174, 79, 31),
+                box("المخاطر", 582, 218, 82, 24),
+            ])
+        let o = ImageOutline.build(image, title: "x")
+        #expect(
+            outlineText(o.canvas.root) == """
+                خطة المشروع
+                  الأهداف
+                    إطلاق النسخة الأولى
+                    الفريق
+                  المخاطر
+
+                """)
+    }
+
+    @Test func verticalTextReadsInColumnsRightToLeft() {
+        // Japanese set vertically: a title column at the right, then a heading and its items.
+        let image = RecognisedImage(
+            width: 500, height: 600,
+            boxes: [
+                box("旅行の計画", 420, 30, 40, 200), box("持ち物", 340, 34, 26, 96), box("テント", 260, 66, 24, 90),
+                box("食料", 200, 66, 24, 60), box("費用", 140, 34, 26, 64),
+            ])
+        let o = ImageOutline.build(image, title: "x")
+        #expect(
+            outlineText(o.canvas.root) == """
+                旅行の計画
+                  持ち物
+                    テント
+                    食料
+                  費用
+
+                """)
+    }
+}
+
 /// Real Vision on a picture drawn here: an indented list with a large title.
 @Suite struct ImageVisionTests {
     static func render(_ lines: [(String, CGFloat, CGFloat)], size: CGSize) -> Data {
@@ -276,7 +478,7 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         #expect(c.nodes[food]?.children.compactMap { c.nodes[$0]?.text } == ["Pasta"])
     }
 
-    @Test func readsAPDFsFirstPage() throws {
+    @Test func readsEveryPDFPage() throws {
         let data = NSMutableData()
         var box = CGRect(x: 0, y: 0, width: 500, height: 300)
         let pdf = try #require(CGContext(consumer: CGDataConsumer(data: data)!, mediaBox: &box, nil))
@@ -297,6 +499,16 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         let c = im.canvases[0]
         #expect(c.nodes[c.root]?.text == "Garden")
         #expect(c.nodes[c.root]?.children.compactMap { c.nodes[$0]?.text } == ["Vegetables", "Herbs"])
-        #expect(im.report.lines.contains("PDF pages after the first"))
+        // The second page opens with a title of its own, so it's a canvas of its own.
+        #expect(im.canvases.count == 2 && im.canvases[1].title == "Second page" && im.report.sheets == 2)
+        final class Calls: @unchecked Sendable {
+            let lock = NSLock()
+            var list: [String] = []
+        }
+        let calls = Calls()
+        _ = try ImageText.recognize(data as Data, name: "garden.pdf") { done, total in
+            calls.lock.withLock { calls.list.append("\(done)/\(total)") }
+        }
+        #expect(calls.list == ["1/2", "2/2"])
     }
 }
