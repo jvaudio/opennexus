@@ -9,7 +9,8 @@ import UniformTypeIdentifiers
 @MainActor
 public enum ImageExporter {
     public enum Scope: String, CaseIterable, Sendable {
-        case canvas, selection, branch
+        /// `zone`: one zone and its contents (D155); offered only when exporting a zone.
+        case canvas, selection, branch, zone
         public var title: String { rawValue.capitalized }
     }
 
@@ -22,6 +23,8 @@ public enum ImageExporter {
         public var scope: Scope = .canvas
         /// Topics for selection scope; the branch top for branch scope.
         public var selection: [NodeID] = []
+        /// The zone for zone scope.
+        public var zone: String?
         public var scale: Double = 2
         public var background: Background = .theme
         public var padding: Double = 48
@@ -49,7 +52,15 @@ public enum ImageExporter {
         case .selection:
             let ids = o.selection.filter { c.nodes[$0] != nil }
             return ids.isEmpty ? nil : Set(ids)
+        case .zone:
+            guard let z = c.zones.first(where: { $0.id == o.zone }) else { return nil }
+            return Set(z.members.flatMap { c.subtree($0) })
         }
+    }
+
+    /// The zone a zone-scoped export keeps, frame and all, even when it holds nothing.
+    static func keptZone(_ c: Canvas, _ o: Options) -> String? {
+        o.scope == .zone && c.zones.contains { $0.id == o.zone } ? o.zone : nil
     }
 
     /// An offscreen controller showing `canvas` with the export's scope and theme.
@@ -60,6 +71,7 @@ public enum ImageExporter {
         controller.rendersThemeAsNamed = true
         controller.switchCanvas(to: id)
         controller.isolate = keep(controller.canvas, o)
+        controller.isolateZone = keptZone(controller.canvas, o)
         controller.rebuildScene()
         return controller
     }
@@ -291,7 +303,8 @@ public enum ImageExporter {
 @MainActor
 public enum PrintLayout {
     public enum Content: String, CaseIterable, Sendable {
-        case canvas, branch, outline
+        /// `zone` is offered only when printing a zone (D155).
+        case canvas, branch, outline, zone
         public var title: String { rawValue.capitalized }
     }
 
@@ -310,6 +323,8 @@ public enum PrintLayout {
     public struct Options: Equatable, Sendable {
         public var content: Content = .canvas
         public var branch: NodeID?
+        /// The zone for zone content.
+        public var zone: String?
         public var paper: Paper = .a4
         public var landscape = true
         /// Fit the map on one page, or print at actual size.
@@ -356,8 +371,10 @@ public enum PrintLayout {
             let ctx = CGContext(consumer: consumer, mediaBox: &box, nil)
         else { return (Data(), 0) }
         var pages = 0
-        let title =
+        let zone = o.content == .zone ? canvas.zones.first { $0.id == o.zone } : nil
+        var title =
             o.title.isEmpty ? (canvas.title.isEmpty ? canvas.nodes[canvas.root]?.text ?? "" : canvas.title) : o.title
+        if let zone, o.title.isEmpty, !zone.title.isEmpty { title += " – " + zone.title }
         let dateText = o.date.formatted(date: .abbreviated, time: .omitted)
 
         func begin(_ n: Int, of total: Int) {
@@ -404,6 +421,9 @@ public enum PrintLayout {
             if o.content == .branch, let b = o.branch {
                 io.scope = .branch
                 io.selection = [b]
+            } else if let zone {
+                io.scope = .zone
+                io.zone = zone.id
             }
             let rect = ImageExporter.contentRect(model, canvas: id, io)
             let area = printable(o)
@@ -435,11 +455,17 @@ public enum PrintLayout {
         if o.notesAppendix {
             var notes: [(String, String)] = []
             let parents = canvas.parentMap()
-            canvas.walk { id, n, _ in
-                guard let t = n.note?.text, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
-                let path = (canvas.path(to: id, parents: parents).compactMap { canvas.nodes[$0]?.text } + [n.text])
-                    .joined(separator: " › ")
-                notes.append((path, t))
+            // A zone's appendix holds only the notes of its own topics.
+            let tops = zone.map(\.members) ?? [canvas.root]
+            for top in tops where canvas.nodes[top] != nil {
+                canvas.walk(from: top) { id, n, _ in
+                    guard let t = n.note?.text, !t.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                        return
+                    }
+                    let path = (canvas.path(to: id, parents: parents).compactMap { canvas.nodes[$0]?.text } + [n.text])
+                        .joined(separator: " › ")
+                    notes.append((path, t))
+                }
             }
             if !notes.isEmpty { appendix(notes, begin: begin, text: text, o: o, ctx: ctx) }
         }

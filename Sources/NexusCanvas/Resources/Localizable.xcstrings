@@ -3725,6 +3725,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Export Zone…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Export:" : {
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
@@ -5881,6 +5885,14 @@
       "comment" : "UI text (DocumentFiles.swift)",
       "extractionState" : "migrated"
     },
+    "One sheet per canvas, a row per topic in outline order: level, path, topic, note, labels, markers and to-do." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "One sheet per canvas, a row per topic in outline order: level, path, topic, note, labels, markers, to-do, type, STRIDE, risk and status." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "One slide per step, as in Present." : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
@@ -6334,6 +6346,14 @@
       "extractionState" : "migrated"
     },
     "Print Branch…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Print Branch… and Print Zone… (⌘K, or right-click a zone) print only that part." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Print Zone…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
@@ -6933,10 +6953,6 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
-    "Right-click a branch or zone › Print Branch prints only that part." : {
-      "comment" : "UI text (FileViews.swift)",
-      "extractionState" : "migrated"
-    },
     "right-click image" : {
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
@@ -7151,6 +7167,10 @@
     },
     "Select a topic with an image (drag one onto a topic)." : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Select a zone first" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Select All Topics" : {
@@ -7931,6 +7951,10 @@
     },
     "The passwords don’t match." : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "The selected zone and its contents" : {
+      "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "Theme" : {

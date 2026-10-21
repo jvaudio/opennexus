@@ -1788,6 +1788,23 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         if !moved, let menu = menu(for: event) { NSMenu.popUpContextMenu(menu, with: event, for: self) }
     }
 
+    /// A zone's context menu: Export Zone… and Print Zone… (D155). Elsewhere the canvas has
+    /// no context menu yet.
+    public override func menu(for event: NSEvent) -> NSMenu? {
+        let w = camera.toWorld(convert(event.locationInWindow, from: nil))
+        guard node(at: convert(event.locationInWindow, from: nil)) == nil, case .zone(let id)? = elements.hitTest(w)
+        else { return super.menu(for: event) }
+        controller.selectElement(.zone(id))
+        let menu = NSMenu()
+        for (title, command) in [(Loc.t("Export Zone…"), CommandID.exportZone), (Loc.t("Print Zone…"), .printZone)] {
+            let item = NSMenuItem(title: title, action: #selector(performRegistryCommand(_:)), keyEquivalent: "")
+            item.target = self
+            item.representedObject = command.rawValue
+            menu.addItem(item)
+        }
+        return menu
+    }
+
     public override func scrollWheel(with event: NSEvent) {
         cameraTween = nil
         noteCameraMoved()

@@ -296,4 +296,144 @@ import Testing
         h.controller.runExport(ExportState.remembered(.opml))
         #expect(saved?.1 == "Launch plan.opml")
     }
+
+    // MARK: M13: zones export and print on their own; Excel
+
+    /// A zone far from the main tree holding a floating topic with a child, plus an
+    /// empty zone.
+    func zoneHarness() throws -> (CanvasHarness, zone: String, empty: String) {
+        let h = harness()
+        let ids = try #require(
+            h.controller.perform("Zones") { e -> (String, String) in
+                let top = e.addFloating(at: CanvasPoint(x: 2000, y: 1400), text: "Parking lot")
+                let later = try e.addChild(of: top, text: "Later idea")
+                e.update(later) { $0.note = Note(text: "Revisit after GA.") }
+                let z = e.addZone(
+                    title: "Ideas", origin: CanvasPoint(x: 1960, y: 1340), width: 320, height: 200, members: [top])
+                let empty = e.addZone(title: "Empty", origin: CanvasPoint(x: -2000, y: -1400), width: 200, height: 150)
+                return (z, empty)
+            })
+        h.store.commitDocument("Note", focus: "c1") { d in
+            let id = d.canvases["c1"]!.nodes.first { $0.value.text == "Pricing" }!.key
+            d.canvases["c1"]!.nodes[id]!.note = Note(text: "Keep the free tier generous.")
+        }
+        return (h, ids.0, ids.1)
+    }
+
+    @Test func zoneExportCropsToTheZone() throws {
+        let (h, zone, empty) = try zoneHarness()
+        let m = h.store.model
+        var o = ImageExporter.Options()
+        o.scale = 1
+        let whole = try #require(ImageExporter.image(m, canvas: "c1", o))
+        o.scope = .zone
+        o.zone = zone
+        let rect = try #require(h.controller.scene.zones.first { $0.zone.id == zone }?.rect)
+        #expect(ImageExporter.contentRect(m, canvas: "c1", o) == rect.insetBy(dx: -48, dy: -48).integral)
+        let img = try #require(ImageExporter.image(m, canvas: "c1", o))
+        #expect(abs(CGFloat(img.width) - (rect.width + 96)) <= 2 && img.width < whole.width)
+        // The zone's topics are drawn; the main tree isn't.
+        let svg = SVGExporter.export(m, canvas: "c1", o, SVGExporter.Options())
+        #expect(svg.contains("Parking lot") && svg.contains("Later idea") && svg.contains("Ideas"))
+        #expect(!svg.contains("Pricing") && !svg.contains("Positioning"))
+        #expect(try XMLDocument(data: Data(svg.utf8)).rootElement() != nil)
+        // An empty zone still exports its frame.
+        o.zone = empty
+        let emptyRect = try #require(h.controller.scene.zones.first { $0.zone.id == empty }?.rect)
+        let frame = try #require(ImageExporter.image(m, canvas: "c1", o))
+        #expect(abs(CGFloat(frame.width) - (emptyRect.width + 96)) <= 2)
+        // PDF goes through the same scope.
+        let pdf = try #require(PDFDocument(data: PrintLayout.singlePage(m, canvas: "c1", ImageExporter.Options())))
+        o.zone = zone
+        let zonePDF = try #require(PDFDocument(data: PrintLayout.singlePage(m, canvas: "c1", o)))
+        #expect(
+            zonePDF.page(at: 0)!.bounds(for: .mediaBox).width < pdf.page(at: 0)!.bounds(for: .mediaBox).width)
+    }
+
+    @Test func zoneCommandsMenuAndPanelEntryPoints() throws {
+        let (h, zone, _) = try zoneHarness()
+        // No zone in play: the commands are hidden from ⌘K.
+        h.controller.select(node(h, "Pricing"))
+        #expect(!h.controller.canPerform(.exportZone) && !h.controller.canPerform(.printZone))
+        h.press("cmd+k")
+        h.type("zone")
+        #expect(!h.controller.paletteRows.contains { $0.id == CommandID.exportZone.rawValue })
+        h.controller.closePalette()
+        // A topic inside the zone is enough.
+        h.controller.select(node(h, "Later idea"))
+        #expect(h.controller.targetZone == zone)
+        h.press("cmd+k")
+        h.type("zone")
+        let rows = h.controller.paletteRows.map(\.id)
+        #expect(rows.contains(CommandID.exportZone.rawValue) && rows.contains(CommandID.printZone.rawValue))
+        h.controller.closePalette()
+
+        // Right-clicking the zone's title bar: its context menu.
+        let rect = try #require(h.controller.scene.zones.first { $0.zone.id == zone }?.rect)
+        let v = h.host.canvasView
+        let at = v.convert(v.camera.toView(CGPoint(x: rect.minX + 60, y: rect.minY + 12)), to: nil)
+        let event = try #require(
+            NSEvent.mouseEvent(
+                with: .rightMouseDown, location: at, modifierFlags: [], timestamp: 0,
+                windowNumber: h.window.windowNumber, context: nil, eventNumber: 0, clickCount: 1, pressure: 1))
+        let menu = try #require(v.menu(for: event))
+        #expect(menu.items.map(\.title) == ["Export Zone…", "Print Zone…"])
+        #expect(h.controller.selectedElement == .zone(zone))
+        #expect(v.validateMenuItem(menu.items[0]))
+
+        // Export Zone…: the sheet opens on a visual format, scoped to the zone.
+        v.performRegistryCommand(menu.items[0])
+        let s = try #require(h.controller.exportState)
+        #expect(s.format.isVisual && s.image.scope == .zone && s.image.zone == zone)
+        // Switching format keeps the zone; the scope isn't remembered for next time.
+        var svg = s
+        svg.format = .svg
+        h.controller.setExport(svg)
+        #expect(h.controller.exportState?.image.scope == .zone)
+        var png = h.controller.exportState!
+        png.format = .png
+        h.controller.setExport(png)
+        var saved: (Data, String)?
+        h.controller.onSaveFile = { saved = ($0, $1) }
+        h.controller.runExport(h.controller.exportState!)
+        #expect(saved?.1 == "Launch plan – Ideas.png")
+        #expect(saved.map { NSImage(data: $0.0) != nil } == true)
+        #expect(ExportState.remembered(.png, prefs: h.controller.prefs).image.scope != .zone)
+
+        // Print Zone…: the zone alone, its own notes in the appendix.
+        h.controller.selectElement(.zone(zone))
+        #expect(h.controller.perform(.printZone))
+        let p = try #require(h.controller.printState)
+        #expect(p.content == .zone && p.zone == zone)
+        var po = p
+        po.notesAppendix = true
+        po.fitPage = true
+        let out = h.controller.printPDF(po)
+        #expect(out.pages == 2, "the zone's page and its notes")
+        let text = PDFDocument(data: out.data)?.string ?? ""
+        #expect(text.contains("Launch plan – Ideas") && text.contains("Parking lot › Later idea"))
+        #expect(!text.contains("Pricing"), "only the zone's notes")
+        h.controller.closePrint()
+
+        // The Format panel's zone section has both buttons.
+        h.controller.exportZone(zone)
+        #expect(h.controller.exportState?.image.zone == zone)
+        h.controller.closeExport()
+        h.controller.printZone(zone)
+        #expect(h.controller.printState?.zone == zone)
+    }
+
+    @Test func excelExportFromTheSheet() throws {
+        let h = harness()
+        var s = ExportState.remembered(.excel)
+        s.format = .excel
+        let data = try #require(h.controller.exportData(s))
+        let files = try Zip.read(data)
+        #expect(files["xl/workbook.xml"] != nil && files["xl/worksheets/sheet1.xml"] != nil)
+        #expect(h.controller.exportText(s)?.hasPrefix("Level\tPath\tTopic") == true)
+        var saved: (Data, String)?
+        h.controller.onSaveFile = { saved = ($0, $1) }
+        h.controller.runExport(s)
+        #expect(saved?.1 == "Launch plan.xlsx")
+    }
 }

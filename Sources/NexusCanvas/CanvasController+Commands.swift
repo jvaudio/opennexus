@@ -60,6 +60,8 @@ extension CanvasController {
             .exportBranchPNG: { $0.exportBranch(.png) },
             .exportBranchSVG: { $0.exportBranch(.svg) },
             .exportBranchMarkdown: { $0.exportBranch(.markdown) },
+            .exportZone: { $0.exportZone() },
+            .printZone: { $0.printZone() },
             .splitByBranch: { $0.splitByBranch() },
             .newCanvasFromTopic: { $0.newCanvasFromTopic() },
             .duplicateCanvas: { $0.duplicateCanvas() },
@@ -167,6 +169,8 @@ extension CanvasController {
         switch mode {
         case .select:
             guard handlers[id] != nil else { return false }
+            // Zone commands need a zone: selected, or holding the selected topic.
+            if id == .exportZone || id == .printZone, targetZone == nil { return false }
             return canvas.nodes[selection.primary] != nil
         case .edit:
             return editorHandlers[id] != nil

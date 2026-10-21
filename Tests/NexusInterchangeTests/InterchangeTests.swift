@@ -183,6 +183,89 @@ import Testing
         #expect(back.root.text == "Launch plan" && back.root.children.map(\.text).count == 5)
     }
 
+    /// A worksheet's cells as rows of text, by cell reference (inline strings and numbers).
+    func cells(_ xml: Data) throws -> [[String]] {
+        let root = try #require(try XMLDocument(data: xml).rootElement())
+        var rows: [[String]] = []
+        for row in try root.nodes(forXPath: "./*[local-name()='sheetData']/*[local-name()='row']") {
+            var out: [String] = []
+            for c in try row.nodes(forXPath: "./*[local-name()='c']") {
+                guard let c = c as? XMLElement, let ref = c.attribute(forName: "r")?.stringValue else { continue }
+                let col = ref.prefix { $0.isLetter }.unicodeScalars.reduce(0) { $0 * 26 + Int($1.value) - 64 } - 1
+                while out.count < col { out.append("") }
+                out.append(c.stringValue ?? "")
+            }
+            rows.append(out)
+        }
+        return rows
+    }
+
+    @Test func excelExport() throws {
+        let doc = DocumentModel(canvases: [launchPlan(), threatModel()])
+        let data = ExcelFormat.export(doc)
+        let files = try Zip.read(data)
+        #expect(
+            Set(files.keys) == [
+                "[Content_Types].xml", "_rels/.rels", "docProps/core.xml", "xl/workbook.xml",
+                "xl/_rels/workbook.xml.rels", "xl/styles.xml", "xl/worksheets/sheet1.xml", "xl/worksheets/sheet2.xml",
+            ])
+        for (name, part) in files { #expect(try XMLDocument(data: part).rootElement() != nil, "\(name) parses") }
+        let types = String(decoding: files["[Content_Types].xml"]!, as: UTF8.self)
+        #expect(types.contains("/xl/worksheets/sheet2.xml") && types.contains("spreadsheetml.sheet.main+xml"))
+        let workbook = String(decoding: files["xl/workbook.xml"]!, as: UTF8.self)
+        #expect(workbook.contains("name=\"Launch plan\"") && workbook.contains("name=\"Payments\""))
+        let rels = String(decoding: files["xl/_rels/workbook.xml.rels"]!, as: UTF8.self)
+        #expect(rels.contains("Target=\"worksheets/sheet1.xml\"") && rels.contains("Target=\"styles.xml\""))
+
+        // Mind map: one row per topic in outline order, header first.
+        let plan = try cells(files["xl/worksheets/sheet1.xml"]!)
+        #expect(plan[0] == ExcelFormat.columns)
+        #expect(plan.count == 1 + launchPlan().nodes.count)
+        #expect(
+            plan.dropFirst().map { $0[2] }.prefix(5) == [
+                "Launch plan", "Positioning", "Developers", "Teams", "Pricing",
+            ])
+        let pricing = try #require(plan.first { $0.count > 2 && $0[2] == "Pricing" })
+        #expect(pricing[0] == "1" && pricing[1] == "Launch plan" && pricing[3] == "Keep the free tier generous.")
+        #expect(pricing[4] == "Q4")
+        let pro = try #require(plan.first { $0.count > 2 && $0[2] == "Pro" })
+        #expect(pro[0] == "2" && pro[1] == "Launch plan › Pricing" && pro[5] == "priority-1" && pro[6] == "open")
+        // The level column holds numbers.
+        let sheet1 = String(decoding: files["xl/worksheets/sheet1.xml"]!, as: UTF8.self)
+        #expect(sheet1.contains("<c r=\"A3\"><v>1</v></c>") && sheet1.contains("state=\"frozen\""))
+
+        // Technical canvas: type, STRIDE, risk and status.
+        let threats = try cells(files["xl/worksheets/sheet2.xml"]!)
+        #expect(threats[0] == ExcelFormat.columns + ExcelFormat.technicalColumns)
+        let key = try #require(threats.first { $0.count > 2 && $0[2] == "Stolen API key" })
+        #expect(Array(key[7...]) == ["Threat", "Spoofing", "High", "Open"])
+        let api = try #require(threats.first { $0.count > 2 && $0[2] == "Payments API" })
+        #expect(api[7] == "Process")
+    }
+
+    @Test func excelSheetNamesAndUnsafeText() throws {
+        var a = launchPlan()
+        a.title = "Q3: plan/[draft]?"
+        a.id = "a"
+        var b = launchPlan()
+        b.title = "q3 plan" + String(repeating: "x", count: 40)
+        b.id = "b"
+        var c = launchPlan()
+        c.title = "Q3 plandraft"
+        c.id = "c"
+        let root = c.root
+        c.nodes[root]!.text = "Bell \u{07} and <tags> & \"quotes\""
+        let files = try Zip.read(ExcelFormat.export(DocumentModel(canvases: [a, b, c])))
+        let workbook = try XMLDocument(data: files["xl/workbook.xml"]!)
+        let names = try workbook.nodes(forXPath: "//*[local-name()='sheet']").compactMap {
+            ($0 as? XMLElement)?.attribute(forName: "name")?.stringValue
+        }
+        #expect(names == ["Q3 plandraft", "q3 plan" + String(repeating: "x", count: 24), "Q3 plandraft (2)"])
+        #expect(names.allSatisfy { $0.count <= 31 })
+        let rows = try cells(files["xl/worksheets/sheet3.xml"]!)
+        #expect(rows[1][2] == "Bell  and <tags> & \"quotes\"")
+    }
+
     @Test func noWatermarkAnywhere() {
         for (_, c) in Self.samples {
             let doc = DocumentModel(canvases: [c])

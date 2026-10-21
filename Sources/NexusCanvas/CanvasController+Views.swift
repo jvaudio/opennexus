@@ -96,6 +96,7 @@ extension CanvasController {
     func currentViewState() -> SceneViewState {
         var v = SceneViewState()
         v.isolate = isolate
+        v.isolateZone = isolateZone
         applyPreferenceView(&v)
         if let g = ghosts {
             v.ghosts = g.ideas.map { SceneViewState.Ghost(parent: g.anchor, parentGhost: $0.parentGhost, idea: $0) }

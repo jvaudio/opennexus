@@ -448,6 +448,10 @@ struct ZoneSection: View {
                 }
                 .frame(maxWidth: 200)
             }
+            HStack {
+                Button("Export Zone…") { controller.exportZone(zone.id) }
+                Button("Print Zone…") { controller.printZone(zone.id) }
+            }
             Button("Remove zone (keep content)") {
                 controller.perform(Loc.t("Remove Zone")) { $0.removeZone(zone.id) }
                 controller.selectElement(nil)

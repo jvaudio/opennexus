@@ -86,6 +86,8 @@ public final class CanvasController {
     @ObservationIgnored var idleSuggestion: Task<Void, Never>?
     /// Export scope: only these topics are drawn (offscreen exporters set it).
     @ObservationIgnored public var isolate: Set<NodeID>?
+    /// Zone-scoped exports: this zone is drawn with what `isolate` keeps.
+    @ObservationIgnored public var isolateZone: String?
     /// An AI+ sheet (translate, mask, sticker, record, remove background).
     public internal(set) var aiSheet: AISheet?
     // Files, import and export (M7).

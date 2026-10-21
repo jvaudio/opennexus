@@ -144,6 +144,8 @@ extension CommandID {
     public static let exportBranchPNG: CommandID = "file.exportBranchPNG"
     public static let exportBranchSVG: CommandID = "file.exportBranchSVG"
     public static let exportBranchMarkdown: CommandID = "file.exportBranchMarkdown"
+    public static let exportZone: CommandID = "file.exportZone"
+    public static let printZone: CommandID = "file.printZone"
     public static let splitByBranch: CommandID = "file.splitByBranch"
     public static let duplicateCanvas: CommandID = "canvas.duplicate"
     public static let renameCanvas: CommandID = "canvas.rename"
@@ -416,6 +418,8 @@ public enum DefaultCommands {
         C(.exportBranchPNG, "Export Branch as PNG…", .file, menu: .file),
         C(.exportBranchSVG, "Export Branch as SVG…", .file, menu: .file),
         C(.exportBranchMarkdown, "Export Branch as Markdown…", .file, menu: .file),
+        C(.exportZone, "Export Zone…", .file, menu: .file, note: "The selected zone and its contents"),
+        C(.printZone, "Print Zone…", .file, menu: .file, note: "The selected zone and its contents"),
         C(.splitByBranch, "Export Split by Main Branch…", .file, scope: .global, menu: .file),
         C(.duplicateCanvas, "Duplicate Canvas", .file, scope: .global, menu: .file),
         C(.renameCanvas, "Rename Canvas…", .file, scope: .global, menu: .file),

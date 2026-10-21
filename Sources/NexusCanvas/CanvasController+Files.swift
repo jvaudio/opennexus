@@ -12,7 +12,7 @@ import UniformTypeIdentifiers
 public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
     case png, jpeg, svg, pdf
     case mermaid, plantuml, drawio, json, opml
-    case markdown, word, powerpoint, keynote, csv
+    case markdown, word, powerpoint, keynote, csv, excel
 
     public var id: String { rawValue }
 
@@ -44,6 +44,7 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
         case .powerpoint: "PowerPoint"
         case .keynote: Loc.t("Keynote")
         case .csv: Loc.t("CSV · threats")
+        case .excel: "Excel"
         }
     }
 
@@ -63,6 +64,7 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
         case .powerpoint: "pptx"
         case .keynote: "key"
         case .csv: "csv"
+        case .excel: "xlsx"
         }
     }
 
@@ -167,7 +169,9 @@ extension CanvasController {
         s.image.selection = selection.nodes
         if let old = exportState, s.format != old.format {
             old.remember(in: prefs.defaults)
+            let zone = s.image.scope == .zone
             s = ExportState.remembered(s.format, keeping: s, prefs: prefs)
+            if zone { s.image.scope = .zone }
         }
         exportState = s
     }
@@ -207,6 +211,8 @@ extension CanvasController {
         case .opml: return OPMLFormat.export(c, from: top)
         case .markdown: return MarkdownFormat.export(c, from: top, options: s.markdown)
         case .csv: return CSVFormat.export(c)
+        // Tab-separated rows: the preview, and Copy pastes straight into a spreadsheet.
+        case .excel: return ExcelFormat.tsv(c)
         case .svg: return SVGExporter.export(exportModel(s), canvas: canvasID, s.image, s.svg)
         default: return nil
         }
@@ -296,6 +302,7 @@ extension CanvasController {
         case .powerpoint, .keynote:
             let slides = SlideExporter.renderSlides(m, canvas: canvasID)
             return SlideExporter.pptx(slides, titles: self.slides.filter { !$0.skipped }.map(\.title))
+        case .excel: return ExcelFormat.export(m)
         default:
             return exportText(s).map { Data($0.utf8) }
         }
@@ -337,7 +344,8 @@ extension CanvasController {
         let name =
             exportFileName
             + (s.image.scope == .branch
-                ? " – " + (canvas.nodes[s.image.selection.first ?? canvas.root]?.text ?? "") : "")
+                ? " – " + (canvas.nodes[s.image.selection.first ?? canvas.root]?.text ?? "")
+                : s.image.scope == .zone ? " – " + (canvas.zones.first { $0.id == s.image.zone }?.title ?? "") : "")
         exportState = nil
         onSaveFile?(data, name + "." + (s.format == .json && s.yaml ? "yaml" : s.format.fileExt))
         if s.format == .keynote { showToast(Loc.t("Keynote opens this .pptx directly")) }
@@ -377,6 +385,43 @@ extension CanvasController {
         s.image.scope = .branch
         s.image.selection = [selection.primary]
         runExport(s)
+    }
+
+    // MARK: Zones (D155)
+
+    /// The zone a zone command acts on: the selected zone, else the zone holding the
+    /// selected topic.
+    public var targetZone: String? {
+        if case .zone(let id)? = selectedElement { return id }
+        let parents = canvas.parentMap()
+        var top = selection.primary
+        while let p = parents[top] { top = p }
+        return canvas.zones.first { $0.members.contains(top) }?.id
+    }
+
+    /// Export Zone…: the export sheet on a visual format, scoped to the zone.
+    public func exportZone(_ id: String? = nil) {
+        guard let zone = id ?? targetZone, canvas.zones.contains(where: { $0.id == zone }) else {
+            showToast(Loc.t("Select a zone first"))
+            return
+        }
+        let last = ExportState.lastFormat(in: prefs.defaults)
+        openExport(last.isVisual ? last : .png)
+        exportState?.image.scope = .zone
+        exportState?.image.zone = zone
+        exportState?.pdfScope = "canvas"
+        exportState?.split = false
+    }
+
+    /// Print Zone…: the print sheet showing only the zone.
+    public func printZone(_ id: String? = nil) {
+        guard let zone = id ?? targetZone, canvas.zones.contains(where: { $0.id == zone }) else {
+            showToast(Loc.t("Select a zone first"))
+            return
+        }
+        openPrint()
+        printState?.content = .zone
+        printState?.zone = zone
     }
 
     /// ⌃⌘C: the selection (or its branch) as an image; Map Shot owns ⌃⌘C while it's open.
@@ -888,7 +933,7 @@ extension ExportState {
         s.mask = masking == "always" || (masking == "ask" && (current?.mask ?? false))
         s.askMask = masking == "ask"
         let d = prefs.defaults.dictionary(forKey: "\(defaultsKey).\(format.rawValue)") ?? [:]
-        if let v = d["scope"] as? String, let sc = ImageExporter.Scope(rawValue: v) { s.image.scope = sc }
+        if let v = d["scope"] as? String, let sc = ImageExporter.Scope(rawValue: v), sc != .zone { s.image.scope = sc }
         if let v = d["scale"] as? Double { s.image.scale = v }
         if let v = d["background"] as? String, let b = ImageExporter.Background(rawValue: v) { s.image.background = b }
         if let v = d["padding"] as? Double { s.image.padding = v }
@@ -909,7 +954,9 @@ extension ExportState {
     /// Per-format choices live beside the preferences, so tests stay isolated.
     func remember(in store: UserDefaults) {
         var d: [String: Any] = [
-            "scope": image.scope.rawValue, "scale": image.scale, "background": image.background.rawValue,
+            // Zone scope belongs to one Export Zone…, so it isn't remembered.
+            "scope": image.scope == .zone ? "canvas" : image.scope.rawValue, "scale": image.scale,
+            "background": image.background.rawValue,
             "padding": image.padding, "quality": jpegQuality, "outline": svg.outlineText, "metadata": svg.metadata,
             "headings": markdown.headings, "notes": markdown.notes, "mermaidBlock": markdown.mermaidBlock, "yaml": yaml,
             "pretty": prettyJSON, "pdfScope": pdfScope,

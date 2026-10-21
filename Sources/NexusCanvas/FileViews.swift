@@ -146,7 +146,8 @@ private struct ExportSheet: View {
     }
 
     func refresh() {
-        text = state.format.isText && state.format != .svg ? controller.exportText(state) : nil
+        text =
+            (state.format.isText && state.format != .svg) || state.format == .excel ? controller.exportText(state) : nil
         preview = text == nil ? controller.exportPreview(state) : nil
         if state.format == .svg { text = nil }
         sizeLine = controller.exportSizeLine(state)
@@ -336,6 +337,17 @@ private struct ExportSheet: View {
                         : Loc.t("Task list: topic, path, status, priority, labels, note.")
                 )
                 .font(.chrome(13)).foregroundStyle(.secondary)
+            } else if state.format == .excel {
+                Text(
+                    DiagramCatalog.isTechnical(controller.canvas.type)
+                        ? Loc.t(
+                            "One sheet per canvas, a row per topic in outline order: level, path, topic, note, labels, markers, to-do, type, STRIDE, risk and status."
+                        )
+                        : Loc.t(
+                            "One sheet per canvas, a row per topic in outline order: level, path, topic, note, labels, markers and to-do."
+                        )
+                )
+                .font(.chrome(13)).foregroundStyle(.secondary)
             } else {
                 Text(
                     state.format == .word
@@ -354,7 +366,10 @@ private struct ExportSheet: View {
             FileSegments(
                 items: [(ImageExporter.Scope.canvas, Loc.t("Canvas")), (.branch, Loc.t("Branch"))],
                 selection: Binding(
-                    get: { state.image.scope == .selection ? .branch : state.image.scope },
+                    get: {
+                        state.image.scope == .selection
+                            ? .branch : state.image.scope == .zone ? .canvas : state.image.scope
+                    },
                     set: { v in set { $0.image.scope = v } })
             )
             .frame(width: 300)
@@ -369,7 +384,9 @@ private struct ExportSheet: View {
             }
             GridRow {
                 FileSegments(
-                    items: ImageExporter.Scope.allCases.map { ($0, $0.title) },
+                    items: ImageExporter.Scope.allCases.filter { $0 != .zone || state.image.zone != nil }.map {
+                        ($0, $0.title)
+                    },
                     selection: Binding(get: { state.image.scope }, set: { v in set { $0.image.scope = v } }))
                 FileSegments(
                     items: [(1.0, "1×"), (2.0, "2×"), (3.0, "3×"), (4.0, "4×")],
@@ -572,7 +589,9 @@ private struct PrintSheet: View {
                 VStack(alignment: .leading, spacing: 12) {
                     section("CONTENT")
                     FileSegments(
-                        items: PrintLayout.Content.allCases.map { ($0, $0.title) }, selection: $options.content)
+                        items: PrintLayout.Content.allCases.filter { $0 != .zone || options.zone != nil }.map {
+                            ($0, $0.title)
+                        }, selection: $options.content)
                     section("PAGE")
                     HStack {
                         Picker("", selection: $options.paper) {
@@ -591,7 +610,7 @@ private struct PrintSheet: View {
                     Toggle("Background colour", isOn: $options.background)
                     Toggle("Notes as appendix", isOn: $options.notesAppendix)
                     Toggle("Header: title · date", isOn: $options.header)
-                    Text("Right-click a branch or zone › Print Branch prints only that part.")
+                    Text("Print Branch… and Print Zone… (⌘K, or right-click a zone) print only that part.")
                         .font(.chrome(13)).foregroundStyle(.secondary)
                     Spacer()
                 }
