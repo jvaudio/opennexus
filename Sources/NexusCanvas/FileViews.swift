@@ -228,12 +228,24 @@ private struct ExportSheet: View {
         .frame(height: 520)
     }
 
-    /// Xmind (M15): what the file holds, and what doesn't carry over.
+    /// Xmind (M15): which Xmind (M18), what the file holds, and what doesn't carry over.
     var xmindOptions: some View {
-        let r = XmindWriter.report(controller.exportModel(state))
+        let r = controller.xmindReport(state)
         return VStack(alignment: .leading, spacing: 6) {
+            FileSegments(
+                items: [(false, Loc.t("Xmind 2020 or later")), (true, Loc.t("XMind 8"))],
+                selection: Binding(get: { state.xmind8 }, set: { v in set { $0.xmind8 = v } })
+            )
+            .frame(width: 320)
+            .accessibilityLabel(Loc.t("Xmind version"))
             Text(
-                "Every canvas as an Xmind sheet, for Xmind 2020 or later: topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, the legend and task info."
+                state.xmind8
+                    ? Loc.t(
+                        "Every canvas as an XMind 8 sheet (content.xml): topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, the legend, task info and styles."
+                    )
+                    : Loc.t(
+                        "Every canvas as an Xmind sheet, for Xmind 2020 or later: topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, the legend, task info, styles and the theme."
+                    )
             )
             .font(.chrome(13)).foregroundStyle(.secondary)
             .fixedSize(horizontal: false, vertical: true)

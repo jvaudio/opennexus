@@ -42,6 +42,7 @@ public enum XmindFormat {
             if let cx = files["comments.xml"], let root = try? XML.parse(cx, name: "comments.xml") {
                 x.pending = XmindComments.byTopic(xml: root)
             }
+            if let sx = files["styles.xml"], let root = try? XML.parse(sx, name: "styles.xml") { x.readStyles(root) }
             sheets = try x.sheets(xml, name: name)
             x.reportUnplaced()
             report = x.report
@@ -342,13 +343,44 @@ public enum XmindFormat {
         var assets: [String: Data] = [:]
         var groups: [ICanvas.Group] = []
         var summaries: [ICanvas.Brace] = []
+        var callouts: [ICanvas.Bubble] = []
         /// Comments from `comments.xml`, by topic id, until their topic is read.
         var pending: [String: [TopicComment]] = [:]
+        /// `styles.xml`: each style's properties by id, and each theme as Zen shapes it
+        /// (`{id, title, map: {properties}, centralTopic: {properties}, …}`).
+        var styleProps: [String: [String: Any]] = [:]
+        var themes: [String: [String: Any]] = [:]
 
         mutating func reportUnplaced() {
             let n = pending.values.reduce(0) { $0 + $1.count }
             if n > 0 { report.skip("Comment on a sheet or a missing topic", n) }
         }
+
+        /// Reads XMind 8's `styles.xml`: styles hold one `*-properties` element whose
+        /// attributes are the same keys Zen uses; themes name a default style per family.
+        mutating func readStyles(_ root: XMLElement) {
+            for st in root.descendants("style") {
+                guard let id = st.attr("id") else { continue }
+                if st.attr("type") == "theme" { continue }
+                var props: [String: Any] = [:]
+                for p in st.kids() where (p.localName ?? "").hasSuffix("-properties") {
+                    for a in p.attributes ?? [] { props[a.name ?? ""] = a.stringValue ?? "" }
+                }
+                if !props.isEmpty { styleProps[id] = props }
+            }
+            for st in root.descendants("style") where st.attr("type") == "theme" {
+                guard let id = st.attr("id") else { continue }
+                var t: [String: Any] = ["id": id, "title": st.attr("name") ?? ""]
+                for d in st.descendants("default-style") {
+                    guard let family = d.attr("style-family"), let sid = d.attr("style-id"), let p = styleProps[sid]
+                    else { continue }
+                    t[family] = ["properties": p]
+                }
+                themes[id] = t
+            }
+        }
+
+        func style(_ e: XMLElement) -> [String: Any]? { e.attr("style-id").flatMap { styleProps[$0] } }
 
         mutating func sheets(_ xml: Data, name: String) throws -> [ICanvas] {
             let root = try XML.parse(xml, name: name)
@@ -359,6 +391,7 @@ public enum XmindFormat {
             report.sheets += 1
             groups = []
             summaries = []
+            callouts = []
             let rt = s.kid("topic") ?? XMLElement(name: "topic")
             var root = topic(rt)
             var floating: [ITopic] = []
@@ -382,10 +415,14 @@ public enum XmindFormat {
             ic.floating = floating
             ic.groups = groups
             ic.summaries = summaries
+            ic.callouts = callouts
             for r in s.kid("relationships")?.kids("relationship") ?? [] {
                 guard let a = r.attr("end1"), let b = r.attr("end2") else { continue }
-                ic.links.append(ICanvas.Link(from: a, to: b, label: r.kid("title")?.stringValue ?? ""))
+                var link = ICanvas.Link(from: a, to: b, label: r.kid("title")?.stringValue ?? "")
+                if let p = style(r) { XmindStyle.apply(p, to: &link) }
+                ic.links.append(link)
             }
+            if let t = s.attr("theme").flatMap({ themes[$0] }) { ic.style = XmindStyle.canvasStyle(t, report: &report) }
             if let l = s.kid("legend") { ic.legend = XmindLegend.read(xml: l, report: &report) }
             return ic
         }
@@ -431,6 +468,7 @@ public enum XmindFormat {
             if e.attr("branch") == "folded" { it.folded = true }
             if let id = it.ref, let more = pending.removeValue(forKey: id) { it.comments = more }
             it.structure = XmindFormat.structure(e.attr("structure-class"))
+            it.style = style(e).flatMap(XmindStyle.style)
             for x in e.kid("extensions")?.kids("extension") ?? [] {
                 if x.attr("provider")?.contains("task") == true, let content = x.kid("content") {
                     var fields: [String: Any] = [:]
@@ -458,6 +496,10 @@ public enum XmindFormat {
                 switch ts.attr("type") {
                 case "attached": it.children += ts.kids("topic").map { topic($0) }
                 case "summary": summaryTopics += ts.kids("topic")
+                case "callout":
+                    for c in ts.kids("topic") {
+                        if let host = it.ref { callouts.append(ICanvas.Bubble(host: host, topic: topic(c))) }
+                    }
                 case "detached": break
                 default: break
                 }

@@ -113,6 +113,8 @@ public struct ExportState: Equatable, Sendable {
     public var split = false
     /// The Gantt's image and PDF options (M11).
     public var gantt = GanttExporter.Options()
+    /// Xmind: write XMind 8's `content.xml` instead of Xmind 2020's `content.json` (M18).
+    public var xmind8 = false
     public init() {}
 }
 
@@ -284,7 +286,7 @@ extension CanvasController {
         case .ganttPDF:
             return Loc.n("%lld task", "%lld tasks", TaskSchedule(exportCanvas(s)).spans.count)
         case .xmind:
-            let r = XmindWriter.report(exportModel(s))
+            let r = xmindReport(s)
             return Loc.n("%lld sheet", "%lld sheets", r.sheets) + " · " + Loc.n("%lld topic", "%lld topics", r.topics)
         case .png, .jpeg:
             let size = ImageExporter.pixelSize(exportModel, canvas: canvasID, s.image)
@@ -347,14 +349,20 @@ extension CanvasController {
             let slides = SlideExporter.renderSlides(m, canvas: canvasID)
             return SlideExporter.pptx(slides, titles: self.slides.filter { !$0.skipped }.map(\.title))
         case .excel: return ExcelFormat.export(m)
-        case .xmind: return xmindExport(m).data
+        case .xmind: return xmindExport(m, xmind8: s.xmind8).data
         default:
             return exportText(s).map { Data($0.utf8) }
         }
     }
 
-    /// The whole document as an Xmind file (M15), with the first canvas as its thumbnail.
-    func xmindExport(_ m: DocumentModel) -> XmindWriter.Result {
+    /// What the Xmind export leaves out, for the version the sheet is set to.
+    func xmindReport(_ s: ExportState) -> ExportReport {
+        s.xmind8 ? XmindWriter.reportXMind8(exportModel(s)) : XmindWriter.report(exportModel(s))
+    }
+
+    /// The whole document as an Xmind file (M15), or an XMind 8 file (M18), with the first
+    /// canvas as its thumbnail.
+    func xmindExport(_ m: DocumentModel, xmind8: Bool = false) -> XmindWriter.Result {
         var o = ImageExporter.Options()
         o.scale = 1
         o.padding = 24
@@ -362,7 +370,7 @@ extension CanvasController {
         let r = ImageExporter.contentRect(m, canvas: first, o)
         o.scale = min(1, 600 / max(Double(r.width), 1))
         let thumb = ImageExporter.image(m, canvas: first, o).map(ImageExporter.png)
-        return XmindWriter.export(m, thumbnail: thumb)
+        return xmind8 ? XmindWriter.exportXMind8(m, thumbnail: thumb) : XmindWriter.export(m, thumbnail: thumb)
     }
 
     static func pdfPages(_ images: [CGImage]) -> Data {
@@ -407,13 +415,12 @@ extension CanvasController {
         onSaveFile?(data, name + "." + (s.format == .json && s.yaml ? "yaml" : s.format.fileExt))
         if s.format == .keynote { showToast(Loc.t("Keynote opens this .pptx directly")) }
         if s.format == .xmind {
-            let n = XmindWriter.report(exportModel(s)).notConverted
+            let n = xmindReport(s).notConverted
+            let saved = s.xmind8 ? Loc.t("Saved for XMind 8") : Loc.t("Saved for Xmind 2020 or later")
             showToast(
                 n == 0
-                    ? Loc.t("Saved for Xmind 2020 or later")
-                    : Loc.f(
-                        "Saved for Xmind 2020 or later · %@",
-                        Loc.n("%lld item not carried over", "%lld items not carried over", n)))
+                    ? saved
+                    : Loc.f("%@ · %@", saved, Loc.n("%lld item not carried over", "%lld items not carried over", n)))
         }
     }
 
@@ -1021,6 +1028,7 @@ extension ExportState {
         if let v = d["ganttScale"] as? Double { s.gantt.scale = v }
         if let v = d["ganttSelection"] as? Bool { s.gantt.selectionOnly = v }
         if let v = d["ganttPaper"] as? String { s.gantt.paper = v }
+        if let v = d["xmind8"] as? Bool { s.xmind8 = v }
         return s
     }
 
@@ -1034,7 +1042,7 @@ extension ExportState {
             "headings": markdown.headings, "notes": markdown.notes, "comments": markdown.comments,
             "mermaidBlock": markdown.mermaidBlock, "yaml": yaml,
             "pretty": prettyJSON, "pdfScope": pdfScope, "ganttScale": gantt.scale,
-            "ganttSelection": gantt.selectionOnly, "ganttPaper": gantt.paper,
+            "ganttSelection": gantt.selectionOnly, "ganttPaper": gantt.paper, "xmind8": xmind8,
         ]
         if let t = image.theme { d["theme"] = t }
         if let f = mermaid { d["flavour"] = f.rawValue }

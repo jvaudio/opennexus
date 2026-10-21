@@ -11,7 +11,7 @@ public enum HeadlessExport {
     /// belong to the app) unless `prefs` is given.
     public static func data(
         _ doc: DocumentModel, canvas: CanvasID? = nil, format: ExportFormat, yaml: Bool = false, scale: Double? = nil,
-        prefs: Preferences = .isolated()
+        xmind8: Bool = false, prefs: Preferences = .isolated()
     ) -> Data? {
         let id = canvas ?? doc.canvasOrder.first ?? "c1"
         guard doc.canvases[id] != nil else { return nil }
@@ -21,6 +21,7 @@ public enum HeadlessExport {
         var s = ExportState.remembered(format, prefs: prefs)
         s.image.scope = .canvas
         s.yaml = yaml
+        s.xmind8 = xmind8
         if let scale { s.image.scale = scale }
         return controller.exportData(s)
     }

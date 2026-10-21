@@ -36,4 +36,28 @@ import Testing
         #expect(saved == ["Launch plan.xmind"])
         #expect(h.controller.toast?.text == "Saved for Xmind 2020 or later")
     }
+
+    /// M18: the sheet's XMind 8 choice writes content.xml with the real map, and is
+    /// remembered.
+    @Test func sheetWritesXMind8() throws {
+        let h = CanvasHarness(model: launchPlanDocument())
+        h.controller.openExport(.xmind)
+        var s = try #require(h.controller.exportState)
+        s.xmind8 = true
+        let data = try #require(h.controller.exportData(s))
+        let files = try Zip.read(data)
+        #expect(files["content.json"] == nil && files["meta.xml"] != nil)
+        let content = try XMLDocument(data: try #require(files["content.xml"]))
+        #expect(try content.nodes(forXPath: "//*[local-name()='topic']").count == 16)
+        let back = try XmindFormat.parse(data, name: "Launch plan.xmind")
+        #expect(back.canvases.first?.nodes.count == h.canvas.nodes.count)
+        #expect(h.controller.exportSizeLine(s) == "1 sheet · 16 topics")
+        var saved: [String] = []
+        h.controller.onSaveFile = { _, name in saved.append(name) }
+        h.controller.runExport(s)
+        #expect(saved == ["Launch plan.xmind"])
+        #expect(h.controller.toast?.text == "Saved for XMind 8")
+        // Remembered for next time.
+        #expect(ExportState.remembered(.xmind, prefs: h.controller.prefs).xmind8)
+    }
 }

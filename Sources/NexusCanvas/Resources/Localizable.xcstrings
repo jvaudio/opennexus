@@ -69,6 +69,10 @@
       "comment" : "Text with values filled in (FormatPanelControls.swift)",
       "extractionState" : "migrated"
     },
+    "%@ · %@" : {
+      "comment" : "Text with values filled in (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
     "%@ · %@ import" : {
       "comment" : "Text with values filled in (CanvasController+Files.swift)",
       "extractionState" : "migrated"
@@ -4013,7 +4017,11 @@
       "comment" : "Settings footnote",
       "extractionState" : "migrated"
     },
-    "Every canvas as an Xmind sheet, for Xmind 2020 or later: topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, the legend and task info." : {
+    "Every canvas as an XMind 8 sheet (content.xml): topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, the legend, task info and styles." : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Every canvas as an Xmind sheet, for Xmind 2020 or later: topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, the legend, task info, styles and the theme." : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
@@ -7869,12 +7877,12 @@
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
-    "Saved for Xmind 2020 or later" : {
+    "Saved for XMind 8" : {
       "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
-    "Saved for Xmind 2020 or later · %@" : {
-      "comment" : "Text with values filled in (CanvasController+Files.swift)",
+    "Saved for Xmind 2020 or later" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Saved to %@" : {
@@ -9537,6 +9545,14 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "XMind 8" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Xmind 2020 or later" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Xmind adds “Presented with Xmind” unless removed. OpenNexus exports never carry a watermark." : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
@@ -9547,6 +9563,10 @@
     },
     "XMIND SWITCHERS · ON .XMIND IMPORT" : {
       "comment" : "UI text (OnboardingViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Xmind version" : {
+      "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "Xmind-compatible · default" : {
