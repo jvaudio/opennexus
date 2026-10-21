@@ -126,7 +126,7 @@ func launchPlanDocument() -> DocumentModel {
         #expect(h.canvas.nodes.values.contains { $0.text == "Billing team" } == false)
     }
 
-    /// D161: zones are hint targets, their titles filter, and a selected zone is the source.
+    /// D171: zones are hint targets, their titles filter, and a selected zone is the source.
     @Test func connectToAndFromAZone() throws {
         let h = CanvasHarness(model: launchPlanDocument())
         let zone = try #require(

@@ -238,7 +238,7 @@ extension Node: JSONRepresentable {
     }
 }
 
-/// One end of a relationship: a topic or a zone (Xmind 26.03 connects both, D160).
+/// One end of a relationship: a topic or a zone (Xmind 26.03 connects both, D170).
 public enum RelationshipEnd: Hashable, Sendable, CustomStringConvertible {
     case topic(NodeID)
     case zone(String)

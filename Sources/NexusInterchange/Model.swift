@@ -307,7 +307,7 @@ public enum CanvasBuilder {
         }
         // A relationship may end on a boundary. OpenNexus boundaries aren't relationship
         // ends, so a boundary a relationship names, inside floating branches only, becomes
-        // a zone around those branches (D162).
+        // a zone around those branches (D172).
         let linked = Set(ic.links.flatMap { [$0.from, $0.to] })
         var zoneRefs: [String: String] = [:]
         var boundaryRefs = Set<String>()

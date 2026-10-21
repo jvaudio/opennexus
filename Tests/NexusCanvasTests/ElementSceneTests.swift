@@ -86,7 +86,7 @@ import Testing
         #expect(h.controller.scene.nodes[pro] == nil)
     }
 
-    /// D160: a relationship ends on a zone's rectangle, follows the zone, survives save
+    /// D170: a relationship ends on a zone's rectangle, follows the zone, survives save
     /// and load, exports, and goes when the zone is removed.
     @Test func relationshipToAZone() throws {
         let h = CanvasHarness(model: launchPlanDocument())

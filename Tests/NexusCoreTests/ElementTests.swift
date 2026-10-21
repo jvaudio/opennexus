@@ -157,7 +157,7 @@ private func id(_ c: Canvas, _ text: String) -> NodeID { c.nodes.first { $0.valu
         #expect(decoded.json == c.json)
     }
 
-    /// D160: a relationship can end on a zone. Files without endpoint kinds still read as
+    /// D170: a relationship can end on a zone. Files without endpoint kinds still read as
     /// topics, a zone end writes `fromKind`/`toKind`, and repair, validation, removing the
     /// zone and merging all drop relationships to a missing zone.
     @Test func zoneRelationshipEnds() throws {

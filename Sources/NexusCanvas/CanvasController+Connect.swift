@@ -15,7 +15,7 @@ public struct ConnectCandidate: Equatable, Sendable {
 
 /// Connect mode (F2): hint chips nearest-first, type hint letters or text to filter,
 /// arrows move the highlight, ↩ draws the edge, Esc changes nothing. Zones are targets
-/// too, and a selected zone is the source (D161).
+/// too, and a selected zone is the source (D171).
 public struct ConnectState: Equatable, Sendable {
     public var source: RelationshipEnd
     public var query: String = ""

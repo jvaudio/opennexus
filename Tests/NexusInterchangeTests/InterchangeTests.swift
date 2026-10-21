@@ -361,7 +361,7 @@ import Testing
     }
 }
 
-/// D160, D162: relationships that end on a zone, in and out of other formats.
+/// D170, D172: relationships that end on a zone, in and out of other formats.
 @Suite struct ZoneRelationshipInterchangeTests {
     /// An Xmind relationship naming a boundary around a floating branch keeps its end as a
     /// zone; one naming a boundary in the main tree is reported.

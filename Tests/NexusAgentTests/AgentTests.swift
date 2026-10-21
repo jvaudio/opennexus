@@ -102,7 +102,7 @@ final class Session {
         #expect(s.response(5)?["result"]?["protocolVersion"] == "2025-06-18", "unknown versions get our newest")
     }
 
-    /// D160: add_edge takes "zone:" ends, and read_map lists zones and zone ends.
+    /// D170: add_edge takes "zone:" ends, and read_map lists zones and zone ends.
     @Test func zoneEnds() throws {
         var c = Canvas(id: "c1", title: "Plan", rootText: "Plan")
         var undo = UndoStack()

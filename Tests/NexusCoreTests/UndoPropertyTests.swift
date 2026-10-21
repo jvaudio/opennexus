@@ -53,7 +53,7 @@ func randomOperation(_ c: inout Canvas, _ undo: inout UndoStack, _ rng: inout Sp
         case 21:
             if let b = e.canvas.boundaries.first { e.removeElement(.boundary(b.id)) }
         case 22: _ = try e.duplicate(target, toParent: other)
-        // Zone relationship ends (D160): connecting to a zone, then removing it.
+        // Zone relationship ends (D170): connecting to a zone, then removing it.
         case 24:
             if let z = e.canvas.zones.randomElement(using: &rng) {
                 let ends: [RelationshipEnd] = [.topic(target), .zone(z.id)]
