@@ -50,6 +50,7 @@ import Testing
                 TopicComment(author: "", date: "", text: "Because"),
             ]
         }
+        e.updateMeta { $0.legend = Legend(position: CanvasPoint(x: 600, y: 0), markers: ["priority-1": "Now"]) }
         c = e.canvas
         doc.canvases["c1"] = c
         return doc

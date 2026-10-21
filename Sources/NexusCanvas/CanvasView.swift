@@ -165,6 +165,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         world.addSublayer(elements.relationshipsLayer)
         world.addSublayer(elements.pointersLayer)
         world.addSublayer(nodesLayer)
+        world.addSublayer(legendLayer)
         world.addSublayer(rubberBand)
         world.addSublayer(elements.overlayLayer)
         rubberBand.fillColor = RGBA(hex: "#5850EC").alpha(0.08).cgColor
@@ -404,6 +405,13 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             frame: { [weak self] in self?.animatedFrame($0)?.rect }, animated: animate)
         decorRenderer.textScale = textScale
         decorRenderer.update(scene: scene, frame: { [weak self] in self?.animatedFrame($0)?.rect })
+        legendLayer.theme = scene.theme
+        legendLayer.canvasColor = scene.canvasColor
+        if legendLayer.contentsScale != textScale {
+            legendLayer.contentsScale = textScale
+            legendLayer.setNeedsDisplay()
+        }
+        legendLayer.legend = scene.legend
         CATransaction.commit()
         cull()
         updateConnectField()
@@ -1392,7 +1400,12 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             id: NodeID, start: CGPoint, subtree: [NodeID], origins: [NodeID: CGPoint], floating: Bool,
             active: Bool, target: DropTarget?)
         case zone(id: String, start: CGPoint, members: [NodeID], origins: [NodeID: CGPoint], active: Bool)
+        /// The legend (M14), moved by its top-left corner.
+        case legend(start: CGPoint, origin: CGPoint, active: Bool)
     }
+
+    /// The legend box, above the topics (M14).
+    let legendLayer = LegendLayer()
 
     private var drag: Drag?
 
@@ -1404,6 +1417,15 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         // Clicking a ghost accepts it (one undo), like ⌃↩.
         if let id = node(at: p), let i = CanvasController.ghostIndex(id) {
             if controller.ghosts != nil { controller.acceptGhost(i) } else { controller.previewPlan(nil) }
+            return
+        }
+        // The legend sits above the topics: drag to move it, double-click to edit it.
+        if let l = controller.scene.legend, l.rect.contains(w), controller.mode != .edit {
+            if event.clickCount == 2 {
+                controller.editLegend()
+            } else {
+                drag = .legend(start: w, origin: l.rect.origin, active: false)
+            }
             return
         }
         if let id = node(at: p), let n = controller.scene.nodes[id], let f = animatedFrame(id) {
@@ -1637,6 +1659,16 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             drag = .zone(id: zid, start: start, members: members, origins: origins, active: active)
             zoneDragOffset = CGSize(width: dx, height: dy)
             elements.offsetZone(zid, by: zoneDragOffset)
+        case .legend(let start, let origin, var active)?:
+            let dx = w.x - start.x
+            let dy = w.y - start.y
+            if !active && hypot(dx, dy) * camera.zoom < 4 { return }
+            active = true
+            CATransaction.begin()
+            CATransaction.setDisableActions(true)
+            legendLayer.frame.origin = CGPoint(x: origin.x + dx, y: origin.y + dy)
+            CATransaction.commit()
+            drag = .legend(start: start, origin: origin, active: active)
         case nil:
             break
         }
@@ -1768,6 +1800,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             guard active else { return }
             elements.offsetZone(zid, by: .zero)
             controller.moveZone(zid, by: zoneDragOffset)
+        case .legend(let start, let origin, let active)?:
+            guard active else { return }
+            controller.moveLegend(to: CanvasPoint(x: origin.x + w.x - start.x, y: origin.y + w.y - start.y))
         default:
             break
         }

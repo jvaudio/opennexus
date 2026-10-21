@@ -203,7 +203,7 @@ public enum XmindFormat {
                 ic.links.append(ICanvas.Link(from: a, to: b, label: (r["title"] as? String) ?? ""))
             }
             for e in (s["extensions"] as? [[String: Any]]) ?? [] { ext(e, on: title) }
-            if s["legend"] != nil { report.skip("Legend") }
+            if let l = s["legend"] { ic.legend = XmindLegend.read(l, report: &report) }
             return ic
         }
 
@@ -371,6 +371,7 @@ public enum XmindFormat {
                 guard let a = r.attr("end1"), let b = r.attr("end2") else { continue }
                 ic.links.append(ICanvas.Link(from: a, to: b, label: r.kid("title")?.stringValue ?? ""))
             }
+            if let l = s.kid("legend") { ic.legend = XmindLegend.read(xml: l, report: &report) }
             return ic
         }
 
@@ -461,6 +462,70 @@ public enum XmindFormat {
                         parent: parent, from: kidRefs[r.lowerBound], to: kidRefs[r.upperBound], topic: topic(st)))
             }
             return it
+        }
+    }
+}
+
+/// Xmind's legend (M14): visibility, position and marker descriptions (D165). Zen files
+/// carry `legend` on the sheet; XMind 8 a `<legend>` element with `<marker-descriptions>`.
+enum XmindLegend {
+    static func read(_ v: Any, report: inout ImportReport) -> Legend? {
+        guard let o = v as? [String: Any] else { return nil }
+        var l = Legend()
+        if let vis = o["visibility"] as? String { l.visible = vis.lowercased() != "hidden" }
+        if let vis = o["visible"] as? Bool { l.visible = vis }
+        if let p = o["position"] as? [String: Any], let x = XmindTask.number(p["x"] ?? 0),
+            let y = XmindTask.number(p["y"] ?? 0)
+        {
+            l.position = CanvasPoint(x: x, y: y)
+        }
+        var pairs: [(String, String)] = []
+        for key in ["markers", "markerDescriptions", "marker-descriptions"] {
+            if let d = o[key] as? [String: Any] {
+                for (id, v) in d.sorted(by: { $0.key < $1.key }) { pairs.append((id, description(v))) }
+            } else if let a = o[key] as? [[String: Any]] {
+                for m in a {
+                    guard let id = (m["markerId"] ?? m["marker-id"] ?? m["id"]) as? String else { continue }
+                    pairs.append((id, description(m)))
+                }
+            }
+        }
+        add(pairs, to: &l, report: &report)
+        if o["groups"] != nil { report.skip("Legend marker group names") }
+        return l
+    }
+
+    static func read(xml e: XMLElement, report: inout ImportReport) -> Legend {
+        var l = Legend(visible: e.attr("visibility")?.lowercased() != "hidden")
+        if let p = e.kid("position"), let x = Double(p.attr("svg:x") ?? ""), let y = Double(p.attr("svg:y") ?? "") {
+            l.position = CanvasPoint(x: x, y: y)
+        }
+        let pairs = e.descendants("marker-description").compactMap { d -> (String, String)? in
+            d.attr("marker-id").map { ($0, d.attr("description") ?? d.stringValue ?? "") }
+        }
+        add(pairs, to: &l, report: &report)
+        return l
+    }
+
+    static func description(_ v: Any) -> String {
+        if let s = v as? String { return s }
+        if let o = v as? [String: Any] {
+            return (o["name"] ?? o["description"] ?? o["title"] ?? o["text"]) as? String ?? ""
+        }
+        return ""
+    }
+
+    /// Descriptions keyed by the OpenNexus marker; the first wins when two Xmind markers
+    /// map to one. An empty description keeps the marker's own name.
+    static func add(_ pairs: [(String, String)], to l: inout Legend, report: inout ImportReport) {
+        for (id, text) in pairs {
+            let t = text.trimmed
+            guard !t.isEmpty else { continue }
+            guard let mapped = XmindFormat.marker(id) else {
+                report.skip("Legend description for marker “\(id)” (no equivalent)")
+                continue
+            }
+            if l.markers[mapped] == nil { l.markers[mapped] = t }
         }
     }
 }

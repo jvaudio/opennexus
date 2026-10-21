@@ -121,6 +121,9 @@ extension CommandID {
     public static let filterBar: CommandID = "view.filter"
     public static let present: CommandID = "view.present"
     public static let convert: CommandID = "view.convert"
+    /// The marker legend (M14).
+    public static let toggleLegend: CommandID = "view.legend"
+    public static let editLegend: CommandID = "view.editLegend"
     public static func navigationTab(_ n: Int) -> CommandID { CommandID(rawValue: "view.navigationTab\(n)") }
     // AI
     public static let aiGhosts: CommandID = "ai.ghosts"
@@ -453,6 +456,10 @@ public enum DefaultCommands {
             C(
                 .convert, "Convert Diagram Type…", .view, scope: .global, keys: [k("opt+cmd+t")], hyper: k("hyper+t"),
                 menu: .format, note: "Live previews in the picker"),
+            C(
+                .toggleLegend, "Legend", .view, scope: .global, keys: [k("opt+cmd+l")], menu: .view,
+                note: "Markers and labels used on this canvas"),
+            C(.editLegend, "Edit Legend…", .view, scope: .global, menu: .view, note: "Describe each marker"),
         ]
         + zip(1...5, ["Search", "Outline", "Notes", "Tags", "To-dos"]).map { n, name in
             C(.navigationTab(n), "Navigation: \(name)", .view, scope: .global, keys: [k("ctrl+cmd+\(n)")], menu: .view)

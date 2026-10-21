@@ -25,6 +25,14 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
             show(NotePopover(controller: c, node: id, close: close), at: id, size: CGSize(width: 380, height: 320))
         case .comments(let id):
             show(CommentsPopover(controller: c, node: id, close: close), at: id, size: CGSize(width: 380, height: 440))
+        case .legend:
+            let content = LegendPopover(controller: c, close: close)
+            let size = CGSize(width: 380, height: 460)
+            if let r = view.controller.scene.legend?.rect {
+                show(content, rect: view.camera.toView(r), size: size)
+            } else {
+                show(content, at: c.selection.primary, size: size)
+            }
         case .link(let id):
             show(LinkPopover(controller: c, node: id, close: close), at: id, size: CGSize(width: 380, height: 420))
         case .labels(let id):
@@ -59,6 +67,11 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
 
     private func show(_ content: some View, at id: NodeID, size: CGSize) {
         guard let view, let f = view.viewRect(of: id) else { return }
+        show(content, rect: f, size: size)
+    }
+
+    private func show(_ content: some View, rect f: CGRect, size: CGSize) {
+        guard let view else { return }
         close()
         let p = NSPopover()
         p.behavior = .transient

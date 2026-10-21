@@ -9,6 +9,8 @@ public enum CanvasRequest: Equatable, Sendable {
     case note(NodeID)
     /// The comment thread (M14).
     case comments(NodeID)
+    /// Edit Legend… (M14).
+    case legend
     case link(NodeID)
     case image(NodeID)
     case labels(NodeID)

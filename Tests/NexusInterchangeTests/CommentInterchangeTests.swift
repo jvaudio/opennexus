@@ -6,7 +6,7 @@ import Testing
 @testable import NexusInterchange
 
 /// M14: Xmind comments import (Zen inline, Zen `comments.json`, XMind 8 `comments.xml`);
-/// Markdown and Word carry them as an appendix.
+/// Markdown and Word carry them as an appendix. Xmind legends import too.
 @Suite struct CommentInterchangeTests {
     func node(_ c: Canvas, _ text: String) -> Node { c.nodes.values.first { $0.text == text }! }
 
@@ -104,6 +104,52 @@ import Testing
         #expect(cs[0].date == "2026-10-20T14:03:00Z")
         #expect(im.report.comments == 2)
         #expect(im.report.skipped.contains { $0.0 == "Comment on a sheet or a missing topic" })
+    }
+
+    @Test func zenLegend() throws {
+        var z = ZipWriter()
+        z.add(
+            "content.json",
+            """
+            [{"id": "s1", "title": "Plan", "rootTopic": {"id": "root", "title": "Release",
+              "children": {"attached": [{"id": "a", "title": "A", "markers": [{"markerId": "flag-red"}]}]}},
+              "legend": {"visibility": "visible", "position": {"x": 412.25, "y": -90},
+                "markers": {"flag-red": {"name": "Blocked"}, "priority-1": {"name": "Now"},
+                  "smiley-laugh": {"name": "Fun"}, "task-half": {"name": ""}},
+                "groups": {"g1": {"name": "Status"}}}},
+             {"id": "s2", "title": "Other", "rootTopic": {"id": "r2", "title": "Other"},
+              "legend": {"visibility": "hidden", "markers": [{"markerId": "star-blue", "description": "Pick"}]}}]
+            """)
+        let im = try XmindFormat.parse(z.finish(), name: "legend.xmind")
+        #expect(
+            im.canvases[0].legend
+                == Legend(
+                    position: CanvasPoint(x: 412.5, y: -90), markers: ["flag-red": "Blocked", "priority-1": "Now"]))
+        #expect(im.canvases[1].legend == Legend(visible: false, markers: ["star-blue": "Pick"]))
+        let skipped = im.report.skipped.map(\.0)
+        #expect(skipped.contains("Legend description for marker “smiley-laugh” (no equivalent)"))
+        #expect(skipped.contains("Legend marker group names"))
+        #expect(!skipped.contains("Legend"))
+    }
+
+    @Test func xmind8Legend() throws {
+        var z = ZipWriter()
+        z.add(
+            "content.xml",
+            """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <xmap-content xmlns="urn:xmind:xmap:xmlns:content:2.0" xmlns:svg="http://www.w3.org/2000/svg" version="2.0">
+            <sheet id="s1"><title>Plan</title><topic id="root"><title>Release</title></topic>
+            <legend visibility="visible"><position svg:x="300" svg:y="-120"/>
+            <marker-descriptions><marker-description description="Blocked" marker-id="flag-red"/>
+            <marker-description description="Done" marker-id="task-done"/></marker-descriptions></legend>
+            </sheet></xmap-content>
+            """)
+        let im = try XmindFormat.parse(z.finish(), name: "x8.xmind")
+        #expect(
+            im.canvases[0].legend
+                == Legend(
+                    position: CanvasPoint(x: 300, y: -120), markers: ["flag-red": "Blocked", "progress-100": "Done"]))
     }
 
     func commented() -> Canvas {

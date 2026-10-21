@@ -36,6 +36,7 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
         guard let proto = objc_getProtocol("NSAccessibilityElement") else { return }
         class_addProtocol(TopicElement.self, proto)
         class_addProtocol(ElementItem.self, proto)
+        class_addProtocol(LegendItem.self, proto)
     }()
 
     var controller: CanvasController? { view?.controller }
@@ -60,10 +61,24 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
         return e
     }
 
-    /// The canvas's children: the central topic, then floating, summary and callout tops.
+    /// The canvas's children: the central topic, then floating, summary and callout tops,
+    /// then the legend when it shows (M14).
     func roots() -> [Any] {
         guard let c = controller else { return [] }
-        return c.canvas.tops.compactMap { element($0) }
+        var out: [Any] = c.canvas.tops.compactMap { element($0) }
+        if let l = legendItem() { out.append(l) }
+        return out
+    }
+
+    private var legend: LegendItem?
+
+    func legendItem() -> LegendItem? {
+        guard let l = controller?.scene.legend else { return nil }
+        let e = legend ?? LegendItem(tree: self)
+        legend = e
+        e.text = l.spoken
+        e.world = l.rect
+        return e
     }
 
     func children(of id: NodeID) -> [Any] {
@@ -325,6 +340,46 @@ final class TopicElement: NSAccessibilityElement {
                 })
         }
         return actions
+    }
+}
+
+/// The legend box (M14): read as one element; pressing it opens Edit Legend….
+@MainActor
+final class LegendItem: NSAccessibilityElement {
+    unowned let tree: CanvasAccessibility
+    var text = ""
+    var world = CGRect.null
+
+    init(tree: CanvasAccessibility) {
+        self.tree = tree
+        super.init()
+        setAccessibilityIdentifier("legend")
+    }
+
+    override func accessibilityRole() -> NSAccessibility.Role? { .group }
+    override func accessibilityRoleDescription() -> String? { Loc.t("legend") }
+    override func accessibilityLabel() -> String? { text }
+    override func accessibilityFrame() -> NSRect { world.isNull ? .zero : tree.screenRect(world) }
+    override func accessibilityParent() -> Any? {
+        let t = tree
+        return onMain { t.view }
+    }
+    override func isAccessibilityElement() -> Bool { true }
+    override func accessibilityPerformPress() -> Bool {
+        tree.controller?.editLegend()
+        return true
+    }
+    override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
+        [
+            NSAccessibilityCustomAction(name: Loc.t("Edit Legend")) { [weak self] in
+                self?.tree.controller?.editLegend()
+                return true
+            },
+            NSAccessibilityCustomAction(name: Loc.t("Hide Legend")) { [weak self] in
+                self?.tree.controller?.toggleLegend()
+                return true
+            },
+        ]
     }
 }
 

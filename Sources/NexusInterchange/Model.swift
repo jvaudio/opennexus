@@ -114,6 +114,8 @@ public struct ICanvas: Sendable, Equatable {
     public var groups: [Group] = []
     public var summaries: [Brace] = []
     public var callouts: [Bubble] = []
+    /// The marker legend (M14).
+    public var legend: Legend?
     /// The root was made up to hold several top-level topics (pasting drops it).
     public var synthesizedRoot = false
 
@@ -231,6 +233,7 @@ public enum CanvasBuilder {
     public static func build(_ ic: ICanvas, id: CanvasID, report: inout ImportReport) -> Canvas {
         var c = Canvas(id: id, title: ic.title, type: ic.type, rootText: ic.root.text)
         if let s = ic.structure { c.layout.structure = s }
+        c.legend = ic.legend
         var refs: [String: NodeID] = [:]
         func apply(_ t: ITopic, to id: NodeID) {
             var n = c.nodes[id] ?? Node(text: t.text)

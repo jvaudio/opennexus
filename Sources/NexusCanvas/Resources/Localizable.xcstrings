@@ -1933,6 +1933,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "An empty description shows the marker's own name. Drag the legend to move it." : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "An OpenAI-compatible endpoint on localhost, such as Ollama or LM Studio. Needs a network permission OpenNexus doesn’t request in v1." : {
       "comment" : "UI text (AISettingsView.swift)",
       "extractionState" : "migrated"
@@ -2255,6 +2259,14 @@
     },
     "Block" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Blue flag" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Blue star" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Bold" : {
@@ -3509,8 +3521,16 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Describe each marker" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
     "Describe the sticker" : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Description for %@" : {
+      "comment" : "Text with values filled in (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Detach" : {
@@ -3707,6 +3727,14 @@
     },
     "Edit Fields" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edit Legend" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edit Legend…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
     "Edit maps" : {
@@ -4083,6 +4111,10 @@
     },
     "Extend Selection Up" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "External" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "External entity" : {
@@ -4517,6 +4549,10 @@
       "comment" : "UI text (Templates.swift)",
       "extractionState" : "migrated"
     },
+    "Gold star" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Good afternoon" : {
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
@@ -4537,6 +4573,10 @@
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "Green flag" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Grid size" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -4555,6 +4595,10 @@
     },
     "h j k l · o \/ O · dd" : {
       "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
+    "Half done" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Hand" : {
@@ -4607,6 +4651,10 @@
     },
     "Hide from Slides" : {
       "comment" : "UI text (CanvasController+Views.swift)",
+      "extractionState" : "migrated"
+    },
+    "Hide Legend" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
     "Hide OpenNexus" : {
@@ -4827,6 +4875,10 @@
     },
     "Import…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Important" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "In document" : {
@@ -5061,12 +5113,20 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Label %@" : {
+      "comment" : "Text with values filled in (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Label suggestions" : {
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
     "Labels" : {
       "comment" : "UI text (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
+    "LABELS" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Lag %lld days" : {
@@ -5131,6 +5191,26 @@
     },
     "Legal" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "legend" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "Legend" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Legend Description" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Legend hidden" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Legend shown · ⌥⌘L hides it" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Lengthen by a Working Day" : {
@@ -5473,8 +5553,20 @@
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
+    "Marker descriptions" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Markers" : {
       "comment" : "UI text (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
+    "MARKERS" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Markers and labels used on this canvas" : {
+      "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "Markers…" : {
@@ -5555,6 +5647,10 @@
     },
     "MCP tools" : {
       "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "Me" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Meaning · technical canvases" : {
@@ -5865,6 +5961,10 @@
       "comment" : "UI text (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
     },
+    "Move Legend" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Move Task" : {
       "comment" : "UI text (GanttView.swift)",
       "extractionState" : "migrated"
@@ -6089,6 +6189,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "No" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "No command matches “%@”" : {
       "comment" : "Text with values filled in (ViewOverlays.swift)",
       "extractionState" : "migrated"
@@ -6111,6 +6215,14 @@
     },
     "No limit" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "No markers on this canvas yet." : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "No markers or labels yet" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "No markers or labels yet." : {
@@ -6191,6 +6303,10 @@
     },
     "Not applicable" : {
       "comment" : "UI text (FormatPanelStride.swift)",
+      "extractionState" : "migrated"
+    },
+    "Not started" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Note" : {
@@ -6467,6 +6583,10 @@
     },
     "Or double-click empty canvas" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Orange flag" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Order" : {
@@ -6981,6 +7101,14 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Quarter done" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Question" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Queue" : {
       "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
@@ -7131,6 +7259,14 @@
     },
     "Rectangle" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Red flag" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Red star" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Redo" : {
@@ -7367,6 +7503,10 @@
     },
     "Reset" : {
       "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
+    "Reset Position" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Reset style" : {
@@ -7933,12 +8073,20 @@
       "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
+    "Show Legend" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Show model status chip in the toolbar" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
     "Show task details on topics" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Show the legend on the canvas" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "SHOWN ONCE, WHEN HYPER IS TURNED ON" : {
@@ -8469,6 +8617,10 @@
       "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
+    "Team" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Tech" : {
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
@@ -8731,6 +8883,10 @@
     },
     "Threats, data and access" : {
       "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Three quarters done" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Tile across pages" : {
@@ -9291,6 +9447,10 @@
     },
     "Xmind’s four (Very Important, Important, Cross Out, Default) plus four for technical work." : {
       "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Yes" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "yesterday" : {

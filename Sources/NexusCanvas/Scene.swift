@@ -240,6 +240,8 @@ public struct Scene {
     public var summaries: [SceneSummary] = []
     public var zones: [SceneZone] = []
     public var callouts: [SceneCallout] = []
+    /// The marker legend, when the canvas shows one and the whole canvas is drawn (M14).
+    public var legend: SceneLegend?
     public var decor: [SceneDecor] = []
     /// DFD rule checks for this canvas.
     public var violations: [DFDRules.Violation] = []
@@ -252,6 +254,7 @@ public struct Scene {
         var b = nodes.values.reduce(CGRect.null) { $0.union($1.frame.rect) }
         for z in zones { b = b.union(z.rect) }
         for bd in boundaries { b = b.union(bd.rect) }
+        if let l = legend { b = b.union(l.rect) }
         for d in decor {
             if case .band(let r, _, _) = d { b = b.union(r) }
         }
@@ -1007,6 +1010,11 @@ public struct SceneBuilder {
             }
             let color = z.color.flatMap(RGBA.init(hexString:)) ?? RGBA(hex: "#7A4CC2")
             scene.zones.append(SceneZone(zone: z, rect: rect, hidden: hidden, color: color))
+        }
+        // The legend lists the canvas's own markers and labels (never ghosts'), beside the
+        // map unless dragged; branch, selection and zone exports leave it out.
+        if let legend = source.legend, legend.visible, view.isolate == nil {
+            scene.legend = SceneLegend.make(legend, canvas: source, content: scene.bounds)
         }
         if !view.isEmpty || focus != nil { Self.apply(view, focusSet: focusSet, to: &scene) }
         if !view.ghosts.isEmpty {

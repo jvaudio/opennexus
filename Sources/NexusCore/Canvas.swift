@@ -151,6 +151,8 @@ public struct Canvas: Hashable, Sendable {
     public var presentation = PresentationSettings()
     /// The work calendar the Gantt and task durations use (M11).
     public var schedule = WorkSchedule()
+    /// The marker and label legend (M14); nil when the canvas has never had one.
+    public var legend: Legend?
     public var extra: [String: JSONValue] = [:]
 
     /// Next sequence number for new node ids. Not stored; derived on load.
@@ -202,7 +204,7 @@ public struct Canvas: Hashable, Sendable {
             && a.relationships == b.relationships && a.boundaries == b.boundaries && a.summaries == b.summaries
             && a.callouts == b.callouts && a.zones == b.zones && a.diagram == b.diagram
             && a.filters == b.filters && a.presentation == b.presentation && a.schedule == b.schedule
-            && a.extra == b.extra
+            && a.legend == b.legend && a.extra == b.extra
     }
 
     public func hash(into h: inout Hasher) {
@@ -244,6 +246,7 @@ extension Canvas: JSONRepresentable {
             try r.raw("presentation").map { try PresentationSettings(json: $0, path: "\(path).presentation") }
             ?? PresentationSettings()
         schedule = try r.raw("schedule").map { try WorkSchedule(json: $0, path: "\(path).schedule") } ?? WorkSchedule()
+        if let l = r.raw("legend"), l != .null { legend = try Legend(json: l, path: "\(path).legend") }
         extra = r.leftovers
         nextSequence = Canvas.seed(for: nodes.keys)
         guard nodes[root] != nil else { throw ModelDecodingError(path: "\(path).root", "root node \(root) is missing") }
@@ -268,6 +271,7 @@ extension Canvas: JSONRepresentable {
         if !filters.isEmpty { w.set("filters", .array(filters.map(\.json))) }
         if !presentation.isDefault { w.set("presentation", presentation.json) }
         if !schedule.isDefault { w.set("schedule", schedule.json) }
+        if let legend { w.set("legend", legend.json) }
         return w.value
     }
 }

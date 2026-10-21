@@ -158,6 +158,25 @@
           },
           "type": "object"
         },
+        "legend": {
+          "description": "The marker and label legend (M14): shown or hidden, its top-left corner (absent: beside the map), and a description per marker id.",
+          "properties": {
+            "markers": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "description": "Marker id → description, shown instead of the marker's own name.",
+              "type": "object"
+            },
+            "position": {
+              "$ref": "#/$defs/point"
+            },
+            "visible": {
+              "type": "boolean"
+            }
+          },
+          "type": "object"
+        },
         "nodes": {
           "additionalProperties": false,
           "patternProperties": {

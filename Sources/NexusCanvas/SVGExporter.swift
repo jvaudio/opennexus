@@ -151,9 +151,51 @@ public enum SVGExporter {
             guard let sn = scene.nodes[id], let node = canvas.nodes[id] else { continue }
             topic(sn, node, &w, metadata: o.metadata, theme: scene.theme)
         }
+        if let l = scene.legend { legend(l, &w, theme: scene.theme, canvas: scene.canvasColor) }
         w.indent -= 1
         w.line("</svg>")
         return w.out
+    }
+
+    /// The legend box (M14), above the topics as on the canvas.
+    static func legend(_ l: SceneLegend, _ w: inout Writer, theme: Theme, canvas: RGBA) {
+        let r = l.rect
+        w.line("<g class=\"legend\">")
+        w.indent += 1
+        w.line(
+            "<rect x=\"\(n(r.minX + 0.5))\" y=\"\(n(r.minY + 0.5))\" width=\"\(n(r.width - 1))\" height=\"\(n(r.height - 1))\" rx=\"10\" fill=\"\(hex(canvas))\" stroke=\"\(hex(theme.ink))\" stroke-opacity=\"0.22\"/>"
+        )
+        w.text(
+            Loc.t("Legend"), at: CGPoint(x: r.minX + SceneLegend.padding, y: r.minY + SceneLegend.padding + 15),
+            font: SceneLegend.titleFont, color: theme.ink)
+        for row in l.rows {
+            let rr = row.rect
+            if let label = row.label {
+                let width = ceil((label as NSString).size(withAttributes: [.font: SceneLegend.labelFont]).width) + 16
+                w.line(
+                    "<rect x=\"\(n(rr.minX))\" y=\"\(n(rr.midY - 9))\" width=\"\(n(width))\" height=\"18\" rx=\"9\" fill=\"\(hex(theme.ink))\" fill-opacity=\"0.1\"/>"
+                )
+                w.text(
+                    label, at: CGPoint(x: rr.minX + 8, y: rr.midY + 4), font: SceneLegend.labelFont, color: theme.ink)
+                continue
+            }
+            var x = rr.minX
+            if let m = row.marker {
+                let mk = MarkerLibrary.marker(m)
+                let c = mk.map { RGBA(hex: $0.color) } ?? RGBA(hex: "#8A8A96")
+                let glyph = m.hasPrefix("priority-") ? String(m.dropFirst(9)) : mk?.glyph ?? "•"
+                w.line("<circle cx=\"\(n(x + 9))\" cy=\"\(n(rr.midY))\" r=\"9\" fill=\"\(hex(c))\"/>")
+                w.text(
+                    glyph, at: CGPoint(x: x + 9, y: rr.midY + 3.8), font: .systemFont(ofSize: 10.5, weight: .bold),
+                    color: .white, anchor: "middle")
+                x += SceneLegend.glyph
+            }
+            w.text(
+                row.text, at: CGPoint(x: x, y: rr.midY + 4), font: SceneLegend.font,
+                color: row.marker == nil ? theme.ink2 : theme.ink)
+        }
+        w.indent -= 1
+        w.line("</g>")
     }
 
     static func topic(_ sn: SceneNode, _ node: Node, _ w: inout Writer, metadata: Bool, theme: Theme) {

@@ -125,6 +125,8 @@ extension CanvasController {
             .note: { $0.onRequest?(.note($0.selection.primary)) },
             .hyperlink: { $0.onRequest?(.link($0.selection.primary)) },
             .comment: { $0.onRequest?(.comments($0.selection.primary)) },
+            .toggleLegend: { $0.toggleLegend() },
+            .editLegend: { $0.editLegend() },
             .image: { $0.onRequest?(.image($0.selection.primary)) },
             .label: { $0.onRequest?(.labels($0.selection.primary)) },
             .markerPicker: { $0.onRequest?(.markers($0.selection.primary)) },

@@ -5,6 +5,16 @@
     "mode": "auto",
     "structure": "mindmap.balanced"
   },
+  "legend": {
+    "markers": {
+      "flag-red": "Blocked"
+    },
+    "position": {
+      "x": 320,
+      "y": -140.5
+    },
+    "visible": true
+  },
   "nodes": {
     "n1": {
       "children": [
@@ -45,6 +55,9 @@
         }
       ],
       "kind": "topic",
+      "labels": [
+        "Q4"
+      ],
       "text": "Pro"
     }
   },

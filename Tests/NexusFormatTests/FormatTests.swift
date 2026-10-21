@@ -116,6 +116,10 @@ func reviewDocument() -> DocumentModel {
             var c = TopicComment(author: "Lee", date: "", text: "Check margins")
             c.extra["resolved"] = true
             $0.comments = [c]
+            $0.labels = ["Q4"]
+        }
+        e.updateMeta {
+            $0.legend = Legend(position: CanvasPoint(x: 320, y: -140.5), markers: ["flag-red": "Blocked"])
         }
     }
     return DocumentModel(canvases: [c], theme: ["name": "classic"])
@@ -130,8 +134,8 @@ func reviewDocument() -> DocumentModel {
         try NexusPackage.write(reviewDocument(), to: dir)
     }
 
-    /// M14: comments round-trip byte-identically (dates as written, unknown keys kept) and
-    /// match the schema.
+    /// M14: comments and the legend round-trip byte-identically (dates as written, unknown
+    /// keys kept) and match the schema.
     @Test func reviewGoldenRoundTrips() throws {
         let files = try fixtureFiles("Review")
         let doc = try NexusPackage.read(files: files)
@@ -151,6 +155,27 @@ func reviewDocument() -> DocumentModel {
         #expect(pro.comments[0].extra["resolved"] == true)
         let json = String(decoding: try #require(files["canvases/c1.json"]), as: UTF8.self)
         #expect(!json.contains("\"date\": \"\""), "an unknown date is omitted")
+        #expect(c.legend == Legend(position: CanvasPoint(x: 320, y: -140.5), markers: ["flag-red": "Blocked"]))
+        #expect(c.legendContents.markers == ["priority-1", "flag-red"] && c.legendContents.labels == ["Q4"])
+        #expect(try NexusPackage.read(files: try fixtureFiles("LaunchPlan")).canvases["c1"]?.legend == nil)
+    }
+
+    @Test func schemaRejectsBadLegends() {
+        let v = SchemaValidator.bundled
+        func canvas(_ legend: JSONValue) -> JSONValue {
+            [
+                "id": "c1", "type": "mindmap", "root": "n1",
+                "nodes": ["n1": ["text": "a", "kind": "root", "children": []]],
+                "legend": legend,
+            ]
+        }
+        #expect(
+            v.validate(canvas(["visible": true, "markers": ["flag-red": "Blocked"]]), definition: "canvas").isEmpty)
+        #expect(!v.validate(canvas(["visible": "yes"]), definition: "canvas").isEmpty)
+        #expect(!v.validate(canvas(["markers": ["flag-red": 3]]), definition: "canvas").isEmpty)
+        #expect(throws: (any Error).self) {
+            try Legend(json: ["markers": ["flag-red": 3]], path: "legend")
+        }
     }
 
     @Test func schemaRejectsBadComments() {
