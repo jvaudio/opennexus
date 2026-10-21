@@ -129,6 +129,8 @@ public enum DocumentJSON {
 public enum InterchangeFormat: String, CaseIterable, Sendable {
     case nexus, xmind, opml, markdown, text, mermaid, plantuml, drawio, freemind, mindmanager, mindnode, textbundle
     case docx, json, yaml, csv
+    /// A picture or a PDF page whose text becomes a map (M12).
+    case image
 
     public var title: String {
         switch self {
@@ -148,6 +150,7 @@ public enum InterchangeFormat: String, CaseIterable, Sendable {
         case .json: "JSON"
         case .yaml: "YAML"
         case .csv: "CSV"
+        case .image: "Image"
         }
     }
 
@@ -169,13 +172,14 @@ public enum InterchangeFormat: String, CaseIterable, Sendable {
         case .json: ["json"]
         case .yaml: ["yaml", "yml"]
         case .csv: ["csv"]
+        case .image: ["png", "jpg", "jpeg", "heic", "heif", "tif", "tiff", "gif", "bmp", "webp", "pdf"]
         }
     }
 
     /// Formats File › Import… accepts.
     public static let importable: [InterchangeFormat] = [
         .xmind, .opml, .markdown, .text, .mermaid, .plantuml, .drawio, .freemind, .mindmanager, .mindnode, .textbundle,
-        .docx, .json, .nexus,
+        .docx, .json, .nexus, .image,
     ]
 
     public static func detect(name: String) -> InterchangeFormat? {
@@ -255,6 +259,9 @@ public enum Interchange {
             } catch {
                 throw ImportError.invalid(name, "\(error)")
             }
+        case .image:
+            guard let data else { throw ImportError.empty(name) }
+            return try ImageOutline.read(data, name: report.source).imported(source: report.source)
         case .yaml, .csv:
             throw ImportError.unrecognised(name)
         }

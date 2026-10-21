@@ -154,3 +154,12 @@ private func canvas(_ tree: [(String, [String])], notes: [String: String] = [:])
         }
     }
 }
+
+/// M12: the image-grouping prompt numbers the recognised lines; the model answers by number.
+@Suite struct ImageStructurerTests {
+    @Test func promptNumbersLines() {
+        let p = ImageStructurer.prompt(title: "Shopping", lines: ["Groceries", "Milk"])
+        #expect(p.contains("Title: Shopping\n") && p.contains("0. Groceries\n1. Milk\n"))
+        #expect(ImageStructurer.instructions.contains("no headings"))
+    }
+}

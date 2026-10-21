@@ -157,6 +157,7 @@ extension CommandID {
     public static let copy: CommandID = "edit.copy"
     public static let cut: CommandID = "edit.cut"
     public static let paste: CommandID = "edit.paste"
+    public static let pasteImageAsMap: CommandID = "edit.pasteImageAsMap"
     public static let quickCapture: CommandID = "app.quickCapture"
     public static let undo: CommandID = "edit.undo"
     public static let redo: CommandID = "edit.redo"
@@ -433,6 +434,9 @@ public enum DefaultCommands {
         C(
             .paste, "Paste", .edit, keys: [k("cmd+v")], menu: .edit, xmind: true,
             note: "Markdown or indented text becomes a branch", standardAction: "paste:"),
+        C(
+            .pasteImageAsMap, "Paste Image as Map", .edit, keys: [k("shift+cmd+v")], menu: .edit,
+            note: "Reads the text in a copied picture"),
         C(.quickCapture, "Quick Capture", .app, scope: .global, hyper: k("hyper+n"), note: "System-wide"),
     ]
 

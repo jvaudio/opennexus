@@ -37,6 +37,8 @@ public final class HomeModel {
     public var onNew: (DiagramType) -> Void = { _ in }
     public var onOpen: (URL) -> Void = { _ in }
     public var onImport: () -> Void = {}
+    /// Files dropped on Home: maps open or import; pictures become maps.
+    public var onDropFiles: ([URL]) -> Void = { _ in }
     public var onTemplate: (MapTemplate) -> Void = { _ in }
     public var onInbox: () -> Void = {}
     public var onFilter: (URL, String) -> Void = { _, _ in }
@@ -183,6 +185,10 @@ public struct HomeView: View {
         .frame(minWidth: 1100, minHeight: 760)
         .chromeControls()
         .background(Color(nsColor: .windowBackgroundColor))
+        .dropDestination(for: URL.self) { urls, _ in
+            model.onDropFiles(urls)
+            return !urls.isEmpty
+        }
         .background {
             // ⌘N a blank mind map; ⇧⌘N jumps to the type cards; 1–7 pick a type there.
             Button("") { model.onNew(.mindmap) }.keyboardShortcut("n", modifiers: .command).opacity(0)
@@ -518,7 +524,7 @@ public struct HomeView: View {
                 }
                 .buttonStyle(.plain)
                 (Text("Your tutorial map is here. Press ") + Text("⌘N").font(.chrome(12, design: .monospaced))
-                    + Text(" to start fresh or drop an .xmind file anywhere."))
+                    + Text(" to start fresh, or drop an .xmind file or a picture anywhere."))
                     .multilineTextAlignment(.center).font(.chrome(13.5)).foregroundStyle(.secondary)
             }
             .padding(20)

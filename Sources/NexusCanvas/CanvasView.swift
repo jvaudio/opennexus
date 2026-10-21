@@ -84,15 +84,21 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         animatedFrame(id).map { camera.toView($0.rect) }
     }
 
-    // MARK: Drop files on topics (attachments, images)
+    // MARK: Drop files on topics (attachments, images) or on empty canvas (image to map)
 
     public override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation { .copy }
 
     public override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
         let p = convert(sender.draggingLocation, from: nil)
-        guard let id = node(at: p),
-            let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self]) as? [URL]
-        else { return false }
+        guard let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self]) as? [URL] else { return false }
+        guard let id = node(at: p) else {
+            // A picture dropped on empty canvas becomes a map (M12).
+            let images = urls.filter { ImageToMap.isImage(name: $0.lastPathComponent) }
+            for url in images {
+                if let data = try? Data(contentsOf: url) { controller.importImage(data, name: url.lastPathComponent) }
+            }
+            return !images.isEmpty
+        }
         for url in urls {
             guard let data = try? Data(contentsOf: url) else { continue }
             if let type = UTType(filenameExtension: url.pathExtension), type.conforms(to: .image),

@@ -110,13 +110,14 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         panel.allowedContentTypes = DocumentWindowController.importTypes
         panel.message =
             Loc.t(
-                "Import .xmind, OPML, Markdown, Mermaid, PlantUML, draw.io, FreeMind, MindManager, MindNode, Word or text."
+                "Import .xmind, OPML, Markdown, Mermaid, PlantUML, draw.io, FreeMind, MindManager, MindNode, Word, text, or a picture or PDF to read as a map."
             )
         guard panel.runModal() == .OK else { return }
         for url in panel.urls { importFile(url) }
     }
 
     @MainActor func importFile(_ url: URL) {
+        if ImageToMap.isImage(name: url.lastPathComponent) { return importImage(url) }
         do {
             let name = url.lastPathComponent
             var files: [String: Data]?
@@ -126,7 +127,33 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             } else {
                 data = try Data(contentsOf: url)
             }
-            let imported = try Interchange.importFile(name: name, data: data, files: files)
+            openImported(try Interchange.importFile(name: name, data: data, files: files))
+        } catch {
+            importFailed(url.lastPathComponent, error)
+        }
+    }
+
+    /// Image to mind map (M12): Vision and, when it can run, Apple Intelligence work off the
+    /// main thread; the new document opens when they finish.
+    @MainActor func importImage(_ url: URL) {
+        let data: Data
+        do {
+            data = try Data(contentsOf: url)
+        } catch {
+            return importFailed(url.lastPathComponent, error)
+        }
+        let refine = Preferences.shared.bool(ImageToMap.refineKey)
+        Task { @MainActor in
+            do {
+                self.openImported(try await ImageToMap.importImage(data, name: url.lastPathComponent, refine: refine))
+            } catch {
+                self.importFailed(url.lastPathComponent, error)
+            }
+        }
+    }
+
+    @MainActor func openImported(_ imported: Imported) {
+        do {
             let doc = try NSDocumentController.shared.makeUntitledDocument(ofType: "com.opennexus.document")
             guard let nx = doc as? NexusDocument else { return }
             nx.store.replace(with: imported.document)
@@ -139,11 +166,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                 wc.controller.showImportReport(imported.report)
             }
         } catch {
-            let alert = NSAlert()
-            alert.messageText = Loc.f("Couldn’t import “%@”", url.lastPathComponent)
-            alert.informativeText = String(describing: error)
-            alert.runModal()
+            importFailed(imported.report.source, error)
         }
+    }
+
+    @MainActor func importFailed(_ name: String, _ error: any Error) {
+        let alert = NSAlert()
+        alert.messageText = Loc.f("Couldn’t import “%@”", name)
+        alert.informativeText = String(describing: error)
+        alert.runModal()
     }
 }
 
