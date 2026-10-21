@@ -1,3 +1,3 @@
-Topic,Path,Status,Priority,Labels,Note
-Shopper,Checkout,,,,
-API,Checkout,,,,
+Topic,Path,Status,Priority,Owner,Start,Due,Working days,Progress,Depends on,Labels,Note
+Shopper,Checkout,,,,,,,,,,
+API,Checkout,,,,,,,,,,

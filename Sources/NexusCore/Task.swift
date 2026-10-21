@@ -66,7 +66,8 @@ public struct TaskDate: Hashable, Comparable, Sendable, CustomStringConvertible 
         var cal = Calendar(identifier: .gregorian)
         cal.timeZone = zone
         let c = components
-        return cal.date(from: DateComponents(year: c.year, month: c.month, day: c.day)) ?? Date(timeIntervalSince1970: 0)
+        return cal.date(from: DateComponents(year: c.year, month: c.month, day: c.day))
+            ?? Date(timeIntervalSince1970: 0)
     }
 
     public func adding(days n: Int) -> TaskDate { TaskDate(day: day + n) }

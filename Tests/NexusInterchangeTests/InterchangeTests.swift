@@ -13,7 +13,8 @@ import Testing
     ]
 
     @Test(arguments: fixtures) func importer(_ name: String) throws {
-        let imported = try Interchange.importFile(name: name, data: try fixture(name))
+        let imported = try Interchange.importFile(
+            name: name, data: try fixture(name), timeZone: TimeZone(identifier: "UTC")!)
         #expect(!imported.canvases.isEmpty)
         for c in imported.canvases { #expect(c.validate().isEmpty, "\(name): \(c.validate())") }
         #expect(imported.report.topics == imported.canvases.reduce(0) { $0 + $1.nodes.count })
@@ -44,7 +45,8 @@ import Testing
         #expect(im.canvases[1].nodes.values.contains { $0.text == "Engineering" }, "attributed titles join")
         #expect(im.canvases[1].type == .org)
         let skipped = r.skipped.map(\.0)
-        #expect(skipped.contains("Gantt task dates (not in v1)"))
+        #expect(!skipped.contains("Gantt task dates (not in v1)"), "M11 imports task info")
+        #expect(im.canvases.contains { $0.nodes.values.contains { $0.text == "Roadmap" && $0.todo?.start != nil } })
         #expect(skipped.contains("Audio note on “Kickoff” (kept as attachment)"))
         #expect(skipped.contains("Marker “smiley-laugh” (no equivalent)"))
         #expect(skipped.contains("Relationship to a missing topic"))

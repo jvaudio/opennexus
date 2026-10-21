@@ -1,9 +1,8 @@
 zen.xmind · Xmind
-3 sheets → 3 canvases · 18 topics, 4 markers, 1 notes
-6 not converted
+3 sheets → 3 canvases · 18 topics, 4 markers, 1 notes, 1 tasks, 0 dependencies
+5 not converted
 · Marker “smiley-laugh” (no equivalent)
 · Audio note on “Kickoff” (kept as attachment)
-· Gantt task dates (not in v1)
 · Nested sheet copy (an Xmind file quirk), imported as its own canvas
 · Duplicate nested sheet (skipped)
 · Relationship to a missing topic
@@ -116,7 +115,11 @@ zen.xmind · Xmind
       "folded": true,
       "kind": "topic",
       "link": "https://example.com/roadmap",
-      "text": "Roadmap"
+      "text": "Roadmap",
+      "todo": {
+        "done": false,
+        "start": "1970-01-01"
+      }
     },
     "n6": {
       "children": [],

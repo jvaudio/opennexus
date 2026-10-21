@@ -1,0 +1,7 @@
+Topic,Path,Status,Priority,Owner,Start,Due,Working days,Progress,Depends on,Labels,Note
+Build,Release,,,,,,,,,,
+Design; UX,Release › Build,done,,Ana,2026-11-02,2026-11-06,5,100%,,,
+Code,Release › Build,open,P1,"Sam, Lee",2026-11-09,2026-11-20,10,40%,Design; UX,backend; v2,"Ship behind the flag.
+Then remove it, with a long explanation that runs past seventy-five octets so the line folds."
+Launch,Release,open,,,,2026-11-24,0,0%,Code (FS +1),,
+Ideas,Release,,,,,,,,,,

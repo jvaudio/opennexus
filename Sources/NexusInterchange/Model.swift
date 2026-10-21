@@ -17,6 +17,8 @@ public struct ITopic: Sendable, Equatable {
     public var image: AssetRef?
     public var attachments: [AssetRef] = []
     public var todo: Bool?
+    /// Task planning data (M11); wins over `todo` when both are set.
+    public var task: ITask?
     public var nodeType: NodeType?
     public var edgeLabel: String?
     public var structure: LayoutStructure?
@@ -31,6 +33,31 @@ public struct ITopic: Sendable, Equatable {
     }
 
     public var count: Int { 1 + children.reduce(0) { $0 + $1.count } }
+}
+
+/// A task as an importer sees it: dependencies name other topics by `ref`.
+public struct ITask: Sendable, Equatable {
+    public struct Dependency: Sendable, Equatable {
+        public var ref: String
+        public var type: DependencyType
+        public var lag: Int
+        public init(ref: String, type: DependencyType = .finishToStart, lag: Int = 0) {
+            self.ref = ref
+            self.type = type
+            self.lag = lag
+        }
+    }
+    public var done = false
+    public var start: TaskDate?
+    public var due: TaskDate?
+    public var owner: String?
+    public var progress: Int?
+    public var priority: Int?
+    public var after: [Dependency] = []
+
+    public init() {}
+
+    public var isEmpty: Bool { self == ITask() }
 }
 
 /// A canvas as an importer sees it.
@@ -111,6 +138,9 @@ public struct ImportReport: Sendable, Equatable {
     public var topics = 0
     public var markers = 0
     public var notes = 0
+    /// Topics with task data, and the dependencies between them (M11).
+    public var tasks = 0
+    public var dependencies = 0
     /// Things not converted, in first-seen order, with how often each occurred.
     public private(set) var skipped: [(String, Int)] = []
 
@@ -134,14 +164,17 @@ public struct ImportReport: Sendable, Equatable {
 
     public static func == (a: ImportReport, b: ImportReport) -> Bool {
         a.source == b.source && a.format == b.format && a.sheets == b.sheets && a.canvases == b.canvases
-            && a.topics == b.topics && a.markers == b.markers && a.notes == b.notes
+            && a.topics == b.topics && a.markers == b.markers && a.notes == b.notes && a.tasks == b.tasks
+            && a.dependencies == b.dependencies
             && a.skipped.map(\.0) == b.skipped.map(\.0) && a.skipped.map(\.1) == b.skipped.map(\.1)
     }
 
     /// Plain-text form (golden files, the CLI).
     public var text: String {
         var s = "\(source) · \(format)\n"
-        s += "\(sheets) sheets → \(canvases) canvases · \(topics) topics, \(markers) markers, \(notes) notes\n"
+        s += "\(sheets) sheets → \(canvases) canvases · \(topics) topics, \(markers) markers, \(notes) notes"
+        if tasks > 0 { s += ", \(tasks) tasks, \(dependencies) dependencies" }
+        s += "\n"
         s += "\(notConverted) not converted\n"
         for l in lines { s += "· \(l)\n" }
         return s
@@ -208,6 +241,17 @@ public enum CanvasBuilder {
             n.image = t.image
             n.attachments = t.attachments
             n.todo = t.todo.map { Todo(done: $0) }
+            if let task = t.task {
+                var todo = Todo(done: task.done)
+                todo.start = task.start
+                todo.due = task.due.map { d in task.start.map { max($0, d) } ?? d }
+                todo.owner = task.owner
+                todo.progress = task.progress.map { max(0, min(100, $0)) }
+                if todo.progress == 100 { todo.done = true }
+                n.todo = todo
+                if let p = task.priority, (1...9).contains(p), n.priority == nil { n.priority = p }
+                report.tasks += 1
+            }
             n.nodeType = t.nodeType
             n.edgeLabel = t.edgeLabel
             n.structure = t.structure
@@ -272,6 +316,28 @@ public enum CanvasBuilder {
             r.kind = l.kind
             c.relationships.append(r)
         }
+        // Task dependencies name their predecessors by ref.
+        func dependencies(_ t: ITopic) {
+            if let task = t.task, !task.after.isEmpty, let ref = t.ref, let id = refs[ref] {
+                for d in task.after {
+                    guard let p = refs[d.ref], p != id else {
+                        report.skip("Task dependency on a missing topic")
+                        continue
+                    }
+                    guard !(c.nodes[id]?.todo?.after.contains { $0.task == p } ?? false) else { continue }
+                    if c.predecessors(of: p).contains(id) {
+                        report.skip("Task dependency that would make a loop")
+                        continue
+                    }
+                    if c.nodes[p]?.todo == nil { c.nodes[p]?.todo = Todo(done: false) }
+                    c.nodes[id]?.todo?.after.append(TaskDependency(task: p, type: d.type, lag: d.lag))
+                    report.dependencies += 1
+                }
+            }
+            for ch in t.children { dependencies(ch) }
+        }
+        dependencies(ic.root)
+        for f in ic.floating { dependencies(f) }
         // Internal links ("xmind:#id", "#id") point at topics in this canvas.
         for (id, n) in c.nodes {
             guard let link = n.link else { continue }

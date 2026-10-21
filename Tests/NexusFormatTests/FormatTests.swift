@@ -127,7 +127,10 @@ func taskPlanDocument() -> DocumentModel {
         let v = SchemaValidator.bundled
         let node: JSONValue = ["text": "a", "kind": "topic", "children": [], "todo": ["done": false, "start": "2/11"]]
         #expect(!v.validate(node, definition: "node").isEmpty)
-        let dep: JSONValue = ["text": "a", "kind": "topic", "children": [], "todo": ["done": false, "after": [["task": "n1", "type": "XY"]]]]
+        let dep: JSONValue = [
+            "text": "a", "kind": "topic", "children": [],
+            "todo": ["done": false, "after": [["task": "n1", "type": "XY"]]],
+        ]
         #expect(!v.validate(dep, definition: "node").isEmpty)
     }
 

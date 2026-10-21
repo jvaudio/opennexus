@@ -166,7 +166,9 @@ func taskCanvas() -> (Canvas, design: NodeID, build: NodeID, ship: NodeID) {
     @Test func spansAndRows() {
         let (c, design, build, ship) = taskCanvas()
         let s = TaskSchedule(c)
-        #expect(s.spans[design] == TaskSpan(start: d("2026-11-02"), finish: d("2026-11-06"), milestone: false, workingDays: 5))
+        #expect(
+            s.spans[design]
+                == TaskSpan(start: d("2026-11-02"), finish: d("2026-11-06"), milestone: false, workingDays: 5))
         #expect(s.spans[ship]?.milestone == true)
         let timeline = c.parent(of: design)!
         #expect(s.rows.map(\.id) == [timeline, design, build, ship])
@@ -229,7 +231,9 @@ func taskCanvas() -> (Canvas, design: NodeID, build: NodeID, ship: NodeID) {
     @Test func refusesSelfAndCycles() {
         var (c, design, _, ship) = taskCanvas()
         var u = UndoStack()
-        #expect(throws: TaskRefusal.wouldCycle) { try c.edit("Link", undo: &u) { try $0.addDependency(design, on: ship) } }
+        #expect(throws: TaskRefusal.wouldCycle) {
+            try c.edit("Link", undo: &u) { try $0.addDependency(design, on: ship) }
+        }
         #expect(throws: TaskRefusal.dependsOnItself) {
             try c.edit("Link", undo: &u) { try $0.addDependency(design, on: design) }
         }

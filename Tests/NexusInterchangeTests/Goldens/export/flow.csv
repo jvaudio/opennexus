@@ -1,7 +1,7 @@
-Topic,Path,Status,Priority,Labels,Note
-Enter email,Forgot password,,,,
-Account exists?,Forgot password › Enter email,,,,
-Create reset token,Forgot password › Enter email › Account exists?,,,,
-Email the link,Forgot password › Enter email › Account exists? › Create reset token,,,,
-Done,Forgot password › Enter email › Account exists? › Create reset token › Email the link,,,,
-Show neutral message,Forgot password › Enter email › Account exists?,,,,
+Topic,Path,Status,Priority,Owner,Start,Due,Working days,Progress,Depends on,Labels,Note
+Enter email,Forgot password,,,,,,,,,,
+Account exists?,Forgot password › Enter email,,,,,,,,,,
+Create reset token,Forgot password › Enter email › Account exists?,,,,,,,,,,
+Email the link,Forgot password › Enter email › Account exists? › Create reset token,,,,,,,,,,
+Done,Forgot password › Enter email › Account exists? › Create reset token › Email the link,,,,,,,,,,
+Show neutral message,Forgot password › Enter email › Account exists?,,,,,,,,,,

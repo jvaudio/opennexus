@@ -33,7 +33,8 @@ extension Canvas {
         switch (t.start, t.due) {
         case (let s?, let d?):
             let f = max(s, d)
-            return TaskSpan(start: s, finish: f, milestone: false, workingDays: max(1, cal.workingDays(from: s, through: f)))
+            return TaskSpan(
+                start: s, finish: f, milestone: false, workingDays: max(1, cal.workingDays(from: s, through: f)))
         case (let s?, nil):
             return TaskSpan(start: s, finish: s, milestone: false, workingDays: 1)
         case (nil, let d?):
@@ -44,7 +45,7 @@ extension Canvas {
     }
 
     /// Topics this task waits for, transitively (stops at cycles).
-    func predecessors(of id: NodeID) -> Set<NodeID> {
+    public func predecessors(of id: NodeID) -> Set<NodeID> {
         var seen = Set<NodeID>()
         var stack = nodes[id]?.todo?.after.map(\.task) ?? []
         while let cur = stack.popLast() {
