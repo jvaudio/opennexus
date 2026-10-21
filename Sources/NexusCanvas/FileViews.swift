@@ -796,6 +796,10 @@ struct MergeSheetView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(s.name).font(.chrome(15))
                                 Text(s.detail).font(.chrome(13)).foregroundStyle(.secondary)
+                                if let p = s.progress {
+                                    ProgressView(value: p).progressViewStyle(.linear).controlSize(.small)
+                                        .accessibilityLabel(Loc.f("Reading %@", s.name))
+                                }
                             }
                             Spacer()
                             Button {
@@ -833,7 +837,7 @@ struct MergeSheetView: View {
                         .cancelAction)
                     Button("Merge · one undo") { controller.applyMerge() }.buttonStyle(FileButtonStyle(prominent: true))
                         .keyboardShortcut(.defaultAction)
-                        .disabled(m.sources.isEmpty)
+                        .disabled(m.sources.isEmpty || m.reading)
                 }
                 .padding(16)
             }

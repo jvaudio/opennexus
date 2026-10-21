@@ -53,19 +53,26 @@ public struct TextBox: Sendable, Equatable {
     }
 }
 
-/// What text recognition read from an image, before any structure.
+/// What text recognition read from one image or page, before any structure.
 public struct RecognisedImage: Sendable, Equatable {
     public var width: Double
     public var height: Double
     public var boxes: [TextBox]
-    /// Pages in the source (a PDF); only the first is read.
-    public var pages: Int
+    /// This page's number in the source (1 for a picture), and how many pages it has.
+    public var page = 1
+    public var pages = 1
+    /// The picture's lines and shapes, for tracing connectors (D193).
+    public var ink: InkMap?
 
-    public init(width: Double, height: Double, boxes: [TextBox], pages: Int = 1) {
+    public init(
+        width: Double, height: Double, boxes: [TextBox], page: Int = 1, pages: Int = 1, ink: InkMap? = nil
+    ) {
         self.width = width
         self.height = height
         self.boxes = boxes
+        self.page = page
         self.pages = pages
+        self.ink = ink
     }
 }
 
@@ -79,6 +86,8 @@ public enum ImageLayout: String, Sendable {
     case map
     /// A poster or org chart: a title over side-by-side columns.
     case columns
+    /// An Ishikawa diagram: a head at one end of a spine, with causes along diagonal bones.
+    case fishbone
 }
 
 /// An image's text rebuilt as a map: pure, deterministic and headless (D150, D151).
@@ -97,12 +106,14 @@ public struct ImageOutline: Sendable {
     public var units: [Unit]
     /// Marks with no letters or digits, or read with too little confidence.
     public var dropped: Int
-    public var pages: Int
 
     /// Builds the outline. `title` names a made-up root when the image has no single title.
+    /// Right-to-left and vertical text is turned to read left to right first (D194).
     public static func build(_ image: RecognisedImage, title: String) -> ImageOutline {
-        let b = Builder(image: image)
-        let (tree, layout, structure) = b.run()
+        let direction = ReadingDirection(image.boxes)
+        let b = Builder(image: direction.normalised(image))
+        let (tree, layout, found) = b.run()
+        let structure = direction.structure(found)
         var root: T
         var synthesized = false
         if tree.count == 1, tree[0].box != nil {
@@ -121,8 +132,8 @@ public struct ImageOutline: Sendable {
         var ic = ICanvas(title: title.isEmpty ? root.text : title, root: root.topic)
         ic.synthesizedRoot = synthesized
         ic.structure = structure
-        return ImageOutline(
-            canvas: ic, layout: layout, units: units, dropped: b.dropped, pages: image.pages)
+        if layout == .fishbone { ic.type = .fishbone }
+        return ImageOutline(canvas: ic, layout: layout, units: units, dropped: b.dropped)
     }
 
     /// The layout showed no nesting below the main topics (a plain list of lines).
@@ -157,13 +168,7 @@ public struct ImageOutline: Sendable {
 
     /// The import's result and report: one canvas, text only (D154).
     public func imported(canvas ic: ICanvas? = nil, source: String, grouped: Bool = false) -> Imported {
-        var report = ImportReport(source: source, format: grouped ? "Image · Apple Intelligence" : "Image")
-        report.sheets = 1
-        if dropped > 0 { report.skip("Unreadable marks or symbols", dropped) }
-        report.skip("Shapes, lines, colours and pictures (text only)")
-        if pages > 1 { report.skip("PDF pages after the first", pages - 1) }
-        let canvases = CanvasBuilder.build([ic ?? canvas], report: &report)
-        return Imported(canvases: canvases, report: report)
+        ImageImport(outlines: [self], pages: 1).imported(canvases: ic.map { [$0] }, source: source, grouped: grouped)
     }
 }
 
@@ -187,8 +192,11 @@ struct Builder {
     var lines: [TextBox]
     var dropped = 0
     let medianHeight: Double
+    /// The picture's ink, when it's mostly background: a photo's isn't traced.
+    let ink: InkMap?
 
     init(image: RecognisedImage) {
+        ink = image.ink.flatMap { $0.coverage < 0.3 ? $0 : nil }
         var kept: [TextBox] = []
         for var b in image.boxes {
             // A separator dot mid-line reads as a bullet ("Beta • Nov").
@@ -231,6 +239,8 @@ struct Builder {
     /// (forest, layout, structure)
     func run() -> ([T], ImageLayout, LayoutStructure?) {
         guard lines.count > 1 else { return (list(lines), .list, nil) }
+        // A fishbone first: its head sits at one end of a spine nothing else crosses.
+        if let (tree, structure) = fishbone() { return ([tree], .fishbone, structure) }
         // A title over side-by-side columns (a poster, an org chart) first: its title sits
         // at the top, where no mind map puts its centre.
         let split = columnSplit()
@@ -331,14 +341,28 @@ struct Builder {
         let order = lines.indices.filter { $0 != r }.sorted { distance(lines[$0]) < distance(lines[$1]) }
         var parent: [Int: Int] = [:]
         var placed = [r]
+        var isPlaced: Set = [r]
+        let tracer = ink.map { Tracer(ink: $0, lines: lines) }
         for i in order {
             let b = lines[i]
             var best = (r, cost(b, from: R, isRoot: true)!)
             for p in placed where p != r && side(lines[p]) == side(b) {
                 if let c = cost(b, from: lines[p], isRoot: false), c < best.1 { best = (p, c) }
             }
+            // A connector line, where one can be followed, outranks the geometry (D193).
+            let s = side(b)
+            if let p = tracer?.parent(
+                of: i, side: s,
+                accepts: { p in
+                    isPlaced.contains(p)
+                        && (p == r || (side(lines[p]) == s && cost(b, from: lines[p], isRoot: false) != nil))
+                })
+            {
+                best.0 = p
+            }
             parent[i] = best.0
             placed.append(i)
+            isPlaced.insert(i)
         }
         var kids: [Int: [Int]] = [:]
         for (child, p) in parent { kids[p, default: []].append(child) }
@@ -477,6 +501,7 @@ struct Builder {
                 let gap = b.minY - a.maxY
                 return gap > -0.2 * h && gap < 0.45 * h && b.text.first?.isLowercase == true
                     && (abs(a.minX - b.minX) < 0.5 * h || abs(a.midX - b.midX) < 0.5 * h)
+                    && wraps(a, into: b, among: boxes)
             }) {
                 out[i] = out[i].union(b)
             } else {
@@ -571,7 +596,9 @@ struct Builder {
                 let carriesOn =
                     prev.marker.kind == nil && text.first?.isLowercase == true
                     && (abs(dx) < 0.5 * h || abs(b.midX - prev.box.midX) < 0.5 * h)
-                if gap < 0.6 * h, gap > -0.3 * h, hanging || paragraph || carriesOn {
+                if gap < 0.6 * h, gap > -0.3 * h, hanging || paragraph || carriesOn,
+                    Self.wraps(prev.box, into: b, among: sorted)
+                {
                     items[items.count - 1].box = prev.box.union(b)
                     items[items.count - 1].text += " " + text
                     continue
@@ -610,6 +637,41 @@ struct Builder {
             }
         }
         return forest
+    }
+
+    /// Whether `next` can carry on `prev`'s text rather than start a line of its own (D194).
+    /// Text wraps only when the next line's first word wouldn't have fitted after the line
+    /// before, given the widest line in that column, and monospaced text (commands, code)
+    /// never wraps: its lines break where the writer broke them.
+    static func wraps(_ prev: TextBox, into next: TextBox, among boxes: [TextBox]) -> Bool {
+        let h = max(prev.size, next.size)
+        let column = boxes.filter { abs($0.minX - prev.minX) < 0.5 * h && abs($0.size - prev.size) < 0.35 * prev.size }
+        let widest = column.map(\.width).max() ?? prev.width
+        let perCharacter = next.width / Double(max(1, next.text.count))
+        let word = Double(next.text.prefix { !$0.isWhitespace }.count)
+        if prev.width + perCharacter * (word + 1) < widest { return false }
+        return !monospaced(block(prev, in: column))
+    }
+
+    /// The run of lines in `column` around `line`, each tightly under the one before.
+    static func block(_ line: TextBox, in column: [TextBox]) -> [TextBox] {
+        let stack = column.sorted { $0.minY < $1.minY }
+        guard let at = stack.firstIndex(of: line) else { return [line] }
+        func tight(_ a: TextBox, _ b: TextBox) -> Bool { b.minY - a.maxY < max(a.size, b.size) }
+        var lo = at
+        var hi = at
+        while lo > 0, tight(stack[lo - 1], stack[lo]) { lo -= 1 }
+        while hi < stack.count - 1, tight(stack[hi], stack[hi + 1]) { hi += 1 }
+        return Array(stack[lo...hi])
+    }
+
+    /// Three or more lines of six or more characters whose width per character agrees
+    /// within 3%: a monospaced font, where every character, space included, is as wide.
+    static func monospaced(_ lines: [TextBox]) -> Bool {
+        let ratios = lines.filter { $0.text.count >= 6 }.map { $0.width / Double($0.text.count) }
+        guard ratios.count >= 3 else { return false }
+        let m = median(ratios)
+        return ratios.allSatisfy { abs($0 - m) <= 0.03 * m }
     }
 
     /// Appends `t` under the node at `path`; returns its index among the children.

@@ -15,15 +15,37 @@ public enum ImageToMap {
 
     public static func isImage(name: String) -> Bool { InterchangeFormat.detect(name: name) == .image }
 
-    /// Reads the image off the main thread and returns one canvas with its report.
-    public static func importImage(_ data: Data, name: String, refine: Bool) async throws -> Imported {
-        let outline = try await Task.detached(priority: .userInitiated) {
-            try ImageOutline.read(data, name: name)
-        }.value
+    /// Reads the image, or every page of a PDF, off the main thread and returns its canvases
+    /// with the report. `progress` gets (pages read, pages to read) after each page.
+    /// Cancelling the calling task stops the reading between pages.
+    public static func importImage(
+        _ data: Data, name: String, refine: Bool, progress: (@Sendable (Int, Int) -> Void)? = nil
+    ) async throws -> Imported {
+        let reading = Task.detached(priority: .userInitiated) {
+            try ImageOutline.read(data, name: name, progress: progress)
+        }
+        let result = try await withTaskCancellationHandler {
+            try await reading.value
+        } onCancel: {
+            reading.cancel()
+        }
         let source = (name as NSString).lastPathComponent
+        guard refine, ImageStructurer.isAvailable else { return result.imported(source: source) }
+        var canvases = result.outlines.map(\.canvas)
+        var grouped = false
+        for (i, outline) in result.outlines.enumerated() {
+            if let ic = await refined(outline) {
+                canvases[i] = ic
+                grouped = true
+            }
+        }
+        return result.imported(canvases: canvases, source: source, grouped: grouped)
+    }
+
+    /// A flat outline grouped under the headings the on-device model picks, or nil (D152).
+    static func refined(_ outline: ImageOutline) async -> ICanvas? {
         let topics = outline.canvas.root.children.map(\.text)
-        guard refine, outline.isFlat, topics.count <= ImageStructurer.maxLines, ImageStructurer.isAvailable
-        else { return outline.imported(source: source) }
+        guard outline.isFlat, topics.count <= ImageStructurer.maxLines else { return nil }
         let title = outline.canvas.root.text
         let picked = try? await withThrowingTaskGroup(of: [Int]?.self) { group in
             group.addTask { try await ImageStructurer.headings(title: title, lines: topics) }
@@ -35,10 +57,7 @@ public enum ImageToMap {
             group.cancelAll()
             return first
         }
-        if let picked, let ic = outline.grouped(headings: picked) {
-            return outline.imported(canvas: ic, source: source, grouped: true)
-        }
-        return outline.imported(source: source)
+        return picked.flatMap { outline.grouped(headings: $0) }
     }
 
     /// An image on the pasteboard: a copied picture, or a copied image file.
@@ -70,7 +89,10 @@ extension CanvasController {
         let refine = prefs.bool(ImageToMap.refineKey)
         Task { @MainActor [weak self] in
             do {
-                let im = try await ImageToMap.importImage(data, name: name, refine: refine)
+                let im = try await ImageToMap.importImage(data, name: name, refine: refine) { done, total in
+                    guard total > 1, done < total else { return }
+                    Task { @MainActor in self?.showToast(Loc.f("Reading page %lld of %lld…", done + 1, total)) }
+                }
                 self?.addImageCanvas(im)
             } catch {
                 self?.showToast(Loc.f("Couldn’t import “%@”: %@", name, String(describing: error)))
@@ -87,19 +109,23 @@ extension CanvasController {
         importImage(data, name: name)
     }
 
+    /// Every page's canvas, after this one; the first fills this canvas while it is untouched.
     func addImageCanvas(_ im: Imported) {
-        guard var incoming = im.canvases.first else { return }
+        guard var first = im.canvases.first else { return }
         let current = canvas
         let pristine = current.type == .mindmap && current.nodes.count == 1 && current.zones.isEmpty
         var target = canvasID
         store.commitDocument(Loc.t("Image to Map"), focus: canvasID) { d in
+            var rest = im.canvases
             if pristine {
-                incoming.id = current.id
-                incoming.style = current.style
-                d.canvases[current.id] = incoming
-            } else {
-                target = d.add([incoming], assets: im.assets, after: d.canvasOrder.firstIndex(of: current.id))[0]
+                first.id = current.id
+                first.style = current.style
+                d.canvases[current.id] = first
+                rest.removeFirst()
             }
+            guard !rest.isEmpty else { return }
+            let added = d.add(rest, assets: im.assets, after: d.canvasOrder.firstIndex(of: current.id))
+            if !pristine { target = added[0] }
         }
         if target != canvasID { switchCanvas(to: target) }
         selection = Selection(canvas.root)

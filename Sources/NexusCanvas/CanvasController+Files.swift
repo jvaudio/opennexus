@@ -153,14 +153,21 @@ public struct MergeSource: Identifiable, Equatable, Sendable {
     public var detail: String
     public var canvases: [Canvas]
     public var assets: [String: Data]
+    /// While a picture's text is being read: the share of its pages done (0–1).
+    public var progress: Double?
 
-    public static func == (a: MergeSource, b: MergeSource) -> Bool { a.name == b.name && a.canvases == b.canvases }
+    public static func == (a: MergeSource, b: MergeSource) -> Bool {
+        a.name == b.name && a.detail == b.detail && a.progress == b.progress && a.canvases == b.canvases
+    }
 }
 
 public struct MergeState: Equatable, Sendable {
     public var intoThisCanvas = false
     public var mapOfContent = true
     public var sources: [MergeSource] = []
+
+    /// A picture is still being read.
+    public var reading: Bool { sources.contains { $0.progress != nil } }
 }
 
 extension NSPasteboard.PasteboardType {
@@ -890,14 +897,17 @@ extension CanvasController {
     }
 
     public func closeMerge() {
+        for task in mergeReads.values { task.cancel() }
+        mergeReads = [:]
         mergeState = nil
         onRestoreFocus?()
     }
 
     /// Reads a document chosen in the merge sheet (.nexus, .xmind, OPML, Markdown and the
-    /// other importable formats).
-    public func addMergeSource(_ url: URL) {
-        guard mergeState != nil else { return }
+    /// other importable formats). A picture or PDF is read off the main thread, its row
+    /// showing the pages done (D191); the returned task finishes when it's read.
+    @discardableResult public func addMergeSource(_ url: URL) -> Task<Void, Never>? {
+        guard mergeState != nil else { return nil }
         do {
             let name = url.lastPathComponent
             var files: [String: Data]?
@@ -908,30 +918,76 @@ extension CanvasController {
             } else {
                 data = try Data(contentsOf: url)
             }
-            let im = try Interchange.importFile(name: name, data: data, files: files)
-            let fmt = InterchangeFormat.detect(name: name)
-            let topics = im.canvases.reduce(0) { $0 + $1.nodes.count }
-            let detail: String =
-                switch fmt {
-                case .nexus?:
-                    "\(Loc.n("%lld topic", "%lld topics", topics)) · \(Loc.n("%lld canvas", "%lld canvases", im.canvases.count))"
-                case .markdown?:
-                    Loc.n("%lld heading", "%lld headings", im.canvases.first.map { $0.nodes.count - 1 } ?? 0)
-                default: Loc.f("%@ · %@ import", Loc.n("%lld topic", "%lld topics", topics), fmt?.title ?? "")
-                }
-            let kind: String =
-                switch fmt {
-                case .nexus?: "NX"
-                case .xmind?: "XM"
-                case .markdown?: "MD"
-                case .opml?: "OP"
-                default: String((fmt?.title ?? "??").prefix(2)).uppercased()
-                }
-            mergeState?.sources.removeAll { $0.name == name }
-            mergeState?.sources.append(
-                MergeSource(name: name, kind: kind, detail: detail, canvases: im.canvases, assets: im.assets))
+            if let data, ImageToMap.isImage(name: name) { return readMergeImage(data, name: name) }
+            addMergeSource(name: name, try Interchange.importFile(name: name, data: data, files: files))
         } catch {
             showToast(url.lastPathComponent + ": " + String(describing: error))
+        }
+        return nil
+    }
+
+    func readMergeImage(_ data: Data, name: String) -> Task<Void, Never> {
+        mergeReads[name]?.cancel()
+        mergeState?.sources.removeAll { $0.name == name }
+        mergeState?.sources.append(
+            MergeSource(
+                name: name, kind: "IM", detail: Loc.t("Reading the text in the image…"), canvases: [], assets: [:],
+                progress: 0))
+        let refine = prefs.bool(ImageToMap.refineKey)
+        let task = Task { @MainActor [weak self] in
+            do {
+                let im = try await ImageToMap.importImage(data, name: name, refine: refine) { done, total in
+                    Task { @MainActor in self?.mergeProgress(name, done: done, of: total) }
+                }
+                guard !Task.isCancelled else { return }
+                self?.addMergeSource(name: name, im)
+            } catch {
+                guard !Task.isCancelled else { return }
+                self?.mergeState?.sources.removeAll { $0.name == name }
+                self?.showToast(name + ": " + String(describing: error))
+            }
+            self?.mergeReads[name] = nil
+        }
+        mergeReads[name] = task
+        return task
+    }
+
+    func mergeProgress(_ name: String, done: Int, of total: Int) {
+        guard let i = mergeState?.sources.firstIndex(where: { $0.name == name && $0.progress != nil }) else { return }
+        mergeState?.sources[i].progress = Double(done) / Double(max(total, 1))
+        if total > 1 {
+            mergeState?.sources[i].detail = Loc.f("Reading page %lld of %lld…", min(done + 1, total), total)
+        }
+    }
+
+    func addMergeSource(name: String, _ im: Imported) {
+        let fmt = InterchangeFormat.detect(name: name)
+        let topics = im.canvases.reduce(0) { $0 + $1.nodes.count }
+        let detail: String =
+            switch fmt {
+            case .nexus?:
+                "\(Loc.n("%lld topic", "%lld topics", topics)) · \(Loc.n("%lld canvas", "%lld canvases", im.canvases.count))"
+            case .markdown?:
+                Loc.n("%lld heading", "%lld headings", im.canvases.first.map { $0.nodes.count - 1 } ?? 0)
+            case .image? where im.canvases.count > 1:
+                Loc.f(
+                    "%@ · %@ import", Loc.n("%lld canvas", "%lld canvases", im.canvases.count),
+                    InterchangeFormat.image.title)
+            default: Loc.f("%@ · %@ import", Loc.n("%lld topic", "%lld topics", topics), fmt?.title ?? "")
+            }
+        let kind: String =
+            switch fmt {
+            case .nexus?: "NX"
+            case .xmind?: "XM"
+            case .markdown?: "MD"
+            case .opml?: "OP"
+            default: String((fmt?.title ?? "??").prefix(2)).uppercased()
+            }
+        let source = MergeSource(name: name, kind: kind, detail: detail, canvases: im.canvases, assets: im.assets)
+        if let i = mergeState?.sources.firstIndex(where: { $0.name == name }) {
+            mergeState?.sources[i] = source
+        } else {
+            mergeState?.sources.append(source)
         }
     }
 
@@ -948,11 +1004,14 @@ extension CanvasController {
         return out
     }
 
-    public func removeMergeSource(_ name: String) { mergeState?.sources.removeAll { $0.name == name } }
+    public func removeMergeSource(_ name: String) {
+        mergeReads.removeValue(forKey: name)?.cancel()
+        mergeState?.sources.removeAll { $0.name == name }
+    }
 
     /// Merge · one undo.
     public func applyMerge() {
-        guard let m = mergeState, !m.sources.isEmpty else { return }
+        guard let m = mergeState, !m.sources.isEmpty, !m.reading else { return }
         mergeState = nil
         if m.intoThisCanvas {
             let target = canvas.root
