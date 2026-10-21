@@ -4,9 +4,10 @@ import NexusCore
 import NexusFormat
 import NexusInterchange
 
-/// The seven tools an MCP client can call (artboard 40). Each one checks Settings ›
-/// Integrations (the folders, then Read / Edit / Create & export: Allow, Ask or Block),
-/// works on the file, and marks every topic it creates or changes as AI (✦).
+/// The tools an MCP client can call (artboard 40; M22 added set_task and add_comment).
+/// Each one checks Settings › Integrations (the folders, then Read / Edit / Create & export:
+/// Allow, Ask or Block), works on the file, and marks every topic it creates or changes as
+/// AI (✦). Comments an agent adds are signed "… (AI)".
 @MainActor
 public struct MapTools {
     public struct ToolError: Error, CustomStringConvertible {
@@ -26,6 +27,8 @@ public struct MapTools {
     public var scope: FolderScope
     /// Asks the user (MCP elicitation). nil: the client can't ask.
     public var ask: (String) -> Bool?
+    /// The MCP client's name, used to sign comments.
+    public var client: String?
 
     public init(policy: AgentPolicy, ask: @escaping (String) -> Bool? = { _ in nil }) {
         self.policy = policy
@@ -63,7 +66,7 @@ public struct MapTools {
             readOnly: true),
         tool(
             "read_map", "Read a map",
-            "Reads a map as an outline with topic ids (for the other tools), notes, labels and relationships, or as OpenNexus JSON.",
+            "Reads a map as an outline with topic ids (for the other tools), notes, labels, task fields, comments and relationships, or as OpenNexus JSON.",
             schema(
                 [
                     "path": pathProp, "canvas": canvasProp,
@@ -94,6 +97,54 @@ public struct MapTools {
                     "from": ["type": "string", "description": .string(endDesc)],
                     "to": ["type": "string", "description": .string(endDesc)], "label": ["type": "string"],
                 ], required: ["path", "from", "to"]), readOnly: false),
+        tool(
+            "set_task", "Set task fields",
+            "Sets a topic's task fields: dates, owner, progress, priority, done, and the tasks it waits for. Only the fields given change; an empty string clears a text field. Makes the topic a to-do if it isn't. Later tasks move to keep their dependencies. One undo step in OpenNexus; marked as AI-changed.",
+            schema(
+                [
+                    "path": pathProp, "canvas": canvasProp,
+                    "topic": ["type": "string", "description": .string(topicDesc)],
+                    "start": ["type": "string", "description": "First day of work, yyyy-MM-dd (\"\" clears)."],
+                    "due": [
+                        "type": "string",
+                        "description":
+                            "Last day of work, inclusive, yyyy-MM-dd (\"\" clears). Only a due date makes a milestone.",
+                    ],
+                    "duration": [
+                        "type": "integer", "minimum": 1, "maximum": 3650,
+                        "description": "Length in working days; sets the due date from the start.",
+                    ],
+                    "owner": ["type": "string", "description": "Who does it (\"\" clears)."],
+                    "progress": ["type": "integer", "minimum": 0, "maximum": 100, "description": "Percent done."],
+                    "priority": [
+                        "type": "integer", "minimum": 0, "maximum": 9, "description": "1 (highest) to 9; 0 clears.",
+                    ],
+                    "done": ["type": "boolean"],
+                    "after": [
+                        "type": "array",
+                        "description":
+                            "The tasks this one waits for, replacing the current list ([] clears). Each is a topic, with an optional kind (FS finish-to-start by default, SS, FF, SF) and lag in working days.",
+                        "items": [
+                            "type": "object",
+                            "properties": [
+                                "topic": ["type": "string", "description": .string(topicDesc)],
+                                "type": ["type": "string", "enum": ["FS", "SS", "FF", "SF"]],
+                                "lag": ["type": "integer", "minimum": -3650, "maximum": 3650],
+                            ],
+                            "required": ["topic"], "additionalProperties": false,
+                        ],
+                    ],
+                ], required: ["path", "topic"]), readOnly: false),
+        tool(
+            "add_comment", "Add a comment",
+            "Adds a review comment to a topic, signed with the author (default: this client's name) and \"(AI)\", at the current time. One undo step in OpenNexus.",
+            schema(
+                [
+                    "path": pathProp, "canvas": canvasProp,
+                    "topic": ["type": "string", "description": .string(topicDesc)],
+                    "text": ["type": "string", "description": "The comment."],
+                    "author": ["type": "string", "description": "Who is commenting (optional)."],
+                ], required: ["path", "topic", "text"]), readOnly: false),
         tool(
             "set_style", "Set style",
             "Changes the canvas theme, node style or layout structure, or one topic's shape and colour.",
@@ -171,6 +222,8 @@ public struct MapTools {
         case "read_map": return try readMap(args)
         case "add_topic": return try addTopic(args)
         case "add_edge": return try addEdge(args)
+        case "set_task": return try setTask(args)
+        case "add_comment": return try addComment(args)
         case "set_style": return try setStyle(args)
         case "convert_type": return try convertType(args)
         case "export": return try export(args)
@@ -355,6 +408,14 @@ public struct MapTools {
             }
             if let link = n.link { s += " <\(link)>" }
             out.append(s)
+            let pad = String(repeating: "  ", count: d + 2)
+            if let task = taskLine(c, id) { out.append(pad + "task: " + task) }
+            for cm in n.comments {
+                let who = [cm.author, cm.date].filter { !$0.isEmpty }.joined(separator: " · ")
+                out.append(
+                    pad + "comment" + (who.isEmpty ? "" : " by \(who)") + ": "
+                        + cm.text.replacingOccurrences(of: "\n", with: " "))
+            }
         }
         c.walk(line)
         for f in c.floating { c.walk(from: f) { line($0, $1, $2 + 1) } }
@@ -375,6 +436,28 @@ public struct MapTools {
             }
         }
         return out.joined(separator: "\n")
+    }
+
+    /// "owner Ana · start 2026-11-02 · due 2026-11-06 · 5 working days · 40% · priority 2 ·
+    /// after Research [n2], Code [n4] (SS +1)": a topic's task fields, nil for a plain to-do.
+    static func taskLine(_ c: Canvas, _ id: NodeID) -> String? {
+        guard let n = c.nodes[id], let t = n.todo,
+            t.isScheduled || t.owner != nil || t.progress != nil || !t.after.isEmpty
+        else { return nil }
+        var parts: [String] = []
+        if let o = t.owner { parts.append("owner \(o)") }
+        if let s = t.start { parts.append("start \(s)") }
+        if let d = t.due { parts.append(t.start == nil ? "milestone \(d)" : "due \(d)") }
+        if let span = c.span(of: id), !span.milestone {
+            parts.append("\(span.workingDays) working day\(span.workingDays == 1 ? "" : "s")")
+        }
+        parts.append("\(c.progress(of: id))%")
+        if let p = n.priority { parts.append("priority \(p)") }
+        let after = t.after.map { d in
+            "\(c.nodes[d.task]?.text ?? "?") [\(d.task.rawValue)]" + TaskText.dependencySuffix(d)
+        }
+        if !after.isEmpty { parts.append("after " + after.joined(separator: ", ")) }
+        return parts.joined(separator: " · ")
     }
 
     func addTopic(_ args: [String: JSONValue]) throws -> Output {
@@ -423,6 +506,117 @@ public struct MapTools {
             }
         }
         return Output(text: "Connected \(title(from)) → \(title(to)) [\(rid)].")
+    }
+
+    /// A date argument: yyyy-MM-dd, or what the Task editor accepts ("today", "+3", "fri").
+    static func date(_ s: String, key: String, calendar: WorkCalendar) throws -> TaskDate {
+        guard
+            let d = TaskDate(s)
+                ?? TaskDateParser.parse(
+                    s, today: .today(), calendar: calendar, locale: Locale(identifier: "en_US_POSIX"))
+        else { throw ToolError("“\(s)” isn't a date for \(key); use yyyy-MM-dd.") }
+        return d
+    }
+
+    func setTask(_ args: [String: JSONValue]) throws -> Output {
+        let url = try mapURL(args)
+        try permit(policy.edit, "edit \(url.lastPathComponent)")
+        var doc = try load(url)
+        let cid = try Self.canvasID(args, in: doc)
+        var e = CanvasEditor(doc.canvases[cid]!)
+        let id = try Self.topic(try string(args, "topic"), in: e.canvas)
+        let cal = e.canvas.workCalendar
+        func optionalDate(_ key: String) throws -> TaskDate?? {
+            guard let v = args[key] else { return nil }
+            guard let s = v.stringValue?.trimmingCharacters(in: .whitespaces), !s.isEmpty else { return .some(nil) }
+            return .some(try Self.date(s, key: key, calendar: cal))
+        }
+        func int(_ key: String, _ range: ClosedRange<Int>) throws -> Int? {
+            guard let v = args[key] else { return nil }
+            guard case .number(let n) = v, n == n.rounded(), range.contains(Int(n)) else {
+                throw ToolError("“\(key)” must be a whole number from \(range.lowerBound) to \(range.upperBound).")
+            }
+            return Int(n)
+        }
+        let start = try optionalDate("start")
+        var due = try optionalDate("due")
+        let duration = try int("duration", 1...3650)
+        let progress = try int("progress", 0...100)
+        let priority = try int("priority", 0...9)
+        let done = args["done"]?.boolValue
+        let owner = args["owner"]?.stringValue
+        var after: [TaskDependency]?
+        if let list = args["after"]?.arrayValue {
+            after = try list.map { item in
+                guard let ref = item["topic"]?.stringValue ?? item.stringValue else {
+                    throw ToolError("Each item in “after” needs a topic.")
+                }
+                let type = try item["type"]?.stringValue.map { t in
+                    guard let k = DependencyType(rawValue: t.uppercased()) else {
+                        throw ToolError("“\(t)” isn't a dependency kind; use FS, SS, FF or SF.")
+                    }
+                    return k
+                }
+                var lag = 0
+                if case .number(let n)? = item["lag"] { lag = Int(max(-3650, min(3650, n.rounded()))) }
+                return TaskDependency(task: try Self.topic(ref, in: e.canvas), type: type ?? .finishToStart, lag: lag)
+            }
+        }
+        if let duration {
+            guard let s = (start ?? nil) ?? e.canvas.nodes[id]?.todo?.start else {
+                throw ToolError("“duration” needs a start date.")
+            }
+            due = .some(cal.finish(start: s, days: duration))
+        }
+        guard
+            start != nil || due != nil || progress != nil || priority != nil || done != nil || owner != nil
+                || after != nil
+        else {
+            throw ToolError("Nothing to change: give start, due, duration, owner, progress, priority, done or after.")
+        }
+        e.updateTask(id) { t in
+            if let start { t.start = start }
+            if let due { t.due = due }
+            if let owner { t.owner = owner.trimmingCharacters(in: .whitespacesAndNewlines) }
+            if let progress { t.progress = progress == 0 ? nil : progress }
+            if let done { t.done = done }
+            if after != nil { t.after = [] }
+        }
+        e.update(id) { n in
+            if let priority { n.priority = priority == 0 ? nil : priority }
+            n.ai = true
+        }
+        for d in after ?? [] {
+            do { try e.addDependency(id, on: d.task, type: d.type, lag: d.lag) } catch let r as TaskRefusal {
+                throw ToolError("\(e.canvas.nodes[d.task]?.text ?? d.task.rawValue): \(r)")
+            }
+        }
+        if start != nil || due != nil { e.pushDependants(of: [id]) }
+        doc.canvases[cid] = e.canvas
+        try save(doc, url)
+        let line = Self.taskLine(e.canvas, id) ?? (e.canvas.nodes[id]?.todo?.done == true ? "done" : "to-do")
+        return Output(text: "Set “\(e.canvas.nodes[id]?.text ?? "")” [\(id.rawValue)]: \(line).")
+    }
+
+    func addComment(_ args: [String: JSONValue]) throws -> Output {
+        let url = try mapURL(args)
+        try permit(policy.edit, "edit \(url.lastPathComponent)")
+        var doc = try load(url)
+        let cid = try Self.canvasID(args, in: doc)
+        var e = CanvasEditor(doc.canvases[cid]!)
+        let id = try Self.topic(try string(args, "topic"), in: e.canvas)
+        let text = try string(args, "text").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !text.isEmpty else { throw ToolError("Missing “text”.") }
+        let given = args["author"]?.stringValue?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let name = !given.isEmpty ? given : client.flatMap { $0.isEmpty ? nil : $0 } ?? "Agent"
+        let comment = TopicComment(author: "\(name) (AI)", at: Date(), text: text)
+        e.update(id) { $0.comments.append(comment) }
+        doc.canvases[cid] = e.canvas
+        try save(doc, url)
+        return Output(
+            text:
+                "Commented on “\(e.canvas.nodes[id]?.text ?? "")” [\(id.rawValue)] as \(comment.author) (\(e.canvas.nodes[id]?.comments.count ?? 1) comments)."
+        )
     }
 
     func setStyle(_ args: [String: JSONValue]) throws -> Output {

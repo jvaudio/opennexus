@@ -238,6 +238,9 @@ public enum CanvasBuilder {
         if let s = ic.structure { c.layout.structure = s }
         c.legend = ic.legend
         var refs: [String: NodeID] = [:]
+        // Successors and the predecessors they name, resolved once every ref is known (a
+        // successor needs no ref of its own).
+        var waiting: [(NodeID, [ITask.Dependency])] = []
         func apply(_ t: ITopic, to id: NodeID) {
             var n = c.nodes[id] ?? Node(text: t.text)
             n.text = t.text
@@ -261,6 +264,7 @@ public enum CanvasBuilder {
                 if todo.progress == 100 { todo.done = true }
                 n.todo = todo
                 if let p = task.priority, (1...9).contains(p), n.priority == nil { n.priority = p }
+                if !task.after.isEmpty { waiting.append((id, task.after)) }
                 report.tasks += 1
             }
             n.comments = t.comments
@@ -359,27 +363,22 @@ public enum CanvasBuilder {
             c.relationships.append(r)
         }
         // Task dependencies name their predecessors by ref.
-        func dependencies(_ t: ITopic) {
-            if let task = t.task, !task.after.isEmpty, let ref = t.ref, let id = refs[ref] {
-                for d in task.after {
-                    guard let p = refs[d.ref], p != id else {
-                        report.skip("Task dependency on a missing topic")
-                        continue
-                    }
-                    guard !(c.nodes[id]?.todo?.after.contains { $0.task == p } ?? false) else { continue }
-                    if c.predecessors(of: p).contains(id) {
-                        report.skip("Task dependency that would make a loop")
-                        continue
-                    }
-                    if c.nodes[p]?.todo == nil { c.nodes[p]?.todo = Todo(done: false) }
-                    c.nodes[id]?.todo?.after.append(TaskDependency(task: p, type: d.type, lag: d.lag))
-                    report.dependencies += 1
+        for (id, after) in waiting {
+            for d in after {
+                guard let p = refs[d.ref], p != id else {
+                    report.skip("Task dependency on a missing topic")
+                    continue
                 }
+                guard !(c.nodes[id]?.todo?.after.contains { $0.task == p } ?? false) else { continue }
+                if c.predecessors(of: p).contains(id) {
+                    report.skip("Task dependency that would make a loop")
+                    continue
+                }
+                if c.nodes[p]?.todo == nil { c.nodes[p]?.todo = Todo(done: false) }
+                c.nodes[id]?.todo?.after.append(TaskDependency(task: p, type: d.type, lag: d.lag))
+                report.dependencies += 1
             }
-            for ch in t.children { dependencies(ch) }
         }
-        dependencies(ic.root)
-        for f in ic.floating { dependencies(f) }
         // Internal links ("xmind:#id", "#id") point at topics in this canvas.
         for (id, n) in c.nodes {
             guard let link = n.link else { continue }

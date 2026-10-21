@@ -11,6 +11,23 @@ public enum ExcelFormat {
     public static let columns = ["Level", "Path", "Topic", "Note", "Labels", "Markers", "To-do"]
     /// Added on technical canvases (D157).
     public static let technicalColumns = ["Type", "STRIDE", "Risk", "Status"]
+    /// Added when a canvas has tasks (M22, D206).
+    public static let taskColumns = ["Owner", "Start", "Due", "Progress", "Depends on"]
+    /// Added when a canvas has comments.
+    public static let commentColumns = ["Comments"]
+
+    static let widths: [String: Double] = [
+        "Level": 7, "Path": 36, "Topic": 32, "Note": 48, "Labels": 18, "Markers": 18, "To-do": 9, "Type": 16,
+        "STRIDE": 16, "Risk": 9, "Status": 12, "Owner": 16, "Start": 11, "Due": 11, "Progress": 9,
+        "Depends on": 28, "Comments": 48,
+    ]
+    /// Columns whose cells wrap.
+    static let wrapping: Set<String> = ["Note", "Comments"]
+
+    /// True when a topic carries task fields beyond the check box.
+    static func isTask(_ t: Todo) -> Bool {
+        t.start != nil || t.due != nil || t.owner != nil || (t.progress ?? 0) != 0 || !t.after.isEmpty
+    }
 
     /// The rows of one canvas, header first: the main tree, then each floating topic's
     /// branch. Level is the depth below its top (the central topic is 0).
@@ -18,7 +35,12 @@ public enum ExcelFormat {
         let technical = DiagramCatalog.isTechnical(c.type)
         let parents = c.parentMap()
         let threats = Dictionary(Stride.threats(c).map { ($0.node, $0) }, uniquingKeysWith: { a, _ in a })
-        var out = [columns + (technical ? technicalColumns : [])]
+        let tasks = c.nodes.values.contains { $0.todo.map(isTask) ?? false }
+        let comments = c.nodes.values.contains { !$0.comments.isEmpty }
+        var out = [
+            columns + (technical ? technicalColumns : []) + (tasks ? taskColumns : [])
+                + (comments ? commentColumns : [])
+        ]
         for top in [c.root] + c.floating {
             c.walk(from: top) { id, n, d in
                 let path = c.path(to: id, parents: parents).compactMap { c.nodes[$0]?.text }.joined(separator: " › ")
@@ -35,6 +57,25 @@ public enum ExcelFormat {
                         threat?.risk ?? Stride.field(n, Stride.riskKey) ?? "",
                         threat?.status ?? Stride.field(n, Stride.statusKey) ?? "",
                     ]
+                }
+                if tasks {
+                    let t = n.todo
+                    let deps = (t?.after ?? []).compactMap { d in
+                        c.nodes[d.task].map { $0.text + TaskText.dependencySuffix(d) }
+                    }
+                    row += [
+                        t?.owner ?? "", t?.start?.description ?? "", t?.due?.description ?? "",
+                        t == nil ? "" : "\(c.progress(of: id))%", deps.joined(separator: "; "),
+                    ]
+                }
+                if comments {
+                    row.append(
+                        n.comments.map { cm in
+                            let who = [cm.author, String(cm.date.prefix(10))].filter { !$0.isEmpty }
+                                .joined(separator: " · ")
+                            return (who.isEmpty ? "" : who + ": ") + cm.text
+                        }
+                        .joined(separator: "\n"))
                 }
                 out.append(row)
             }
@@ -117,13 +158,14 @@ public enum ExcelFormat {
     }
 
     static func sheet(_ rows: [[String]]) -> String {
-        let width = rows.first?.count ?? 1
-        let widths = [7.0, 36, 32, 48, 18, 18, 9, 16, 16, 9, 12]
+        let header = rows.first ?? []
+        let width = max(header.count, 1)
         var cols = ""
         for i in 0..<width {
-            cols +=
-                "<col min=\"\(i + 1)\" max=\"\(i + 1)\" width=\"\(Int(widths[min(i, widths.count - 1)]))\" customWidth=\"1\"/>"
+            let w = i < header.count ? widths[header[i]] ?? 12 : 12
+            cols += "<col min=\"\(i + 1)\" max=\"\(i + 1)\" width=\"\(Int(w))\" customWidth=\"1\"/>"
         }
+        let wraps = Set(header.indices.filter { wrapping.contains(header[$0]) })
         var data = ""
         for (r, row) in rows.enumerated() {
             data += "<row r=\"\(r + 1)\">"
@@ -134,7 +176,7 @@ public enum ExcelFormat {
                 } else if ci == 0, let n = Int(value) {
                     data += "<c r=\"\(ref)\"><v>\(n)</v></c>"
                 } else if !value.isEmpty {
-                    let style = ci == 3 ? " s=\"2\"" : ""
+                    let style = wraps.contains(ci) ? " s=\"2\"" : ""
                     data +=
                         "<c r=\"\(ref)\"\(style) t=\"inlineStr\"><is><t xml:space=\"preserve\">\(text(value))</t></is></c>"
                 }

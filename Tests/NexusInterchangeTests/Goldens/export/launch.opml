@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<opml version="2.0">
+<opml version="2.0" xmlns:nexus="https://opennexus.app/ns/opml">
   <head>
     <title>Launch plan</title>
   </head>
@@ -11,7 +11,7 @@
       </outline>
       <outline text="Pricing" _note="Keep the free tier generous.">
         <outline text="Free tier"/>
-        <outline text="Pro" _status="unchecked"/>
+        <outline text="Pro" _status="unchecked" nexus:priority="1"/>
         <outline text="Annual discount"/>
       </outline>
       <outline text="Channels">

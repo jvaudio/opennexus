@@ -366,7 +366,8 @@ public enum AIAction: String, Sendable, CaseIterable {
     ]
 }
 
-/// One ghost suggestion: a child to add, with optional markers, labels and a to-do box.
+/// One ghost suggestion: a child to add, with optional markers, labels, a to-do box and,
+/// from a work breakdown, task dates (M22, D209).
 public struct GhostIdea: Hashable, Sendable {
     public var text: String
     public var markers: [String] = []
@@ -374,15 +375,52 @@ public struct GhostIdea: Hashable, Sendable {
     public var todo = false
     /// A sub-step under the ghost at this index (work breakdown).
     public var parentGhost: Int?
+    /// Task dates and length in working days, when the model's plan has them.
+    public var start: TaskDate?
+    public var due: TaskDate?
+    public var workingDays: Int?
 
     public init(
-        text: String, markers: [String] = [], labels: [String] = [], todo: Bool = false, parentGhost: Int? = nil
+        text: String, markers: [String] = [], labels: [String] = [], todo: Bool = false, parentGhost: Int? = nil,
+        start: TaskDate? = nil, due: TaskDate? = nil, workingDays: Int? = nil
     ) {
         self.text = text
         self.markers = markers
         self.labels = labels
         self.todo = todo
         self.parentGhost = parentGhost
+        self.start = start
+        self.due = due
+        self.workingDays = workingDays
+    }
+
+    /// True when accepting it makes a to-do (a task when it has dates or a length).
+    public var isTask: Bool { todo || start != nil || due != nil || workingDays != nil }
+
+    /// Fills in the dates a plan implies, on `calendar`: a length with a start gives the
+    /// due date (and with a due date, the start), and a phase with only a length starts the
+    /// working day after the dated phase before it at the same level. Anything else stays
+    /// as it is, so an undated plan makes undated tasks.
+    public static func scheduled(_ ideas: [GhostIdea], calendar cal: WorkCalendar) -> [GhostIdea] {
+        var out = ideas
+        var lastDue: [Int: TaskDate] = [:]  // by parentGhost (-1 for top-level ghosts)
+        for i in out.indices {
+            var g = out[i]
+            let level = g.parentGhost ?? -1
+            let days = g.workingDays.map { max(1, $0) }
+            if g.start == nil, g.due == nil, days != nil, let prev = lastDue[level] {
+                g.start = cal.shift(prev, by: 1)
+            }
+            if let s = g.start, g.due == nil, let days {
+                g.due = cal.finish(start: s, days: days)
+            } else if g.start == nil, let d = g.due, let days, days > 1 {
+                g.start = cal.shift(cal.snapBack(d), by: -(days - 1))
+            }
+            if let s = g.start, let d = g.due, d < s { g.due = s }
+            if let d = g.due { lastDue[level] = d }
+            out[i] = g
+        }
+        return out
     }
 }
 

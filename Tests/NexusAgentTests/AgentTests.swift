@@ -92,7 +92,12 @@ final class Session {
         #expect(s.response(1)?["result"]?["protocolVersion"] == "2025-06-18")
         #expect(s.response(1)?["result"]?["serverInfo"]?["name"] == "opennexus")
         let tools = s.response(2)?["result"]?["tools"]?.arrayValue?.compactMap { $0["name"]?.stringValue }
-        #expect(tools == ["list_maps", "read_map", "add_topic", "add_edge", "set_style", "convert_type", "export"])
+        #expect(
+            tools == [
+                "list_maps", "read_map", "add_topic", "add_edge", "set_task", "add_comment", "set_style",
+                "convert_type",
+                "export",
+            ])
         for t in s.response(2)?["result"]?["tools"]?.arrayValue ?? [] {
             #expect(t["inputSchema"]?["type"] == "object" && t["description"]?.stringValue?.isEmpty == false)
         }

@@ -275,7 +275,9 @@ public enum FreeMindFormat {
 // MARK: MindManager (.mmap)
 
 public enum MindManagerFormat {
-    public static func parse(_ data: Data, name: String, report: inout ImportReport) throws -> ICanvas {
+    public static func parse(
+        _ data: Data, name: String, timeZone: TimeZone = .current, report: inout ImportReport
+    ) throws -> ICanvas {
         guard !data.isEmpty else { throw ImportError.empty(name) }
         let files = try Zip.read(data)
         guard let doc = files["Document.xml"] else { throw ImportError.invalid(name, "no Document.xml inside") }
@@ -287,10 +289,7 @@ public enum MindManagerFormat {
                 t.note = n.attr("PreviewPlainText") ?? DrawIOFormat.plain(n.xmlString)
             }
             t.link = e.kid("Hyperlink")?.attr("Url")
-            if let pct = e.kid("Task")?.attr("TaskPercentage"), let v = Int(pct) { t.todo = v >= 100 }
-            if let p = e.kid("Task")?.attr("TaskPriority"), let n = Int(p.filter(\.isNumber)), (1...9).contains(n) {
-                t.markers.append("priority-\(n)")
-            }
+            if let task = e.kid("Task") { MindManagerTask.read(task, into: &t, zone: timeZone, report: &report) }
             for icon in e.kid("IconsGroup")?.descendants("Icon") ?? [] {
                 let type = icon.attr("IconType") ?? ""
                 if let n = Int(type.filter(\.isNumber)), type.contains("Prio"), (1...9).contains(n) {
@@ -309,11 +308,133 @@ public enum MindManagerFormat {
         ic.floating = root.kid("FloatingTopics")?.kids("Topic").map(topic) ?? []
         for rel in root.descendants("Relationship") {
             let refs = rel.descendants("ObjectReference").compactMap { $0.attr("OIdRef") }
-            if refs.count == 2 { ic.links.append(ICanvas.Link(from: refs[0], to: refs[1])) }
+            guard refs.count == 2 else { continue }
+            // A task dependency drawn as a relationship: the first end waits for nothing,
+            // the second waits for the first (D208).
+            if let dep = MindManagerTask.dependency(rel, predecessor: refs[0]) {
+                let added = ic.updateTopic(ref: refs[1]) { t in
+                    var task = t.task ?? ITask()
+                    task.done = task.done || t.todo == true
+                    task.after.append(dep)
+                    t.task = task
+                }
+                if !added { report.skip("Task dependency on a missing topic") }
+                continue
+            }
+            ic.links.append(ICanvas.Link(from: refs[0], to: refs[1]))
         }
         if root.descendants("Boundary").count > 0 { report.skip("Boundary", root.descendants("Boundary").count) }
         report.sheets = 1
         return ic
+    }
+}
+
+/// MindManager's task info (`<ap:Task>`), read tolerantly like Xmind's (D149, D208).
+enum MindManagerTask {
+    /// Start, due, duration, progress, resources, priority and dependencies. A topic with
+    /// only a percentage of 0 or 100 stays a plain to-do.
+    static func read(_ e: XMLElement, into t: inout ITopic, zone: TimeZone, report: inout ImportReport) {
+        var task = ITask()
+        var isTask = false
+        var duration: (Double, String)?
+        for a in e.attributes ?? [] {
+            guard let key = a.localName ?? a.name, let value = a.stringValue?.trimmed, !value.isEmpty else { continue }
+            switch key.lowercased() {
+            case "taskpercentage", "percentage", "percentcomplete", "progress":
+                guard let v = Double(value) else { continue }
+                let p = Int(max(0, min(100, v.rounded())))
+                t.todo = p >= 100
+                task.done = p >= 100
+                if p > 0 && p < 100 {
+                    task.progress = p
+                    isTask = true
+                }
+            case "taskpriority", "priority":
+                if let n = Int(value.filter(\.isNumber)), (1...9).contains(n),
+                    !t.markers.contains(where: {
+                        $0.hasPrefix("priority-")
+                    })
+                {
+                    t.markers.append("priority-\(n)")
+                }
+            case "startdate", "start", "startdatetime":
+                task.start = XmindTask.date(value, zone: zone) ?? task.start
+                isTask = isTask || task.start != nil
+            case "duedate", "due", "duedatetime", "enddate", "finishdate", "deadline":
+                task.due = XmindTask.date(value, zone: zone) ?? task.due
+                isTask = isTask || task.due != nil
+            case "resources", "resource", "owner", "assignedto":
+                let names = value.split(whereSeparator: { $0 == ";" || $0 == "," }).map(\.trimmed).filter {
+                    !$0.isEmpty
+                }
+                if !names.isEmpty {
+                    task.owner = names.joined(separator: ", ")
+                    isTask = true
+                }
+            case "duration":
+                if let v = Double(value.filter { $0.isNumber || $0 == "." }) {
+                    duration = (v, e.attr("DurationUnit") ?? e.attr("DurationType") ?? value)
+                }
+            case "durationunit", "durationtype", "efforttype", "milestone": continue
+            default: report.skip("Task field “\(key)”")
+            }
+        }
+        for d in e.kids() {
+            guard let ref = d.attr("OIdRef") ?? d.attr("TopicOIdRef") ?? d.kid("ObjectReference")?.attr("OIdRef")
+            else { continue }
+            if ["dependency", "predecessor", "taskdependency"].contains((d.localName ?? "").lowercased()) {
+                task.after.append(ITask.Dependency(ref: ref, type: type(d), lag: lag(d)))
+                isTask = true
+            }
+        }
+        // A duration in working days (MindManager plans on a Monday-to-Friday week).
+        if let (v, unit) = duration, v > 0 {
+            let u = unit.lowercased()
+            let days =
+                u.contains("week") ? v * 5 : u.contains("hour") ? v / 8 : u.contains("min") ? v / 480 : v
+            let n = max(1, Int(days.rounded(.up)))
+            let cal = WorkCalendar()
+            if task.due == nil, let s = task.start {
+                task.due = cal.finish(start: s, days: n)
+            } else if task.start == nil, let d = task.due {
+                task.start = cal.shift(cal.snapBack(d), by: -(n - 1))
+            }
+            isTask = true
+        }
+        if isTask { t.task = task }
+    }
+
+    /// FS, SS, FF or SF from `Type`/`DependencyType` in any spelling MindManager uses
+    /// ("FS", "FinishToStart", "urn:mindjet:FinishToStart", "finish-to-start").
+    static func type(_ e: XMLElement) -> DependencyType {
+        let raw =
+            (e.attr("Type") ?? e.attr("DependencyType") ?? e.attr("LinkType") ?? "FS").lowercased()
+            .split(separator: ":").last.map(String.init)?.replacingOccurrences(of: "-", with: "") ?? "fs"
+        switch raw {
+        case "ss", "starttostart": return .startToStart
+        case "ff", "finishtofinish": return .finishToFinish
+        case "sf", "starttofinish": return .startToFinish
+        default: return .finishToStart
+        }
+    }
+
+    static func lag(_ e: XMLElement) -> Int {
+        guard let raw = e.attr("Lag") ?? e.attr("LagDays"),
+            let v = Double(raw.filter { $0.isNumber || $0 == "-" || $0 == "." })
+        else { return 0 }
+        return Int(max(-3650, min(3650, v.rounded())))
+    }
+
+    /// A relationship that MindManager marks as a task dependency: a `Dependency` element
+    /// inside it, or a `DependencyType` / `Dependency="true"` attribute.
+    static func dependency(_ rel: XMLElement, predecessor: String) -> ITask.Dependency? {
+        if let d = rel.descendants("Dependency").first ?? rel.descendants("TaskDependency").first {
+            return ITask.Dependency(ref: predecessor, type: type(d), lag: lag(d))
+        }
+        if rel.attr("DependencyType") != nil || ["true", "1"].contains(rel.attr("Dependency")?.lowercased() ?? "") {
+            return ITask.Dependency(ref: predecessor, type: type(rel), lag: lag(rel))
+        }
+        return nil
     }
 }
 
