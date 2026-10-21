@@ -115,6 +115,8 @@ public struct SceneViewState: Equatable {
     /// what's overdue.
     public var taskDetails = true
     public var today: TaskDate?
+    /// Present draws the legend in a corner of the slide instead (M21).
+    public var hideLegend = false
 
     public struct Ghost: Equatable {
         /// Under a real topic, or under an earlier ghost (by index).
@@ -1034,7 +1036,7 @@ public struct SceneBuilder {
 
         // The legend lists the canvas's own markers and labels (never ghosts'), beside the
         // map unless dragged; branch, selection and zone exports leave it out.
-        if let legend = source.legend, legend.visible, view.isolate == nil {
+        if let legend = source.legend, legend.visible, view.isolate == nil, !view.hideLegend {
             scene.legend = SceneLegend.make(legend, canvas: source, content: scene.bounds)
         }
         if !view.isEmpty || focus != nil { Self.apply(view, focusSet: focusSet, to: &scene) }

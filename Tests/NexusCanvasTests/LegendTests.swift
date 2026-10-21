@@ -126,7 +126,7 @@ import Testing
         var asked: [CanvasRequest] = []
         h.controller.onRequest = { asked.append($0) }
         #expect(item.accessibilityPerformPress() && asked == [.legend])
-        #expect(item.accessibilityCustomActions()?.map(\.name) == ["Edit Legend", "Hide Legend"])
+        #expect(item.accessibilityCustomActions()?.map(\.name).prefix(2) == ["Edit Legend", "Hide Legend"])
     }
 
     /// Visual review: NEXUS_SNAPSHOT_DIR=… writes the canvas with a legend and comments.

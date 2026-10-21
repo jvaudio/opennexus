@@ -125,6 +125,19 @@ extension CommandID {
     /// The marker legend (M14).
     public static let toggleLegend: CommandID = "view.legend"
     public static let editLegend: CommandID = "view.editLegend"
+    /// Moving the legend from the keyboard (M21): select it, then arrows nudge it.
+    public static let selectLegend: CommandID = "legend.select"
+    public static let resetLegendPosition: CommandID = "legend.resetPosition"
+    public static let legendLeft: CommandID = "legend.left"
+    public static let legendRight: CommandID = "legend.right"
+    public static let legendUp: CommandID = "legend.up"
+    public static let legendDown: CommandID = "legend.down"
+    public static let legendLeftFar: CommandID = "legend.leftFar"
+    public static let legendRightFar: CommandID = "legend.rightFar"
+    public static let legendUpFar: CommandID = "legend.upFar"
+    public static let legendDownFar: CommandID = "legend.downFar"
+    public static let legendEdit: CommandID = "legend.edit"
+    public static let legendDone: CommandID = "legend.done"
     public static func navigationTab(_ n: Int) -> CommandID { CommandID(rawValue: "view.navigationTab\(n)") }
     // AI
     public static let aiGhosts: CommandID = "ai.ghosts"
@@ -209,7 +222,7 @@ public enum DefaultCommands {
 
     public static let all: [CommandDescriptor] =
         create + edit + navigate + restructure + elements + style + view + ai
-        + file + connect + diagrams + outline + aiActions + tasks
+        + file + connect + diagrams + outline + aiActions + tasks + legend
 
     static let aiActions: [C] = [
         C(.aiBreakdown, "Break Down", .ai, menu: .ai, note: "Phases with priority and duration, as ghosts"),
@@ -223,6 +236,33 @@ public enum DefaultCommands {
         C(.aiRemoveBackground, "Remove Image Background", .ai, menu: .ai, note: "Subject lift"),
         C(.aiSticker, "Make a Sticker…", .ai, menu: .ai, note: "Image Playground"),
         C(.aiRecord, "Record to Map…", .ai, menu: .ai, note: "Live transcript; key points as ghosts"),
+    ]
+
+    /// Moving the legend (M21). Select Legend gives it the keyboard; its keys live in their
+    /// own scope, like the Gantt's, so plain arrows can nudge it (D203).
+    static let legend: [C] = [
+        C(
+            .selectLegend, "Select Legend", .navigate, scope: .global, menu: .view,
+            note: "Arrow keys then move it; ⇧ moves it further"),
+        C(
+            .resetLegendPosition, "Reset Legend Position", .view, scope: .global, menu: .view,
+            note: "Back beside the map"),
+        C(.legendLeft, "Move Legend Left", .restructure, scope: .legend, keys: [k("left")], note: "Legend"),
+        C(.legendRight, "Move Legend Right", .restructure, scope: .legend, keys: [k("right")], note: "Legend"),
+        C(.legendUp, "Move Legend Up", .restructure, scope: .legend, keys: [k("up")], note: "Legend"),
+        C(.legendDown, "Move Legend Down", .restructure, scope: .legend, keys: [k("down")], note: "Legend"),
+        C(
+            .legendLeftFar, "Move Legend Far Left", .restructure, scope: .legend, keys: [k("shift+left")],
+            note: "Legend"),
+        C(
+            .legendRightFar, "Move Legend Far Right", .restructure, scope: .legend, keys: [k("shift+right")],
+            note: "Legend"),
+        C(.legendUpFar, "Move Legend Far Up", .restructure, scope: .legend, keys: [k("shift+up")], note: "Legend"),
+        C(
+            .legendDownFar, "Move Legend Far Down", .restructure, scope: .legend, keys: [k("shift+down")],
+            note: "Legend"),
+        C(.legendEdit, "Edit Selected Legend", .view, scope: .legend, keys: [k("return")], note: "Legend"),
+        C(.legendDone, "Done Moving Legend", .navigate, scope: .legend, keys: [k("escape")], note: "Legend"),
     ]
 
     /// Task planning and the Gantt view (M11). Gantt keys live in their own scope (D146).

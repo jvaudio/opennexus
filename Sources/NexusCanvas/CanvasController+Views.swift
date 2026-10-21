@@ -131,6 +131,7 @@ extension CanvasController {
                 v.flowGlow = s.flow
             }
             v.hidden = Set(all.filter { c.nodes[$0]?.presentHidden == true })
+            v.hideLegend = true
             return v
         }
         if !filterClauses.isEmpty {
@@ -757,6 +758,10 @@ extension CanvasController {
             present = p
         case (_, "p"?):
             onTogglePresenter?()
+        case (_, "l"?):
+            togglePresentLegend()
+        case (_, "t"?):
+            togglePresentTimeline()
         default:
             return true
         }

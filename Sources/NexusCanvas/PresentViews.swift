@@ -17,15 +17,35 @@ struct PresentOverlayView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(slide?.kicker ?? "").font(.chrome(13, weight: .medium, design: .monospaced))
                         .kerning(1.6).foregroundStyle(ink.opacity(0.6))
-                    Text(slide?.title ?? "").font(.chrome(40, weight: .bold)).foregroundStyle(ink)
+                    Text(slide.map(controller.slideTitle) ?? "").font(.chrome(40, weight: .bold)).foregroundStyle(ink)
                         .lineLimit(2)
+                    // The slide's own task line, as on its topic (M21, D201).
+                    if let line = slide.flatMap(controller.slideTaskLine) {
+                        Text(line).font(.chrome(16, design: .monospaced)).foregroundStyle(ink.opacity(0.72))
+                    }
+                    if let slide, let chart = controller.timelineChart(for: slide) {
+                        TimelineCard(chart: chart, spoken: controller.timelineSpoken(slide))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .padding(.top, 24)
+                            .padding(.trailing, 56)
+                            .padding(.bottom, p.stageOnly ? 64 : 304)
+                    }
                 }
                 .padding(.leading, 56)
                 .padding(.top, 36)
                 .allowsHitTesting(false)
                 VStack {
                     Spacer()
-                    HStack {
+                    HStack(alignment: .bottom) {
+                        // The canvas's legend in the slide's corner (M21, D200).
+                        if let l = controller.presentLegend(for: slide) {
+                            PresentLegendCorner(
+                                legend: l, theme: controller.scene.theme, canvas: controller.scene.canvasColor
+                            )
+                            .padding(.leading, 56)
+                            .padding(.bottom, p.stageOnly ? 28 : 268)
+                            .allowsHitTesting(false)
+                        }
                         Spacer()
                         HStack(spacing: 6) {
                             ForEach(Array(slides.enumerated()), id: \.offset) { i, s in
@@ -68,6 +88,17 @@ struct SlideStripView: View {
                 if DiagramCatalog.isTechnical(controller.canvas.type) {
                     chip(Loc.t("Step through flow") + (settings.stepThroughFlow ? " ✓" : ""), on: false) {
                         controller.setPresentation(Loc.t("Step Through Flow")) { $0.stepThroughFlow.toggle() }
+                    }
+                }
+                // M21: the legend in each slide's corner, and Timeline slides for dated tasks.
+                if controller.canvas.legend?.visible == true {
+                    chip(Loc.t("Legend") + (settings.legend ? " ✓" : ""), on: false) {
+                        controller.togglePresentLegend()
+                    }
+                }
+                if controller.canvasHasScheduledTasks {
+                    chip(Loc.t("Timeline slides") + (settings.timeline ? " ✓" : ""), on: false) {
+                        controller.togglePresentTimeline()
                     }
                 }
                 Menu(settings.aspect) {
@@ -154,7 +185,7 @@ struct SlideStripView: View {
                     RoundedRectangle(cornerRadius: 8).stroke(
                         i == state.index ? Color.accentColor : Color.secondary.opacity(0.25),
                         lineWidth: i == state.index ? 2 : 1))
-            Text(s.title + (s.skipped ? Loc.t(" · skipped") : ""))
+            Text(controller.slideTitle(s) + (s.skipped ? Loc.t(" · skipped") : ""))
                 .font(.chrome(12))
                 .lineLimit(1)
                 .frame(width: 170, alignment: .leading)
@@ -162,7 +193,9 @@ struct SlideStripView: View {
         }
         .opacity(s.skipped ? 0.55 : 1)
         .accessibilityLabel(
-            s.skipped ? Loc.f("Slide %lld: %@, skipped", i + 1, s.title) : Loc.f("Slide %lld: %@", i + 1, s.title))
+            s.skipped
+                ? Loc.f("Slide %lld: %@, skipped", i + 1, controller.slideTitle(s))
+                : Loc.f("Slide %lld: %@", i + 1, controller.slideTitle(s)))
     }
 }
 
@@ -206,6 +239,7 @@ struct PresentKeysView: View {
                         ("S", Loc.t("Skip this slide")),
                         ("M", Loc.t("Merge with the next slide")), ("H", Loc.t("Hide the topic from slides")),
                         ("F", Loc.t("Stage only (hide the strip)")), ("P", Loc.t("Presenter view")),
+                        ("L", Loc.t("Legend on slides")), ("T", Loc.t("Timeline slides")),
                         ("?", Loc.t("This list")),
                         ("esc", Loc.t("End")),
                     ], id: \.0
@@ -245,7 +279,7 @@ public struct PresenterView: View {
                         .font(.chrome(30, weight: .semibold, design: .monospaced))
                         .foregroundStyle(Color.accentColor)
                 }
-                Text(current?.title ?? "").font(.chrome(20, weight: .semibold))
+                Text(current.map(controller.slideTitle) ?? "").font(.chrome(20, weight: .semibold))
                 HStack(alignment: .top, spacing: 14) {
                     if let next {
                         SlideWireframe(scene: controller.scene, slide: next)
@@ -254,7 +288,7 @@ public struct PresenterView: View {
                     }
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Next").foregroundStyle(.secondary)
-                        Text(next?.title ?? Loc.t("End of deck")).font(.chrome(15))
+                        Text(next.map(controller.slideTitle) ?? Loc.t("End of deck")).font(.chrome(15))
                     }
                 }
                 ScrollView {

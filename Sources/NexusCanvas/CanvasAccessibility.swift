@@ -440,7 +440,11 @@ final class LegendItem: NSAccessibilityElement {
     override func accessibilityRole() -> NSAccessibility.Role? { .group }
     override func accessibilityRoleDescription() -> String? { Loc.t("legend") }
     override func accessibilityLabel() -> String? { text }
-    override func accessibilityFrame() -> NSRect { world.isNull ? .zero : tree.screenRect(world) }
+    override func accessibilityFrame() -> NSRect {
+        // Live, so a move action's new place is reported at once (M21).
+        let r = tree.controller?.scene.legend?.rect ?? world
+        return r.isNull ? .zero : tree.screenRect(r)
+    }
     override func accessibilityParent() -> Any? {
         let t = tree
         return onMain { t.view }
@@ -450,8 +454,13 @@ final class LegendItem: NSAccessibilityElement {
         tree.controller?.editLegend()
         return true
     }
+    /// Keyboard focus on the legend selects it, so the arrow keys move it (M21).
+    override func isAccessibilityFocused() -> Bool { tree.controller?.legendSelected ?? false }
+    override func setAccessibilityFocused(_ focused: Bool) {
+        if focused { tree.controller?.selectLegend() } else { tree.controller?.deselectLegend() }
+    }
     override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
-        [
+        var actions = [
             NSAccessibilityCustomAction(name: Loc.t("Edit Legend")) { [weak self] in
                 self?.tree.controller?.editLegend()
                 return true
@@ -461,6 +470,30 @@ final class LegendItem: NSAccessibilityElement {
                 return true
             },
         ]
+        // Move actions (M21, D203): the same steps as the arrow keys, one undo step each.
+        let moves: [(String, Double, Double)] = [
+            (Loc.t("Move Legend Left"), -1, 0), (Loc.t("Move Legend Right"), 1, 0),
+            (Loc.t("Move Legend Up"), 0, -1), (Loc.t("Move Legend Down"), 0, 1),
+        ]
+        for (name, dx, dy) in moves {
+            actions.append(
+                NSAccessibilityCustomAction(name: name) { [weak self] in
+                    guard let self else { return false }
+                    self.tree.controller?.nudgeLegend(dx: dx, dy: dy)
+                    NSAccessibility.post(element: self, notification: .moved)
+                    return true
+                })
+        }
+        if tree.controller?.canvas.legend?.position != nil {
+            actions.append(
+                NSAccessibilityCustomAction(name: Loc.t("Reset Legend Position")) { [weak self] in
+                    guard let self else { return false }
+                    self.tree.controller?.moveLegend(to: nil)
+                    NSAccessibility.post(element: self, notification: .moved)
+                    return true
+                })
+        }
+        return actions
     }
     override func accessibilityPerformShowMenu() -> Bool { tree.showMenu(.legend, world: world) }
 }

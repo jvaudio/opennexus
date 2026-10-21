@@ -15,6 +15,10 @@ public struct PresentationSettings: Hashable, Sendable, JSONRepresentable {
     public var theme: String = "canvas"
     /// Flowcharts, DFDs and sequences step one flow at a time.
     public var stepThroughFlow: Bool = true
+    /// The canvas's legend in a corner of every slide, when the canvas shows one (M21).
+    public var legend: Bool = true
+    /// A Timeline slide (a compact Gantt) after each branch that has dated tasks (M21).
+    public var timeline: Bool = false
     public var extra: [String: JSONValue] = [:]
 
     public init() {}
@@ -39,6 +43,8 @@ public struct PresentationSettings: Hashable, Sendable, JSONRepresentable {
         aspect = try r.optionalString("aspect") ?? "16:9"
         theme = try r.optionalString("theme") ?? "canvas"
         stepThroughFlow = try r.bool("stepThroughFlow", default: true)
+        legend = try r.bool("legend", default: true)
+        timeline = try r.bool("timeline", default: false)
         extra = r.leftovers
     }
 
@@ -51,6 +57,8 @@ public struct PresentationSettings: Hashable, Sendable, JSONRepresentable {
         if aspect != "16:9" { w.set("aspect", aspect) }
         if theme != "canvas" { w.set("theme", theme) }
         w.set("stepThroughFlow", stepThroughFlow, omitting: true)
+        w.set("legend", legend, omitting: true)
+        w.set("timeline", timeline, omitting: false)
         return w.value
     }
 }
@@ -68,6 +76,8 @@ public struct Slide: Hashable, Sendable, Identifiable {
     public var flow: String?
     public var note: String?
     public var skipped: Bool = false
+    /// A Timeline slide: the branch under this topic drawn as a compact Gantt (M21).
+    public var timeline: NodeID?
 }
 
 public enum Deck {
@@ -174,6 +184,13 @@ public enum Deck {
                 Slide(
                     id: "branch:\(m.rawValue)", kicker: kicker, title: c.nodes[m]?.text ?? "", focus: [c.root] + branch,
                     highlight: [m], flow: nil, note: c.nodes[m]?.note?.text))
+            if s.timeline, branch.contains(where: { c.nodes[$0]?.todo?.isScheduled == true }) {
+                var t = Slide(
+                    id: "timeline:\(m.rawValue)", kicker: kicker, title: c.nodes[m]?.text ?? "",
+                    focus: [c.root] + branch, highlight: [m], flow: nil, note: nil)
+                t.timeline = m
+                out.append(t)
+            }
         }
         return out
     }

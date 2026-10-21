@@ -119,6 +119,10 @@ final class LegendLayer: CALayer {
     }
     var theme: Theme = .classic
     var canvasColor = Theme.classic.canvas
+    /// Selected from the keyboard or a click (M21): drawn with the selection ring.
+    var selected = false {
+        didSet { if selected != oldValue { setNeedsDisplay() } }
+    }
 
     override init() {
         super.init()
@@ -146,6 +150,13 @@ final class LegendLayer: CALayer {
             ctx.scaleBy(x: 1, y: -1)
         }
         Self.draw(l, theme: theme, canvas: canvasColor, origin: l.rect.origin)
+        if selected {
+            let ring = NSBezierPath(
+                roundedRect: CGRect(origin: .zero, size: l.rect.size).insetBy(dx: 1.5, dy: 1.5), xRadius: 9, yRadius: 9)
+            ring.lineWidth = 3
+            (NSColor(cgColor: theme.ring.cgColor) ?? .controlAccentColor).setStroke()
+            ring.stroke()
+        }
         NSGraphicsContext.restoreGraphicsState()
     }
 

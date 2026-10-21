@@ -27,6 +27,8 @@ public enum Scope: String, Sendable, CaseIterable, Codable {
     case find
     /// The Gantt view (M11).
     case gantt
+    /// The selected legend (M21): arrows move it.
+    case legend
 
     public var title: String {
         switch self {
@@ -37,6 +39,7 @@ public enum Scope: String, Sendable, CaseIterable, Codable {
         case .outline: "Outline"
         case .find: "Find"
         case .gantt: "Gantt"
+        case .legend: "Legend"
         }
     }
 
