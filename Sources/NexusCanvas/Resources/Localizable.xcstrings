@@ -7257,8 +7257,16 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Reading %@" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Reading page %lld of %lld…" : {
+      "comment" : "Text with values filled in (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
     "Reading the text in the image…" : {
-      "comment" : "UI text (ImageToMap.swift)",
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Reads the text in a copied picture" : {

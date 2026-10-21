@@ -337,6 +337,67 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         #expect(m.canvas.structure == .fishboneRight && outlineText(m.canvas.root) == expected)
     }
 
+    /// A curved map whose "Flowers" branch sits further out than "Beans", a neighbour's
+    /// child, and level with it: the geometry alone hangs it from "Beans"; its connector
+    /// line leads to "Garden".
+    static func curvedMap(ink: Bool) -> RecognisedImage {
+        let boxes = [
+            box("Garden", 379, 277, 103, 25), box("Vegetables", 557, 148, 106, 30), box("Tomatoes", 695, 101, 85, 20),
+            box("Beans", 699, 176, 52, 18), box("Flowers", 788, 252, 70, 21), box("Fruit", 559, 403, 42, 18),
+            box("Apples", 687, 441, 60, 21), box("Tools", 200, 163, 48, 18), box("Spade", 60, 122, 53, 18),
+        ]
+        var image = RecognisedImage(width: 900, height: 560, boxes: boxes)
+        guard ink else { return image }
+        var map = InkMap(imageWidth: 900, imageHeight: 560)
+        func frame(_ b: TextBox) -> (Double, Double, Double, Double) {
+            (b.minX - 10, b.minY - 6, b.maxX + 10, b.maxY + 6)
+        }
+        for b in boxes {
+            let (x0, y0, x1, y1) = frame(b)
+            map.line(from: (x0, y0), to: (x1, y0))
+            map.line(from: (x1, y0), to: (x1, y1))
+            map.line(from: (x1, y1), to: (x0, y1))
+            map.line(from: (x0, y1), to: (x0, y0))
+        }
+        // Elbow connectors from each parent's edge to its child's.
+        for (p, c) in [(0, 1), (1, 2), (1, 3), (0, 4), (0, 5), (5, 6), (0, 7), (7, 8)] {
+            let (pf, cf) = (frame(boxes[p]), frame(boxes[c]))
+            let right = boxes[c].midX > boxes[p].midX
+            let a = (right ? pf.2 : pf.0, (pf.1 + pf.3) / 2)
+            let b = (right ? cf.0 : cf.2, (cf.1 + cf.3) / 2)
+            let mid = (a.0 + b.0) / 2
+            map.line(from: a, to: (mid, a.1))
+            map.line(from: (mid, a.1), to: (mid, b.1))
+            map.line(from: (mid, b.1), to: b)
+        }
+        image.ink = map
+        return image
+    }
+
+    @Test func connectorLinesDecideTheParent() {
+        let expected = """
+            Garden
+              Vegetables
+                Tomatoes
+                Beans
+              Flowers
+              Fruit
+                Apples
+              Tools
+                Spade
+
+            """
+        #expect(outlineText(ImageOutline.build(Self.curvedMap(ink: true), title: "x").canvas.root) == expected)
+        // Without the picture's lines, the geometry hangs "Flowers" from "Beans".
+        let geometric = ImageOutline.build(Self.curvedMap(ink: false), title: "x").canvas.root
+        #expect(geometric.children[0].children[1].children.map(\.text) == ["Flowers"])
+        // A picture that's mostly ink (a photo) isn't traced.
+        var photo = Self.curvedMap(ink: true)
+        let cells = photo.ink!.cells.count
+        photo.ink?.cells = Array(repeating: true, count: cells)
+        #expect(outlineText(ImageOutline.build(photo, title: "x").canvas.root) == outlineText(geometric))
+    }
+
     @Test func columnsOfTextAreNotAFishbone() {
         // A right map: branches stacked in one column beside the root aren't bones.
         let image = RecognisedImage(
@@ -455,6 +516,62 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         image.draw(in: CGRect(origin: .zero, size: size))
         NSGraphicsContext.restoreGraphicsState()
         return rep.representation(using: .png, properties: [:])!
+    }
+
+    /// A curved map drawn here, with connector lines: read with real Vision, "Flowers"
+    /// follows its line to "Garden" (M19).
+    @Test func curvedMapFollowsItsConnectors() throws {
+        let size = CGSize(width: 900, height: 560)
+        let topics: [(String, CGFloat, CGFloat, CGFloat, Int?)] = [
+            ("Garden", 380, 270, 30, nil), ("Vegetables", 560, 150, 20, 0), ("Tomatoes", 700, 100, 18, 1),
+            ("Beans", 700, 175, 18, 1), ("Flowers", 790, 250, 20, 0), ("Fruit", 560, 400, 20, 0),
+            ("Apples", 690, 440, 18, 5), ("Tools", 200, 160, 20, 0), ("Spade", 60, 120, 18, 7),
+        ]
+        let image = NSImage(size: size, flipped: true) { rect in
+            NSColor.white.setFill()
+            rect.fill()
+            var frames: [CGRect] = []
+            for (text, x, y, points, _) in topics {
+                let font = points > 24 ? NSFont.boldSystemFont(ofSize: points) : NSFont.systemFont(ofSize: points)
+                let s = NSAttributedString(string: text, attributes: [.font: font, .foregroundColor: NSColor.black])
+                s.draw(at: CGPoint(x: x, y: y))
+                frames.append(CGRect(origin: CGPoint(x: x, y: y), size: s.size()).insetBy(dx: -10, dy: -6))
+            }
+            NSColor.systemTeal.setStroke()
+            for (i, t) in topics.enumerated() {
+                let border = NSBezierPath(roundedRect: frames[i], xRadius: 8, yRadius: 8)
+                border.lineWidth = 2
+                border.stroke()
+                guard let p = t.4 else { continue }
+                let (f, pf) = (frames[i], frames[p])
+                let right = f.midX > pf.midX
+                let a = CGPoint(x: right ? pf.maxX : pf.minX, y: pf.midY)
+                let b = CGPoint(x: right ? f.minX : f.maxX, y: f.midY)
+                let path = NSBezierPath()
+                path.move(to: a)
+                path.curve(
+                    to: b, controlPoint1: CGPoint(x: (a.x + b.x) / 2, y: a.y),
+                    controlPoint2: CGPoint(x: (a.x + b.x) / 2, y: b.y))
+                path.lineWidth = 2
+                path.stroke()
+            }
+            return true
+        }
+        let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: Int(size.width), pixelsHigh: Int(size.height), bitsPerSample: 8,
+            samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0,
+            bitsPerPixel: 0)!
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        image.draw(in: CGRect(origin: .zero, size: size))
+        NSGraphicsContext.restoreGraphicsState()
+        let im = try Interchange.importFile(name: "garden.png", data: rep.representation(using: .png, properties: [:])!)
+        let c = im.canvases[0]
+        func children(_ id: NodeID) -> [String] { c.nodes[id]?.children.compactMap { c.nodes[$0]?.text } ?? [] }
+        #expect(c.nodes[c.root]?.text == "Garden")
+        #expect(Set(children(c.root)) == ["Vegetables", "Flowers", "Fruit", "Tools"])
+        let vegetables = try #require(c.nodes.first { $0.value.text == "Vegetables" }?.key)
+        #expect(children(vegetables) == ["Tomatoes", "Beans"])
     }
 
     @Test func recognisesARenderedList() throws {

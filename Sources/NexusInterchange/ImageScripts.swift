@@ -56,6 +56,8 @@ enum ReadingDirection: Equatable {
     /// The image turned to read left to right, top to bottom.
     func normalised(_ image: RecognisedImage) -> RecognisedImage {
         var out = image
+        // Connector tracing reads the picture as it is: not for turned text.
+        out.ink = nil
         switch self {
         case .leftToRight: return image
         case .rightToLeft:

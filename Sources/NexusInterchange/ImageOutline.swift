@@ -61,13 +61,18 @@ public struct RecognisedImage: Sendable, Equatable {
     /// This page's number in the source (1 for a picture), and how many pages it has.
     public var page = 1
     public var pages = 1
+    /// The picture's lines and shapes, for tracing connectors (D193).
+    public var ink: InkMap?
 
-    public init(width: Double, height: Double, boxes: [TextBox], page: Int = 1, pages: Int = 1) {
+    public init(
+        width: Double, height: Double, boxes: [TextBox], page: Int = 1, pages: Int = 1, ink: InkMap? = nil
+    ) {
         self.width = width
         self.height = height
         self.boxes = boxes
         self.page = page
         self.pages = pages
+        self.ink = ink
     }
 }
 
@@ -187,8 +192,11 @@ struct Builder {
     var lines: [TextBox]
     var dropped = 0
     let medianHeight: Double
+    /// The picture's ink, when it's mostly background: a photo's isn't traced.
+    let ink: InkMap?
 
     init(image: RecognisedImage) {
+        ink = image.ink.flatMap { $0.coverage < 0.3 ? $0 : nil }
         var kept: [TextBox] = []
         for var b in image.boxes {
             // A separator dot mid-line reads as a bullet ("Beta • Nov").
@@ -333,14 +341,28 @@ struct Builder {
         let order = lines.indices.filter { $0 != r }.sorted { distance(lines[$0]) < distance(lines[$1]) }
         var parent: [Int: Int] = [:]
         var placed = [r]
+        var isPlaced: Set = [r]
+        let tracer = ink.map { Tracer(ink: $0, lines: lines) }
         for i in order {
             let b = lines[i]
             var best = (r, cost(b, from: R, isRoot: true)!)
             for p in placed where p != r && side(lines[p]) == side(b) {
                 if let c = cost(b, from: lines[p], isRoot: false), c < best.1 { best = (p, c) }
             }
+            // A connector line, where one can be followed, outranks the geometry (D193).
+            let s = side(b)
+            if let p = tracer?.parent(
+                of: i, side: s,
+                accepts: { p in
+                    isPlaced.contains(p)
+                        && (p == r || (side(lines[p]) == s && cost(b, from: lines[p], isRoot: false) != nil))
+                })
+            {
+                best.0 = p
+            }
             parent[i] = best.0
             placed.append(i)
+            isPlaced.insert(i)
         }
         var kids: [Int: [Int]] = [:]
         for (child, p) in parent { kids[p, default: []].append(child) }

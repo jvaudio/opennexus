@@ -33,7 +33,22 @@ public enum ImageText {
         return pages
     }
 
+    /// Text this many pixels tall or smaller is read again at twice the size: Vision
+    /// misreads small text (it read 20 px labels backwards, and dropped some).
+    static let smallText = 22.0
+
     static func recognize(_ image: CGImage, name: String) throws -> RecognisedImage {
+        let w = Double(image.width)
+        let h = Double(image.height)
+        var boxes = try read(image, name: name, width: w, height: h)
+        if !boxes.isEmpty, Builder.median(boxes.map(\.height)) <= smallText, let big = doubled(image) {
+            boxes = try read(big, name: name, width: w, height: h)
+        }
+        return RecognisedImage(width: w, height: h, boxes: boxes, ink: InkMap(image))
+    }
+
+    /// Vision's lines, in the pixels of a `width` × `height` picture.
+    static func read(_ image: CGImage, name: String, width w: Double, height h: Double) throws -> [TextBox] {
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = true
@@ -44,9 +59,7 @@ public enum ImageText {
         } catch {
             throw ImportError.invalid(name, "text recognition failed (\(error.localizedDescription))")
         }
-        let w = Double(image.width)
-        let h = Double(image.height)
-        let boxes: [TextBox] = (request.results ?? []).compactMap { obs in
+        return (request.results ?? []).compactMap { obs in
             guard let best = obs.topCandidates(1).first else { return nil }
             // Vision's boxes are normalised with the origin at the bottom left.
             let r = obs.boundingBox
@@ -54,7 +67,22 @@ public enum ImageText {
                 best.string, x: r.minX * w, y: (1 - r.maxY) * h, width: r.width * w, height: r.height * h,
                 confidence: Double(best.confidence))
         }
-        return RecognisedImage(width: w, height: h, boxes: boxes)
+    }
+
+    /// The picture at twice its size, smoothly scaled, on white.
+    static func doubled(_ image: CGImage) -> CGImage? {
+        let w = image.width * 2
+        let h = image.height * 2
+        guard
+            let ctx = CGContext(
+                data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
+                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+        else { return nil }
+        ctx.setFillColor(CGColor(gray: 1, alpha: 1))
+        ctx.fill(CGRect(x: 0, y: 0, width: w, height: h))
+        ctx.interpolationQuality = .high
+        ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
+        return ctx.makeImage()
     }
 
     /// The pages to read: a PDF's, a TIFF's, or one picture's.
