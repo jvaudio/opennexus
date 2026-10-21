@@ -21,6 +21,8 @@ public final class MCPServer {
     let output: (String) -> Void
     let log: (String) -> Void
     var clientCanElicit = false
+    /// The client's name from `initialize`, which signs the comments agents add.
+    var clientName: String?
     var requestSerial = 0
     /// Requests that arrived while waiting for an elicitation answer.
     var pending: [String] = []
@@ -96,6 +98,7 @@ public final class MCPServer {
         let asked = params["protocolVersion"]?.stringValue ?? Self.protocolVersions[0]
         let version = Self.protocolVersions.contains(asked) ? asked : Self.protocolVersions[0]
         clientCanElicit = params["capabilities"]?["elicitation"] != nil
+        clientName = params["clientInfo"]?["title"]?.stringValue ?? params["clientInfo"]?["name"]?.stringValue
         log("client \(params["clientInfo"]?["name"]?.stringValue ?? "?") · protocol \(version)")
         reply(
             id,
@@ -114,7 +117,8 @@ public final class MCPServer {
         guard MapTools.definitions.contains(where: { $0["name"]?.stringValue == name }) else {
             return fail(id, -32602, "Unknown tool: \(name)")
         }
-        let tools = MapTools(policy: policy) { [weak self] q in self?.elicit(q) }
+        var tools = MapTools(policy: policy) { [weak self] q in self?.elicit(q) }
+        tools.client = clientName
         do {
             let out = try tools.call(name, params["arguments"]?.objectValue ?? [:])
             reply(id, ["content": .array(out.content), "isError": false])

@@ -12,6 +12,11 @@ struct IdeaList {
 
 @Generable(description: "A work breakdown: phases with priority and duration, each with a few steps")
 struct Breakdown {
+    @Guide(
+        description:
+            "The first phase's start date as yyyy-MM-dd when the request or the map names one; otherwise an empty string"
+    )
+    var start: String
     @Guide(description: "Two to four phases in order", .count(2...4))
     var phases: [Phase]
 }
@@ -131,13 +136,17 @@ public final class AppleEngine: AIEngine, @unchecked Sendable {
                     switch r.action {
                     case .breakdown, .sprintPlan:
                         let prompt =
-                            "\(context)\n\nBreak “\(anchor)” down into phases of work\(r.action == .sprintPlan ? " (sprints)" : ""). \(extra)"
+                            "\(context)\n\nToday is \(TaskDate.today()). Break “\(anchor)” down into phases of work\(r.action == .sprintPlan ? " (sprints)" : ""). \(extra)"
                         let out = try await session.respond(to: prompt, generating: Breakdown.self).content
-                        for p in out.phases {
+                        // Phases become tasks: the first starts on the plan's date, if it has
+                        // one, and each later phase follows the one before (D209).
+                        let start = TaskDate(out.start.trimmingCharacters(in: .whitespaces))
+                        for (i, p) in out.phases.enumerated() {
+                            let weeks = min(max(p.weeks, 1), 12)
                             continuation.yield(
                                 GhostIdea(
                                     text: p.title, markers: ["priority-\(min(max(p.priority, 1), 3))"],
-                                    labels: ["\(p.weeks) wk"]))
+                                    labels: ["\(weeks) wk"], start: i == 0 ? start : nil, workingDays: weeks * 5))
                         }
                     case .todos:
                         let prompt = "\(context)\n\nTurn “\(anchor)” into checkable to-do steps. \(extra)"

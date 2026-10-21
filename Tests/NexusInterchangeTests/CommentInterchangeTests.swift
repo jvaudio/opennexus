@@ -172,10 +172,10 @@ import Testing
         #expect(
             tail.hasPrefix(
                 """
-                - **Pricing** · Ana · 2026-10-20: Drop the annual tier?
+                - **Pricing** · Ana · 2026-10-20T14:03:00Z: Drop the annual tier?
                   Or discount it.
                 - **Pricing**: Agreed
-                - **Pro** · Sam · 2026-10-21: Price check
+                - **Pro** · Sam · 2026-10-21T09:00:00Z: Price check
                 """))
         var o = MarkdownFormat.Options()
         o.comments = false

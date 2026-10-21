@@ -158,7 +158,8 @@ extension CanvasController {
 
     func accept(_ indices: [Int], from g: GhostState) {
         let markAI = markAI
-        let ideas = g.ideas
+        // A plan's dates are worked out on this canvas's calendar (D209).
+        let ideas = GhostIdea.scheduled(g.ideas, calendar: canvas.workCalendar)
         var created: [Int: NodeID] = [:]
         let made = perform(ideas.count == indices.count ? Loc.t("Accept Suggestions") : Loc.t("Accept Suggestion")) {
             e -> [NodeID] in
@@ -171,15 +172,21 @@ extension CanvasController {
                     $0.ai = markAI
                     $0.markers = idea.markers
                     $0.labels = idea.labels
-                    if idea.todo { $0.todo = Todo(done: false) }
+                    if idea.isTask {
+                        var t = Todo(done: false)
+                        t.start = idea.start
+                        t.due = idea.due
+                        $0.todo = t
+                    }
                 }
                 created[i] = n
                 out.append(n)
             }
             return out
         }
-        // Remaining ghosts re-index after the accepted ones leave.
-        var rest = ghosts?.ideas ?? []
+        // Remaining ghosts re-index after the accepted ones leave, keeping the dates
+        // worked out above.
+        var rest = ghosts?.ideas.count == ideas.count ? ideas : ghosts?.ideas ?? []
         for i in indices.sorted(by: >) where i < rest.count { rest.remove(at: i) }
         if rest.isEmpty || indices.count == ideas.count {
             ghosts = nil

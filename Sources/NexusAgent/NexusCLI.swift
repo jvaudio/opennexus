@@ -44,6 +44,8 @@ public enum NexusCLI {
         usage: nexus <command> [options]
 
           validate <file>                     Check a .nexus or .nexusjson file against the schema.
+          read <file> [--canvas <id|title>]   Print a map as an outline with topic ids, task fields
+                 [--tasks]                    and comments (--tasks: only topics with task fields).
           export <file> --to <format>         Export a canvas. Text goes to stdout; files go beside
                  [--canvas <id|title>]        the map unless --out is given.
                  [--out <path>] [--scale <n>]
@@ -72,6 +74,7 @@ public enum NexusCLI {
                 io.print("nexus \(MCPServer.serverVersion) (OpenNexus)")
                 return 0
             case "validate": return try validate(&rest, io: io, env: env)
+            case "read": return try read(&rest, io: io, env: env)
             case "export": return try export(&rest, io: io, env: env)
             case "new": return try new(&rest, io: io, env: env)
             case "import": return try importFile(&rest, io: io, env: env)
@@ -148,6 +151,43 @@ public enum NexusCLI {
         }
         issues.forEach { io.print("\(url.lastPathComponent): \($0)") }
         return 1
+    }
+
+    // MARK: read
+
+    /// The same outline as the MCP `read_map` tool, or with `--tasks` a task list:
+    /// "Design [n3] ☐ — owner Ana · start 2026-11-02 · …".
+    static func read(_ args: inout [String], io: IO, env: Environment) throws -> Int32 {
+        let canvasRef = try option("--canvas", &args)
+        let tasksOnly = args.contains("--tasks")
+        args.removeAll { $0 == "--tasks" }
+        let url = file(try positional(args, "file"), env)
+        let doc = try MapFiles.read(url)
+        var ids = doc.canvasOrder
+        if let canvasRef {
+            do { ids = [try MapTools.canvasID(["canvas": .string(canvasRef)], in: doc)] } catch {
+                throw UsageError(message: "\(error)")
+            }
+        }
+        let canvases = ids.compactMap { doc.canvases[$0] }
+        guard tasksOnly else {
+            io.print(canvases.map(MapTools.outline).joined(separator: "\n\n"))
+            return 0
+        }
+        var lines: [String] = []
+        for c in canvases {
+            lines.append("# \(c.title.isEmpty ? "Canvas" : c.title) (\(c.id.rawValue) · \(c.type.rawValue))")
+            for top in c.tops {
+                c.walk(from: top) { id, n, _ in
+                    guard let task = MapTools.taskLine(c, id) else { return }
+                    let box = n.todo?.done == true ? "☑" : "☐"
+                    lines.append(
+                        "- \(n.text.replacingOccurrences(of: "\n", with: " ")) [\(id.rawValue)] \(box) — \(task)")
+                }
+            }
+        }
+        io.print(lines.joined(separator: "\n"))
+        return 0
     }
 
     // MARK: export
@@ -232,8 +272,13 @@ public enum NexusCLI {
         }
         try MapFiles.write(doc, to: target)
         let r = imported.report
+        let extras = [
+            r.tasks > 0 ? "\(r.tasks) tasks" : nil, r.dependencies > 0 ? "\(r.dependencies) dependencies" : nil,
+            r.comments > 0 ? "\(r.comments) comments" : nil,
+        ]
+        .compactMap { $0 }.map { " · " + $0 }.joined()
         io.print(
-            "\(target.path)\n\(r.canvases) canvases · \(r.topics) topics · \(r.notConverted) not converted")
+            "\(target.path)\n\(r.canvases) canvases · \(r.topics) topics\(extras) · \(r.notConverted) not converted")
         for item in r.lines { io.print("  · \(item)") }
         return 0
     }
