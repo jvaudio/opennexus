@@ -260,7 +260,8 @@ public final class CanvasHostView: NSView {
     /// Shows the Gantt over the canvas (⌘4) or hides it again.
     public func showGantt(_ on: Bool) {
         ganttView.isHidden = !on
-        canvasView.setAccessibilityElement(!on)
+        // Hidden, so VoiceOver reads the Gantt rows, not the topics behind them.
+        canvasView.isHidden = on
     }
 
     required init?(coder: NSCoder) { fatalError() }

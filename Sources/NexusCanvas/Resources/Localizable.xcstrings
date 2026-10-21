@@ -4581,6 +4581,10 @@
       "comment" : "Settings value",
       "extractionState" : "migrated"
     },
+    "How it waits for %@" : {
+      "comment" : "Text with values filled in (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
     "How keys, the pointer and the layout engine behave while you build." : {
       "comment" : "Settings pane subtitle",
       "extractionState" : "migrated"
@@ -4943,10 +4947,6 @@
     },
     "Keys you learned" : {
       "comment" : "UI text (TourViews.swift)",
-      "extractionState" : "migrated"
-    },
-    "Kind" : {
-      "comment" : "UI text (TaskViews.swift)",
       "extractionState" : "migrated"
     },
     "Label" : {
@@ -6183,6 +6183,10 @@
     },
     "On · allow a folder first" : {
       "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "On %@" : {
+      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
     },
     "On demand" : {

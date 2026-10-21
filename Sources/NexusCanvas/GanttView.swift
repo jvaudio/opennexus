@@ -95,7 +95,7 @@ public final class GanttView: NSView {
 }
 
 /// The drawn and interactive surface inside the Gantt's scroll view.
-final class GanttSurface: NSView {
+final class GanttSurface: NSView, RegistryCommandTarget, NSMenuItemValidation {
     let controller: CanvasController
     private(set) var layout: GanttLayout?
     var didScrollOnce = false
@@ -114,6 +114,7 @@ final class GanttSurface: NSView {
     init(controller: CanvasController) {
         self.controller = controller
         super.init(frame: .zero)
+        setAccessibilityElement(true)
         setAccessibilityRole(.outline)
         setAccessibilityLabel(Loc.t("Tasks"))
     }
@@ -141,6 +142,7 @@ final class GanttSurface: NSView {
         let clip = enclosingScrollView?.contentView.bounds.size ?? .zero
         setFrameSize(CGSize(width: max(L.size.width, clip.width), height: max(L.size.height, clip.height)))
         needsDisplay = true
+        rebuildAccessibility()
         NSAccessibility.post(element: self, notification: .layoutChanged)
         if controller.selection.primary != lastPrimary {
             lastPrimary = controller.selection.primary
@@ -200,6 +202,40 @@ final class GanttSurface: NSView {
         }
         controller.ganttFocused = true
         if controller.handleKey(chord, characters: event.characters) != .handled { super.keyDown(with: event) }
+    }
+
+    /// The Gantt's own chords (⌘D, ⌘L, ⇧⌘L, ⌥⌘←/→…) win over menu items that share them.
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        guard window?.firstResponder === self, let chord = KeyChord(event: event),
+            controller.ganttCommand(for: chord) != nil
+        else { return super.performKeyEquivalent(with: event) }
+        controller.ganttFocused = true
+        return controller.handleKey(chord, characters: event.characters) == .handled
+    }
+
+    // MARK: Menus
+
+    func performRegistryCommand(_ sender: Any?) {
+        guard let raw = (sender as? NSMenuItem)?.representedObject as? String else { return }
+        if controller.perform(CommandID(rawValue: raw)) { return }
+        nextHandler()?.performRegistryCommand(sender)
+    }
+
+    func validateMenuItem(_ item: NSMenuItem) -> Bool {
+        if item.action == #selector(performRegistryCommand(_:)), let raw = item.representedObject as? String {
+            if controller.canPerform(CommandID(rawValue: raw)) { return true }
+            return (nextHandler() as? any NSMenuItemValidation)?.validateMenuItem(item) ?? false
+        }
+        return true
+    }
+
+    private func nextHandler() -> (any RegistryCommandTarget)? {
+        var r = nextResponder
+        while let cur = r {
+            if let t = cur as? any RegistryCommandTarget { return t }
+            r = cur.nextResponder
+        }
+        return nil
     }
 
     // MARK: Mouse
@@ -312,14 +348,20 @@ final class GanttSurface: NSView {
 
     // MARK: Accessibility
 
-    override func accessibilityChildren() -> [Any]? {
-        guard let L = layout else { return [] }
+    /// Row elements, kept (and reused per topic) so assistive apps can read them after
+    /// this call returns; frames are in this view's space, so scrolling keeps them right.
+    private var axRows: [NSAccessibilityElement] = []
+    private var axCache: [NodeID: NSAccessibilityElement] = [:]
+
+    private func rebuildAccessibility() {
+        guard let L = layout else { return }
         let c = controller.canvas
         let today = controller.todayDate
-        let vis = visibleRect
-        return L.rows.map { r in
-            let name = c.nodes[r.id]?.text ?? ""
-            var label = name
+        var cache: [NodeID: NSAccessibilityElement] = [:]
+        axRows = L.rows.map { r in
+            let e = axCache[r.id] ?? NSAccessibilityElement()
+            cache[r.id] = e
+            var label = c.nodes[r.id]?.text ?? ""
             if r.kind == .summary {
                 label += ", " + Loc.t("Summary")
             } else if let spoken = TaskFormat.spoken(c, r.id, today: today) {
@@ -327,9 +369,10 @@ final class GanttSurface: NSView {
             } else {
                 label += ", " + Loc.t("No dates")
             }
-            let frame = CGRect(x: vis.minX, y: r.frame.minY, width: vis.width, height: r.frame.height)
-            let e = NSAccessibilityElement.electronicElement(
-                role: .row, label: label, frame: convert(frame, to: nil), parent: self)
+            e.setAccessibilityRole(.row)
+            e.setAccessibilityLabel(label)
+            e.setAccessibilityParent(self)
+            e.setAccessibilityFrameInParentSpace(r.frame)
             e.setAccessibilitySelected(controller.selection.nodes.contains(r.id))
             e.setAccessibilityDisclosureLevel(r.depth)
             let id = r.id
@@ -349,6 +392,13 @@ final class GanttSurface: NSView {
             ])
             return e
         }
+        axCache = cache
+    }
+
+    override func accessibilityChildren() -> [Any]? { axRows }
+
+    override func accessibilitySelectedRows() -> [Any]? {
+        axRows.filter { $0.isAccessibilitySelected() }
     }
 }
 

@@ -169,7 +169,7 @@ private struct TaskEditorSheet: View {
                     Text(c.nodes[d.task]?.text ?? "?").font(.chrome(13.5)).lineLimit(1)
                         .frame(width: 210, alignment: .leading)
                     Picker(
-                        "Kind",
+                        Loc.f("How it waits for %@", c.nodes[d.task]?.text ?? ""),
                         selection: Binding(
                             get: { d.type },
                             set: { v in set { $0.after[i].type = v } })
@@ -181,7 +181,6 @@ private struct TaskEditorSheet: View {
                     }
                     .labelsHidden()
                     .frame(width: 150)
-                    .accessibilityLabel(Loc.t("Kind"))
                     Stepper(
                         Loc.n("Lag %lld day", "Lag %lld days", d.lag),
                         value: Binding(get: { d.lag }, set: { v in set { $0.after[i].lag = v } }), in: -365...365

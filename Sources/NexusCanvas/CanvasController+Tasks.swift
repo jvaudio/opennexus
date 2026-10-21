@@ -63,6 +63,9 @@ public enum TaskFormat {
         if let s = c.span(of: id) {
             if s.milestone {
                 parts.append(Loc.f("Milestone on %@", day(s.finish, today: today)))
+            } else if s.start == s.finish {
+                parts.append(Loc.f("On %@", day(s.start, today: today)))
+                parts.append(Loc.n("%lld working day", "%lld working days", s.workingDays))
             } else {
                 parts.append(Loc.f("%@ to %@", day(s.start, today: today), day(s.finish, today: today)))
                 parts.append(Loc.n("%lld working day", "%lld working days", s.workingDays))

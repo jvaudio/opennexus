@@ -175,6 +175,25 @@ func ganttDocument() -> DocumentModel {
         #expect(h.controller.ganttCollapsed.isEmpty)
     }
 
+    @Test func ganttKeysWinOverMenuKeyEquivalents() throws {
+        let h = harness()
+        let docs = id(h, "Docs")
+        h.controller.select(docs)
+        h.controller.viewMode = .gantt
+        let surface = h.host.ganttView.surface
+        #expect(h.window.firstResponder === surface)
+        // ⌘D is Duplicate in the Topic menu; in the Gantt it schedules from today.
+        let e = try #require(
+            NSEvent.keyEvent(
+                with: .keyDown, location: .zero, modifierFlags: .command, timestamp: 0,
+                windowNumber: h.window.windowNumber, context: nil, characters: "d", charactersIgnoringModifiers: "d",
+                isARepeat: false, keyCode: 2))
+        let count = h.canvas.nodes.count
+        #expect(surface.performKeyEquivalent(with: e))
+        #expect(h.canvas.nodes.count == count, "nothing was duplicated")
+        #expect(h.canvas.nodes[docs]?.todo?.start == d("2026-11-04"))
+    }
+
     @Test func ganttScopeHasNoConflicts() {
         #expect(CommandRegistry.standard.conflicts(custom: [:]).isEmpty)
         for p in KeyProfile.all { #expect(CommandRegistry.standard.conflicts(profile: p).isEmpty, "\(p.name)") }

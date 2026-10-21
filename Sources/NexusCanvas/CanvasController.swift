@@ -543,6 +543,9 @@ public final class CanvasController {
         return lookup[activeScope]?[chord] ?? lookup[.global]?[chord]
     }
 
+    /// A Gantt-scope command bound to this chord (the Gantt claims these before the menus).
+    public func ganttCommand(for chord: KeyChord) -> CommandID? { lookup[.gantt]?[chord] }
+
     /// Bindings as resolved under the current profile (for menus, hints, cheat sheet).
     public func bindings(for id: CommandID) -> [KeyChord] {
         registry.bindings(for: id, profile: profile, custom: customBindings)
