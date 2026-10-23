@@ -10,63 +10,104 @@ struct PresentOverlayView: View {
 
     var body: some View {
         if let p = controller.present {
-            let slides = controller.slides
-            let slide = p.index < slides.count ? slides[p.index] : nil
-            let ink = Color(nsColor: NSColor(cgColor: controller.scene.theme.ink.cgColor) ?? .labelColor)
-            ZStack(alignment: .topLeading) {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(slide?.kicker ?? "").font(.chrome(13, weight: .medium, design: .monospaced))
-                        .kerning(1.6).foregroundStyle(ink.opacity(0.6))
-                    Text(slide.map(controller.slideTitle) ?? "").font(.chrome(40, weight: .bold)).foregroundStyle(ink)
-                        .lineLimit(2)
-                    // The slide's own task line, as on its topic (M21, D201).
-                    if let line = slide.flatMap(controller.slideTaskLine) {
-                        Text(line).font(.chrome(16, design: .monospaced)).foregroundStyle(ink.opacity(0.72))
-                    }
-                    if let slide, let chart = controller.timelineChart(for: slide) {
-                        TimelineCard(chart: chart, spoken: controller.timelineSpoken(slide))
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .padding(.top, 24)
-                            .padding(.trailing, 56)
-                            .padding(.bottom, p.stageOnly ? 64 : 304)
-                    }
-                }
-                .padding(.leading, 56)
-                .padding(.top, 36)
-                .allowsHitTesting(false)
-                // The slide's legend in its corner (M21, D200) and the progress dots share
-                // a line just above the strip, where the framing expects them (M28, D232).
-                let placement = PresentLegendPlacement.screen(stageOnly: p.stageOnly)
-                VStack {
-                    Spacer()
-                    HStack(alignment: .bottom) {
-                        if let l = controller.presentLegend(for: slide) {
-                            PresentLegendCorner(
-                                legend: l, theme: controller.scene.theme, canvas: controller.scene.canvasColor,
-                                placement: placement
-                            )
-                            .padding(.leading, placement.leading)
-                        }
-                        Spacer()
-                        HStack(spacing: 6) {
-                            ForEach(Array(slides.enumerated()), id: \.offset) { i, s in
-                                Capsule()
-                                    .fill(i == p.index ? Color.accentColor : ink.opacity(s.skipped ? 0.15 : 0.35))
-                                    .frame(width: i == p.index ? 22 : 7, height: 7)
-                            }
-                        }
-                        .padding(.trailing, 56)
-                    }
-                    .padding(.bottom, placement.bottom)
-                }
-                .allowsHitTesting(false)
-                VStack {
-                    Spacer()
-                    if !p.stageOnly { SlideStripView(controller: controller, state: p, slides: slides) }
-                }
-                if p.showKeys { PresentKeysView().frame(maxWidth: .infinity, maxHeight: .infinity) }
+            GeometryReader { geo in
+                stage(p, size: geo.size)
             }
         }
+    }
+
+    @ViewBuilder
+    func stage(_ p: PresentState, size: CGSize) -> some View {
+        let slides = controller.slides
+        let slide = p.index < slides.count ? slides[p.index] : nil
+        let ink = Color(nsColor: NSColor(cgColor: controller.scene.theme.ink.cgColor) ?? .labelColor)
+        ZStack(alignment: .topLeading) {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(slide?.kicker ?? "").font(.chrome(13, weight: .medium, design: .monospaced))
+                    .kerning(1.6).foregroundStyle(ink.opacity(0.6))
+                Text(slide.map(controller.slideTitle) ?? "").font(.chrome(40, weight: .bold)).foregroundStyle(ink)
+                    .lineLimit(2)
+                // The slide's own task line, as on its topic (M21, D201).
+                if let line = slide.flatMap(controller.slideTaskLine) {
+                    Text(line).font(.chrome(16, design: .monospaced)).foregroundStyle(ink.opacity(0.72))
+                }
+            }
+            .padding(.leading, 56)
+            .padding(.top, 36)
+            .allowsHitTesting(false)
+            // A Timeline slide's chart, where the framing expects it (M35, D264).
+            if let slide, let chart = controller.timelineChart(for: slide) {
+                let place = TimelinePlacement.screen(controller, slide, size: size, stageOnly: p.stageOnly)
+                TimelineCard(chart: chart, spoken: controller.timelineSpoken(slide), maxScale: place.maxScale)
+                    .frame(width: place.target.width, height: place.target.height)
+                    .offset(x: place.target.minX, y: place.target.minY)
+                    .allowsHitTesting(false)
+            }
+            // The slide's legend in its corner (M21, D200) and the progress dots share
+            // a line just above the strip, where the framing expects them (M28, D232), and
+            // the dots never meet the legend (M35, D265).
+            let placement = PresentLegendPlacement.screen(
+                stageOnly: p.stageOnly, viewWidth: size.width, slides: slides.count)
+            let legend = controller.presentLegend(for: slide)
+            VStack {
+                Spacer()
+                HStack(alignment: .bottom) {
+                    if let l = legend {
+                        PresentLegendCorner(
+                            legend: l, theme: controller.scene.theme, canvas: controller.scene.canvasColor,
+                            placement: placement
+                        )
+                        .padding(.leading, placement.leading)
+                    }
+                    Spacer(minLength: 0)
+                    let room = PresentProgress.room(
+                        viewWidth: size.width, legend: legend.map { placement.rect($0, in: size) })
+                    PresentDots(
+                        slides: slides, index: p.index, style: PresentProgress.style(count: slides.count, room: room),
+                        ink: ink
+                    )
+                    .padding(.trailing, PresentProgress.trailing)
+                }
+                .padding(.bottom, placement.bottom)
+            }
+            .allowsHitTesting(false)
+            VStack {
+                Spacer()
+                if !p.stageOnly { SlideStripView(controller: controller, state: p, slides: slides) }
+            }
+            if p.showKeys { PresentKeysView().frame(maxWidth: .infinity, maxHeight: .infinity) }
+        }
+    }
+}
+
+/// The progress dots, condensed or as a counter when the legend leaves them less room
+/// (D265). VoiceOver reads "Slide 3 of 12" either way.
+struct PresentDots: View {
+    let slides: [Slide]
+    let index: Int
+    let style: PresentProgress.Style
+    let ink: Color
+
+    var body: some View {
+        Group {
+            switch style {
+            case .dots(let size, let spacing, let current):
+                HStack(spacing: spacing) {
+                    ForEach(Array(slides.enumerated()), id: \.offset) { i, s in
+                        Capsule()
+                            .fill(i == index ? Color.accentColor : ink.opacity(s.skipped ? 0.15 : 0.35))
+                            .frame(width: i == index ? current : size, height: size)
+                    }
+                }
+            case .counter:
+                Text(PresentProgress.counter(index, of: slides.count))
+                    .font(.chrome(13, weight: .medium, design: .monospaced))
+                    .foregroundStyle(ink.opacity(0.6))
+                    .fixedSize()
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(PresentProgress.counter(index, of: slides.count))
     }
 }
 
@@ -78,7 +119,7 @@ struct SlideStripView: View {
     static let height: CGFloat = 236
 
     var body: some View {
-        let settings = controller.canvas.presentation
+        let controls = controller.stripControls
         VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 8) {
                 Text("SLIDES · AUTO-GENERATED · DRAG TO REORDER")
@@ -86,41 +127,13 @@ struct SlideStripView: View {
                     .foregroundStyle(.secondary)
                 Spacer()
                 Text("Transition").font(.chrome(12.5)).foregroundStyle(.secondary)
-                ForEach([("glide", Loc.t("Glide")), ("zoom", Loc.t("Zoom")), ("cut", Loc.t("Cut"))], id: \.0) {
-                    id, title in
-                    chip(title, on: settings.transition == id) {
-                        controller.setPresentation(Loc.t("Transition")) { $0.transition = id }
+                // One list for the mouse, ⇥ and VoiceOver (M35, D266).
+                ForEach(controls.filter { $0.kind != .export }) { c in
+                    switch c.kind {
+                    case .menu: menu(c)
+                    default: chip(c)
                     }
                 }
-                if DiagramCatalog.isTechnical(controller.canvas.type) {
-                    chip(Loc.t("Step through flow") + (settings.stepThroughFlow ? " ✓" : ""), on: false) {
-                        controller.setPresentation(Loc.t("Step Through Flow")) { $0.stepThroughFlow.toggle() }
-                    }
-                }
-                // M21: the legend in each slide's corner, and Timeline slides for dated tasks.
-                if controller.canvas.legend?.visible == true {
-                    chip(Loc.t("Legend") + (settings.legend ? " ✓" : ""), on: false) {
-                        controller.togglePresentLegend()
-                    }
-                }
-                if controller.canvasHasScheduledTasks {
-                    chip(Loc.t("Timeline slides") + (settings.timeline ? " ✓" : ""), on: false) {
-                        controller.togglePresentTimeline()
-                    }
-                }
-                Menu(settings.aspect) {
-                    ForEach(["16:9", "16:10", "4:3", "1:1"], id: \.self) { a in
-                        Button(a) { controller.setPresentation(Loc.t("Aspect")) { $0.aspect = a } }
-                    }
-                }
-                .fixedSize()
-                Menu(settings.theme.capitalized) {
-                    ForEach(["canvas", "dark", "light"], id: \.self) { t in
-                        Button(t.capitalized) { controller.setPresentation(Loc.t("Slide Theme")) { $0.theme = t } }
-                    }
-                }
-                .fixedSize()
-                chip(Loc.t("? keys"), on: state.showKeys) { controller.present?.showKeys.toggle() }
             }
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -145,11 +158,16 @@ struct SlideStripView: View {
                 key("M", Loc.t("merge with next"))
                 key("H", Loc.t("hide topic from slides"))
                 key("F", Loc.t("stage only"))
+                key("⇥", Loc.t("controls"))
                 key("esc", "end")
                 Spacer()
                 Text("Export:").foregroundStyle(.secondary)
-                ForEach(["PDF", "PowerPoint", "Keynote", "Video"], id: \.self) { f in
-                    Button(f == "Video" ? Loc.t("Video") : f) { controller.onExportSlides?(f) }.buttonStyle(.plain)
+                ForEach(controls.filter { $0.kind == .export }) { c in
+                    Button(c.title) { controller.activateStripControl(c.id) }
+                        .buttonStyle(.plain)
+                        .padding(.horizontal, 3)
+                        .overlay(focusRing(c))
+                        .accessibilityLabel(c.label)
                 }
             }
             .font(.chrome(12.5))
@@ -160,16 +178,53 @@ struct SlideStripView: View {
         .overlay(alignment: .top) { Divider() }
     }
 
-    func chip(_ t: String, on: Bool, _ action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(t).font(.chrome(12.5))
+    /// A chip: filled when chosen (a transition), ✓ when turned on, ringed when ⇥ is on it.
+    func chip(_ c: StripControl) -> some View {
+        let filled = c.on && (c.id.hasPrefix("transition.") || c.id == "keys")
+        return Button {
+            controller.activateStripControl(c.id)
+        } label: {
+            Text(c.title).font(.chrome(12.5))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .foregroundStyle(on ? Color.white : .primary)
+                .foregroundStyle(filled ? Color.white : .primary)
                 .background(
-                    RoundedRectangle(cornerRadius: 6).fill(on ? Color.accentColor : Color.secondary.opacity(0.14)))
+                    RoundedRectangle(cornerRadius: 6).fill(filled ? Color.accentColor : Color.secondary.opacity(0.14)))
         }
         .buttonStyle(.plain)
+        .overlay(focusRing(c))
+        .accessibilityLabel(c.label)
+        .accessibilityAddTraits(c.on ? .isSelected : [])
+    }
+
+    /// Aspect and theme: a pop-up for the mouse; ↩ steps to the next choice.
+    func menu(_ c: StripControl) -> some View {
+        Menu(c.title) {
+            ForEach(c.id == "aspect" ? CanvasController.slideAspects : CanvasController.slideThemes, id: \.self) { v in
+                Button(c.id == "aspect" ? v : v.capitalized) {
+                    if c.id == "aspect" {
+                        controller.setPresentation(Loc.t("Aspect")) { $0.aspect = v }
+                    } else {
+                        controller.setPresentation(Loc.t("Slide Theme")) { $0.theme = v }
+                    }
+                }
+            }
+        }
+        .fixedSize()
+        .overlay(focusRing(c))
+        .accessibilityLabel(c.label)
+        .accessibilityValue(c.value ?? "")
+    }
+
+    /// The keyboard focus ring on the control ⇥ moved to (D266).
+    @ViewBuilder
+    func focusRing(_ c: StripControl) -> some View {
+        if state.stripFocus == c.id {
+            RoundedRectangle(cornerRadius: 7)
+                .stroke(Color(nsColor: .keyboardFocusIndicatorColor), lineWidth: 2.5)
+                .padding(-3)
+                .allowsHitTesting(false)
+        }
     }
 
     func key(_ k: String, _ label: String) -> some View {
@@ -247,6 +302,7 @@ struct PresentKeysView: View {
                         ("M", Loc.t("Merge with the next slide")), ("H", Loc.t("Hide the topic from slides")),
                         ("F", Loc.t("Stage only (hide the strip)")), ("P", Loc.t("Presenter view")),
                         ("L", Loc.t("Legend on slides")), ("T", Loc.t("Timeline slides")),
+                        (Loc.t("⇥ / ⇧⇥"), Loc.t("The strip's controls (↩ or Space uses one)")),
                         ("?", Loc.t("This list")),
                         ("esc", Loc.t("End")),
                     ], id: \.0

@@ -175,7 +175,9 @@ final class LegendLayer: CALayer {
     static func draw(_ l: SceneLegend, theme: Theme, canvas: RGBA, origin: CGPoint) {
         let box = CGRect(origin: .zero, size: l.rect.size).insetBy(dx: 0.5, dy: 0.5)
         let path = NSBezierPath(roundedRect: box, xRadius: 10, yRadius: 10)
-        (NSColor(cgColor: canvas.cgColor) ?? .white).setFill()
+        // An opaque card in the slide's (or canvas's) own colour: whatever passes under it
+        // is covered, never drawn through the rows (D263).
+        (NSColor(cgColor: canvas.alpha(1).cgColor) ?? .white).setFill()
         path.fill()
         (NSColor(cgColor: theme.ink.alpha(0.06).cgColor) ?? .clear).setFill()
         path.fill()

@@ -22,7 +22,7 @@
       "extractionState" : "migrated"
     },
     "? keys" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     ".* Regex" : {
@@ -1305,6 +1305,10 @@
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
+    "⇥ \/ ⇧⇥" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "⇥ ↩ ⇧↩ ⌘↩, structures, markers, Pitch → Present" : {
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
@@ -2262,7 +2266,7 @@
       "extractionState" : "migrated"
     },
     "Aspect" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Aspect ratio" : {
@@ -3213,6 +3217,10 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "controls" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Conversation" : {
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
@@ -3479,6 +3487,10 @@
     },
     "Cut" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Cut transition" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Cut Zone" : {
@@ -4253,6 +4265,10 @@
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "Export slides as %@" : {
+      "comment" : "Text with values filled in (PresentStrip.swift)",
+      "extractionState" : "migrated"
+    },
     "Export Split by Main Branch…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -4750,7 +4766,11 @@
       "extractionState" : "migrated"
     },
     "Glide" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
+      "extractionState" : "migrated"
+    },
+    "Glide transition" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Global font" : {
@@ -5450,7 +5470,7 @@
       "extractionState" : "migrated"
     },
     "Legend on slides" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Legend on Slides" : {
@@ -8542,7 +8562,7 @@
       "extractionState" : "migrated"
     },
     "Slide %lld of %lld" : {
-      "comment" : "Text with values filled in (PresentViews.swift)",
+      "comment" : "Text with values filled in (PresentExtras.swift)",
       "extractionState" : "migrated"
     },
     "Slide %lld: %@" : {
@@ -8554,7 +8574,7 @@
       "extractionState" : "migrated"
     },
     "Slide Theme" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Slides" : {
@@ -8746,11 +8766,11 @@
       "extractionState" : "migrated"
     },
     "Step through flow" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Step Through Flow" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Sticker" : {
@@ -9117,6 +9137,10 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "The strip's controls (↩ or Space uses one)" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "The task has no dates yet" : {
       "comment" : "UI text (Schedule.swift)",
       "extractionState" : "migrated"
@@ -9330,7 +9354,7 @@
       "extractionState" : "migrated"
     },
     "Timeline slides" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Timeline Slides" : {
@@ -9710,7 +9734,7 @@
       "extractionState" : "migrated"
     },
     "Video" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Video export failed: %@" : {
@@ -9974,7 +9998,7 @@
       "extractionState" : "migrated"
     },
     "Zoom" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Zoom and topic count" : {
@@ -9995,6 +10019,10 @@
     },
     "Zoom Out" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Zoom transition" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Zooms" : {

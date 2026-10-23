@@ -130,9 +130,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     /// Forces Reduce Motion (Settings › Accessibility override, and tests).
     public var reduceMotionOverride: Bool?
-    /// Where the slide's corner legend goes when this view renders exported slides (nil:
-    /// the screen's place, D232).
-    var slideLegendPlacement: PresentLegendPlacement?
+    /// The slide size when this view renders exported slides (nil: on screen). The corner
+    /// legend and a Timeline chart take their export places (D232, D264).
+    var slideExportSize: CGSize?
     var reduceMotion: Bool {
         reduceMotionOverride ?? controller.reduceMotionPreference
             ?? NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
@@ -753,15 +753,33 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     /// Flies the camera so `ids` fill the view (or the slide stage at `aspect`).
     func frame(_ ids: [NodeID], aspect: Double?) {
-        let rects = ids.compactMap { controller.scene.nodes[$0]?.frame.rect }
+        let scene = controller.scene
+        let rects = ids.compactMap { scene.nodes[$0]?.frame.rect }
         guard bounds.width > 0, !rects.isEmpty else { return }
         var b = rects.reduce(CGRect.null) { $0.union($1) }
-        for bd in controller.scene.boundaries where rects.contains(where: { bd.rect.intersects($0) }) {
-            b = b.union(bd.rect)
-        }
+        // The outlines framed with the topics: boundaries they touch and, on a slide, zones
+        // they're in (D263).
+        let framed = Set(ids)
+        let outlines =
+            scene.boundaries.filter { bd in rects.contains { bd.rect.intersects($0) } }.map(\.rect)
+            + (aspect == nil ? [] : scene.zones.filter { $0.zone.members.contains(where: framed.contains) }.map(\.rect))
+        for r in outlines { b = b.union(r) }
         let target = aspect.map { stageRect(aspect: $0) } ?? bounds.insetBy(dx: 60, dy: 60)
-        // A slide keeps its topics clear of the corner legend (M28, D232).
-        let cam = SlideFit.camera(b, topics: rects, stage: target, legend: aspect == nil ? nil : presentLegendRect())
+        var cam = SlideFit.camera(b, in: target)
+        if aspect != nil {
+            // A slide keeps its topics, their outlines and the branch lines between them
+            // clear of the corner legend (D232, D263), and below a Timeline chart (D264).
+            let lines = scene.edges.filter { framed.contains($0.parent) && framed.contains($0.child) }.compactMap {
+                e -> CGPath? in
+                guard let p = scene.nodes[e.parent]?.frame, let c = scene.nodes[e.child]?.frame else { return nil }
+                return BranchLines.path(
+                    from: p, to: c, family: e.family, shape: BranchLineShape(name: e.line.shape),
+                    parentBaseline: e.parentBaseline, childBaseline: e.childBaseline)
+            }
+            cam = SlideFit.camera(
+                b, topics: rects + outlines, lines: lines, stage: target, legend: presentLegendRect(),
+                chart: presentChartRect())
+        }
         let transition = controller.present == nil ? "glide" : controller.canvas.presentation.transition
         // Zoom pulls out to show both slides, then pushes in; Glide flies straight; Cut jumps.
         let via = transition == "zoom" ? CameraTween.overview(from: camera, to: cam, in: bounds) : nil
