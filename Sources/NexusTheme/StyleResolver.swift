@@ -92,8 +92,11 @@ public struct StyleEnvironment: Sendable {
         self.nodeStyle = NodeStyle.named(canvasStyle.nodeStyle)
         self.canvasStyle = canvasStyle
         let paletteID = canvasStyle.palette
+        let own = canvasStyle.colors.compactMap(RGBA.init(hexString:))
         if paletteID == "theme" || paletteID.isEmpty {
             palette = theme.palette
+        } else if paletteID == "canvas", !own.isEmpty {
+            palette = own
         } else if let p = (ColorPalette.builtIn + customPalettes).first(where: { $0.id == paletteID }) {
             palette = p.colors
         } else {
@@ -106,7 +109,8 @@ public struct StyleEnvironment: Sendable {
         roleBase = Dictionary(
             uniqueKeysWithValues: NodeRoleStyle.allCases.map { role in
                 let base = StyleResolver.themeLayer(theme, role: role).merged(over: StyleResolver.defaults(role))
-                return (role, nodeStyle.layer(role).merged(over: base))
+                let styled = nodeStyle.layer(role).merged(over: base)
+                return (role, canvasStyle.roles[role.rawValue].map { $0.merged(over: styled) } ?? styled)
             })
     }
 

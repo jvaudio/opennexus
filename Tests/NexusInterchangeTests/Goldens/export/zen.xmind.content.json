@@ -183,8 +183,12 @@
       "boundary" : {
         "id" : "sheet-c1-theme-boundary",
         "properties" : {
+          "fill-pattern" : "solid",
           "line-color" : "#5850EC",
-          "line-pattern" : "dash"
+          "line-pattern" : "solid",
+          "line-width" : "2pt",
+          "shape-class" : "org.xmind.boundaryShape.roundedRect",
+          "svg:fill" : "#EDEDF4"
         }
       },
       "calloutTopic" : {
@@ -265,9 +269,12 @@
       "relationship" : {
         "id" : "sheet-c1-theme-relationship",
         "properties" : {
+          "arrow-begin-class" : "org.xmind.arrowShape.none",
+          "arrow-end-class" : "org.xmind.arrowShape.spearhead",
           "line-color" : "#E8A317",
           "line-pattern" : "dash",
-          "line-width" : "2pt"
+          "line-width" : "2pt",
+          "shape-class" : "org.xmind.relationshipShape.curved"
         }
       },
       "subTopic" : {
@@ -284,6 +291,14 @@
           "line-class" : "org.xmind.branchConnection.curve",
           "shape-class" : "org.xmind.topicShape.roundedRect",
           "svg:fill" : "#EDEDEC"
+        }
+      },
+      "summary" : {
+        "id" : "sheet-c1-theme-summary",
+        "properties" : {
+          "line-color" : "#4A4A55",
+          "line-width" : "2pt",
+          "shape-class" : "org.xmind.summaryShape.curly"
         }
       },
       "summaryTopic" : {
@@ -341,8 +356,12 @@
       "boundary" : {
         "id" : "sheet-c2-theme-boundary",
         "properties" : {
+          "fill-pattern" : "solid",
           "line-color" : "#5850EC",
-          "line-pattern" : "dash"
+          "line-pattern" : "solid",
+          "line-width" : "2pt",
+          "shape-class" : "org.xmind.boundaryShape.roundedRect",
+          "svg:fill" : "#EDEDF4"
         }
       },
       "calloutTopic" : {
@@ -423,9 +442,12 @@
       "relationship" : {
         "id" : "sheet-c2-theme-relationship",
         "properties" : {
+          "arrow-begin-class" : "org.xmind.arrowShape.none",
+          "arrow-end-class" : "org.xmind.arrowShape.spearhead",
           "line-color" : "#E8A317",
           "line-pattern" : "dash",
-          "line-width" : "2pt"
+          "line-width" : "2pt",
+          "shape-class" : "org.xmind.relationshipShape.curved"
         }
       },
       "subTopic" : {
@@ -442,6 +464,14 @@
           "line-class" : "org.xmind.branchConnection.curve",
           "shape-class" : "org.xmind.topicShape.roundedRect",
           "svg:fill" : "#EDEDEC"
+        }
+      },
+      "summary" : {
+        "id" : "sheet-c2-theme-summary",
+        "properties" : {
+          "line-color" : "#4A4A55",
+          "line-width" : "2pt",
+          "shape-class" : "org.xmind.summaryShape.curly"
         }
       },
       "summaryTopic" : {
@@ -485,8 +515,12 @@
       "boundary" : {
         "id" : "sheet-c3-theme-boundary",
         "properties" : {
+          "fill-pattern" : "solid",
           "line-color" : "#5850EC",
-          "line-pattern" : "dash"
+          "line-pattern" : "solid",
+          "line-width" : "2pt",
+          "shape-class" : "org.xmind.boundaryShape.roundedRect",
+          "svg:fill" : "#EDEDF4"
         }
       },
       "calloutTopic" : {
@@ -567,9 +601,12 @@
       "relationship" : {
         "id" : "sheet-c3-theme-relationship",
         "properties" : {
+          "arrow-begin-class" : "org.xmind.arrowShape.none",
+          "arrow-end-class" : "org.xmind.arrowShape.spearhead",
           "line-color" : "#E8A317",
           "line-pattern" : "dash",
-          "line-width" : "2pt"
+          "line-width" : "2pt",
+          "shape-class" : "org.xmind.relationshipShape.curved"
         }
       },
       "subTopic" : {
@@ -586,6 +623,14 @@
           "line-class" : "org.xmind.branchConnection.curve",
           "shape-class" : "org.xmind.topicShape.roundedRect",
           "svg:fill" : "#EDEDEC"
+        }
+      },
+      "summary" : {
+        "id" : "sheet-c3-theme-summary",
+        "properties" : {
+          "line-color" : "#4A4A55",
+          "line-width" : "2pt",
+          "shape-class" : "org.xmind.summaryShape.curly"
         }
       },
       "summaryTopic" : {

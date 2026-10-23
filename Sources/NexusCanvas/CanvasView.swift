@@ -15,7 +15,7 @@ import UniformTypeIdentifiers
 
 /// The canvas: an opaque, layer-backed surface with one layer per node and per branch
 /// line, a spring animator, a camera, and the in-node text editor.
-public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidation {
+public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget, NSMenuItemValidation {
     public let controller: CanvasController
 
     private let host = FlippedView()
@@ -72,6 +72,10 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     /// The topic the floating toolbar shows for (after the pointer rests, or a second click).
     var toolbarFor: NodeID?
     private var restTimer: Timer?
+    /// The topic showing its "−" fold control (D215).
+    private(set) var foldHover: NodeID?
+    /// Whether the pointing hand is showing over a fold control.
+    private var foldCursor = false
     private var aidsTracking: NSTrackingArea?
     private var hintsHost: NSHostingView<EmptyCanvasHints>?
     private var morphUntil: CFTimeInterval = 0
@@ -1328,13 +1332,15 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         super.updateTrackingAreas()
         if let t = aidsTracking { removeTrackingArea(t) }
         let t = NSTrackingArea(
-            rect: .zero, options: [.mouseMoved, .activeInKeyWindow, .inVisibleRect], owner: self, userInfo: nil)
+            rect: .zero, options: [.mouseMoved, .mouseEnteredAndExited, .activeInKeyWindow, .inVisibleRect],
+            owner: self, userInfo: nil)
         addTrackingArea(t)
         aidsTracking = t
     }
 
     public override func mouseMoved(with event: NSEvent) {
         super.mouseMoved(with: event)
+        updateFoldHover(convert(event.locationInWindow, from: nil))
         guard controller.prefs.string("editing.floatingToolbar") == "rest", controller.mode == .select else { return }
         let p = convert(event.locationInWindow, from: nil)
         let over = node(at: p)
@@ -1346,6 +1352,81 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                 self?.refreshMouseAids()
             }
         }
+    }
+
+    public override func mouseExited(with event: NSEvent) {
+        super.mouseExited(with: event)
+        setFoldHover(nil)
+        setFoldCursor(false)
+    }
+
+    // MARK: Fold control (D215)
+
+    /// Whether a topic offers the "−": it has children showing and isn't the central topic,
+    /// whose branches leave in several directions.
+    func offersFoldButton(_ id: NodeID) -> Bool {
+        let c = controller
+        guard id != c.canvas.root, CanvasController.ghostIndex(id) == nil, let n = c.canvas.nodes[id] else {
+            return false
+        }
+        return !n.children.isEmpty && !n.folded
+    }
+
+    /// Shows the "−" on the topic under the pointer, and keeps it while the pointer is on it.
+    func updateFoldHover(_ p: CGPoint) {
+        let c = controller
+        guard c.mode == .select, c.present == nil, c.mapShot == nil, !exportMode else {
+            setFoldHover(nil)
+            setFoldCursor(false)
+            return
+        }
+        let w = camera.toWorld(p)
+        if let h = foldHover, foldControl(h)?.contains(w) == true {
+            setFoldCursor(true)
+            return
+        }
+        setFoldHover(node(at: p).flatMap { offersFoldButton($0) ? $0 : nil })
+        setFoldCursor(foldTarget(atWorld: w) != nil)
+    }
+
+    private func setFoldCursor(_ on: Bool) {
+        guard on != foldCursor else { return }
+        foldCursor = on
+        (on ? NSCursor.pointingHand : NSCursor.arrow).set()
+    }
+
+    private func setFoldHover(_ id: NodeID?) {
+        guard id != foldHover else { return }
+        if let old = foldHover { nodeLayers[old]?.showsFoldButton = false }
+        foldHover = id
+        if let id { nodeLayers[id]?.showsFoldButton = true }
+    }
+
+    /// A topic's fold control ("−" or "+N") in canvas coordinates.
+    func foldControl(_ id: NodeID) -> CGRect? {
+        guard let local = nodeLayers[id]?.foldControlRect, let f = animatedFrame(id) else { return nil }
+        return local.offsetBy(dx: f.rect.minX, dy: f.rect.minY)
+    }
+
+    /// The topic whose "−" or "+N" is at a canvas point: the hovered topic first, then
+    /// every folded one.
+    func foldTarget(atWorld w: CGPoint) -> NodeID? {
+        if let h = foldHover, foldControl(h)?.contains(w) == true { return h }
+        for (id, layer) in nodeLayers where !layer.badge.isHidden && !layer.isHidden {
+            if foldControl(id)?.contains(w) == true { return id }
+        }
+        return nil
+    }
+
+    /// Folds or unfolds from the control, one undo step. A selection inside the branch
+    /// moves to the folded topic, as it does in Xmind.
+    func toggleFoldFromControl(_ id: NodeID) {
+        let c = controller
+        guard let n = c.canvas.nodes[id], !n.children.isEmpty else { return }
+        let inside = Set(c.canvas.subtree(id)).subtracting([id])
+        c.restructure(Loc.t(n.folded ? "Unfold" : "Fold")) { try $0.toggleFold(id) }
+        if !n.folded, c.selection.nodes.contains(where: inside.contains) { c.select(id) }
+        setFoldHover(nil)
     }
 
     // Edit › Cut, Copy, Paste on topics (the text editor handles them while editing).
@@ -1429,6 +1510,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             return
         }
         if controller.mode == .connect { controller.cancelConnect() }
+        // The "−" folds a branch; a folded branch's "+N" unfolds it (D215).
+        if controller.mode == .select, event.clickCount == 1, let id = foldTarget(atWorld: w) {
+            toggleFoldFromControl(id)
+            return
+        }
         // Clicking a ghost accepts it (one undo), like ⌃↩.
         if let id = node(at: p), let i = CanvasController.ghostIndex(id) {
             if controller.ghosts != nil { controller.acceptGhost(i) } else { controller.previewPlan(nil) }
@@ -1909,46 +1995,13 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     /// commands such as Export… and Format Panel continue up the responder chain); the
     /// few other items through `performMenuAction` (D173, D174).
     func makeMenu(_ entries: [CanvasMenuEntry], title: String = "") -> NSMenu {
-        let menu = NSMenu(title: title)
-        for e in entries {
-            switch e {
-            case .separator:
-                menu.addItem(.separator())
-            case .submenu(let title, let children):
-                let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
-                item.submenu = makeMenu(children, title: title)
-                menu.addItem(item)
-            case .item(let i):
-                let item: NSMenuItem
-                if case .command(let id) = i.action {
-                    item = NSMenuItem(title: i.title, action: #selector(performRegistryCommand(_:)), keyEquivalent: "")
-                    item.representedObject = id.rawValue
-                } else {
-                    item = NSMenuItem(title: i.title, action: #selector(performMenuAction(_:)), keyEquivalent: "")
-                    item.representedObject = MenuActionBox(i.action)
-                }
-                item.target = self
-                if let chord = i.key {
-                    item.keyEquivalent = chord.key.keyEquivalent
-                    item.keyEquivalentModifierMask = chord.menuModifierMask
-                }
-                item.state = i.checked ? .on : .off
-                menu.addItem(item)
-            }
-        }
-        return menu
+        ContextMenus.make(entries, title: title, target: self)
     }
 
-    /// Context-menu items that aren't plain commands (Add Floating Topic at the pointer,
-    /// Edit Label, Collapse Zone, Remove Image, Sticker…).
+    /// Context-menu items that aren't plain commands (Add Floating Topic, Paste and Zone at
+    /// the pointer, Edit Label, Collapse Zone, Remove Image, Sticker…).
     @objc func performMenuAction(_ sender: Any?) {
-        guard let box = (sender as? NSMenuItem)?.representedObject as? MenuActionBox else { return }
-        if let id = box.action.command, let t = NSApp.currentEvent?.type,
-            [.leftMouseUp, .leftMouseDown, .rightMouseUp, .otherMouseUp].contains(t)
-        {
-            controller.noteMouseUse(id)
-        }
-        controller.runMenuAction(box.action)
+        ContextMenus.performAction(sender, controller: controller)
         refreshOverlays()
     }
 
