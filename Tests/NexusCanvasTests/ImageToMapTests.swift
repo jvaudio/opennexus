@@ -264,6 +264,14 @@ import Testing
         }
     }
 
+    /// M30: OpenNexus's own fishbone with sub-causes (one with a sub-cause of its own) on
+    /// upper and lower bones reads back exact, now that the layout makes room for them.
+    @Test(arguments: [LayoutStructure.fishboneLeft, .fishboneRight])
+    func exportedFishboneWithSubCausesReadsBack(_ structure: LayoutStructure) throws {
+        let c = try roundTrip(fishboneSubCausesDocument(), structure)
+        #expect(c.type == .fishbone && c.layout.structure == structure, "\(structure.rawValue)")
+    }
+
     @discardableResult func roundTrip(_ doc: DocumentModel, _ structure: LayoutStructure) throws -> Canvas {
         var m = doc
         m.canvases["c1"]!.layout.structure = structure
@@ -276,6 +284,32 @@ import Testing
         #expect(im.report.format == "Image")
         return c
     }
+}
+
+/// A fishbone whose causes have sub-causes, on upper and lower bones.
+func fishboneSubCausesDocument() -> DocumentModel {
+    var c = Canvas(id: "c1", title: "Late releases", rootText: "Late releases")
+    c.type = .fishbone
+    var undo = UndoStack()
+    c.edit("Sample", undo: &undo) { e in
+        let tree: [(String, [(String, [(String, [String])])])] = [
+            ("People", [("Staffing", [("New hires", []), ("Contractors", ["Onboarding"])]), ("Skills gaps", [])]),
+            ("Process", [("Big batches", []), ("Manual approvals", [("Sign-off queue", []), ("Change board", [])])]),
+            ("Tools", [("Serial test runs", [("Flaky suites", [])]), ("Old scripts", [])]),
+            ("Environment", [("Config drift", [("Hand edits", []), ("No audit trail", [])]), ("Noisy alerts", [])]),
+        ]
+        for (bone, causes) in tree {
+            let b = try! e.addChild(of: e.canvas.root, text: bone)
+            for (cause, subs) in causes {
+                let c = try! e.addChild(of: b, text: cause)
+                for (sub, deeper) in subs {
+                    let s = try! e.addChild(of: c, text: sub)
+                    for d in deeper { try! e.addChild(of: s, text: d) }
+                }
+            }
+        }
+    }
+    return DocumentModel(canvases: [c])
 }
 
 /// A deeper map with long topics that wrap, for the round trip.

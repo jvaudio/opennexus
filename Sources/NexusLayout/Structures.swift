@@ -163,6 +163,12 @@ struct StructureLayouts {
     // MARK: Fishbone
 
     static let boneSlope: CGFloat = 0.5
+    /// Room between a cause's block (the cause and the sub-causes stacked under it) and
+    /// the next cause, the bone's label or the spine.
+    static let causeGap: CGFloat = 6
+    /// Room between a stack of sub-causes and the bone where it comes closest: well over a
+    /// cause's 12 pt, so sub-causes on a lower bone still read as set back (D237).
+    static let boneClearance: CGFloat = 26
 
     /// The head is the top node; bones alternate above and below a spine; causes hang
     /// off each bone. `bodyLeft` grows the spine to the left of the head.
@@ -180,44 +186,91 @@ struct StructureLayouts {
         while j < bones.count {
             let pair = Array(bones[j..<min(j + 2, bones.count)])
             var reach: CGFloat = 0
-            var placed: [(NodeID, CGFloat, Bool)] = []
+            var placed: [(NodeID, Bone, Bool)] = []
             for (k, b) in pair.enumerated() {
                 let topBone = k == 0
-                let causes = kids(b)
-                let L = max(64, 40 + CGFloat(causes.count) * 30)
-                placed.append((b, L, topBone))
-                let maxCause = causes.map { size($0).width }.max() ?? 0
-                reach = max(reach, L * slope + max(size(b).width / 2, maxCause + 20))
+                let bone = self.bone(b, topBone: topBone, depth: depth, side: side)
+                placed.append((b, bone, topBone))
+                let maxCause = kids(b).map { size($0).width }.max() ?? 0
+                reach = max(reach, bone.length * slope + max(size(b).width / 2, maxCause + 20))
             }
             // The spine point for this pair sits at `cursor`.
-            for (b, L, topBone) in placed {
+            for (b, bone, topBone) in placed {
                 let s = size(b)
+                let L = bone.length
                 let cx = cursor - lean * L * slope
                 let cy = topBone ? -(L + s.height / 2) : L + s.height / 2
                 l.frames[b] = NodeFrame(center: CGPoint(x: cx, y: cy), size: s, side: side, depth: depth + 1)
-                let causes = kids(b)
-                if !causes.isEmpty { l.families[b] = "fishboneCause" }
-                for (i, c) in causes.enumerated() {
+                if !bone.causes.isEmpty { l.families[b] = "fishboneCause" }
+                // `u` runs along the bone from its label end toward the spine.
+                func boneX(_ u: CGFloat) -> CGFloat { cx + lean * u * slope }
+                for (c, u, subs) in bone.causes {
                     let cs = size(c)
-                    // From the label end toward the spine.
-                    let t = CGFloat(i + 1) / CGFloat(causes.count + 1)
-                    let y = topBone ? -L + t * L : L - t * L
-                    let boneX = cx + lean * (topBone ? (y + L) : (L - y)) * slope
-                    let ccx = boneX - lean * (12 + cs.width / 2)
+                    let y = topBone ? u - L : L - u
+                    let ccx = boneX(u) - lean * (12 + cs.width / 2)
                     l.frames[c] = NodeFrame(
                         center: CGPoint(x: ccx, y: y - cs.height / 2 + 2), size: cs, side: side, depth: depth + 2)
-                    if !kids(c).isEmpty {
-                        l.families[c] = "indent"
-                        let cr = l.frames[c]!.rect
-                        stack(
-                            kids(c), x: bodyLeft ? cr.maxX - 10 : cr.minX + 10, top: cr.maxY + 6, depth: depth + 3,
-                            side: side, gap: 6, into: &l)
-                    }
+                    guard let subs else { continue }
+                    // Sub-causes stack under the cause, set back from the bone. A lower
+                    // bone leans toward them as it goes down, so they move out to clear it.
+                    l.families[c] = "fishboneSub"
+                    let cr = l.frames[c]!.rect
+                    let drop = cr.maxY + 6 + subs.bbox.maxY - y
+                    let limit = boneX(topBone ? u + drop : u - drop) - lean * Self.boneClearance
+                    let x = bodyLeft ? min(cr.maxX - 10, limit) : max(cr.minX + 10, limit)
+                    let moved = subs.translated(by: CGPoint(x: x, y: cr.maxY + 6))
+                    l.frames.merge(moved.frames) { a, _ in a }
+                    l.families.merge(moved.families) { a, _ in a }
+                }
+            }
+            // Clear whatever reaches furthest from the spine, sub-causes included.
+            for (b, _, _) in placed {
+                for d in subtree(b) {
+                    guard let r = l.frames[d]?.rect else { continue }
+                    reach = max(reach, bodyLeft ? cursor - r.minX : r.maxX - cursor)
                 }
             }
             cursor -= lean * (reach + 24)
             j += 2
         }
+    }
+
+    /// A bone's length and where its causes sit along it (from the label end toward the
+    /// spine), with each cause's sub-causes stacked from its top-left (`.right`) or
+    /// top-right (`.left`) corner at the origin.
+    struct Bone {
+        var length: CGFloat
+        var causes: [(NodeID, CGFloat, LocalLayout?)]
+    }
+
+    /// Causes keep the even spacing of a bone sized to their count, and move apart only
+    /// where a cause and the sub-causes under it would come within `causeGap` of the next
+    /// cause, the label or the spine; the bone grows by as much.
+    func bone(_ b: NodeID, topBone: Bool, depth: Int, side: Side) -> Bone {
+        let causes = kids(b)
+        let even = max(64, 40 + CGFloat(causes.count) * 30)
+        let step = even / CGFloat(causes.count + 1)
+        let gap = Self.causeGap
+        var out: [(NodeID, CGFloat, LocalLayout?)] = []
+        var shift: CGFloat = 0
+        var end: CGFloat = 0
+        for (i, c) in causes.enumerated() {
+            var subs: LocalLayout?
+            // The rib runs 2 pt above the cause's bottom; sub-causes start 6 pt below it.
+            var below: CGFloat = 2
+            if !kids(c).isEmpty {
+                var sl = LocalLayout()
+                below += 6 + stack(kids(c), x: 0, top: 0, depth: depth + 3, side: side, gap: 6, into: &sl)
+                subs = sl
+            }
+            let above = size(c).height - 2
+            let (before, after) = topBone ? (above, below) : (below, above)
+            let u = max(CGFloat(i + 1) * step + shift, end + gap + before)
+            shift = u - CGFloat(i + 1) * step
+            end = u + after
+            out.append((c, u, subs))
+        }
+        return Bone(length: max(even + shift, end + gap), causes: out)
     }
 
     // MARK: Matrix

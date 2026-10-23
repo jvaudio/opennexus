@@ -116,3 +116,80 @@ private func overlaps(_ r: LayoutResult) -> [(NodeID, NodeID)] {
         }
     }
 }
+
+/// A fishbone whose causes have sub-causes (and one a sub-cause of its own), sized like
+/// the canvas draws them: bones, then smaller causes, then smaller sub-causes.
+private func fishboneWithSubCauses() -> (NodeID, [NodeID: LayoutNode]) {
+    var nodes: [NodeID: LayoutNode] = [:]
+    var n = 2
+    func add(_ size: CGSize, _ kids: [NodeID] = []) -> NodeID {
+        let id = NodeID("n\(n)")
+        n += 1
+        nodes[id] = LayoutNode(size: size, children: kids)
+        return id
+    }
+    let cause = CGSize(width: 84, height: 26)
+    let sub = CGSize(width: 70, height: 22)
+    var bones: [NodeID] = []
+    for b in 0..<4 {
+        var causes: [NodeID] = []
+        for c in 0..<3 {
+            // Every other cause has two sub-causes; the first bone's first one nests a third.
+            var subs: [NodeID] = []
+            if (b + c) % 2 == 0 {
+                let deep = b == 0 && c == 0 ? [add(sub)] : []
+                subs = [add(sub, deep), add(sub)]
+            }
+            causes.append(add(cause, subs))
+        }
+        bones.append(add(CGSize(width: 110, height: 38), causes))
+    }
+    nodes["n1"] = LayoutNode(size: CGSize(width: 160, height: 52), children: bones)
+    return ("n1", nodes)
+}
+
+/// Pairs of frames closer than `gap` on every side.
+private func crowded(_ r: LayoutResult, gap: CGFloat) -> [(NodeID, NodeID)] {
+    let items = r.frames.sorted { $0.key < $1.key }
+    var out: [(NodeID, NodeID)] = []
+    for i in items.indices {
+        for j in items.indices where j > i {
+            let a = items[i].value.rect.insetBy(dx: -gap / 2, dy: -gap / 2)
+            if a.intersects(items[j].value.rect.insetBy(dx: -gap / 2, dy: -gap / 2)) {
+                out.append((items[i].key, items[j].key))
+            }
+        }
+    }
+    return out
+}
+
+extension StructureTests {
+    /// Each cause makes room along its bone for its sub-causes, so none sits on the next
+    /// cause (M29 drew "Staffing" over "New hires").
+    @Test(arguments: [LayoutStructure.fishboneLeft, .fishboneRight])
+    func fishboneSubCausesDoNotOverlap(structure: LayoutStructure) {
+        let (root, nodes) = fishboneWithSubCauses()
+        let r = TreeLayout.layout(root: root, nodes: nodes, structure: structure)
+        #expect(r.frames.count == nodes.count)
+        #expect(crowded(r, gap: 4).isEmpty, "\(structure.rawValue): \(crowded(r, gap: 4))")
+        // Sub-causes stay clear of their bone, which a lower bone leans toward.
+        let head = r.frames[root]!
+        for b in nodes[root]!.children {
+            let bone = r.frames[b]!
+            let lean: CGFloat = bone.center.x < head.center.x ? 1 : -1
+            let along = abs(bone.center.y - head.center.y) - bone.size.height / 2
+            func boneX(_ y: CGFloat) -> CGFloat { bone.center.x + lean * (along - abs(y - head.center.y)) * 0.5 }
+            for c in nodes[b]!.children {
+                var subs = nodes[c]!.children
+                while let d = subs.popLast() {
+                    subs += nodes[d]!.children
+                    let f = r.frames[d]!.rect
+                    let edge = lean > 0 ? f.maxX : f.minX
+                    for y in [f.minY, f.maxY] {
+                        #expect(lean * (boneX(y) - edge) >= 10, "\(structure.rawValue): \(d) clears its bone")
+                    }
+                }
+            }
+        }
+    }
+}

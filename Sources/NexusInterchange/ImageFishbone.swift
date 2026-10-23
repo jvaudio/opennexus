@@ -40,10 +40,11 @@ extension Builder {
         return nil
     }
 
-    /// `b` sits under `a`, across from it, at most 1.2 lines below.
+    /// `b` sits under `a`, across from it, at most two lines below (D241: topics drawn in
+    /// boxes, as OpenNexus draws them, sit further apart than plain lines of text).
     func stacked(_ b: TextBox, under a: TextBox) -> Bool {
         let gap = b.minY - a.maxY
-        return a.minY < b.minY && gap >= -0.25 * medianHeight && gap <= 1.2 * max(a.size, b.size)
+        return a.minY < b.minY && gap >= -0.25 * medianHeight && gap <= 2 * max(a.size, b.size, medianHeight)
             && min(a.maxX, b.maxX) > max(a.minX, b.minX)
     }
 
@@ -102,7 +103,7 @@ extension Builder {
             return L.midX + lean * slope * max(0, abs(y - from))
         }
         // Sub-cause candidates, top down: a line tucked under the nearest line above it on
-        // its side of the spine (`host`), across from it and at most 1.2 lines below, whose
+        // its side of the spine (`host`), across from it and at most two lines below, whose
         // head-side end is half a line or more behind the host's, or level with a host that
         // is itself a candidate (the next sub-cause of a list).
         var host: [Int: Int] = [:]

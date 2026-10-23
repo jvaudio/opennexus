@@ -43,6 +43,16 @@ public enum BranchLines {
             p.addLine(to: CGPoint(x: x, y: child.center.y))
             p.addLine(to: CGPoint(x: left ? cr.minX : cr.maxX, y: child.center.y))
             return p
+        case "fishboneSub":
+            // └ like "indent", but beside the sub-causes, which may sit further from the
+            // bone than the cause does, so the line never crosses the bone.
+            let x =
+                child.side == .left
+                ? max(pr.minX + 4, min(pr.maxX - 4, cr.maxX + 6)) : min(pr.maxX - 4, max(pr.minX + 4, cr.minX - 6))
+            p.move(to: CGPoint(x: x, y: pr.maxY))
+            p.addLine(to: CGPoint(x: x, y: child.center.y))
+            p.addLine(to: CGPoint(x: child.side == .left ? cr.maxX : cr.minX, y: child.center.y))
+            return p
         case "timeline":
             // The axis: siblings sit on one line, so segments join behind the events.
             let right = child.center.x >= parent.center.x
