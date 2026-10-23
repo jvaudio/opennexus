@@ -61,6 +61,13 @@ public struct CanvasStyle: Hashable, Sendable, JSONRepresentable {
     public var justify: Bool = false
     /// Update Style › "Apply to all level-N topics", keyed by depth.
     public var levels: [Int: TopicStyle] = [:]
+    /// The canvas's own branch colours (hex), used when `palette` is "canvas": an imported
+    /// map's palette travels with the map, not the app's library (D210).
+    public var colors: [String] = []
+    /// Topic styles by role (root, main, sub, floating) carried with the canvas: an
+    /// imported theme's topic classes. They sit over the theme and node style, under
+    /// level styles (D211).
+    public var roles: [String: TopicStyle] = [:]
     public var extra: [String: JSONValue] = [:]
 
     public init(
@@ -95,6 +102,10 @@ public struct CanvasStyle: Hashable, Sendable, JSONRepresentable {
             guard let d = Int(k) else { continue }
             levels[d] = try TopicStyle(json: v, path: "\(path).levels.\(k)")
         }
+        colors = try r.strings("colors")
+        for (k, v) in try r.object("roles") ?? [:] {
+            roles[k] = try TopicStyle(json: v, path: "\(path).roles.\(k)")
+        }
         extra = r.leftovers
     }
 
@@ -120,6 +131,9 @@ public struct CanvasStyle: Hashable, Sendable, JSONRepresentable {
         if !lv.isEmpty {
             w.set("levels", .object(Dictionary(uniqueKeysWithValues: lv.map { ("\($0.key)", $0.value.json) })))
         }
+        w.set("colors", colors, omitEmpty: true)
+        let rs = roles.filter { !$0.value.isEmpty }
+        if !rs.isEmpty { w.set("roles", .object(rs.mapValues(\.json))) }
         return w.value
     }
 }

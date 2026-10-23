@@ -236,6 +236,13 @@
             "coloredBranch": {
               "type": "boolean"
             },
+            "colors": {
+              "description": "The canvas's own branch colours (hex), used when palette is \"canvas\".",
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
             "compact": {
               "type": "boolean"
             },
@@ -267,6 +274,10 @@
             },
             "pattern": {
               "type": "string"
+            },
+            "roles": {
+              "description": "Topic styles by role (root, main, sub, floating), e.g. an imported theme's topic classes.",
+              "type": "object"
             },
             "singleColor": {
               "type": "string"

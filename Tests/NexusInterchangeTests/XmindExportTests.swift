@@ -304,8 +304,8 @@ import Testing
         func node(_ text: String) throws -> Node { try #require(r.nodes.values.first { $0.text == text }) }
         #expect(try node("Styled").style == styled)
         #expect(try node("Bare").style == bare)
-        let quick = try #require(QuickStyle.named("very-important")).style
-        #expect(try node("Quick").style == quick)
+        // The quick style comes back by name, not as the topic's own style (D218).
+        #expect(try node("Quick").quickStyle == "very-important" && node("Quick").style == nil)
         let rel = try #require(r.relationships.first)
         #expect(rel.line == "straight" && rel.ends == ["dot", "filled-arrow"] && rel.dash == "solid")
         #expect(rel.width == 3 && rel.color == "#00AA00")
@@ -450,7 +450,11 @@ import Testing
         let im = try XmindFormat.parse(z.finish(), name: "plan.xmind")
         let c = try #require(im.canvases.first)
         #expect(c.style.theme == "classic" && c.style.background == "#FAFAF0" && c.style.font == "NeverMind")
-        #expect(im.report.skipped.map(\.0) == ["Xmind theme (its background is kept; OpenNexus’s theme is used)"])
+        // Another app's theme: its branch colours and topic classes travel with the canvas.
+        #expect(c.style.palette == "canvas" && c.style.colors == ["#FF0000", "#00FF00"])
+        #expect(c.style.roles["root"]?.fillColor == "#000000" && c.style.roles["root"]?.textColor == "auto")
+        #expect(c.style.roles["root"]?.font == nil, "the canvas font already says NeverMind")
+        #expect(im.report.skipped.isEmpty, "the theme's element classes apply to each element (D219)")
         let root = try #require(c.nodes[c.root]?.style)
         #expect(root.fill == "solid" && root.fillColor == "#FF8800" && root.shape == "diamond")
         #expect(
@@ -458,6 +462,93 @@ import Testing
         let pricing = try #require(c.nodes.values.first { $0.text == "Pricing" }?.style)
         #expect(pricing.fontWeight == "regular" && pricing.strikethrough == true && pricing.underline == false)
         #expect(pricing.line?.shape == "rounded")
+    }
+
+    /// A sheet shaped like Xmind 26's own downloads (D210, D211): a theme with topic classes
+    /// and branch colours, and the sheet's own fill over the theme's.
+    static func themedSheet() -> Data {
+        var z = ZipWriter()
+        z.add(
+            "content.json",
+            """
+            [{"id": "s1", "class": "sheet", "title": "Program", "style": {"id": "ss", "properties": {"svg:fill": "#111111FF"}},
+              "theme": {"id": "a148", "map": {"properties": {"svg:fill": "#F6F5F5",
+                  "multi-line-colors": "#FFC947 #E46D57 #1F3C88"}},
+                "centralTopic": {"properties": {"fo:font-family": "NeverMind", "fo:font-size": "28pt",
+                  "fo:font-weight": "600", "fo:color": "inherited", "svg:fill": "#070D59", "fill-pattern": "solid",
+                  "border-line-width": "0pt", "shape-class": "org.xmind.topicShape.roundedRect",
+                  "line-class": "org.xmind.branchConnection.roundedfold", "line-color": "#070D59"}},
+                "mainTopic": {"properties": {"fo:font-family": "NeverMind", "fo:font-size": "18pt", "fill-pattern": "solid",
+                  "border-line-width": "0pt", "line-class": "org.xmind.branchConnection.roundedElbow"}},
+                "subTopic": {"properties": {"fo:font-size": "14pt", "fill-pattern": "solid", "fo:font-style": "normal",
+                  "fo:text-decoration": "none", "fo:text-transform": "manual"}},
+                "floatingTopic": {"properties": {"fill-pattern": "none", "border-line-width": "3"}}},
+              "rootTopic": {"id": "r", "class": "topic", "title": "Program", "structureClass": "org.xmind.ui.logic.right",
+                "children": {"attached": [{"id": "a", "title": "Governance",
+                  "children": {"attached": [{"id": "a1", "title": "Policy"}]}}, {"id": "b", "title": "Pipeline",
+                  "branch": "folded", "children": {"attached": [{"id": "b1", "title": "Scanning"}]}}]}}}]
+            """)
+        z.add("manifest.json", #"{"file-entries": {"content.json": {}}}"#)
+        return z.finish()
+    }
+
+    @Test func anotherAppsThemeBecomesTheCanvasStyle() throws {
+        let c = try #require(XmindFormat.parse(Self.themedSheet(), name: "program.xmind").canvases.first)
+        #expect(c.style.background == "#111111", "the sheet's own fill wins, without its alpha byte")
+        #expect(c.style.palette == "canvas" && c.style.colors == ["#FFC947", "#E46D57", "#1F3C88"])
+        #expect(c.style.lineShape == nil, "roundedfold reads as curved, the classic theme's own line")
+        let r = c.style.roles
+        #expect(r["root"]?.fillColor == "#070D59" && r["root"]?.fontSize == 28 && r["root"]?.border == "none")
+        #expect(r["root"]?.line == nil, "branch lines keep the branch colours")
+        #expect(r["main"]?.fill == "solid" && r["main"]?.fillColor == "branch" && r["main"]?.textColor == "auto")
+        #expect(r["sub"]?.fillColor == "branch@0.2" && r["sub"]?.fontSize == 14)
+        #expect(r["sub"]?.italic == nil && r["sub"]?.underline == nil && r["sub"]?.textCase == nil)
+        #expect(r["floating"]?.fillColor == "canvas" && r["floating"]?.borderColor == "branch")
+        #expect(r["floating"]?.borderWidth == 3)
+    }
+
+    @Test func roleStylesAndCanvasColoursResolve() throws {
+        let c = try #require(XmindFormat.parse(Self.themedSheet(), name: "program.xmind").canvases.first)
+        let env = StyleEnvironment(theme: Theme.named(c.style.theme), canvasStyle: c.style)
+        #expect(env.palette.map(\.hex) == ["#FFC947", "#E46D57", "#1F3C88"])
+        #expect(env.canvas.hex == "#111111")
+        let main = StyleResolver.merged(role: .main, depth: 1, node: nil, env: env)
+        #expect(main.fillColor == "branch" && main.fontSize == 18)
+        // A level style still sits over the role.
+        var s = c.style
+        var white = TopicStyle()
+        white.fillColor = "#FFFFFF"
+        s.levels[1] = white
+        let lv = StyleResolver.merged(
+            role: .main, depth: 1, node: nil, env: StyleEnvironment(theme: Theme.named(s.theme), canvasStyle: s))
+        #expect(lv.fillColor == "#FFFFFF" && lv.fontSize == 18)
+    }
+
+    @Test func anotherAppsThemeSurvivesAReExport() throws {
+        let first = try XmindFormat.parse(Self.themedSheet(), name: "program.xmind")
+        let (r, again) = try roundTrip(first.document)
+        let files = try Zip.read(r.data)
+        let sheet = try #require(
+            (try JSONSerialization.jsonObject(with: files["content.json"]!) as? [[String: Any]])?.first)
+        let theme = try #require(sheet["theme"] as? [String: Any])
+        #expect((theme["id"] as? String)?.hasPrefix(XmindStyle.themePrefix) == false, "written untagged")
+        let main = (theme["mainTopic"] as? [String: Any])?["properties"] as? [String: String]
+        #expect(
+            main?["fill-pattern"] == "solid" && main?["svg:fill"] == nil, "a branch fill is Xmind's colourless fill")
+        let a = try #require(first.canvases.first?.style)
+        let b = try #require(again.canvases.first?.style)
+        #expect(b.colors == a.colors && b.palette == "canvas" && b.background == a.background)
+        #expect(b.roles["main"]?.fillColor == "branch" && b.roles["sub"]?.fillColor == "branch@0.2")
+        #expect(b.roles["root"]?.fillColor == a.roles["root"]?.fillColor)
+    }
+
+    @Test func ownThemeStillExportsTagged() throws {
+        let (r, again) = try roundTrip(Self.document())
+        let files = try Zip.read(r.data)
+        let sheet = try #require(
+            (try JSONSerialization.jsonObject(with: files["content.json"]!) as? [[String: Any]])?.first)
+        #expect(((sheet["theme"] as? [String: Any])?["id"] as? String) == "\(XmindStyle.themePrefix)classic")
+        #expect(again.canvases.first?.style.roles.isEmpty == true && again.canvases.first?.style.palette == "theme")
     }
 
     @Test(arguments: ["zen.xmind", "xmind8.xmind"]) func sampleFilesSurviveAReExport(_ name: String) throws {

@@ -197,26 +197,27 @@ struct StyleTab: View {
         .buttonStyle(.plain)
     }
 
-    static let structureNames = [
-        Loc.t("Mind Map"), Loc.t("Logic Chart → right"), Loc.t("Brace Map"), Loc.t("Org Chart"), Loc.t("Tree Chart"),
-        Loc.t("Timeline"), Loc.t("Fishbone"), Loc.t("Matrix"),
-        Loc.t("Tree Table"),
-    ]
+    /// The picker's choices: the nine structures in ⌥⌘1…9 order, each named from the
+    /// structure it applies, and the current one first when it's another direction.
+    static func structureOptions(current: LayoutStructure) -> [(LayoutStructure, String)] {
+        let cycle = CanvasController.structureCycle
+        let all = cycle.contains(current) ? cycle : [current] + cycle
+        return all.map { ($0, CanvasController.structureName($0)) }
+    }
 
     var structure: some View {
         let current = node?.structure ?? controller.canvas.layout.structure
-        let i = CanvasController.structureCycle.firstIndex(of: current) ?? 0
+        let shortcut = CanvasController.structureCycle.firstIndex(of: current)
         return PanelSection(Loc.t("Structure · this branch"), key: "structure") {
             HStack {
                 Picker(
-                    "",
-                    selection: Binding(
-                        get: { i }, set: { controller.setStructure(CanvasController.structureCycle[$0]) })
+                    Loc.t("Structure"),
+                    selection: Binding(get: { current }, set: { controller.setStructure($0) })
                 ) {
-                    ForEach(Array(Self.structureNames.enumerated()), id: \.offset) { n, name in Text(name).tag(n) }
+                    ForEach(Self.structureOptions(current: current), id: \.0) { s, name in Text(name).tag(s) }
                 }
                 .labelsHidden()
-                Keycap(text: key(.structure(i + 1)))
+                if let shortcut { Keycap(text: key(.structure(shortcut + 1))) }
             }
         }
     }

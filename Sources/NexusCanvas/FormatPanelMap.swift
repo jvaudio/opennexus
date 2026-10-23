@@ -317,6 +317,16 @@ struct MapTab: View {
                 paletteRow(name: Loc.t("Theme colours"), colors: controller.theme.palette, on: style.palette == "theme")
             }
             .buttonStyle(.plain)
+            // An imported map's own branch colours (D210).
+            let own = style.colors.compactMap(RGBA.init(hexString:))
+            if !own.isEmpty {
+                Button {
+                    setStyle(Loc.t("Colour Theme")) { $0.palette = "canvas" }
+                } label: {
+                    paletteRow(name: Loc.t("This map’s colours"), colors: own, on: style.palette == "canvas")
+                }
+                .buttonStyle(.plain)
+            }
             ForEach(palettes) { p in
                 Button {
                     setStyle(Loc.t("Colour Theme")) { $0.palette = p.id }

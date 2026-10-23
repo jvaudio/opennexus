@@ -5,8 +5,9 @@ import NexusFormat
 /// XMind 8 export (M18, D187, D188): the same sheets the Zen writer builds, written as
 /// XMind 8 stores them. `content.xml` holds the topics (titles, notes, labels, markers,
 /// links, images, folding, positions, typed child lists for attached, floating, summary and
-/// callout topics, boundaries, summaries and task info), relationships and the legend;
-/// `styles.xml` the topic and relationship styles and the theme; `comments.xml` the
+/// callout topics, boundaries, summaries, task info and OpenNexus's style records),
+/// relationships and the legend; `styles.xml` the topic, relationship, boundary and
+/// summary styles and the theme (M25); `comments.xml` the
 /// comments; `meta.xml` and `META-INF/manifest.xml` the rest. Images and attachments go
 /// under `attachments/`, as XMind 8 keeps them.
 extension XmindWriter {
@@ -123,6 +124,7 @@ extension XmindWriter {
             }
             out += "<title>\(e(s["title"] as? String ?? ""))</title>"
             if let l = s["legend"] as? [String: Any] { out += legend(l) }
+            out += extensions(s)
             return out + "</sheet>"
         }
 
@@ -141,15 +143,13 @@ extension XmindWriter {
             var defaults: [(String, String)] = []
             for family in [
                 "map", "centralTopic", "mainTopic", "subTopic", "floatingTopic", "summaryTopic", "calloutTopic",
-                "boundary", "relationship",
+                "boundary", "summary", "relationship",
             ] {
                 guard let c = t[family] as? [String: Any], let props = c["properties"] as? [String: String] else {
                     continue
                 }
                 let id = (c["id"] as? String) ?? "\(sheet)-theme-\(family)"
-                let type =
-                    family == "map"
-                    ? "map" : family == "boundary" ? "boundary" : family == "relationship" ? "relationship" : "topic"
+                let type = ["map", "boundary", "summary", "relationship"].contains(family) ? family : "topic"
                 styles.append((id, type, props))
                 defaults.append((family, id))
             }
@@ -199,16 +199,19 @@ extension XmindWriter {
                 out += "<boundaries>"
                 for b in bs {
                     let title = (b["title"] as? String).map { "<title>\(e($0))</title>" } ?? ""
-                    out +=
-                        "<boundary id=\"\(a(b["id"] as? String ?? ""))\" range=\"\(a(b["range"] as? String ?? ""))\">\(title)</boundary>"
+                    var ba = "id=\"\(a(b["id"] as? String ?? ""))\" range=\"\(a(b["range"] as? String ?? ""))\""
+                    if let sid = style(b, type: "boundary") { ba += " style-id=\"\(a(sid))\"" }
+                    out += "<boundary \(ba)>\(title)</boundary>"
                 }
                 out += "</boundaries>"
             }
             if let ss = t["summaries"] as? [[String: Any]], !ss.isEmpty {
                 out += "<summaries>"
                 for s in ss {
-                    out +=
-                        "<summary id=\"\(a(s["id"] as? String ?? ""))\" range=\"\(a(s["range"] as? String ?? ""))\" topic-id=\"\(a(s["topicId"] as? String ?? ""))\"/>"
+                    var sa =
+                        "id=\"\(a(s["id"] as? String ?? ""))\" range=\"\(a(s["range"] as? String ?? ""))\" topic-id=\"\(a(s["topicId"] as? String ?? ""))\""
+                    if let sid = style(s, type: "summary") { sa += " style-id=\"\(a(sid))\"" }
+                    out += "<summary \(sa)/>"
                 }
                 out += "</summaries>"
             }
@@ -216,14 +219,27 @@ extension XmindWriter {
                 let time = (c["creationTime"] as? Int64).map(String.init) ?? ""
                 comments.append((id, c["author"] as? String ?? "", time, c["content"] as? String ?? ""))
             }
-            let task = ((t["extensions"] as? [[String: Any]]) ?? []).first {
-                $0["provider"] as? String == "org.xmind.ui.task"
-            }
-            if let content = task?["content"] as? [String: Any] {
-                out +=
-                    "<extensions><extension provider=\"org.xmind.ui.taskInfo\"><content>\(taskInfo(content))</content></extension></extensions>"
-            }
+            out += extensions(t)
             return out + "</topic>"
+        }
+
+        /// A topic's task info, and a sheet's or topic's OpenNexus style record as JSON
+        /// text (D218), as XMind 8 `<extensions>`.
+        func extensions(_ o: [String: Any]) -> String {
+            var out = ""
+            for x in (o["extensions"] as? [[String: Any]]) ?? [] {
+                guard let content = x["content"] as? [String: Any] else { continue }
+                switch x["provider"] as? String {
+                case "org.xmind.ui.task"?:
+                    out +=
+                        "<extension provider=\"org.xmind.ui.taskInfo\"><content>\(taskInfo(content))</content></extension>"
+                case XmindStyle.provider?:
+                    let json = String(decoding: XmindWriter.json(content), as: UTF8.self)
+                    out += "<extension provider=\"\(XmindStyle.provider)\"><content>\(e(json))</content></extension>"
+                default: break
+                }
+            }
+            return out.isEmpty ? "" : "<extensions>\(out)</extensions>"
         }
 
         /// The task fields the importer reads (D149), in XMind 8's element names.

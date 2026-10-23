@@ -2449,6 +2449,10 @@
       "comment" : "Diagram type",
       "extractionState" : "migrated"
     },
+    "Brace Map (left)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
+      "extractionState" : "migrated"
+    },
     "BRACKET" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
@@ -4441,6 +4445,10 @@
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
+    "Fishbone (right)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
+      "extractionState" : "migrated"
+    },
     "Fit" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -5621,8 +5629,8 @@
       "comment" : "Diagram type",
       "extractionState" : "migrated"
     },
-    "Logic Chart → right" : {
-      "comment" : "UI text (FormatPanel.swift)",
+    "Logic Chart (left)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
     "Logic Left · Solid" : {
@@ -5995,6 +6003,14 @@
     },
     "Mind Map · Underline" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Mind Map (left)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
+      "extractionState" : "migrated"
+    },
+    "Mind Map (right)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
     "Mind maps" : {
@@ -6942,7 +6958,7 @@
       "extractionState" : "migrated"
     },
     "Paste Outline" : {
-      "comment" : "UI text (CanvasController+Files.swift)",
+      "comment" : "UI text (CanvasController+Pointer.swift)",
       "extractionState" : "migrated"
     },
     "Paste style" : {
@@ -6954,7 +6970,7 @@
       "extractionState" : "migrated"
     },
     "Paste Zone" : {
-      "comment" : "UI text (CanvasController+Files.swift)",
+      "comment" : "UI text (CanvasController+Pointer.swift)",
       "extractionState" : "migrated"
     },
     "Pasted Image" : {
@@ -7751,6 +7767,10 @@
     },
     "Reroute via %@" : {
       "comment" : "Text with values filled in (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Reschedule" : {
+      "comment" : "UI text (CanvasMenu.swift)",
       "extractionState" : "migrated"
     },
     "Reset" : {
@@ -8710,7 +8730,7 @@
       "extractionState" : "migrated"
     },
     "Structure" : {
-      "comment" : "UI text (CanvasMenu.swift)",
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Structure · this branch" : {
@@ -9105,6 +9125,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "This map’s colours" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "This sets the tour’s example and your template shelf. You can change it any time in Settings." : {
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
@@ -9203,6 +9227,10 @@
     },
     "Timeline · Solid" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Timeline (vertical)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
     "Timeline for %@" : {
@@ -9383,6 +9411,10 @@
     },
     "Tree Chart" : {
       "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "Tree Chart (down)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
     "Tree Table" : {
