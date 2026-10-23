@@ -6942,7 +6942,7 @@
       "extractionState" : "migrated"
     },
     "Paste Outline" : {
-      "comment" : "UI text (CanvasController+Files.swift)",
+      "comment" : "UI text (CanvasController+Pointer.swift)",
       "extractionState" : "migrated"
     },
     "Paste style" : {
@@ -6954,7 +6954,7 @@
       "extractionState" : "migrated"
     },
     "Paste Zone" : {
-      "comment" : "UI text (CanvasController+Files.swift)",
+      "comment" : "UI text (CanvasController+Pointer.swift)",
       "extractionState" : "migrated"
     },
     "Pasted Image" : {
@@ -7751,6 +7751,10 @@
     },
     "Reroute via %@" : {
       "comment" : "Text with values filled in (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Reschedule" : {
+      "comment" : "UI text (CanvasMenu.swift)",
       "extractionState" : "migrated"
     },
     "Reset" : {

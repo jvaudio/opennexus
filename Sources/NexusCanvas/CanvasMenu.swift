@@ -20,6 +20,10 @@ public enum CanvasMenuAction: Equatable, Sendable {
     case command(CommandID)
     /// Add Floating Topic (the `.addFloating` command) at the clicked point.
     case floatingTopic(CGPoint)
+    /// Paste (the `.paste` command) as floating topics at the clicked point (D222).
+    case pasteHere(CGPoint)
+    /// Zone (the `.zone` command) with its top-left corner at the clicked point (D223).
+    case zoneHere(CGPoint)
     /// Existing actions with no command of their own (D174).
     case editElement(ElementRef)
     case collapseZone(String)
@@ -31,6 +35,8 @@ public enum CanvasMenuAction: Equatable, Sendable {
         switch self {
         case .command(let id): id
         case .floatingTopic: .addFloating
+        case .pasteHere: .paste
+        case .zoneHere: .zone
         default: nil
         }
     }
@@ -105,7 +111,10 @@ extension CanvasController {
             return b.sections([[b.cmd(.editLegend), b.cmd(.toggleLegend)]])
         case .canvas(let p):
             return b.sections([
-                [b.cmd(.paste), b.floating(p), b.cmd(.zone)],
+                [
+                    b.placed(.paste, .pasteHere(p)), b.placed(.addFloating, .floatingTopic(p)),
+                    b.placed(.zone, .zoneHere(p)),
+                ],
                 [b.cmd(.selectAll), b.cmd(.fitToWindow)],
                 [b.cmd(.export), b.cmd(.printDocument)],
             ])
@@ -131,6 +140,43 @@ extension CanvasController {
         }
     }
 
+    /// Runs a command's at-the-pointer variant as `perform` runs the command: only where
+    /// the command can run, and the tour coach hears about it.
+    private func runPlaced(_ id: CommandID, _ body: (CanvasController) -> Void) -> Bool {
+        guard canPerform(id) else { return false }
+        body(self)
+        tour?.didRun(id)
+        tour?.didChange()
+        return true
+    }
+
+    // MARK: Outline and Gantt rows (M26, D225)
+
+    /// Selects a right-clicked outline or Gantt row as a click would (D176): an unselected
+    /// row becomes the selection, a selected one keeps a multi-selection. Nil is the
+    /// Gantt's empty area, which keeps the selection.
+    public func prepareRowMenu(_ id: NodeID?) {
+        if mode == .connect { cancelConnect() }
+        if mode == .edit { commitEdit() }
+        if let id, canvas.nodes[id] != nil, !selection.contains(id) || selectedElement != nil { select(id) }
+    }
+
+    /// The outline's menu for the selection: the canvas topic menu without what only the
+    /// canvas shows (styles, structures, callouts, boundaries, relationships, popovers),
+    /// plus the outline's Indent and Outdent and Move Up and Down.
+    public func outlineContextMenu() -> [CanvasMenuEntry] {
+        guard canvas.nodes[selection.primary] != nil else { return [] }
+        let b = MenuBuilder(controller: self, selection: selection, element: nil)
+        return selection.nodes.count > 1 ? b.outlineMultiSelectionMenu() : b.outlineMenu()
+    }
+
+    /// The Gantt's menu: a row's task commands, or (no row) Go to Today and Export Gantt….
+    public func ganttContextMenu(onRow: Bool) -> [CanvasMenuEntry] {
+        guard canvas.nodes[selection.primary] != nil else { return [] }
+        let b = MenuBuilder(controller: self, selection: selection, element: nil)
+        return onRow ? b.ganttMenu() : b.sections([[b.cmd(.ganttToday)], [b.cmd(.exportGantt)], [b.cmd(.ganttExit)]])
+    }
+
     /// Runs an item that isn't a plain command (the view sends commands up the responder
     /// chain itself). Returns false if it didn't run.
     @discardableResult
@@ -146,6 +192,10 @@ extension CanvasController {
             menuFloatingPoint = p
             defer { menuFloatingPoint = nil }
             return perform(.addFloating)
+        case .pasteHere(let p):
+            return runPlaced(.paste) { $0.paste(at: p) }
+        case .zoneHere(let p):
+            return runPlaced(.zone) { $0.addZone(at: p) }
         case .editElement(let ref):
             beginEditingElement(ref)
         case .collapseZone(let id):
@@ -207,6 +257,60 @@ struct MenuBuilder {
         sections(CanvasController.multiSelectionCommands.map { $0.map { cmd($0) } })
     }
 
+    /// The outline row menu (D225): the topic menu's items that work without the canvas.
+    func outlineMenu() -> [CanvasMenuEntry] {
+        let export = sections([
+            [cmd(.exportBranchPNG), cmd(.exportBranchSVG), cmd(.exportBranchMarkdown)],
+            [cmd(.printBranch), cmd(.newCanvasFromTopic)],
+        ])
+        return sections([
+            [cmd(.addChild), cmd(.addSiblingAfter), cmd(.addSiblingBefore), cmd(.addParent)],
+            [cmd(.editKeepText), cmd(.taskDetails), cmd(.toggleTodo)],
+            [cmd(.outlineIndent), cmd(.outlineOutdent), cmd(.moveUp), cmd(.moveDown)],
+            [cmd(.cut), cmd(.copy), cmd(.paste), cmd(.duplicate)],
+            [cmd(.fold), cmd(.inspector)],
+            [submenu(Loc.t("Export Branch"), export)],
+            [cmd(.delete), cmd(.deleteKeepChildren)],
+        ])
+    }
+
+    /// Several outline rows: what acts on every one of them (D177's rule).
+    func outlineMultiSelectionMenu() -> [CanvasMenuEntry] {
+        sections([[cmd(.cut), cmd(.copy)], [cmd(.toggleTodo)], [cmd(.inspector)], [cmd(.delete)]])
+    }
+
+    /// The Gantt row menu (D225): the Gantt's own task commands, each with its key, for the
+    /// selected tasks.
+    func ganttMenu() -> [CanvasMenuEntry] {
+        let canvas = c.canvas
+        let picked = Set(selection.nodes).union([selection.primary])
+        let tasks = c.taskSchedule.rows.map(\.id).filter { picked.contains($0) && canvas.nodes[$0]?.todo != nil }
+        let dated = tasks.filter { canvas.span(of: $0) != nil }
+        let undated = tasks.filter { canvas.span(of: $0) == nil }
+        let done = !tasks.isEmpty && tasks.allSatisfy { canvas.nodes[$0]?.todo?.done == true }
+        let progress = Set(tasks.map { canvas.progress(of: $0) })
+        let steps = (0...9).compactMap { n in cmd(.ganttProgress(n), checked: progress == [n * 10]) }
+        let move = [
+            cmd(.ganttEarlier), cmd(.ganttLater), cmd(.ganttWeekEarlier), cmd(.ganttWeekLater), cmd(.ganttShorten),
+            cmd(.ganttLengthen),
+        ].compactMap { $0 }
+        let linked = tasks.contains { !(canvas.nodes[$0]?.todo?.after.isEmpty ?? true) }
+        return sections([
+            [
+                cmd(.ganttEditTask), tasks.isEmpty ? nil : cmd(.ganttToggleDone, checked: done),
+                tasks.isEmpty ? nil : submenu(Loc.t("Progress"), steps),
+            ],
+            [
+                undated.isEmpty ? nil : cmd(.ganttScheduleToday),
+                dated.isEmpty ? nil : submenu(Loc.t("Reschedule"), move),
+            ],
+            [tasks.count < 2 ? nil : cmd(.ganttLink), linked ? cmd(.ganttUnlink) : nil],
+            [cmd(.cut), cmd(.copy)],
+            [cmd(.ganttExit)],
+            [cmd(.delete)],
+        ])
+    }
+
     func imageMenu(_ id: NodeID) -> [CanvasMenuEntry] {
         sections([
             [cmd(.image, title: Loc.t("Replace Image…")), item(Loc.t("Remove Image"), .removeImage(id))],
@@ -255,9 +359,11 @@ struct MenuBuilder {
         .item(CanvasMenuItem(title: title, action: action, key: nil))
     }
 
-    func floating(_ p: CGPoint) -> CanvasMenuEntry? {
-        guard let d = c.registry[.addFloating], canRun(.addFloating) else { return nil }
-        return .item(CanvasMenuItem(title: Loc.t(d.title), action: .floatingTopic(p), key: c.bindings(for: d.id).first))
+    /// A command's item that runs at the clicked point instead (Add Floating Topic, Paste
+    /// and Zone on empty canvas), with the command's title and key.
+    func placed(_ id: CommandID, _ action: CanvasMenuAction) -> CanvasMenuEntry? {
+        guard let d = c.registry[id], canRun(id) else { return nil }
+        return .item(CanvasMenuItem(title: Loc.t(d.title), action: action, key: c.bindings(for: id).first))
     }
 
     func submenu(_ title: String, _ entries: [CanvasMenuEntry]) -> CanvasMenuEntry? {
@@ -290,6 +396,15 @@ struct MenuBuilder {
             return selection.nodes.contains { $0 != root }
         case .fold:
             return !(canvas.nodes[primary]?.children.isEmpty ?? true)
+        case .outlineIndent, .moveUp:
+            // A previous sibling to move under or past.
+            guard let p = canvas.parent(of: primary) else { return false }
+            return canvas.nodes[p]?.children.first != primary
+        case .outlineOutdent:
+            return canvas.parent(of: primary).flatMap { canvas.parent(of: $0) } != nil
+        case .moveDown:
+            guard let p = canvas.parent(of: primary) else { return false }
+            return canvas.nodes[p]?.children.last != primary
         case .pasteStyle:
             return c.styleClipboard != nil
         case .summary:
