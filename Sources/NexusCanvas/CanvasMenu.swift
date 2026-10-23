@@ -29,6 +29,8 @@ public enum CanvasMenuAction: Equatable, Sendable {
     case collapseZone(String)
     case removeImage(NodeID)
     case stickers(NodeID)
+    /// A structure outside the nine ⌥⌘ ones (D249), applied like them.
+    case structure(LayoutStructure)
 
     /// The registry command the item runs, if it runs one.
     public var command: CommandID? {
@@ -218,6 +220,8 @@ extension CanvasController {
             removeImage(on: id)
         case .stickers(let id):
             onRequest?(.stickers(id))
+        case .structure(let s):
+            setStructure(s)
         }
         return true
     }
@@ -249,9 +253,17 @@ struct MenuBuilder {
         let insert = sections(insertItems() + [[cmd(.callout), cmd(.boundary), cmd(.summary), cmd(.connect)]])
         let canvas = c.canvas
         let current = canvas.nodes[id]?.structure ?? (id == canvas.root ? canvas.layout.structure : nil)
-        let structures = CanvasController.structureCycle.enumerated().compactMap { i, s in
+        let nine = CanvasController.structureCycle.enumerated().map { i, s in
             cmd(.structure(i + 1), title: CanvasController.structureName(s), checked: s == current)
         }
+        // The extras (D249) have no command of their own; they're offered where the nine are.
+        let extras = CanvasController.structureExtras.map { s -> CanvasMenuEntry? in
+            guard canRun(.structure(1)) else { return nil }
+            return .item(
+                CanvasMenuItem(
+                    title: CanvasController.structureName(s), action: .structure(s), key: nil, checked: s == current))
+        }
+        let structures = sections([nine, extras])
         let export = sections([
             [cmd(.exportBranchPNG), cmd(.exportBranchSVG), cmd(.exportBranchMarkdown)],
             [cmd(.printBranch), cmd(.newCanvasFromTopic)],

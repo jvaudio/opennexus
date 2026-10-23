@@ -17,6 +17,19 @@ public enum BranchLineShape: String, Sendable, CaseIterable {
     }
 }
 
+/// The point on a topic's edge where its branch lines leave it, and which edge it's on.
+public struct BranchJunction: Sendable, Equatable {
+    public enum Edge: Sendable { case left, right, top, bottom }
+
+    public var point: CGPoint
+    public var edge: Edge
+
+    public init(_ point: CGPoint, _ edge: Edge) {
+        self.point = point
+        self.edge = edge
+    }
+}
+
 public enum BranchLines {
     /// Horizontal run per unit of height along a fishbone bone (matches the layout).
     public static let fishboneSlope: CGFloat = 0.5
@@ -53,11 +66,19 @@ public enum BranchLines {
             p.addLine(to: CGPoint(x: x, y: child.center.y))
             p.addLine(to: CGPoint(x: child.side == .left ? cr.maxX : cr.minX, y: child.center.y))
             return p
-        case "timeline":
+        case "timeline", "timelineAlt":
             // The axis: siblings sit on one line, so segments join behind the events.
             let right = child.center.x >= parent.center.x
             p.move(to: CGPoint(x: right ? pr.maxX : pr.minX, y: parent.center.y))
             p.addLine(to: CGPoint(x: right ? cr.minX : cr.maxX, y: child.center.y))
+            return p
+        case "timelineUp", "timelineDown":
+            // A stem from the event's centre, up or down past the axis, then across to the
+            // topic beside it (D248).
+            let up = family == "timelineUp"
+            p.move(to: CGPoint(x: parent.center.x, y: up ? pr.minY : pr.maxY))
+            p.addLine(to: CGPoint(x: parent.center.x, y: child.center.y))
+            p.addLine(to: CGPoint(x: child.side == .left ? cr.maxX : cr.minX, y: child.center.y))
             return p
         case "timelineV":
             p.move(to: CGPoint(x: parent.center.x, y: pr.maxY))
@@ -106,6 +127,70 @@ public enum BranchLines {
             p.addLine(to: CGPoint(x: child.center.x + dir * child.size.width / 2, y: end.y))
         }
         return p
+    }
+
+    /// Where a topic's branch lines leave it, for its fold control and "+N" badge (D250):
+    /// the start of `path` to `child`, its first visible child. A folded topic has none, so
+    /// its family says where the line would start. `parent` is the topic's own parent,
+    /// which says which end of a fishbone bone its label is at.
+    public static func junction(
+        of frame: NodeFrame, family: String, child: NodeFrame?, parent: NodeFrame?, baseline: Bool = false
+    ) -> BranchJunction {
+        let r = frame.rect
+        let c = frame.center
+        switch family {
+        case "fishboneCause":
+            // Causes' ribs meet the bone, which leaves the label at its end nearest the spine.
+            let topBone = parent.map { c.y < $0.center.y } ?? true
+            return topBone
+                ? BranchJunction(CGPoint(x: c.x, y: r.maxY), .bottom) : BranchJunction(CGPoint(x: c.x, y: r.minY), .top)
+        case "none", "brace", "matrix", "treeTable":
+            // No line per child: on the topic's branch side, as the badge always was (D215).
+            return sideJunction(frame)
+        default:
+            break
+        }
+        if let child, let start = firstPoint(path(from: frame, to: child, family: family, parentBaseline: baseline)) {
+            let edge: BranchJunction.Edge =
+                start.x >= r.maxX - 0.5
+                ? .right : start.x <= r.minX + 0.5 ? .left : start.y <= c.y ? .top : .bottom
+            return BranchJunction(start, edge)
+        }
+        let left = frame.side == .left
+        switch family {
+        case "indent":
+            return BranchJunction(CGPoint(x: left ? r.maxX - 10 : r.minX + 10, y: r.maxY), .bottom)
+        case "fishboneSub":
+            return BranchJunction(CGPoint(x: left ? r.maxX - 4 : r.minX + 4, y: r.maxY), .bottom)
+        case "timelineUp":
+            return BranchJunction(CGPoint(x: c.x, y: r.minY), .top)
+        case "timelineDown", "timelineV", "org", "tree":
+            return BranchJunction(CGPoint(x: c.x, y: r.maxY), .bottom)
+        case "logic", "mindmap", "timeline", "timelineAlt", "fishbone":
+            let y = baseline ? r.maxY : c.y
+            return left
+                ? BranchJunction(CGPoint(x: r.minX, y: y), .left) : BranchJunction(CGPoint(x: r.maxX, y: y), .right)
+        default:
+            return sideJunction(frame)
+        }
+    }
+
+    /// The middle of the topic's edge on its branch side.
+    private static func sideJunction(_ frame: NodeFrame) -> BranchJunction {
+        let r = frame.rect
+        return switch frame.side {
+        case .left: BranchJunction(CGPoint(x: r.minX, y: r.midY), .left)
+        case .down: BranchJunction(CGPoint(x: r.midX, y: r.maxY), .bottom)
+        case .right: BranchJunction(CGPoint(x: r.maxX, y: r.midY), .right)
+        }
+    }
+
+    private static func firstPoint(_ path: CGPath) -> CGPoint? {
+        var out: CGPoint?
+        path.applyWithBlock { el in
+            if out == nil, el.pointee.type == .moveToPoint { out = el.pointee.points[0] }
+        }
+        return out
     }
 
     private static func vertical(_ p: CGMutablePath, _ start: CGPoint, _ end: CGPoint, shape: BranchLineShape) {

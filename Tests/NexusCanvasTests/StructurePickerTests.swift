@@ -19,22 +19,26 @@ import Testing
         #expect(
             options.map(\.1) == [
                 "Mind Map", "Logic Chart", "Org Chart", "Timeline", "Fishbone", "Matrix", "Brace Map", "Tree Table",
-                "Tree Chart",
+                "Tree Chart", "Timeline (alternating)",
             ])
         for (s, name) in options {
             h.controller.setStructure(s)
             #expect(h.canvas.nodes[pricing]?.structure == s, "\(name)")
-            #expect(CanvasController.diagramType(for: s).displayName == name, "\(name) names its own family")
+            if CanvasController.structureCycle.contains(s) {
+                #expect(CanvasController.diagramType(for: s).displayName == name, "\(name) names its own family")
+            }
         }
     }
 
     @Test func aStructureOutsideTheNineIsShownAsItself() {
         let options = StyleTab.structureOptions(current: .logicLeft)
         #expect(options.first?.0 == .logicLeft && options.first?.1 == "Logic Chart (left)")
-        #expect(options.count == CanvasController.structureCycle.count + 1)
+        let offered = CanvasController.structureCycle.count + CanvasController.structureExtras.count
+        #expect(options.count == offered + 1)
         #expect(Set(options.map(\.1)).count == options.count, "no two choices share a name")
-        // One of the nine isn't repeated.
-        #expect(StyleTab.structureOptions(current: .orgDown).count == CanvasController.structureCycle.count)
+        // One of the nine, or an extra (D249), isn't repeated.
+        #expect(StyleTab.structureOptions(current: .orgDown).count == offered)
+        #expect(StyleTab.structureOptions(current: .timelineAlternating).count == offered)
     }
 
     @Test func theRightClickMenuUsesTheSameNames() {

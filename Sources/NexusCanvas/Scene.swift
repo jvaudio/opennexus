@@ -81,6 +81,9 @@ public struct SceneNode: Equatable {
     public var matchRanges: [NSRange] = []
     /// Comments on the topic, shown as a count on the comment indicator when above one (M14).
     public var commentCount = 0
+    /// Where its branch lines leave it, relative to its top-left corner: the fold control
+    /// and "+N" badge sit there (D250). Nil without children.
+    public var junction: BranchJunction?
 }
 
 /// What the current view emphasises. Never stored in the document and never undone.
@@ -723,7 +726,8 @@ public struct SceneBuilder {
                     size: CGSize(width: w, height: h), children: kids, structure: node.structure,
                     siblingGap: merged.siblingGap.map { CGFloat($0) }, levelGap: merged.levelGap.map { CGFloat($0) },
                     margin: wraps == nil ? 0 : Self.boundaryPad,
-                    marginBefore: wraps.map { Self.boundaryPad + ($0 ? Self.boundaryTitle : 0) })
+                    marginBefore: wraps.map { Self.boundaryPad + ($0 ? Self.boundaryTitle : 0) },
+                    folded: node.folded && !node.children.isEmpty)
                 pending[id] = Pending(
                     role: role, appearance: appearance, style: style, text: text, marks: marks,
                     placeholder: placeholder, branch: branch, line: node.style?.line,
@@ -895,6 +899,15 @@ public struct SceneBuilder {
                     indicatorRects: p.indicatorRects, labelRects: p.labelRects, pinnedRect: p.pinnedRect,
                     tech: p.tech)
                 scene.nodes[id]?.commentCount = node.comments.count
+                if !technical, !node.children.isEmpty {
+                    let child = node.folded ? nil : node.children.lazy.compactMap { frames[$0] }.first
+                    let j = BranchLines.junction(
+                        of: frame, family: families[id] ?? family, child: child,
+                        parent: allParents[id].flatMap { frames[$0] },
+                        baseline: p.appearance.isUnderline && p.role != .root)
+                    let o = frame.rect.origin
+                    scene.nodes[id]?.junction = BranchJunction(CGPoint(x: j.point.x - o.x, y: j.point.y - o.y), j.edge)
+                }
                 scene.order.append(id)
                 if technical {
                     if let parent = allParents[id], frames[parent] != nil, !(titleRoot && parent == canvas.root),

@@ -142,7 +142,7 @@ import Testing
         #expect(
             titles(structure) == [
                 "Mind Map", "Logic Chart", "Org Chart", "Timeline", "Fishbone", "Matrix", "Brace Map", "Tree Table",
-                "Tree Chart",
+                "Tree Chart", "-", "Timeline (alternating)",
             ])
         #expect(
             structure.items[2].keyEquivalent == "3"

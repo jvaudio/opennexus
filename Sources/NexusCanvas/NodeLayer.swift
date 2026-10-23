@@ -1,5 +1,6 @@
 import AppKit
 import NexusCore
+import NexusLayout
 import NexusTheme
 @preconcurrency import QuartzCore
 
@@ -381,12 +382,14 @@ final class NodeLayer: CALayer {
             attributes: [.font: font, .foregroundColor: fg, .paragraphStyle: Self.centered])
         let w = max(22, ceil(attr.size().width) + 10)
         let h: CGFloat = 22
-        let size = n.frame.size
+        // Over the edge where the branch lines leave, 9 pt onto the topic (D250).
+        let j = Self.junction(n)
         let origin: CGPoint =
-            switch n.frame.side {
-            case .left: CGPoint(x: -w + 9, y: (size.height - h) / 2)
-            case .down: CGPoint(x: (size.width - w) / 2, y: size.height - 9)
-            case .right: CGPoint(x: size.width - 9, y: (size.height - h) / 2)
+            switch j.edge {
+            case .left: CGPoint(x: j.point.x - w + 9, y: j.point.y - h / 2)
+            case .right: CGPoint(x: j.point.x - 9, y: j.point.y - h / 2)
+            case .top: CGPoint(x: j.point.x - w / 2, y: j.point.y - h + 9)
+            case .bottom: CGPoint(x: j.point.x - w / 2, y: j.point.y - 9)
             }
         badge.frame = CGRect(origin: origin, size: CGSize(width: w, height: h))
         badge.cornerRadius = h / 2
@@ -401,15 +404,28 @@ final class NodeLayer: CALayer {
     /// Diameter of the "−" fold control, in canvas points.
     static let foldButtonSize: CGFloat = 16
 
-    /// The "−" on the branch side, just past the topic's edge, over the branch line.
+    /// Where the topic's branch lines leave it, in its own coordinates; without one (a
+    /// technical canvas), the middle of the edge on its branch side.
+    static func junction(_ n: SceneNode) -> BranchJunction {
+        if let j = n.junction { return j }
+        let size = n.frame.size
+        return switch n.frame.side {
+        case .left: BranchJunction(CGPoint(x: 0, y: size.height / 2), .left)
+        case .down: BranchJunction(CGPoint(x: size.width / 2, y: size.height), .bottom)
+        case .right: BranchJunction(CGPoint(x: size.width, y: size.height / 2), .right)
+        }
+    }
+
+    /// The "−" just past the topic's edge where its branch lines leave it, over the line (D250).
     private func layoutFoldButton(_ n: SceneNode, canvas: RGBA) {
         let d = Self.foldButtonSize
-        let size = n.frame.size
+        let j = Self.junction(n)
         let center: CGPoint =
-            switch n.frame.side {
-            case .left: CGPoint(x: -d / 2 - 2, y: size.height / 2)
-            case .down: CGPoint(x: size.width / 2, y: size.height + d / 2 + 2)
-            case .right: CGPoint(x: size.width + d / 2 + 2, y: size.height / 2)
+            switch j.edge {
+            case .left: CGPoint(x: j.point.x - d / 2 - 2, y: j.point.y)
+            case .right: CGPoint(x: j.point.x + d / 2 + 2, y: j.point.y)
+            case .top: CGPoint(x: j.point.x, y: j.point.y - d / 2 - 2)
+            case .bottom: CGPoint(x: j.point.x, y: j.point.y + d / 2 + 2)
             }
         foldButton.frame = CGRect(x: center.x - d / 2, y: center.y - d / 2, width: d, height: d)
         let circle = CGMutablePath()

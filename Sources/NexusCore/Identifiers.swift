@@ -102,6 +102,9 @@ public struct LayoutStructure: OpenEnum {
     public static let timelineVertical: LayoutStructure = "timeline.vertical"
     public static let fishboneRight: LayoutStructure = "fishbone.right"
     public static let braceLeft: LayoutStructure = "brace.left"
+    /// Xmind's horizontal timeline: events on the axis, each event's branch above or below
+    /// it in turn, growing away from the root as a logic chart (D248).
+    public static let timelineAlternating: LayoutStructure = "timeline.alternating"
     // Technical canvases (graph layouts over tree edges plus relationships).
     public static let flowDown: LayoutStructure = "flow.down"
     public static let graphRight: LayoutStructure = "graph.right"
