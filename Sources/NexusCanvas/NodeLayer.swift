@@ -50,6 +50,13 @@ final class NodeLayer: CALayer {
     let imageLayer = CALayer()
     let badge = CALayer()
     let badgeText = TextLayer()
+    /// Xmind's fold control: a "−" where the branch leaves, shown while the pointer is over
+    /// a topic with children (D215). Once folded, the "+N" badge takes its place.
+    let foldButton = CAShapeLayer()
+    /// Set by the canvas on hover.
+    var showsFoldButton = false {
+        didSet { if oldValue != showsFoldButton { foldButton.isHidden = !showsFoldButton || !badge.isHidden } }
+    }
     /// Technical caption above the node (PROCESS, START, EXTERNAL ENTITY).
     let caption = TextLayer()
     /// Search hits and the present step glow around the node.
@@ -93,6 +100,10 @@ final class NodeLayer: CALayer {
         badge.addSublayer(badgeText)
         badge.isHidden = true
         addSublayer(badge)
+        foldButton.isHidden = true
+        foldButton.lineWidth = 1.5
+        foldButton.actions = Self.noActions
+        addSublayer(foldButton)
         caption.isHidden = true
         addSublayer(caption)
         glowLayer.fillColor = nil
@@ -358,6 +369,7 @@ final class NodeLayer: CALayer {
     private func layoutBadge(_ n: SceneNode, theme: Theme, canvas: RGBA) {
         guard n.hiddenCount > 0 else {
             badge.isHidden = true
+            layoutFoldButton(n, canvas: canvas)
             return
         }
         badge.isHidden = false
@@ -383,6 +395,39 @@ final class NodeLayer: CALayer {
         badge.borderWidth = 2
         badgeText.frame = CGRect(x: 0, y: 4, width: w, height: 14)
         badgeText.attributed = attr
+        foldButton.isHidden = true
+    }
+
+    /// Diameter of the "−" fold control, in canvas points.
+    static let foldButtonSize: CGFloat = 16
+
+    /// The "−" on the branch side, just past the topic's edge, over the branch line.
+    private func layoutFoldButton(_ n: SceneNode, canvas: RGBA) {
+        let d = Self.foldButtonSize
+        let size = n.frame.size
+        let center: CGPoint =
+            switch n.frame.side {
+            case .left: CGPoint(x: -d / 2 - 2, y: size.height / 2)
+            case .down: CGPoint(x: size.width / 2, y: size.height + d / 2 + 2)
+            case .right: CGPoint(x: size.width + d / 2 + 2, y: size.height / 2)
+            }
+        foldButton.frame = CGRect(x: center.x - d / 2, y: center.y - d / 2, width: d, height: d)
+        let circle = CGMutablePath()
+        circle.addEllipse(in: CGRect(x: 0.75, y: 0.75, width: d - 1.5, height: d - 1.5))
+        circle.move(to: CGPoint(x: d * 0.3, y: d / 2))
+        circle.addLine(to: CGPoint(x: d * 0.7, y: d / 2))
+        foldButton.path = circle
+        foldButton.fillColor = canvas.cgColor
+        foldButton.strokeColor = n.branchColor.cgColor
+        foldButton.isHidden = !showsFoldButton || n.hiddenCount > 0
+    }
+
+    /// Where a click folds or unfolds this topic, in its own coordinates: the "+N" badge
+    /// when folded, the "−" while it shows. Slightly larger than drawn, for the pointer.
+    var foldControlRect: CGRect? {
+        if !badge.isHidden { return badge.frame.insetBy(dx: -2, dy: -2) }
+        if !foldButton.isHidden { return foldButton.frame.insetBy(dx: -4, dy: -4) }
+        return nil
     }
 
     private func updateRing(theme: Theme, canvas: RGBA, selected: Bool, editing: Bool, refresh: SceneNode? = nil) {
