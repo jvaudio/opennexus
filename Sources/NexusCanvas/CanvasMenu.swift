@@ -181,9 +181,7 @@ struct MenuBuilder {
         let canvas = c.canvas
         let current = canvas.nodes[id]?.structure ?? (id == canvas.root ? canvas.layout.structure : nil)
         let structures = CanvasController.structureCycle.enumerated().compactMap { i, s in
-            cmd(
-                .structure(i + 1), title: Loc.t(CanvasController.diagramType(for: s).displayName), checked: s == current
-            )
+            cmd(.structure(i + 1), title: CanvasController.structureName(s), checked: s == current)
         }
         let export = sections([
             [cmd(.exportBranchPNG), cmd(.exportBranchSVG), cmd(.exportBranchMarkdown)],

@@ -353,6 +353,21 @@ extension CanvasController {
     }
 
     /// The hierarchy diagram type that uses a structure.
+    /// A structure's name, the same in the Format panel and the right-click menu. The nine
+    /// in `structureCycle` read as their family; other directions say which.
+    static func structureName(_ s: LayoutStructure) -> String {
+        switch s {
+        case .mindmapRight: Loc.t("Mind Map (right)")
+        case .mindmapLeft: Loc.t("Mind Map (left)")
+        case .logicLeft: Loc.t("Logic Chart (left)")
+        case .braceLeft: Loc.t("Brace Map (left)")
+        case .treeDown: Loc.t("Tree Chart (down)")
+        case .timelineVertical: Loc.t("Timeline (vertical)")
+        case .fishboneRight: Loc.t("Fishbone (right)")
+        default: Loc.t(diagramType(for: s).displayName)
+        }
+    }
+
     static func diagramType(for s: LayoutStructure) -> DiagramType {
         switch s.family {
         case "logic": .logic
