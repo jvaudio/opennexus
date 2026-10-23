@@ -116,6 +116,7 @@ final class OutlineDocumentView: NSView, NSTextViewDelegate, ContextMenuTarget, 
         noteEditor.textContainer?.lineFragmentPadding = 0
         addSubview(noteEditor)
         controller.onOutlineEditChange = { [weak self] s in self?.editChanged(s) }
+        controller.outlineAnchor = { [weak self] id in self?.popoverAnchor(id) }
         observe()
     }
 
@@ -453,6 +454,22 @@ final class OutlineDocumentView: NSView, NSTextViewDelegate, ContextMenuTarget, 
 
     @objc func performMenuAction(_ sender: Any?) { ContextMenus.performAction(sender, controller: controller) }
 
+    /// A topic's row as a popover's anchor (D254): its text, scrolled into view, while the
+    /// outline is on screen. Nil when the outline is hidden or the row isn't shown (folded).
+    func popoverAnchor(_ id: NodeID) -> (NSView, CGRect)? {
+        guard window != nil, !isHiddenOrHasHiddenAncestor else { return nil }
+        // The rows follow edits a turn later: lay out now, as the command may have just run.
+        relayout(width: width)
+        guard let r = rows.first(where: { $0.id == id && ($0.kind == .topic || $0.kind == .title) }) else {
+            return nil
+        }
+        scrollToVisible(r.rect)
+        let text = r.text.boundingRect(
+            with: CGSize(width: r.textRect.width, height: 10_000), options: [.usesLineFragmentOrigin])
+        let w = min(max(ceil(text.width), 1), r.textRect.width)
+        return (self, CGRect(x: r.textRect.minX, y: r.textRect.minY, width: w, height: r.textRect.height))
+    }
+
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
         guard item.target === self else {
             return (ContextMenus.nextHandler(after: self) as? any NSMenuItemValidation)?.validateMenuItem(item) ?? false
@@ -472,8 +489,40 @@ final class OutlineDocumentView: NSView, NSTextViewDelegate, ContextMenuTarget, 
             if let w = window { e.setAccessibilityFrame(w.convertToScreen(convert(r.rect, to: nil))) }
             let id = r.id
             e.showMenu = { [weak self] in self?.showMenu(for: id) ?? false }
+            e.customActions = { [weak self] in self?.rowActions(id) ?? [] }
             return e
         }
+    }
+
+    /// A row's custom actions (D256): a canvas topic's own (Edit, Add child, Add sibling,
+    /// Comments, Fold or Unfold) where the row's menu offers them, then the rest of that
+    /// menu, Insert and Export Branch flattened. Each selects its row first.
+    func rowActions(_ id: NodeID) -> [NSAccessibilityCustomAction] {
+        let entries = controller.outlineContextMenu(previewing: id)
+        let offered = Set(entries.flatMap(\.items).compactMap(\.action.command))
+        let folded = controller.canvas.nodes[id]?.folded ?? false
+        let own: [(CommandID, String)] = [
+            (.editKeepText, Loc.t("Edit")), (.addChild, Loc.t("Add child")), (.addSiblingAfter, Loc.t("Add sibling")),
+            (.comment, Loc.t("Comments")), (.fold, folded ? Loc.t("Unfold") : Loc.t("Fold")),
+        ]
+        let run: @MainActor (CanvasMenuAction) -> Bool = { [weak self] action in
+            self?.runRowAction(action, on: id) ?? false
+        }
+        let first = own.filter { offered.contains($0.0) }.map { command, name in
+            NSAccessibilityCustomAction(name: name) { run(.command(command)) }
+        }
+        return first + ContextMenus.customActions(entries, skipping: TopicElement.ownActions, run: run)
+    }
+
+    /// Runs a row's item as its menu would, on that row alone, with the outline focused.
+    func runRowAction(_ action: CanvasMenuAction, on id: NodeID) -> Bool {
+        guard controller.canvas.nodes[id] != nil else { return false }
+        window?.makeFirstResponder(self)
+        if noteNode != nil { commitNote() }
+        if controller.mode == .connect { controller.cancelConnect() }
+        if controller.mode == .edit { controller.commitEdit() }
+        controller.select(id)
+        return ContextMenus.run(action, controller: controller, from: self)
     }
 
     /// Show Menu on the outline itself: the selected row's menu.

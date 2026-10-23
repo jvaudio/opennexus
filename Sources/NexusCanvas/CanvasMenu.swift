@@ -168,12 +168,20 @@ extension CanvasController {
     }
 
     /// The outline's menu for the selection: the canvas topic menu without what only the
-    /// canvas shows (styles, structures, callouts, boundaries, relationships, popovers),
-    /// plus the outline's Indent and Outdent and Move Up and Down.
+    /// canvas shows (styles, structures, callouts, boundaries, summaries, relationships),
+    /// plus the outline's Indent and Outdent and Move Up and Down. Its popovers open on
+    /// the row (D254, D255).
     public func outlineContextMenu() -> [CanvasMenuEntry] {
         guard canvas.nodes[selection.primary] != nil else { return [] }
         let b = MenuBuilder(controller: self, selection: selection, element: nil)
         return selection.nodes.count > 1 ? b.outlineMultiSelectionMenu() : b.outlineMenu()
+    }
+
+    /// The menu a row would get once selected alone, without selecting it (an outline
+    /// row's custom actions list these, D256).
+    func outlineContextMenu(previewing id: NodeID) -> [CanvasMenuEntry] {
+        guard canvas.nodes[id] != nil else { return [] }
+        return MenuBuilder(controller: self, selection: Selection(id), element: nil).outlineMenu()
     }
 
     /// The Gantt's menu: a row's task commands, or (no row) Go to Today and Export Gantt….
@@ -224,16 +232,21 @@ struct MenuBuilder {
 
     var c: CanvasController { controller }
 
-    func topicMenu() -> [CanvasMenuEntry] {
-        let id = selection.primary
-        let insert = sections([
+    /// Insert's popover items (note, link, image, label, markers, sticker), and comments
+    /// and tasks: the canvas's and the outline's (D255).
+    func insertItems() -> [[CanvasMenuEntry?]] {
+        [
             [
                 cmd(.note), cmd(.hyperlink), cmd(.image), cmd(.label), cmd(.markerPicker),
-                item(Loc.t("Sticker…"), .stickers(id)),
+                item(Loc.t("Sticker…"), .stickers(selection.primary)),
             ],
             [cmd(.comment), cmd(.taskDetails), cmd(.toggleTodo)],
-            [cmd(.callout), cmd(.boundary), cmd(.summary), cmd(.connect)],
-        ])
+        ]
+    }
+
+    func topicMenu() -> [CanvasMenuEntry] {
+        let id = selection.primary
+        let insert = sections(insertItems() + [[cmd(.callout), cmd(.boundary), cmd(.summary), cmd(.connect)]])
         let canvas = c.canvas
         let current = canvas.nodes[id]?.structure ?? (id == canvas.root ? canvas.layout.structure : nil)
         let structures = CanvasController.structureCycle.enumerated().compactMap { i, s in
@@ -261,7 +274,8 @@ struct MenuBuilder {
         sections(CanvasController.multiSelectionCommands.map { $0.map { cmd($0) } })
     }
 
-    /// The outline row menu (D225): the topic menu's items that work without the canvas.
+    /// The outline row menu (D225, D255): the topic menu's items that work without the
+    /// canvas, Insert's popovers included (they open on the row).
     func outlineMenu() -> [CanvasMenuEntry] {
         let export = sections([
             [cmd(.exportBranchPNG), cmd(.exportBranchSVG), cmd(.exportBranchMarkdown)],
@@ -269,7 +283,7 @@ struct MenuBuilder {
         ])
         return sections([
             [cmd(.addChild), cmd(.addSiblingAfter), cmd(.addSiblingBefore), cmd(.addParent)],
-            [cmd(.editKeepText), cmd(.taskDetails), cmd(.toggleTodo)],
+            [cmd(.editKeepText), submenu(Loc.t("Insert"), sections(insertItems()))],
             [cmd(.outlineIndent), cmd(.outlineOutdent), cmd(.moveUp), cmd(.moveDown)],
             [cmd(.cut), cmd(.copy), cmd(.paste), cmd(.duplicate)],
             [cmd(.fold), cmd(.inspector)],
@@ -280,7 +294,10 @@ struct MenuBuilder {
 
     /// Several outline rows: what acts on every one of them (D177's rule).
     func outlineMultiSelectionMenu() -> [CanvasMenuEntry] {
-        sections([[cmd(.cut), cmd(.copy)], [cmd(.toggleTodo)], [cmd(.inspector)], [cmd(.delete)]])
+        sections([
+            [cmd(.cut), cmd(.copy)], [cmd(.label), cmd(.markerPicker), cmd(.toggleTodo)], [cmd(.inspector)],
+            [cmd(.delete)],
+        ])
     }
 
     /// The Gantt row menu (D225): the Gantt's own task commands, each with its key, for the

@@ -81,7 +81,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     private var morphUntil: CFTimeInterval = 0
     private var lastMorphSerial = 0
     private var imageCache: [String: CGImage] = [:]
-    private var popovers: CanvasPopovers?
+    private(set) var popovers: CanvasPopovers?
 
     /// A topic's rect in view coordinates (popover anchors).
     func viewRect(of id: NodeID) -> CGRect? {
