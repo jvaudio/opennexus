@@ -8,7 +8,18 @@ import NexusFormat
 public final class MCPServer {
     /// Newest first; the client's version is used when it's one of these.
     public static let protocolVersions = ["2025-06-18", "2025-03-26", "2024-11-05"]
-    public static let serverVersion = "1.0"
+    /// The app's version when this runs from OpenNexus.app (its `Contents/Helpers/nexus`,
+    /// also through a link on the PATH), as "0.1 (78)"; "dev" for a build from the package.
+    nonisolated public static let serverVersion: String = {
+        let exe = (Bundle.main.executableURL ?? URL(fileURLWithPath: CommandLine.arguments[0]))
+            .resolvingSymlinksInPath()
+        let plist = exe.deletingLastPathComponent().deletingLastPathComponent().appending(path: "Info.plist")
+        guard let data = try? Data(contentsOf: plist),
+            let info = try? PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any],
+            let short = info["CFBundleShortVersionString"] as? String
+        else { return "dev" }
+        return (info["CFBundleVersion"] as? String).map { "\(short) (\($0))" } ?? short
+    }()
 
     public enum Config {
         case enabled(AgentPolicy)

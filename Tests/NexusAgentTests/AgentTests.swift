@@ -461,7 +461,7 @@ final class Session {
         #expect(
             replies.last?["result"]?["content"]?.arrayValue?.first?["text"]?.stringValue?.contains("Launch plan")
                 == true)
-        #expect(try run(["--version"]).1.hasPrefix("nexus 1.0"))
+        #expect(try run(["--version"]).1.hasPrefix("nexus \(MCPServer.serverVersion) (OpenNexus)"))
         #expect(try run(["bogus"]).0 == 64)
     }
 }
