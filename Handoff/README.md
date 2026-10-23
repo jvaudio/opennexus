@@ -732,6 +732,184 @@ Work in order. Each milestone ends with green tests, a short demo note in `docs/
   - Every row in §12 is met and recorded.
   - An accessibility audit with Accessibility Inspector reports no issues.
 
+The milestones below came after the handoff: an Xmind parity review (M11–M22), checks against real Xmind files and the gaps they found (M23–M30). Each one's plan, results and known gaps are in `docs/plans/Mx.md`, and its decisions in `docs/DECISIONS.md`.
+
+### M11 · Task planning
+
+- **Build:**
+  - Task fields on a topic: start, due, owner, progress and priority.
+  - Dependencies of all four kinds, with a lag.
+  - A Gantt view of the canvas (⌘4) that skips non-working days.
+  - Gantt export as PNG, JPEG and PDF, and task export as CSV and ICS.
+  - Xmind task import (Zen and XMind 8).
+- **Accept when:**
+  - Task fields and dependencies round-trip byte-identically, and files without them are written as before.
+  - Every task field can be set from the keyboard, each edit one undo step, and no dependency cycle can be made.
+  - ICS output follows RFC 5545 and opens in Calendar.
+  - A 1,000-task Gantt lays out in under 50 ms.
+
+### M12 · Image to map
+
+- **Build:** a picture, screenshot or PDF page becomes an editable map on this Mac: Vision for the text, layout rules (Apple Intelligence optional) for the hierarchy.
+- **Accept when:**
+  - Imports work from File › Import…, a drop and a paste.
+  - Indented lists, mind-map screenshots and column posters rebuild their hierarchy.
+  - The import report shows, and adding to an open document is one undo step.
+
+### M13 · Zone and Excel export
+
+- **Build:** Export Zone… and Print Zone…, and Excel (.xlsx) export.
+- **Accept when:**
+  - A zone exports as PNG, JPEG, SVG and PDF, cropped to it, and prints.
+  - The workbook has one sheet per canvas, with rows in outline order.
+
+### M14 · Comments and legends
+
+- **Build:** comment threads on topics and a movable map legend with marker descriptions, both imported from Xmind.
+- **Accept when:**
+  - Both are optional in the file and round-trip.
+  - Comments are added, edited and deleted with undo, shown as a badge, and found by the Notes tab, filters and VoiceOver.
+  - The legend is drawn in exports.
+
+### M15 · Export to Xmind
+
+- **Build:** a modern Xmind (Zen) file from `.nexus`, from the export sheet and `nexus export --to xmind`.
+- **Accept when:**
+  - Topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, legends and tasks survive OpenNexus → .xmind → OpenNexus.
+  - What doesn't survive is listed in an export report.
+
+### M16 · Zone relationships
+
+- **Build:** relationships that end on a zone, as in Xmind 26.03.
+- **Accept when:** they draw from Connect mode, survive save, load and undo, render in every export, and import from Xmind.
+
+### M17 · Canvas context menus
+
+- **Build:** right-click menus on topics, selections, relationships, boundaries, summaries, callouts, zones, images, the legend and empty canvas, built from the command registry.
+- **Accept when:**
+  - A menu shows only what can run.
+  - Each item does exactly what its command does.
+  - VoiceOver reaches the same actions.
+
+### M18 · Element ends, styles and XMind 8
+
+- **Build:**
+  - Relationships that end on boundaries, summaries and callouts.
+  - `.xmind` export of themes and topic styles.
+  - XMind 8 export.
+- **Accept when:**
+  - The new ends survive every format and VoiceOver names them.
+  - Styles go to Xmind and come back.
+  - XMind 8 files round-trip, and every archive part parses.
+
+### M19 · Image to map, continued
+
+- **Build:**
+  - Every PDF page, read off the main thread with progress.
+  - Fishbone diagrams, connector tracing, unwrapped lowercase lines, right-to-left and vertical text.
+- **Accept when:** the image bench reads each layout, including one real-Vision fishbone.
+
+### M20 · Zone gaps
+
+- **Build:** export every zone at once, and copy, cut, paste and duplicate zones.
+- **Accept when:**
+  - Each zone exports as its own file, or as PDF pages.
+  - A copied zone carries its topics and relationships to any canvas or document.
+
+### M21 · Present and legend gaps
+
+- **Build:**
+  - The legend in Present and its exports.
+  - Task lines and Timeline slides.
+  - Moving the legend from the keyboard and VoiceOver.
+- **Accept when:** every action is a registry command with a key, and the format additions are optional and round-trip.
+
+### M22 · Tasks and comments in formats and agents
+
+- **Build:**
+  - Tasks and comments in Markdown, OPML, MindManager import and Excel.
+  - The same in `nexus` and the MCP tools.
+  - Dates on AI work breakdowns.
+- **Accept when:** each format round-trips tasks and comments exactly, and agent edits are marked as AI and need edit access.
+
+### M23 · Real Xmind files
+
+- **Build:**
+  - Checks against two real Xmind 26 maps.
+  - Imported themes: the sheet background, branch colours and topic-class styles carried on the canvas (`style.colors`, `style.roles`).
+  - The env-gated `XmindRealFileTests` harness.
+- **Accept when:**
+  - Every topic imports at its path, with its folds and markers.
+  - The import looks like Xmind's own thumbnail.
+  - `.xmind` and XMind 8 round trips keep the outline and the look.
+
+### M24 · Fold from the mouse
+
+- **Build:** a "−" fold control on hover where a branch leaves its topic; the "+N" badge unfolds on click. The structure picker's names now come from the structures they apply (D216).
+- **Accept when:**
+  - Folding is one undo step, and a selection inside the branch moves to the topic.
+  - There's no control on the central topic or leaves, or outside Select mode.
+
+### M25 · Xmind style fidelity
+
+- **Build:**
+  - Boundary and summary styles in `.xmind` and XMind 8.
+  - Level styles, quick styles and branch colours that survive a round trip.
+  - Theme element classes imported.
+- **Accept when:**
+  - Each round-trips in Xmind's own keys.
+  - An edit made in Xmind wins over OpenNexus's record.
+  - Files without the record import as before.
+
+### M26 · Context menu gaps
+
+- **Build:**
+  - Paste and New Zone at the right-clicked point.
+  - Context menus in the outline and the Gantt.
+- **Accept when:**
+  - ⌘V and ⌥⌘Z are unchanged.
+  - Every menu item equals its key.
+  - VoiceOver reaches the menus.
+
+### M27 · Zone gaps, part 2
+
+- **Build:**
+  - Branch and zone scopes for `nexus export` and the MCP `export` tool.
+  - Several zones selected and copied at once.
+  - Callouts in copy and paste.
+  - A safe "same canvas" check for topic paste.
+- **Accept when:**
+  - Scoped files match the app's export.
+  - Groups copy, cut, duplicate, delete and drag together.
+  - Callouts get fresh ids.
+
+### M28 · Present legend fit
+
+- **Build:**
+  - Slides framed around the corner legend.
+  - A per-slide legend.
+  - Timeline slides for flow and message diagrams.
+- **Accept when:** no framed topic is under the legend on screen or in exports, and each slide lists only its own markers.
+
+### M29 · Image import and Markdown tasks
+
+- **Build:**
+  - Fishbone sub-causes in image import.
+  - Page progress with Cancel for File › Import… of a long PDF.
+  - Floating topics' tasks in Markdown.
+- **Accept when:**
+  - The image bench still passes.
+  - Cancel opens nothing.
+  - Floating tasks round-trip exactly.
+
+### M30 · Fishbone sub-causes
+
+- **Build:** fishbone causes that make room for their sub-causes.
+- **Accept when:**
+  - No two topics come within 4 pt of each other.
+  - Sub-causes stay clear of their bone.
+  - OpenNexus's own fishbone export reads back through image import.
+
 ---
 
 ## 12. Quality bars: performance, accessibility, privacy
