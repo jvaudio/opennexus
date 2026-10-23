@@ -862,7 +862,10 @@ public struct SceneBuilder {
                 origin: origin, spacing: space)
             if side == .left { r.frames[s.topic]?.side = .left }
             merge(r)
-            let color = s.color.flatMap(RGBA.init(hexString:)) ?? env.theme.ink2
+            // The canvas's summary default, where it has one, before the theme's (D245).
+            let color =
+                s.color.flatMap(RGBA.init(hexString:))
+                ?? canvas.style.elements.summary.color.flatMap(RGBA.init(hexString:)) ?? env.theme.ink2
             scene.summaries.append(SceneSummary(summary: s, bracket: bracket, side: side, color: color))
         }
 
@@ -986,18 +989,22 @@ public struct SceneBuilder {
                 b.color.flatMap(RGBA.init(hexString:))
                 ?? (b.meaning == "trust"
                     ? env.theme.critical
-                    : b.meaning == "vpc" || b.meaning == "subnet" ? env.theme.entityLine : env.theme.ring)
+                    : b.meaning == "vpc" || b.meaning == "subnet"
+                        ? env.theme.entityLine
+                        : canvas.style.elements.boundary.color.flatMap(RGBA.init(hexString:)) ?? env.theme.ring)
             scene.boundaries.append(SceneBoundary(boundary: b, rect: r, color: color, level: level))
         }
         scene.boundaries.sort { $0.level > $1.level }
         var messageIndex = 0
         // Relationships between visible topics, zones, boundaries and summaries.
+        let relationshipColor =
+            canvas.style.elements.relationship.color.flatMap(RGBA.init(hexString:)) ?? env.theme.relationship
         for r in canvas.relationships where scene.rect(of: r.from) != nil && scene.rect(of: r.to) != nil {
             let color: RGBA =
                 switch r.color {
-                case "source": scene.sourceColor(r.from) ?? env.theme.relationship
-                case "theme": env.theme.relationship
-                default: RGBA(hexString: r.color) ?? env.theme.relationship
+                case "source": scene.sourceColor(r.from) ?? relationshipColor
+                case "theme": relationshipColor
+                default: RGBA(hexString: r.color) ?? relationshipColor
                 }
             var sr = SceneRelationship(relationship: r, color: color)
             sr.points = techResult?.messagePoints[r.id]

@@ -103,7 +103,13 @@ public struct StyleEnvironment: Sendable {
             palette = theme.palette
         }
         mode = ColorThemeMode(rawValue: canvasStyle.colorTheme) ?? .rainbow
-        quickStyles = QuickStyle.builtIn + customQuickStyles
+        // A canvas's own look for a built-in quick style replaces the built-in one (D244).
+        quickStyles = (QuickStyle.builtIn + customQuickStyles).map { q in
+            guard let own = canvasStyle.quickStyles[q.id], !own.isEmpty else { return q }
+            var q = q
+            q.style = own
+            return q
+        }
         canvas = canvasStyle.background.flatMap(RGBA.init(hexString:)) ?? theme.canvas
         let nodeStyle = nodeStyle
         roleBase = Dictionary(

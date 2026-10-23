@@ -113,9 +113,13 @@ public enum XmindWriter {
         if id.hasPrefix("priority-"), let n = Int(id.dropFirst(9)), (1...9).contains(n) { return id }
         switch id {
         case "progress-0": return "task-start"
+        case "progress-13": return "task-oct"
         case "progress-25": return "task-quarter"
+        case "progress-38": return "task-3oct"
         case "progress-50": return "task-half"
+        case "progress-63": return "task-5oct"
         case "progress-75": return "task-3quar"
+        case "progress-88": return "task-7oct"
         case "progress-100": return "task-done"
         case "flag-red", "flag-orange", "flag-green", "flag-blue": return id
         case "star-gold": return "star-yellow"
@@ -212,8 +216,9 @@ public enum XmindWriter {
         /// don't read back as them (D218).
         mutating func style(_ nid: NodeID, _ n: Node) -> (properties: [String: String], record: [String: Any]?) {
             var s = canvas.style.levels[canvas.depth(of: nid, parents: parents)] ?? TopicStyle()
-            if let q = n.quickStyle {
-                if let qs = QuickStyle.named(q, custom: library.quickStyles) { s = qs.style.merged(over: s) }
+            // The quick style as this canvas draws it (D244).
+            if let q = n.quickStyle, let qs = env.quickStyles.first(where: { $0.id == q }) {
+                s = qs.style.merged(over: s)
             }
             if let o = n.style { s = o.merged(over: s) }
             var p: [String: String] = [:]
@@ -273,6 +278,7 @@ public enum XmindWriter {
                 "theme": theme, "extensions": extensions,
             ]
             var rels: [[String: Any]] = []
+            var writtenLinks = Set<String>()
             for r in c.relationships {
                 // Zones aren't written (no Xmind equivalent), so neither is a relationship
                 // that ends on one (M16). Boundaries and summaries are, by id (D183).
@@ -284,15 +290,52 @@ public enum XmindWriter {
                 var o: [String: Any] = ["id": "\(c.id.rawValue)-\(r.id)", "end1Id": from, "end2Id": to]
                 if !r.label.isEmpty { o["title"] = r.label }
                 var lost: [String] = []
-                let p = XmindStyle.properties(r, lost: &lost)
+                let p = XmindStyle.properties(r, defaults: c.style.elements.relationship, lost: &lost)
                 lose(lost)
                 if !p.isEmpty { o["style"] = ["id": "\(c.id.rawValue)-\(r.id)-style", "properties": p] }
                 rels.append(o)
+                writtenLinks.insert(r.id)
             }
             if !rels.isEmpty { s["relationships"] = rels }
+            // What the original Xmind file had that OpenNexus doesn't use (D242).
+            if let kept = c.extra[XmindKept.key]?.objectValue {
+                for (k, v) in kept["keys"]?.objectValue ?? [:] where s[k] == nil {
+                    if let x = XmindStyle.any(v) { s[k] = x }
+                }
+                for e in kept["extensions"]?.arrayValue ?? [] {
+                    guard let x = XmindStyle.any(e) as? [String: Any],
+                        !extensions.contains(where: { ($0["provider"] as? String) == (x["provider"] as? String) })
+                    else { continue }
+                    extensions.append(x)
+                }
+                s["extensions"] = extensions
+                if let order = kept["layerOrder"]?.arrayValue {
+                    s["arrangeableLayerOrder"] = order.compactMap { layer($0, links: writtenLinks) }
+                }
+            }
             if let l = c.legend { s["legend"] = legend(l) }
             elementReport(c)
             return s
+        }
+
+        /// A kept layer order entry with this file's element in it, or nil when that
+        /// element is gone or isn't written (D242).
+        func layer(_ entry: JSONValue, links: Set<String>) -> Any? {
+            guard let ref = entry["ref"]?.objectValue, let (kind, v) = ref.first, let rid = v.stringValue else {
+                return nil
+            }
+            let xid: String?
+            switch kind {
+            case "topic": xid = canvas.nodes[NodeID(rid)] == nil ? nil : id(NodeID(rid))
+            case "relationship": xid = links.contains(rid) ? "\(canvas.id.rawValue)-\(rid)" : nil
+            case "boundary": xid = end(.boundary(rid))
+            case "summary": xid = end(.summary(rid))
+            default: xid = nil
+            }
+            guard let xid else { return nil }
+            guard var item = entry["item"].flatMap(XmindStyle.any) as? [String: Any] else { return xid }
+            item["id"] = xid
+            return item
         }
 
         /// A relationship end's Xmind id: a topic's, or a written boundary's or summary's.
@@ -314,7 +357,8 @@ public enum XmindWriter {
                 var o: [String: Any] = ["id": "\(canvas.id.rawValue)-\(b.id)"]
                 if !b.title.isEmpty { o["title"] = b.title }
                 var lost: [String] = []
-                let p = XmindStyle.properties(b, theme: env.theme, canvas: env.canvas, lost: &lost)
+                let p = XmindStyle.properties(
+                    b, theme: env.theme, canvas: env.canvas, defaults: canvas.style.elements.boundary, lost: &lost)
                 lose(lost)
                 if !p.isEmpty { o["style"] = ["id": "\(canvas.id.rawValue)-\(b.id)-style", "properties": p] }
                 if ids.count == 1, parents[first] == nil {
@@ -349,7 +393,7 @@ public enum XmindWriter {
                 summaries[s.parent, default: []].append(
                     (
                         "(\(min(a, b)),\(max(a, b)))", s.topic, "\(canvas.id.rawValue)-\(s.id)",
-                        XmindStyle.properties(s, lost: &lost)
+                        XmindStyle.properties(s, defaults: canvas.style.elements.summary, lost: &lost)
                     ))
                 lose(lost)
                 written.insert(.summary(s.id))
@@ -369,7 +413,10 @@ public enum XmindWriter {
         mutating func topic(_ nid: NodeID) -> [String: Any] {
             guard let n = canvas.nodes[nid] else { return [:] }
             report.topics += 1
-            var t: [String: Any] = ["id": id(nid), "class": "topic", "title": n.text]
+            // Xmind's quick styles are classes on the topic (D244).
+            var t: [String: Any] = [
+                "id": id(nid), "class": XmindStyle.topicClass(quickStyle: n.quickStyle), "title": n.text,
+            ]
             if let note = n.note?.text, !note.isEmpty {
                 let html = note.components(separatedBy: "\n").map { "<div>\(XML.escape($0, attribute: false))</div>" }
                 t["notes"] = ["plain": ["content": note], "realHTML": ["content": html.joined()]]
@@ -422,6 +469,14 @@ public enum XmindWriter {
             let (props, record) = style(nid, n)
             if !props.isEmpty { t["style"] = ["id": "\(id(nid))-style", "properties": props] }
             if let record { extensions.append(["provider": XmindStyle.provider, "content": record]) }
+            // What the original Xmind topic had that OpenNexus doesn't use (D242).
+            let kept = n.extra[XmindKept.key]?.objectValue ?? [:]
+            for e in kept["extensions"]?.arrayValue ?? [] {
+                guard let x = XmindStyle.any(e) as? [String: Any],
+                    !extensions.contains(where: { ($0["provider"] as? String) == (x["provider"] as? String) })
+                else { continue }
+                extensions.append(x)
+            }
             if !extensions.isEmpty { t["extensions"] = extensions }
             unsupported(n)
             var kids: [String: Any] = [:]
@@ -444,6 +499,9 @@ public enum XmindWriter {
             }
             if !kids.isEmpty { t["children"] = kids }
             if let bs = boundaries[nid], !bs.isEmpty { t["boundaries"] = bs }
+            for (k, v) in kept["keys"]?.objectValue ?? [:] where t[k] == nil {
+                if let x = XmindStyle.any(v) { t[k] = x }
+            }
             return t
         }
 

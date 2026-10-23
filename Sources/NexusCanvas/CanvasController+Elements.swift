@@ -24,8 +24,13 @@ public enum CanvasRequest: Equatable, Sendable {
 public enum MarkerLibrary {
     public struct Marker: Sendable, Identifiable, Equatable {
         public var id: String
+        /// The white glyph on the marker's disc; for a pie marker, the text it's named by
+        /// where only text fits (◔, ⅛).
         public var glyph: String
         public var color: String
+        /// A progress marker drawn as a pie this full (D247). No glyph shows eighths, and
+        /// the font draws ◔ and ◕ smaller than ◑, so every part-done marker is a pie.
+        public var pie: Double? = nil
     }
 
     public struct Group: Sendable, Identifiable {
@@ -49,9 +54,13 @@ public enum MarkerLibrary {
             id: "progress", name: Loc.t("Progress"),
             markers: [
                 Marker(id: "progress-0", glyph: "○", color: "#4A4A55"),
-                Marker(id: "progress-25", glyph: "◔", color: "#1E6FB8"),
-                Marker(id: "progress-50", glyph: "◑", color: "#1E6FB8"),
-                Marker(id: "progress-75", glyph: "◕", color: "#1E6FB8"),
+                Marker(id: "progress-13", glyph: "⅛", color: "#1E6FB8", pie: 0.125),
+                Marker(id: "progress-25", glyph: "◔", color: "#1E6FB8", pie: 0.25),
+                Marker(id: "progress-38", glyph: "⅜", color: "#1E6FB8", pie: 0.375),
+                Marker(id: "progress-50", glyph: "◑", color: "#1E6FB8", pie: 0.5),
+                Marker(id: "progress-63", glyph: "⅝", color: "#1E6FB8", pie: 0.625),
+                Marker(id: "progress-75", glyph: "◕", color: "#1E6FB8", pie: 0.75),
+                Marker(id: "progress-88", glyph: "⅞", color: "#1E6FB8", pie: 0.875),
                 Marker(id: "progress-100", glyph: "✓", color: "#2E7D4F"),
             ]),
         Group(
@@ -527,19 +536,25 @@ extension CanvasController {
         perform(Loc.t("Move Zones")) { e in for id in ids { e.moveZone(id, by: delta.width, delta.height) } }
     }
 
-    /// Reset Style (⌥⌘R) on an element returns it to its defaults.
+    /// Reset Style (⌥⌘R) on an element returns it to its defaults: the canvas's own, where
+    /// it has them (D245).
     public func resetElementStyle(_ ref: ElementRef) {
+        let defaults = canvas.style.elements
         switch ref {
         case .relationship(let id):
             updateRelationship(id) { r in
-                let fresh = Relationship(id: r.id, from: r.from, to: r.to, label: r.label)
+                var fresh = Relationship(id: r.id, from: r.from, to: r.to, label: r.label)
+                fresh.adopt(defaults.relationship)
                 r = fresh
             }
         case .boundary(let id):
-            updateBoundary(id) { b in b = Boundary(id: b.id, nodes: b.nodes, title: b.title) }
+            updateBoundary(id) { b in
+                b = Boundary(id: b.id, nodes: b.nodes, title: b.title)
+                b.adopt(defaults.boundary)
+            }
         case .summary(let id):
             updateSummary(id) { s in
-                s.width = 2
+                s.width = defaults.summary.width ?? 2
                 s.color = nil
             }
         case .callout(let id):

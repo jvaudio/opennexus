@@ -272,7 +272,8 @@ extension CanvasEditor {
         let used = Set(canvas.relationships.map(\.id))
         var i = canvas.relationships.count + 1
         while used.contains("r\(i)") { i += 1 }
-        let rel = Relationship(id: "r\(i)", from: from, to: to, label: label)
+        var rel = Relationship(id: "r\(i)", from: from, to: to, label: label)
+        rel.adopt(canvas.style.elements.relationship)
         updateMeta { $0.relationships.append(rel) }
         return rel.id
     }

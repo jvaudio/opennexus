@@ -284,14 +284,18 @@ import Testing
     @Test func anotherAppsElementClassesImport() throws {
         let im = try XmindFormat.parse(Self.classesSheet(), name: "plan.xmind")
         let c = try #require(im.canvases.first)
+        // The classes are the canvas's element defaults (M31, D245): each element takes
+        // their shape, dash, width and fill, and is drawn in their colour unless it has one.
+        let e = c.style.elements
+        #expect(e.boundary.color == "#FF0000" && e.summary.color == "#0000FF" && e.relationship.color == "#00AA00")
         let plain = c.boundaries[0]
-        #expect(plain.color == "#FF0000" && plain.dash == "dashed" && plain.width == 3 && plain.shape == "wave")
+        #expect(plain.color == nil && plain.dash == "dashed" && plain.width == 3 && plain.shape == "wave")
         #expect(plain.fillOpacity == 0.1, "#FFE5E5 is #FF0000 at 10 % over the white map")
         let own = c.boundaries[1]
         #expect(own.color == "#000000" && own.dash == "dashed" && own.shape == "rounded", "its own colour wins")
-        #expect(c.summaries.first?.color == "#0000FF" && c.summaries.first?.width == 4)
+        #expect(c.summaries.first?.color == nil && c.summaries.first?.width == 4)
         #expect(c.summaries.first?.bracket == "round")
-        #expect(c.relationships[0].color == "#00AA00" && c.relationships[0].dash == "solid")
+        #expect(c.relationships[0].color == "theme" && c.relationships[0].dash == "solid")
         #expect(c.relationships[0].line == "straight")
         #expect(c.relationships[1].color == "#123456" && c.relationships[1].line == "straight")
         #expect(im.report.lines == ["Boundary shape “tension” (drawn rounded)"])
@@ -327,7 +331,8 @@ import Testing
             sheet["theme"] = theme
         }
         let x = try #require(try XmindFormat.parse(changed, name: "x.xmind", timeZone: utc).canvases.first)
-        #expect(x.style.theme == "classic" && x.relationships.first?.color == "#00AA00")
+        #expect(x.style.theme == "classic" && x.style.elements.relationship.color == "#00AA00")
+        #expect(x.relationships.first?.color == "theme", "drawn in the canvas's default (D245)")
     }
 
     @Test func filesWithoutARecordImportAsBefore() throws {

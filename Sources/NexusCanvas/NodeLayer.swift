@@ -571,18 +571,9 @@ final class DecorLayer: CALayer {
             x += SceneBuilder.todoWidth
         }
         for m in n.otherMarkers {
-            if let mk = MarkerLibrary.marker(m) {
-                let c = NSColor(cgColor: RGBA(hex: mk.color).cgColor) ?? .gray
-                let r = CGRect(x: x, y: cy - 9, width: 18, height: 18)
-                c.setFill()
-                NSBezierPath(ovalIn: r).fill()
-                let s = NSAttributedString(
-                    string: mk.glyph,
-                    attributes: [
-                        .font: NSFont.systemFont(ofSize: 10.5, weight: .bold), .foregroundColor: NSColor.white,
-                        .paragraphStyle: NodeLayer.centered,
-                    ])
-                s.draw(in: r.offsetBy(dx: 0, dy: 2))
+            if MarkerLibrary.marker(m) != nil {
+                // The legend's drawing: a disc with its glyph, or an eighths pie (D247).
+                LegendLayer.drawMarker(m, in: CGRect(x: x, y: cy - 9, width: 18, height: 18))
             }
             x += SceneBuilder.markerWidth
         }

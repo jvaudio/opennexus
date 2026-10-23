@@ -246,6 +246,73 @@
             "compact": {
               "type": "boolean"
             },
+            "elements": {
+              "description": "Defaults for boundaries, summaries and relationships on this canvas, e.g. an imported theme's classes (D245). New elements take them; an element without its own colour is drawn in the default's.",
+              "properties": {
+                "boundary": {
+                  "properties": {
+                    "color": {
+                      "type": "string"
+                    },
+                    "dash": {
+                      "type": "string"
+                    },
+                    "fillOpacity": {
+                      "maximum": 1,
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "shape": {
+                      "type": "string"
+                    },
+                    "width": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                },
+                "relationship": {
+                  "properties": {
+                    "color": {
+                      "type": "string"
+                    },
+                    "dash": {
+                      "type": "string"
+                    },
+                    "ends": {
+                      "items": {
+                        "type": "string"
+                      },
+                      "maxItems": 2,
+                      "minItems": 2,
+                      "type": "array"
+                    },
+                    "line": {
+                      "type": "string"
+                    },
+                    "width": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                },
+                "summary": {
+                  "properties": {
+                    "bracket": {
+                      "type": "string"
+                    },
+                    "color": {
+                      "type": "string"
+                    },
+                    "width": {
+                      "type": "number"
+                    }
+                  },
+                  "type": "object"
+                }
+              },
+              "type": "object"
+            },
             "font": {
               "type": "string"
             },
@@ -275,6 +342,10 @@
             "pattern": {
               "type": "string"
             },
+            "quickStyles": {
+              "description": "The canvas's own look for built-in quick styles, by id (very-important, important, cross-out), e.g. an imported theme's important, minor and expired topic classes (D244).",
+              "type": "object"
+            },
             "roles": {
               "description": "Topic styles by role (root, main, sub, floating), e.g. an imported theme's topic classes.",
               "type": "object"
@@ -301,6 +372,27 @@
           "description": "Diagram type: mindmap, logic, brace, org, tree, treeTable, timeline, fishbone, matrix, flowchart, swimlane, dfd, threatModel, architecture, sequence, whiteboard. Unknown values are preserved.",
           "minLength": 1,
           "type": "string"
+        },
+        "xmind": {
+          "description": "Data from an Xmind file that OpenNexus doesn't use, written back by the .xmind export (D242): unknown keys (keys), extensions (extensions) and, on a canvas, the sheet's layer order (layerOrder), whose entries name elements as {\"topic\" | \"relationship\" | \"boundary\" | \"summary\": id}.",
+          "properties": {
+            "extensions": {
+              "items": {
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "keys": {
+              "type": "object"
+            },
+            "layerOrder": {
+              "items": {
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "type": "object"
         },
         "zones": {
           "items": {
@@ -789,6 +881,27 @@
           "required": [
             "done"
           ],
+          "type": "object"
+        },
+        "xmind": {
+          "description": "Data from an Xmind file that OpenNexus doesn't use, written back by the .xmind export (D242): unknown keys (keys), extensions (extensions) and, on a canvas, the sheet's layer order (layerOrder), whose entries name elements as {\"topic\" | \"relationship\" | \"boundary\" | \"summary\": id}.",
+          "properties": {
+            "extensions": {
+              "items": {
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "keys": {
+              "type": "object"
+            },
+            "layerOrder": {
+              "items": {
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
           "type": "object"
         }
       },

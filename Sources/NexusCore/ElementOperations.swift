@@ -56,7 +56,9 @@ extension CanvasEditor {
         let targets = ids.filter { self[$0] != nil }
         guard !targets.isEmpty else { throw TreeOperationRefusal.missingNode }
         let id = freshID("b", used: canvas.boundaries.map(\.id))
-        updateMeta { $0.boundaries.append(Boundary(id: id, nodes: targets, title: title)) }
+        var b = Boundary(id: id, nodes: targets, title: title)
+        b.adopt(canvas.style.elements.boundary)
+        updateMeta { $0.boundaries.append(b) }
         return id
     }
 
@@ -79,9 +81,9 @@ extension CanvasEditor {
         let topic = makeNodeID()
         insert(Node(text: text, kind: .summary), as: topic)
         let id = freshID("s", used: canvas.summaries.map(\.id))
-        updateMeta {
-            $0.summaries.append(Summary(id: id, parent: parent, from: kids[lo], to: kids[hi], topic: topic))
-        }
+        var s = Summary(id: id, parent: parent, from: kids[lo], to: kids[hi], topic: topic)
+        s.adopt(canvas.style.elements.summary)
+        updateMeta { $0.summaries.append(s) }
         return topic
     }
 

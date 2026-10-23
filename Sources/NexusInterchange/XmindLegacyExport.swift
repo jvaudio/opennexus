@@ -57,6 +57,7 @@ extension XmindWriter {
             """)
         var report = w.report
         report.format = "XMind 8"
+        keptLosses(doc, into: &report)
         return Result(data: z.finish(), report: report)
     }
 
@@ -64,7 +65,17 @@ extension XmindWriter {
     public static func reportXMind8(_ doc: DocumentModel) -> ExportReport {
         var r = report(doc)
         r.format = "XMind 8"
+        keptLosses(doc, into: &r)
         return r
+    }
+
+    /// What OpenNexus kept from an Xmind 2020 or later file is in that format's terms, so
+    /// XMind 8 doesn't get it (D242).
+    static func keptLosses(_ doc: DocumentModel, into r: inout ExportReport) {
+        let n = doc.canvases.values.reduce(0) { n, c in
+            n + (c.extra[XmindKept.key] == nil ? 0 : 1) + c.nodes.values.filter { $0.extra[XmindKept.key] != nil }.count
+        }
+        if n > 0 { r.skip("Settings kept from an Xmind 2020 or later file (Pitch slides, extensions, layer order)", n) }
     }
 
     /// Zen keeps images under `resources/`; XMind 8 keeps everything under `attachments/`.
