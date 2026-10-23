@@ -304,8 +304,8 @@ import Testing
         func node(_ text: String) throws -> Node { try #require(r.nodes.values.first { $0.text == text }) }
         #expect(try node("Styled").style == styled)
         #expect(try node("Bare").style == bare)
-        let quick = try #require(QuickStyle.named("very-important")).style
-        #expect(try node("Quick").style == quick)
+        // The quick style comes back by name, not as the topic's own style (D218).
+        #expect(try node("Quick").quickStyle == "very-important" && node("Quick").style == nil)
         let rel = try #require(r.relationships.first)
         #expect(rel.line == "straight" && rel.ends == ["dot", "filled-arrow"] && rel.dash == "solid")
         #expect(rel.width == 3 && rel.color == "#00AA00")
@@ -454,10 +454,7 @@ import Testing
         #expect(c.style.palette == "canvas" && c.style.colors == ["#FF0000", "#00FF00"])
         #expect(c.style.roles["root"]?.fillColor == "#000000" && c.style.roles["root"]?.textColor == "auto")
         #expect(c.style.roles["root"]?.font == nil, "the canvas font already says NeverMind")
-        #expect(
-            im.report.skipped.map(\.0) == [
-                "Xmind theme’s boundary, summary and relationship styles (OpenNexus’s are used)"
-            ])
+        #expect(im.report.skipped.isEmpty, "the theme's element classes apply to each element (D219)")
         let root = try #require(c.nodes[c.root]?.style)
         #expect(root.fill == "solid" && root.fillColor == "#FF8800" && root.shape == "diamond")
         #expect(

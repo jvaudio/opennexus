@@ -26,6 +26,8 @@ public struct ITopic: Sendable, Equatable {
     public var structure: LayoutStructure?
     /// The topic's own style (Xmind's style properties, M18).
     public var style: TopicStyle?
+    /// A built-in quick style the source names (OpenNexus's record in Xmind, D218).
+    public var quickStyle: String?
     public var folded = false
     public var position: CanvasPoint?
     public var children: [ITopic] = []
@@ -89,6 +91,13 @@ public struct ICanvas: Sendable, Equatable {
         public var title: String
         /// The source's id for the boundary itself, which relationships can name.
         public var ref: String?
+        /// Colour (hex), fill opacity, dash, line width and shape when the source sets
+        /// them (nil: defaults).
+        public var color: String?
+        public var fillOpacity: Double?
+        public var dash: String?
+        public var width: Double?
+        public var shape: String?
         public init(refs: [String], title: String = "", ref: String? = nil) {
             self.refs = refs
             self.title = title
@@ -102,6 +111,10 @@ public struct ICanvas: Sendable, Equatable {
         public var topic: ITopic
         /// The source's id for the summary itself, which relationships can name.
         public var ref: String?
+        /// Colour (hex), line width and bracket when the source sets them (nil: defaults).
+        public var color: String?
+        public var width: Double?
+        public var bracket: String?
         public init(parent: String, from: String, to: String, topic: ITopic, ref: String? = nil) {
             self.parent = parent
             self.from = from
@@ -289,6 +302,7 @@ public enum CanvasBuilder {
             n.edgeLabel = t.edgeLabel
             n.structure = t.structure
             n.style = t.style
+            n.quickStyle = t.quickStyle
             n.folded = t.folded && !t.children.isEmpty
             c.nodes[id] = n
             if let r = t.ref { refs[r] = id }
@@ -327,7 +341,11 @@ public enum CanvasBuilder {
             c.nodes[tid]!.kind = .summary
             for ch in s.topic.children { _ = add(ch, under: tid) }
             let sid = "s\(c.summaries.count + 1)"
-            c.summaries.append(Summary(id: sid, parent: parent, from: from, to: to, topic: tid))
+            var sm = Summary(id: sid, parent: parent, from: from, to: to, topic: tid)
+            if let v = s.color { sm.color = v }
+            if let v = s.width { sm.width = v }
+            if let v = s.bracket { sm.bracket = v }
+            c.summaries.append(sm)
             if let ref = s.ref { elementRefs[ref] = .summary(sid) }
         }
         for b in ic.callouts {
@@ -343,7 +361,13 @@ public enum CanvasBuilder {
             let ids = g.refs.compactMap { refs[$0] }
             guard !ids.isEmpty else { continue }
             let bid = "b\(c.boundaries.count + 1)"
-            c.boundaries.append(Boundary(id: bid, nodes: ids, title: g.title))
+            var b = Boundary(id: bid, nodes: ids, title: g.title)
+            if let v = g.color { b.color = v }
+            if let v = g.fillOpacity { b.fillOpacity = v }
+            if let v = g.dash { b.dash = v }
+            if let v = g.width { b.width = v }
+            if let v = g.shape { b.shape = v }
+            c.boundaries.append(b)
             if let ref = g.ref, elementRefs[ref] == nil { elementRefs[ref] = .boundary(bid) }
         }
         func end(_ ref: String) -> RelationshipEnd? { refs[ref].map(RelationshipEnd.topic) ?? elementRefs[ref] }

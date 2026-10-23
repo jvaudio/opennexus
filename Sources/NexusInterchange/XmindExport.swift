@@ -166,7 +166,7 @@ public enum XmindWriter {
         var parents: [NodeID: NodeID] = [:]
         /// Topics with a boundary or summary of their own, by parent.
         var boundaries: [NodeID: [[String: Any]]] = [:]
-        var summaries: [NodeID: [(range: String, topic: NodeID, id: String)]] = [:]
+        var summaries: [NodeID: [(range: String, topic: NodeID, id: String, style: [String: String])]] = [:]
         var callouts: [NodeID: [NodeID]] = [:]
         /// Boundaries and summaries this sheet writes, which relationships can name.
         var written = Set<RelationshipEnd>()
@@ -205,18 +205,24 @@ public enum XmindWriter {
         }
 
         /// The topic's own style in Xmind properties: its level style, quick style and
-        /// overrides (the theme's part is in the sheet's theme).
-        mutating func style(_ nid: NodeID, _ n: Node) -> [String: String] {
+        /// overrides (the theme's part is in the sheet's theme). Also OpenNexus's record
+        /// of the quick style and the unresolved own style, when the properties alone
+        /// don't read back as them (D218).
+        mutating func style(_ nid: NodeID, _ n: Node) -> (properties: [String: String], record: [String: Any]?) {
             var s = canvas.style.levels[canvas.depth(of: nid, parents: parents)] ?? TopicStyle()
             if let q = n.quickStyle {
                 if let qs = QuickStyle.named(q, custom: library.quickStyles) { s = qs.style.merged(over: s) }
             }
             if let o = n.style { s = o.merged(over: s) }
-            guard !s.isEmpty else { return [:] }
-            var lost: [String] = []
-            let p = XmindStyle.properties(s, color: { color($0, on: nid) }, lost: &lost)
-            lose(lost)
-            return p
+            var p: [String: String] = [:]
+            if !s.isEmpty {
+                var lost: [String] = []
+                p = XmindStyle.properties(s, color: { color($0, on: nid) }, lost: &lost)
+                lose(lost)
+            }
+            let record = XmindStyle.record(
+                quickStyle: n.quickStyle, own: n.style, library: library.quickStyles, written: p)
+            return (p, record)
         }
 
         func id(_ n: NodeID) -> String { "\(canvas.id.rawValue)-\(n.rawValue)" }
@@ -250,13 +256,19 @@ public enum XmindWriter {
             var lost: [String] = []
             let theme = XmindStyle.theme(env, sheet: "sheet-\(c.id.rawValue)", lost: &lost)
             lose(lost)
+            var extensions: [[String: Any]] = [
+                ["provider": "org.xmind.ui.skeleton.structure.style", "content": ["centralTopic": cls]]
+            ]
+            let themeID = theme["id"] as? String ?? ""
+            if let record = XmindStyle.record(
+                c.style, themeID: themeID, tagged: themeID.hasPrefix(XmindStyle.themePrefix))
+            {
+                extensions.append(["provider": XmindStyle.provider, "content": record])
+            }
             var s: [String: Any] = [
                 "id": "sheet-\(c.id.rawValue)", "class": "sheet",
                 "title": c.title.isEmpty ? (c.nodes[c.root]?.text ?? "") : c.title, "rootTopic": root,
-                "theme": theme,
-                "extensions": [
-                    ["provider": "org.xmind.ui.skeleton.structure.style", "content": ["centralTopic": cls]]
-                ],
+                "theme": theme, "extensions": extensions,
             ]
             var rels: [[String: Any]] = []
             for r in c.relationships {
@@ -299,6 +311,10 @@ public enum XmindWriter {
                 guard let first = ids.first else { continue }
                 var o: [String: Any] = ["id": "\(canvas.id.rawValue)-\(b.id)"]
                 if !b.title.isEmpty { o["title"] = b.title }
+                var lost: [String] = []
+                let p = XmindStyle.properties(b, theme: env.theme, canvas: env.canvas, lost: &lost)
+                lose(lost)
+                if !p.isEmpty { o["style"] = ["id": "\(canvas.id.rawValue)-\(b.id)-style", "properties": p] }
                 if ids.count == 1, parents[first] == nil {
                     // Around a central or floating topic: the whole branch.
                     o["range"] = "master"
@@ -327,8 +343,13 @@ public enum XmindWriter {
                     report.skip("Summary with a missing range")
                     continue
                 }
+                var lost: [String] = []
                 summaries[s.parent, default: []].append(
-                    ("(\(min(a, b)),\(max(a, b)))", s.topic, "\(canvas.id.rawValue)-\(s.id)"))
+                    (
+                        "(\(min(a, b)),\(max(a, b)))", s.topic, "\(canvas.id.rawValue)-\(s.id)",
+                        XmindStyle.properties(s, lost: &lost)
+                    ))
+                lose(lost)
                 written.insert(.summary(s.id))
             }
             for k in canvas.callouts where canvas.nodes[k.topic] != nil {
@@ -394,15 +415,22 @@ public enum XmindWriter {
                     return o
                 }
             }
-            if let todo = n.todo { t["extensions"] = [["provider": "org.xmind.ui.task", "content": task(todo)]] }
-            let props = style(nid, n)
+            var extensions: [[String: Any]] = []
+            if let todo = n.todo { extensions.append(["provider": "org.xmind.ui.task", "content": task(todo)]) }
+            let (props, record) = style(nid, n)
             if !props.isEmpty { t["style"] = ["id": "\(id(nid))-style", "properties": props] }
+            if let record { extensions.append(["provider": XmindStyle.provider, "content": record]) }
+            if !extensions.isEmpty { t["extensions"] = extensions }
             unsupported(n)
             var kids: [String: Any] = [:]
             if !n.children.isEmpty { kids["attached"] = n.children.map { topic($0) } }
             if let ss = summaries[nid], !ss.isEmpty {
                 kids["summary"] = ss.map { topic($0.topic) }
-                t["summaries"] = ss.map { ["id": $0.id, "range": $0.range, "topicId": id($0.topic)] }
+                t["summaries"] = ss.map { s -> [String: Any] in
+                    var o: [String: Any] = ["id": s.id, "range": s.range, "topicId": id(s.topic)]
+                    if !s.style.isEmpty { o["style"] = ["id": "\(s.id)-style", "properties": s.style] }
+                    return o
+                }
             }
             if let ks = callouts[nid], !ks.isEmpty {
                 kids["callout"] = ks.map { k -> [String: Any] in

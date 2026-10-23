@@ -141,6 +141,10 @@ public enum XmindFormat {
         var assets: [String: Data] = [:]
         var groups: [ICanvas.Group] = []
         var summaries: [ICanvas.Brace] = []
+        /// Each boundary's and summary's own style properties, in the same order, read
+        /// once the sheet's theme and background are known.
+        var groupProps: [[String: Any]] = []
+        var summaryProps: [[String: Any]] = []
         var callouts: [ICanvas.Bubble] = []
         var seenSheets = Set<String>()
         /// Comments from a separate `comments.json`, by topic id, until their topic is read.
@@ -179,7 +183,12 @@ public enum XmindFormat {
             report.sheets += 1
             groups = []
             summaries = []
+            groupProps = []
+            summaryProps = []
             callouts = []
+            let theme = s["theme"] as? [String: Any]
+            let record = Self.record(s["extensions"])
+            let classes = XmindStyle.elementClasses(theme, record: record)
             let rt = s["rootTopic"] as? [String: Any] ?? [:]
             var root = topic(rt)
             let detached = ((rt["children"] as? [String: Any])?["detached"] as? [[String: Any]]) ?? []
@@ -203,11 +212,22 @@ public enum XmindFormat {
             for r in (s["relationships"] as? [[String: Any]]) ?? [] {
                 guard let a = r["end1Id"] as? String, let b = r["end2Id"] as? String else { continue }
                 var link = ICanvas.Link(from: a, to: b, label: (r["title"] as? String) ?? "")
-                if let p = Self.properties(r) { XmindStyle.apply(p, to: &link) }
+                // The theme's relationship class under the relationship's own (D219).
+                let p = classes.relationship.merging(Self.properties(r) ?? [:]) { $1 }
+                if !p.isEmpty { XmindStyle.apply(p, to: &link) }
                 ic.links.append(link)
             }
-            if let theme = s["theme"] as? [String: Any] {
-                ic.style = XmindStyle.canvasStyle(theme, sheetStyle: Self.properties(s), report: &report)
+            if theme != nil || record != nil {
+                ic.style = XmindStyle.canvasStyle(theme ?? [:], sheetStyle: Self.properties(s), record: record)
+            }
+            let canvas = XmindStyle.canvasColor(ic.style)
+            for (i, own) in groupProps.enumerated() {
+                let p = classes.boundary.merging(own) { $1 }
+                if !p.isEmpty { XmindStyle.apply(p, canvas: canvas, to: &ic.groups[i], report: &report) }
+            }
+            for (i, own) in summaryProps.enumerated() {
+                let p = classes.summary.merging(own) { $1 }
+                if !p.isEmpty { XmindStyle.apply(p, to: &ic.summaries[i]) }
             }
             for e in (s["extensions"] as? [[String: Any]]) ?? [] { ext(e, on: title) }
             if let l = s["legend"] { ic.legend = XmindLegend.read(l, report: &report) }
@@ -217,7 +237,8 @@ public enum XmindFormat {
         mutating func ext(_ e: [String: Any], on title: String) {
             let p = e["provider"] as? String ?? ""
             switch p {
-            case "org.xmind.ui.skeleton.structure.style", "org.xmind.ui.map.unbalanced", "org.xmind.ui.branch.style":
+            case "org.xmind.ui.skeleton.structure.style", "org.xmind.ui.map.unbalanced", "org.xmind.ui.branch.style",
+                XmindStyle.provider:
                 break
             case _ where p.contains("task"): report.skip("Gantt chart settings on “\(title)”")
             case _ where p.contains("audio"): report.skip("Audio note on “\(title)” (kept as attachment)")
@@ -270,7 +291,6 @@ public enum XmindFormat {
             }
             if t["branch"] as? String == "folded" { it.folded = true }
             it.structure = XmindFormat.structure(t["structureClass"] as? String)
-            it.style = Self.properties(t).flatMap(XmindStyle.style)
             if t["numbering"] != nil { report.skip("Numbering format") }
             if let raw = t["comments"] {
                 it.comments = XmindComments.list(raw)
@@ -282,9 +302,17 @@ public enum XmindFormat {
                     var task = it.task ?? ITask()
                     XmindTask.read(content, into: &task, zone: zone, report: &report)
                     it.task = task
-                } else {
+                } else if e["provider"] as? String != XmindStyle.provider {
                     ext(e, on: it.text)
                 }
+            }
+            let props = Self.properties(t)
+            if let record = Self.record(t["extensions"]), let own = XmindStyle.restore(record, written: props) {
+                // OpenNexus's record of the topic's quick style and own style (D218).
+                it.quickStyle = own.quickStyle
+                it.style = own.style
+            } else {
+                it.style = props.flatMap(XmindStyle.style)
             }
             let children = t["children"] as? [String: Any] ?? [:]
             let attached = (children["attached"] as? [[String: Any]]) ?? []
@@ -297,7 +325,10 @@ public enum XmindFormat {
                 } else if let parent = it.ref, b["range"] as? String == "master" {
                     // Around the topic and its whole branch.
                     groups.append(ICanvas.Group(refs: [parent], title: title, ref: b["id"] as? String))
+                } else {
+                    continue
                 }
+                groupProps.append(Self.properties(b) ?? [:])
             }
             let summaryTopics = (children["summary"] as? [[String: Any]]) ?? []
             for s in (t["summaries"] as? [[String: Any]]) ?? [] {
@@ -308,6 +339,7 @@ public enum XmindFormat {
                     ICanvas.Brace(
                         parent: parent, from: kidRefs[r.lowerBound], to: kidRefs[r.upperBound], topic: topic(st),
                         ref: s["id"] as? String))
+                summaryProps.append(Self.properties(s) ?? [:])
             }
             for c in (children["callout"] as? [[String: Any]]) ?? [] {
                 if let host = it.ref { callouts.append(ICanvas.Bubble(host: host, topic: topic(c))) }
@@ -315,9 +347,15 @@ public enum XmindFormat {
             return it
         }
 
-        /// An object's `style.properties` (topics and relationships).
+        /// An object's `style.properties` (topics, relationships, boundaries, summaries).
         static func properties(_ o: [String: Any]) -> [String: Any]? {
             ((o["style"] as? [String: Any])?["properties"] as? [String: Any]).flatMap { $0.isEmpty ? nil : $0 }
+        }
+
+        /// The content of OpenNexus's style extension among `extensions` (D218).
+        static func record(_ extensions: Any?) -> [String: Any]? {
+            ((extensions as? [[String: Any]]) ?? []).first { $0["provider"] as? String == XmindStyle.provider }?[
+                "content"] as? [String: Any]
         }
 
         func file(_ src: String) -> Data? {
@@ -345,6 +383,9 @@ public enum XmindFormat {
         var assets: [String: Data] = [:]
         var groups: [ICanvas.Group] = []
         var summaries: [ICanvas.Brace] = []
+        /// Each boundary's and summary's own style properties, as in `Zen`.
+        var groupProps: [[String: Any]] = []
+        var summaryProps: [[String: Any]] = []
         var callouts: [ICanvas.Bubble] = []
         /// Comments from `comments.xml`, by topic id, until their topic is read.
         var pending: [String: [TopicComment]] = [:]
@@ -384,6 +425,18 @@ public enum XmindFormat {
 
         func style(_ e: XMLElement) -> [String: Any]? { e.attr("style-id").flatMap { styleProps[$0] } }
 
+        /// OpenNexus's style extension among an element's `<extensions>`: JSON in its
+        /// `<content>` (D218).
+        static func record(_ e: XMLElement) -> [String: Any]? {
+            guard
+                let x = e.kid("extensions")?.kids("extension").first(where: {
+                    $0.attr("provider") == XmindStyle.provider
+                }),
+                let text = x.kid("content")?.stringValue
+            else { return nil }
+            return (try? JSONSerialization.jsonObject(with: Data(text.utf8))) as? [String: Any]
+        }
+
         mutating func sheets(_ xml: Data, name: String) throws -> [ICanvas] {
             let root = try XML.parse(xml, name: name)
             return root.kids("sheet").map { sheet($0) }
@@ -393,7 +446,12 @@ public enum XmindFormat {
             report.sheets += 1
             groups = []
             summaries = []
+            groupProps = []
+            summaryProps = []
             callouts = []
+            let theme = s.attr("theme").flatMap { themes[$0] }
+            let record = Self.record(s)
+            let classes = XmindStyle.elementClasses(theme, record: record)
             let rt = s.kid("topic") ?? XMLElement(name: "topic")
             var root = topic(rt)
             var floating: [ITopic] = []
@@ -421,10 +479,20 @@ public enum XmindFormat {
             for r in s.kid("relationships")?.kids("relationship") ?? [] {
                 guard let a = r.attr("end1"), let b = r.attr("end2") else { continue }
                 var link = ICanvas.Link(from: a, to: b, label: r.kid("title")?.stringValue ?? "")
-                if let p = style(r) { XmindStyle.apply(p, to: &link) }
+                let p = classes.relationship.merging(style(r) ?? [:]) { $1 }
+                if !p.isEmpty { XmindStyle.apply(p, to: &link) }
                 ic.links.append(link)
             }
-            if let t = s.attr("theme").flatMap({ themes[$0] }) { ic.style = XmindStyle.canvasStyle(t, report: &report) }
+            if theme != nil || record != nil { ic.style = XmindStyle.canvasStyle(theme ?? [:], record: record) }
+            let canvas = XmindStyle.canvasColor(ic.style)
+            for (i, own) in groupProps.enumerated() {
+                let p = classes.boundary.merging(own) { $1 }
+                if !p.isEmpty { XmindStyle.apply(p, canvas: canvas, to: &ic.groups[i], report: &report) }
+            }
+            for (i, own) in summaryProps.enumerated() {
+                let p = classes.summary.merging(own) { $1 }
+                if !p.isEmpty { XmindStyle.apply(p, to: &ic.summaries[i]) }
+            }
             if let l = s.kid("legend") { ic.legend = XmindLegend.read(xml: l, report: &report) }
             return ic
         }
@@ -470,7 +538,12 @@ public enum XmindFormat {
             if e.attr("branch") == "folded" { it.folded = true }
             if let id = it.ref, let more = pending.removeValue(forKey: id) { it.comments = more }
             it.structure = XmindFormat.structure(e.attr("structure-class"))
-            it.style = style(e).flatMap(XmindStyle.style)
+            if let record = Self.record(e), let own = XmindStyle.restore(record, written: style(e)) {
+                it.quickStyle = own.quickStyle
+                it.style = own.style
+            } else {
+                it.style = style(e).flatMap(XmindStyle.style)
+            }
             for x in e.kid("extensions")?.kids("extension") ?? [] {
                 if x.attr("provider")?.contains("task") == true, let content = x.kid("content") {
                     var fields: [String: Any] = [:]
@@ -489,7 +562,7 @@ public enum XmindFormat {
                     var task = it.task ?? ITask()
                     XmindTask.read(fields, into: &task, zone: zone, report: &report)
                     it.task = task
-                } else {
+                } else if x.attr("provider") != XmindStyle.provider {
                     report.skip("XMind 8 extension (audio, other)")
                 }
             }
@@ -514,7 +587,10 @@ public enum XmindFormat {
                 } else if let parent = it.ref, b.attr("range") == "master" {
                     groups.append(
                         ICanvas.Group(refs: [parent], title: b.kid("title")?.stringValue ?? "", ref: b.attr("id")))
+                } else {
+                    continue
                 }
+                groupProps.append(style(b) ?? [:])
             }
             for s in e.kid("summaries")?.kids("summary") ?? [] {
                 guard let r = XmindFormat.range(s.attr("range"), count: kidRefs.count), let parent = it.ref,
@@ -524,6 +600,7 @@ public enum XmindFormat {
                     ICanvas.Brace(
                         parent: parent, from: kidRefs[r.lowerBound], to: kidRefs[r.upperBound], topic: topic(st),
                         ref: s.attr("id")))
+                summaryProps.append(style(s) ?? [:])
             }
             return it
         }

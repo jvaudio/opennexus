@@ -1,5 +1,7 @@
+import CryptoKit
 import Foundation
 import NexusCore
+import NexusFormat
 import NexusTheme
 
 /// Xmind's style properties (M18, D185, D186): a topic's `style.properties`, a
@@ -251,6 +253,215 @@ enum XmindStyle {
         l.color = hex(p["line-color"])
     }
 
+    // MARK: Boundaries and summaries
+
+    /// Boundary shapes (D217). The first pair for an Xmind class is the one it imports as.
+    static let boundaryShapes: [(String, String)] = [
+        ("rounded", "org.xmind.boundaryShape.roundedRect"), ("rectangle", "org.xmind.boundaryShape.rect"),
+        ("scallop", "org.xmind.boundaryShape.scallops"), ("wave", "org.xmind.boundaryShape.waves"),
+        ("polygon", "org.xmind.boundaryShape.polygon"),
+        // Close enough to write, imported as the shape above. A dashed boundary is a
+        // rounded one with a dashed line, which Xmind draws the same.
+        ("dashed", "org.xmind.boundaryShape.roundedRect"), ("stadium", "org.xmind.boundaryShape.roundedRect"),
+        ("ellipse", "org.xmind.boundaryShape.roundedRect"), ("corners", "org.xmind.boundaryShape.rect"),
+        // Read, not written: Xmind's pinched rectangle has no OpenNexus shape.
+        ("rounded", "org.xmind.boundaryShape.tension"),
+    ]
+    static let summaryShapes: [(String, String)] = [
+        ("curly", "org.xmind.summaryShape.curly"), ("square", "org.xmind.summaryShape.square"),
+        ("round", "org.xmind.summaryShape.round"),
+        // Written as the nearest Xmind bracket; Xmind's angle bracket reads as curly.
+        ("line", "org.xmind.summaryShape.square"), ("curly", "org.xmind.summaryShape.angle"),
+    ]
+
+    /// A boundary's colour as the canvas draws it: its own, else its meaning's or the ring.
+    static func color(_ b: Boundary, theme t: Theme) -> RGBA {
+        b.color.flatMap(RGBA.init(hexString:))
+            ?? (b.meaning == "trust" ? t.critical : b.meaning == "vpc" || b.meaning == "subnet" ? t.entityLine : t.ring)
+    }
+
+    /// Xmind's fill for a boundary: its colour at its fill opacity, mixed over the canvas.
+    static func fill(_ c: RGBA, opacity: Double, canvas: RGBA) -> String {
+        c.alpha(c.a * opacity).composited(over: canvas).hex
+    }
+
+    /// A boundary as Xmind properties: only what differs from the theme's boundary class,
+    /// which holds OpenNexus's defaults (D217).
+    static func properties(_ b: Boundary, theme t: Theme, canvas: RGBA, lost: inout [String]) -> [String: String] {
+        var p: [String: String] = [:]
+        let c = color(b, theme: t)
+        let own = b.color != nil || c != t.ring
+        if b.fillOpacity <= 0 || b.shape == "corners" {
+            p["fill-pattern"] = "none"
+        } else if own || b.fillOpacity != 0.06 {
+            // The importer finds the opacity from the fill and the line colour together.
+            p["svg:fill"] = fill(c, opacity: b.fillOpacity, canvas: canvas)
+            p["fill-pattern"] = "solid"
+        }
+        if own || p["svg:fill"] != nil { p["line-color"] = c.composited(over: canvas).hex }
+        let dash =
+            b.dash ?? (b.meaning == "trust" || b.meaning == "subnet" || b.shape == "dashed" ? "dashed" : "solid")
+        if dash != "solid" { p["line-pattern"] = xmind(patterns, dash) ?? "solid" }
+        if b.width != 2 { p["line-width"] = pt(b.width) }
+        if b.shape != "rounded" {
+            if let x = xmind(boundaryShapes, b.shape) {
+                if x != xmind(boundaryShapes, "rounded") { p["shape-class"] = x }
+                if ["stadium", "ellipse", "corners"].contains(b.shape) {
+                    lost.append("Boundary shape “\(b.shape)” (written as a near shape)")
+                }
+            } else {
+                lost.append("Boundary shape “\(b.shape)” (no Xmind equivalent)")
+            }
+        }
+        if b.meaning != "group" || b.trust != nil { lost.append("Boundary meaning (zone, VPC, subnet, trust level)") }
+        if b.titlePosition != "top-left" { lost.append("Boundary title position") }
+        return p
+    }
+
+    /// Reads boundary properties onto an import group. Xmind has separate line and fill
+    /// colours; OpenNexus draws the fill in the line colour, so the fill gives the opacity
+    /// that mixes the line colour over `canvas` closest to it.
+    static func apply(_ p: [String: Any], canvas: RGBA, to g: inout ICanvas.Group, report: inout ImportReport) {
+        let line = hex(p["line-color"]).map(opaque)
+        let fill = hex(p["svg:fill"]).map(opaque)
+        g.color = line ?? fill
+        if (p["fill-pattern"] as? String) == "none" {
+            g.fillOpacity = 0
+        } else if let line, let fill, let c = RGBA(hexString: line), let f = RGBA(hexString: fill) {
+            let d = [
+                (f.r - canvas.r, c.r - canvas.r), (f.g - canvas.g, c.g - canvas.g), (f.b - canvas.b, c.b - canvas.b),
+            ]
+            let den = d.reduce(0) { $0 + $1.1 * $1.1 }
+            if den > 0.01 {
+                let a = d.reduce(0) { $0 + $1.0 * $1.1 } / den
+                g.fillOpacity = (max(0, min(1, a)) * 100).rounded() / 100
+            }
+        }
+        g.dash = nexus(patterns, p["line-pattern"])
+        g.width = points(p["line-width"])
+        g.shape = nexus(boundaryShapes, p["shape-class"])
+        if let s = p["shape-class"] as? String, s.hasSuffix("tension") {
+            report.skip("Boundary shape “tension” (drawn rounded)")
+        }
+    }
+
+    /// A summary's bracket, colour and width as Xmind properties (only what differs from
+    /// the theme's summary class).
+    static func properties(_ s: Summary, lost: inout [String]) -> [String: String] {
+        var p: [String: String] = [:]
+        if let c = hex(s.color) { p["line-color"] = opaque(c) }
+        if s.width != 2 { p["line-width"] = pt(s.width) }
+        if s.bracket != "curly" {
+            if let x = xmind(summaryShapes, s.bracket) {
+                p["shape-class"] = x
+                if s.bracket == "line" { lost.append("Summary bracket “line” (written square)") }
+            } else {
+                lost.append("Summary bracket “\(s.bracket)” (written curly)")
+            }
+        }
+        return p
+    }
+
+    static func apply(_ p: [String: Any], to b: inout ICanvas.Brace) {
+        b.color = hex(p["line-color"]).map(opaque)
+        b.width = points(p["line-width"])
+        b.bracket = nexus(summaryShapes, p["shape-class"])
+    }
+
+    // MARK: OpenNexus's own record
+
+    /// The extension provider for OpenNexus-only style data that Xmind keeps but ignores
+    /// (D218): on a sheet, its level styles and theme; on a topic, its quick style and its
+    /// own style with colour tokens such as `branch` unresolved.
+    static let provider = "org.opennexus.style"
+
+    /// The written properties, hashed. A topic's record is used only while its properties
+    /// are still the ones written, so a style changed in Xmind wins.
+    static func fingerprint(_ p: [String: String]) -> String {
+        let text = p.sorted { $0.key < $1.key }.map { "\($0.key)=\($0.value)" }.joined(separator: "\n")
+        return SHA256.hash(data: Data(text.utf8)).prefix(8).map { String(format: "%02x", $0) }.joined()
+    }
+
+    /// A topic's record, or nil when reading its properties back already gives its style.
+    /// A custom quick style isn't in the importing document's library, so it's written as
+    /// part of the topic's own style.
+    static func record(quickStyle: String?, own: TopicStyle?, library: [QuickStyle], written p: [String: String])
+        -> [String: Any]?
+    {
+        var own = own.flatMap { $0.isEmpty ? nil : $0 }
+        var quick = quickStyle
+        if let q = quickStyle, !QuickStyle.builtIn.contains(where: { $0.id == q }) {
+            quick = nil
+            if let qs = QuickStyle.named(q, custom: library)?.style, !qs.isEmpty {
+                own = (own ?? TopicStyle()).merged(over: qs)
+            }
+        }
+        guard quick != nil || own != style(p) else { return nil }
+        var o: [String: Any] = ["written": fingerprint(p)]
+        if let quick { o["quickStyle"] = quick }
+        if let own, let v = any(own.json) { o["style"] = v }
+        return o
+    }
+
+    /// A topic's quick style and own style from its record, or nil when the record is
+    /// stale (the topic's properties were changed after OpenNexus wrote them).
+    static func restore(_ record: [String: Any], written p: [String: Any]?) -> (
+        quickStyle: String?, style: TopicStyle?
+    )? {
+        var props: [String: String] = [:]
+        for (k, v) in p ?? [:] {
+            guard let s = v as? String else { return nil }
+            props[k] = s
+        }
+        guard record["written"] as? String == fingerprint(props) else { return nil }
+        let style = record["style"].flatMap(jsonValue).flatMap { try? TopicStyle(json: $0, path: "style") }
+        return (record["quickStyle"] as? String, style.flatMap { $0.isEmpty ? nil : $0 })
+    }
+
+    /// A sheet's record: its level styles, and its theme when the theme id doesn't say it.
+    static func record(_ s: CanvasStyle, themeID: String, tagged: Bool) -> [String: Any]? {
+        var o: [String: Any] = [:]
+        let levels = s.levels.filter { !$0.value.isEmpty }
+        if !levels.isEmpty {
+            o["levels"] = Dictionary(
+                uniqueKeysWithValues: levels.compactMap { k, v in any(v.json).map { ("\(k)", $0) } })
+        }
+        if !tagged {
+            o["theme"] = s.theme
+            o["themeId"] = themeID
+        }
+        return o.isEmpty ? nil : o
+    }
+
+    /// The OpenNexus theme a sheet's record names, while the sheet still has the theme
+    /// OpenNexus wrote.
+    static func recordedTheme(_ record: [String: Any]?, theme: [String: Any]?) -> String? {
+        guard let id = record?["themeId"] as? String, id == theme?["id"] as? String else { return nil }
+        return record?["theme"] as? String
+    }
+
+    static func levels(_ record: [String: Any]?) -> [Int: TopicStyle] {
+        var out: [Int: TopicStyle] = [:]
+        for (k, v) in (record?["levels"] as? [String: Any]) ?? [:] {
+            guard let d = Int(k), let j = jsonValue(v), let s = try? TopicStyle(json: j, path: "levels.\(k)"),
+                !s.isEmpty
+            else { continue }
+            out[d] = s
+        }
+        return out
+    }
+
+    static func any(_ v: JSONValue) -> Any? {
+        try? JSONSerialization.jsonObject(with: CanonicalJSON.data(v), options: .fragmentsAllowed)
+    }
+
+    static func jsonValue(_ v: Any) -> JSONValue? {
+        guard JSONSerialization.isValidJSONObject(v), let d = try? JSONSerialization.data(withJSONObject: v) else {
+            return nil
+        }
+        return try? CanonicalJSON.parse(d)
+    }
+
     // MARK: Themes
 
     /// The theme id prefix that marks a theme OpenNexus wrote, so it imports as that theme.
@@ -311,17 +522,59 @@ enum XmindStyle {
             "floatingTopic": klass("floatingTopic", role(.floating)),
             "summaryTopic": klass("summaryTopic", sub),
             "calloutTopic": klass("calloutTopic", sub),
-            "boundary": klass("boundary", ["line-color": t.ring.hex, "line-pattern": "dash"]),
+            // OpenNexus's defaults for boundaries, summaries and relationships, so each one
+            // only writes what it changes (D217).
+            "boundary": klass(
+                "boundary",
+                [
+                    "line-color": t.ring.hex, "line-pattern": "solid", "line-width": "2pt",
+                    "shape-class": "org.xmind.boundaryShape.roundedRect", "fill-pattern": "solid",
+                    "svg:fill": fill(t.ring, opacity: 0.06, canvas: env.canvas),
+                ]),
+            "summary": klass(
+                "summary",
+                ["line-color": t.ink2.hex, "line-width": "2pt", "shape-class": "org.xmind.summaryShape.curly"]),
             "relationship": klass(
-                "relationship", ["line-color": t.relationship.hex, "line-pattern": "dash", "line-width": "2pt"]),
+                "relationship",
+                [
+                    "line-color": t.relationship.hex, "line-pattern": "dash", "line-width": "2pt",
+                    "shape-class": "org.xmind.relationshipShape.curved",
+                    "arrow-begin-class": "org.xmind.arrowShape.none",
+                    "arrow-end-class": "org.xmind.arrowShape.spearhead",
+                ]),
         ]
     }
 
-    /// What a sheet's theme and style set on the canvas (D210, D211): OpenNexus's own theme
-    /// when it wrote it; otherwise the theme's background, branch colours, font, line
-    /// class and topic-class styles. The sheet's own `style` fill is the background when
-    /// set, as in Xmind.
-    static func canvasStyle(_ theme: [String: Any], sheetStyle: [String: Any]? = nil, report: inout ImportReport)
+    /// Whether a sheet's theme is one OpenNexus wrote: tagged with its id, or named by
+    /// the sheet's record.
+    static func isOwn(_ theme: [String: Any]?, record: [String: Any]?) -> Bool {
+        let id = theme?["id"] as? String ?? ""
+        return (id.hasPrefix(themePrefix) && id.count > themePrefix.count) || recordedTheme(record, theme: theme) != nil
+    }
+
+    /// Another app's theme classes for boundaries, summaries and relationships (D219):
+    /// each element imports with its class's properties under its own. A theme OpenNexus
+    /// wrote holds only OpenNexus's defaults, so it gives none.
+    static func elementClasses(_ theme: [String: Any]?, record: [String: Any]?) -> (
+        boundary: [String: Any], summary: [String: Any], relationship: [String: Any]
+    ) {
+        guard let theme, !isOwn(theme, record: record) else { return ([:], [:], [:]) }
+        func props(_ k: String) -> [String: Any] {
+            ((theme[k] as? [String: Any])?["properties"] as? [String: Any]) ?? [:]
+        }
+        return (props("boundary"), props("summary"), props("relationship"))
+    }
+
+    /// The canvas colour an imported canvas style paints, for reading boundary fills.
+    static func canvasColor(_ s: CanvasStyle?) -> RGBA {
+        s?.background.flatMap(RGBA.init(hexString:)) ?? Theme.named(s?.theme ?? "classic").canvas
+    }
+
+    /// What a sheet's theme, style and record set on the canvas (D210, D211, D218):
+    /// OpenNexus's own theme when it wrote it; otherwise the theme's background, branch
+    /// colours, font, line class and topic-class styles. The sheet's own `style` fill is
+    /// the background when set, as in Xmind. Level styles come from the record.
+    static func canvasStyle(_ theme: [String: Any], sheetStyle: [String: Any]? = nil, record: [String: Any]? = nil)
         -> CanvasStyle?
     {
         func props(_ k: String) -> [String: Any] {
@@ -330,7 +583,13 @@ enum XmindStyle {
         var s = CanvasStyle()
         let id = theme["id"] as? String ?? ""
         let ours = id.hasPrefix(themePrefix) && id.count > themePrefix.count
-        if ours { s.theme = String(id.dropFirst(themePrefix.count)) }
+        if ours {
+            s.theme = String(id.dropFirst(themePrefix.count))
+        } else if let recorded = recordedTheme(record, theme: theme) {
+            // An untagged theme OpenNexus wrote (D211) is named by the sheet's record (D218).
+            s.theme = recorded
+        }
+        s.levels = levels(record)
         let base = Theme.named(s.theme)
         if let bg = hex(sheetStyle?["svg:fill"]).map(opaque) ?? hex(props("map")["svg:fill"]), bg != base.canvas.hex {
             s.background = bg
@@ -362,9 +621,6 @@ enum XmindStyle {
                 guard var r = roleStyle(props(klass), role: role) else { continue }
                 if r.font == s.font { r.font = nil }
                 if !r.isEmpty { s.roles[role] = r }
-            }
-            if !theme.isEmpty {
-                report.skip("Xmind theme’s boundary, summary and relationship styles (OpenNexus’s are used)")
             }
         }
         return s == CanvasStyle() ? nil : s
