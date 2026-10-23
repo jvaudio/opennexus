@@ -64,6 +64,8 @@ public struct PresentState: Equatable, Sendable {
     public var stageOnly = false
     public var showKeys = false
     public var started = Date()
+    /// The strip control ⇥ moved to (`StripControl.id`); ↩ and Space use it (D266).
+    public var stripFocus: String?
 }
 
 /// Fuzzy subsequence match: returns a score (higher is better) and matched indices.
@@ -725,6 +727,24 @@ extension CanvasController {
             present = p
             return true
         }
+        // The strip's controls from the keyboard (D266): ⇥ / ⇧⇥ move, ↩ or Space use the
+        // control in focus, Esc gives the keys back to the slides. Other keys work as usual.
+        if chord.key == .tab, chord.modifiers.subtracting(.shift).isEmpty {
+            moveStripFocus(back: chord.modifiers.contains(.shift))
+            return true
+        }
+        if let c = focusedStripControl, chord.modifiers.isEmpty {
+            switch chord.key {
+            case .return, .space:
+                activateStripControl(c.id)
+                return true
+            case .escape:
+                present?.stripFocus = nil
+                announceStripFocus()
+                return true
+            default: break
+            }
+        }
         switch (chord.key, characters?.lowercased()) {
         case (.escape, _): endPresent()
         case (.right, _), (.space, _), (.return, _), (.down, _): stepSlide(1)
@@ -751,6 +771,8 @@ extension CanvasController {
             }
         case (_, "f"?):
             p.stageOnly.toggle()
+            // The strip's controls go with it.
+            if p.stageOnly { p.stripFocus = nil }
             present = p
             showSlide()
         case (_, "?"?):
