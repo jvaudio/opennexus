@@ -23,7 +23,7 @@ extension Builder {
             // Sub-causes first (D237), kept only when some are found; then the plain fit
             // (D192), so a fishbone without them reads exactly as before.
             // A sub-cause isn't a wrap of its cause, and the next one under it, starting with a
-            // capital, isn't a wrap of it either.
+            // capital, isn't a wrap of it either, unless only the second line is ruled (D271).
             func sub(_ a: TextBox) -> Bool {
                 lines.contains { stacked(a, under: $0) && tucked(a, under: $0, headRight: headRight) }
             }
@@ -31,13 +31,77 @@ extension Builder {
                 tucked(b, under: a, headRight: headRight)
                     || (b.text.first.map { $0.isUppercase || $0.isNumber } == true && sub(a))
             }
-            if let found = fishbone(apart.lines, head: apart.root, headRight: headRight, subCauses: true) {
-                return found
-            }
+            let joined = joinRuled(apart.lines, keep: apart.root)
+            if let found = subCauseFit(joined.lines, head: joined.root, headRight: headRight) { return found }
             let wrapped = Self.mergeWrapped(lines, keep: h)
-            if let found = fishbone(wrapped.lines, head: wrapped.root, headRight: headRight) { return found }
+            if let found = fishbone(wrapped.lines, head: wrapped.root, headRight: headRight) {
+                return (found.tree, found.structure)
+            }
         }
         return nil
+    }
+
+    /// Sub-causes stacked straight down (D237) or along small bones parallel to their bone
+    /// (D270): each slope a bone may have is tried as the lean of the small bones, and a
+    /// reading counts only when its bones have that slope too. The reading with the most
+    /// sub-causes wins, then the one with the fewest sub-causes of sub-causes (along the
+    /// right lean a list of sub-causes lines up; along another, each tucks under the one
+    /// above), then stacked straight down.
+    func subCauseFit(_ lines: [TextBox], head: Int, headRight: Bool) -> (tree: T, structure: LayoutStructure)? {
+        var best: (tree: T, structure: LayoutStructure, score: (Int, Int))?
+        for shear in [0] + Self.boneSlopes {
+            let found = fishbone(lines, head: head, headRight: headRight, subCauses: true, shear: shear)
+            guard let f = found, shear == 0 || abs(f.slope - shear) < 0.06 else { continue }
+            let score = (f.subs, -f.nested)
+            if let b = best, b.score >= score { continue }
+            best = (f.tree, f.structure, score)
+        }
+        return best.map { ($0.tree, $0.structure) }
+    }
+
+    /// The slopes a bone may have (D192), in horizontal run per unit of height.
+    static let boneSlopes = (4...32).map { Double($0) * 0.05 }
+
+    /// Wrapped topics drawn on ribs (D271): a line straight under another, with no room for
+    /// a rib between them and a rib under it, is the other's second line, whatever letter it
+    /// starts with. Sub-causes stacked without ribs, where only the ink could tell, stay apart.
+    func joinRuled(_ lines: [TextBox], keep root: Int) -> (lines: [TextBox], root: Int) {
+        guard ink != nil else { return (lines, root) }
+        var items = lines.enumerated().map { ($0.element, $0.offset == root) }
+        var joined = true
+        while joined {
+            joined = false
+            outer: for i in items.indices where !items[i].1 {
+                for j in items.indices where j != i && !items[j].1 {
+                    let (a, b) = (items[i].0, items[j].0)
+                    let overlap = min(a.maxX, b.maxX) - max(a.minX, b.minX)
+                    guard abs(b.minY - a.maxY) <= 0.3 * medianHeight, overlap >= 0.6 * min(a.width, b.width),
+                        ruled(under: b), !ruled(under: a, before: b.minY)
+                    else { continue }
+                    items[i].0 = a.union(b)
+                    items.remove(at: j)
+                    joined = true
+                    break outer
+                }
+            }
+        }
+        return (items.map(\.0), items.firstIndex { $0.1 } ?? 0)
+    }
+
+    /// A rib runs under `b`: within half a line below it (above `limit`), a row of ink
+    /// across nine tenths of its width.
+    func ruled(under b: TextBox, before limit: Double = .infinity) -> Bool {
+        guard let ink, b.width > 0 else { return false }
+        let x0 = max(0, Int(b.minX / ink.scale))
+        let x1 = min(ink.width - 1, Int(b.maxX / ink.scale))
+        let y0 = Int(b.maxY / ink.scale)
+        let y1 = Int(min(limit, b.maxY + 0.5 * medianHeight) / ink.scale)
+        guard x1 > x0, y1 >= y0 else { return false }
+        for y in y0...y1 {
+            let inked = (x0...x1).filter { ink[$0, y] }.count
+            if Double(inked) >= 0.9 * Double(x1 - x0 + 1) { return true }
+        }
+        return false
     }
 
     /// `b` sits under `a`, across from it, at most two lines below (D241: topics drawn in
@@ -74,11 +138,13 @@ extension Builder {
         }
     }
 
-    /// The fit for one head. With `subCauses`, lines tucked under a cause and set back from
-    /// its bone are that cause's sub-causes (D237), and nil unless there are some.
+    /// The fit for one head, with the bones' slope and how many sub-causes it found. With
+    /// `subCauses`, lines tucked under a cause and set back from its bone are that cause's
+    /// sub-causes (D237), and nil unless there are some. `shear` is the lean of the small
+    /// bones they sit along (D270): 0 for sub-causes stacked straight down.
     func fishbone(
-        _ lines: [TextBox], head h: Int, headRight: Bool, subCauses: Bool = false
-    ) -> (tree: T, structure: LayoutStructure)? {
+        _ lines: [TextBox], head h: Int, headRight: Bool, subCauses: Bool = false, shear: Double = 0
+    ) -> (tree: T, structure: LayoutStructure, subs: Int, nested: Int, slope: Double)? {
         let H = lines[h]
         let spine = H.midY
         let tol = 0.5 * medianHeight
@@ -102,26 +168,13 @@ extension Builder {
             let from = up(k) ? L.maxY : L.minY
             return L.midX + lean * slope * max(0, abs(y - from))
         }
-        // Sub-cause candidates, top down: a line tucked under the nearest line above it on
-        // its side of the spine (`host`), across from it and at most two lines below, whose
-        // head-side end is half a line or more behind the host's, or level with a host that
-        // is itself a candidate (the next sub-cause of a list).
-        var host: [Int: Int] = [:]
-        var candidates: [Int] = []
-        if subCauses {
-            for i in others.sorted(by: { lines[$0].minY < lines[$1].minY }) {
-                let b = lines[i]
-                let above = others.filter { k in k != i && up(k) == up(i) && stacked(b, under: lines[k]) }
-                guard var p = above.max(by: { lines[$0].maxY < lines[$1].maxY }) else { continue }
-                // Out from under a deeper sub-cause, back to the level it lines up with.
-                while let q = host[p], lean * (anchor(lines[p]) - anchor(b)) <= -tol { p = q }
-                let inset = lean * (anchor(lines[p]) - anchor(b))
-                if inset >= tol || (host[p] != nil && abs(inset) < tol) {
-                    host[i] = p
-                    candidates.append(i)
-                }
-            }
-            guard !candidates.isEmpty else { return nil }
+        /// A line as it sits along small bones leaning `shear`: moved toward the head by
+        /// `shear` per unit of height from the spine, so lines set the same distance back
+        /// from one such bone line up (D270).
+        func along(_ i: Int) -> TextBox {
+            var b = lines[i]
+            b.x += lean * shear * fromSpine(i)
+            return b
         }
         // Farthest from the spine first: a bone's label is its outermost text.
         let order = others.sorted { fromSpine($0) > fromSpine($1) }
@@ -159,6 +212,40 @@ extension Builder {
             }
             return best
         }
+        // Sub-cause candidates, top down: a line tucked under the nearest line above it on
+        // its side of the spine (`host`), across from it and at most two lines below, whose
+        // head-side end is half a line or more behind the host's, or level with a host that
+        // is itself a candidate (the next sub-cause of a list). Measured along the small
+        // bones, which `shear` leans.
+        var host: [Int: Int] = [:]
+        var candidates: [Int] = []
+        func findCandidates(labels: Set<Int>) {
+            host = [:]
+            candidates = []
+            for i in others.sorted(by: { lines[$0].minY < lines[$1].minY }) {
+                let b = along(i)
+                let above = others.filter { k in k != i && up(k) == up(i) && stacked(b, under: along(k)) }
+                guard var p = above.max(by: { lines[$0].maxY < lines[$1].maxY }), !labels.contains(p) else {
+                    continue
+                }
+                // Out from under a deeper sub-cause, back to the level it lines up with.
+                while let q = host[p], lean * (anchor(along(p)) - anchor(b)) <= -tol { p = q }
+                let inset = lean * (anchor(along(p)) - anchor(b))
+                if inset >= tol || (host[p] != nil && abs(inset) < tol) {
+                    host[i] = p
+                    candidates.append(i)
+                }
+            }
+        }
+        if subCauses {
+            findCandidates(labels: [])
+            // Along small bones, a line tucked under a bone's label (found by a fit without
+            // the candidates) is the bone's first cause, and the list level with it its causes.
+            if shear > 0, let labels = bestFit(without: Set(candidates))?.bones.labels {
+                findCandidates(labels: Set(labels))
+            }
+            guard !candidates.isEmpty else { return nil }
+        }
         var excluded = Set(candidates)
         /// The cause a sub-cause belongs to: the first host up its chain that isn't one.
         func cause(of s: Int) -> Int? {
@@ -167,11 +254,13 @@ extension Builder {
             return k
         }
         /// A sub-cause sits further behind its cause's bone than the bone's causes do: by
-        /// ¾ of a line, or half a line in text no more than 0.8× its cause's.
+        /// ¾ of a line, or half a line in text no more than 0.8× its cause's. Or, tucked
+        /// under its cause, it has no rib where its cause has one (D270).
         func setBack(_ s: Int, slope: Double, bones: Bones) -> Bool {
             guard let c = cause(of: s), let (k, list) = bones.causes.first(where: { $0.value.contains(c) }) else {
                 return false
             }
+            if ink != nil, !ruled(under: lines[s]), ruled(under: lines[c]) { return true }
             let typical = Self.median(list.compactMap { bones.gap[$0] })
             let gap = lean * (bone(k, at: lines[s].midY, slope: slope) - anchor(lines[s]))
             let smaller = lines[s].size <= 0.8 * lines[c].size
@@ -227,7 +316,7 @@ extension Builder {
         var subs: [Int: [Int]] = [:]
         for s in candidates where excluded.contains(s) {
             let p = host[s]!
-            let inset = lean * (anchor(lines[p]) - anchor(lines[s]))
+            let inset = lean * (anchor(along(p)) - anchor(along(s)))
             let under = excluded.contains(p) && abs(inset) < tol ? parent[p]! : p
             parent[s] = under
             subs[under, default: []].append(s)
@@ -243,6 +332,7 @@ extension Builder {
             t.children = (bones.causes[k] ?? []).map(topic)
             return t
         }
-        return (root, headRight ? .fishboneLeft : .fishboneRight)
+        let nested = parent.values.filter(excluded.contains).count
+        return (root, headRight ? .fishboneLeft : .fishboneRight, excluded.count, nested, slope)
     }
 }

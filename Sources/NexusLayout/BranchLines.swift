@@ -20,6 +20,12 @@ public enum BranchLineShape: String, Sendable, CaseIterable {
 public enum BranchLines {
     /// Horizontal run per unit of height along a fishbone bone (matches the layout).
     public static let fishboneSlope: CGFloat = 0.5
+    /// Where a sub-cause's small bone leaves its parent's rib, in from the parent's end
+    /// nearest the bone (matches the layout, D268).
+    static let fishboneRibInset: CGFloat = StructureLayouts.ribInset
+
+    /// How far a fishbone topic's end nearest its bone sits from it, at its rib (D269).
+    static func fishboneOffset(_ height: CGFloat) -> CGFloat { StructureLayouts.boneOffset(height) }
 
     /// The connector from a parent to one child, in canvas coordinates.
     /// Underline-style nodes attach lines to their baseline (`parentBaseline`,
@@ -44,14 +50,16 @@ public enum BranchLines {
             p.addLine(to: CGPoint(x: left ? cr.minX : cr.maxX, y: child.center.y))
             return p
         case "fishboneSub":
-            // └ like "indent", but beside the sub-causes, which may sit further from the
-            // bone than the cause does, so the line never crosses the bone.
-            let x =
-                child.side == .left
-                ? max(pr.minX + 4, min(pr.maxX - 4, cr.maxX + 6)) : min(pr.maxX - 4, max(pr.minX + 4, cr.minX - 6))
-            p.move(to: CGPoint(x: x, y: pr.maxY))
-            p.addLine(to: CGPoint(x: x, y: child.center.y))
-            p.addLine(to: CGPoint(x: child.side == .left ? cr.maxX : cr.minX, y: child.center.y))
+            // A sub-cause's own rib (D268): a small bone leaves the parent's rib under it,
+            // `fishboneRibInset` in from its end nearest the bone, and runs parallel to the
+            // main bone to the sub-cause's rib, which runs under it to its far end. The
+            // layout sets the sub-cause `fishboneOffset` back from the small bone.
+            let lean: CGFloat = child.side == .left ? 1 : -1
+            let start = CGPoint(x: (lean > 0 ? pr.maxX : pr.minX) - lean * fishboneRibInset, y: pr.maxY - 2)
+            let y = cr.maxY - 2
+            p.move(to: start)
+            p.addLine(to: CGPoint(x: (lean > 0 ? cr.maxX : cr.minX) + lean * fishboneOffset(child.size.height), y: y))
+            p.addLine(to: CGPoint(x: lean > 0 ? cr.minX : cr.maxX, y: y))
             return p
         case "timeline":
             // The axis: siblings sit on one line, so segments join behind the events.

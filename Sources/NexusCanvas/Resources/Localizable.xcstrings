@@ -4785,6 +4785,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Grouping…" : {
+      "comment" : "UI text (ImageToMap.swift)",
+      "extractionState" : "migrated"
+    },
     "H" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"

@@ -134,8 +134,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// Image to mind map (M12): Vision and, when it can run, Apple Intelligence work off the
-    /// main thread; the new document opens when they finish. A PDF of several pages shows
-    /// its progress in a window with Cancel (D238).
+    /// main thread; the new document opens when they finish. A PDF of several pages, or any
+    /// import still running after half a second, shows its progress in a window with Cancel
+    /// (D238, D272).
     @MainActor func importImage(_ url: URL) {
         let data: Data
         do {
@@ -145,7 +146,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         }
         let refine = Preferences.shared.bool(ImageToMap.refineKey)
         let progress = ImageImportProgress(name: url.lastPathComponent)
-        progress.onManyPages = { [weak self, weak progress] in
+        progress.onShow = { [weak self, weak progress] in
             if let progress { self?.showImportProgress(progress) }
         }
         progress.start(data, refine: refine) { [weak self] outcome in
