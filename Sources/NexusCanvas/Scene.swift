@@ -909,7 +909,8 @@ public struct SceneBuilder {
                         parent: allParents[id].flatMap { frames[$0] },
                         baseline: p.appearance.isUnderline && p.role != .root)
                     let o = frame.rect.origin
-                    scene.nodes[id]?.junction = BranchJunction(CGPoint(x: j.point.x - o.x, y: j.point.y - o.y), j.edge)
+                    scene.nodes[id]?.junction = BranchJunction(
+                        CGPoint(x: j.point.x - o.x, y: j.point.y - o.y), j.edge, slant: j.slant)
                 }
                 scene.order.append(id)
                 if technical {

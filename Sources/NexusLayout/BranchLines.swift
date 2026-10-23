@@ -23,10 +23,15 @@ public struct BranchJunction: Sendable, Equatable {
 
     public var point: CGPoint
     public var edge: Edge
+    /// The line's first heading, as a unit vector, when it leaves at a slant (a fishbone
+    /// sub-cause's small bone, D268): the fold control moves out along it rather than
+    /// straight out of the edge, so it stays on the line.
+    public var slant: CGVector?
 
-    public init(_ point: CGPoint, _ edge: Edge) {
+    public init(_ point: CGPoint, _ edge: Edge, slant: CGVector? = nil) {
         self.point = point
         self.edge = edge
+        self.slant = slant
     }
 }
 
@@ -158,11 +163,14 @@ public enum BranchLines {
         default:
             break
         }
-        if let child, let start = firstPoint(path(from: frame, to: child, family: family, parentBaseline: baseline)) {
-            let edge: BranchJunction.Edge =
-                start.x >= r.maxX - 0.5
-                ? .right : start.x <= r.minX + 0.5 ? .left : start.y <= c.y ? .top : .bottom
-            return BranchJunction(start, edge)
+        if let child {
+            let line = path(from: frame, to: child, family: family, parentBaseline: baseline)
+            if let start = firstPoint(line) {
+                let edge: BranchJunction.Edge =
+                    start.x >= r.maxX - 0.5
+                    ? .right : start.x <= r.minX + 0.5 ? .left : start.y <= c.y ? .top : .bottom
+                return BranchJunction(start, edge, slant: firstSlant(line))
+            }
         }
         let left = frame.side == .left
         switch family {
@@ -191,6 +199,31 @@ public enum BranchLines {
         case .down: BranchJunction(CGPoint(x: r.midX, y: r.maxY), .bottom)
         case .right: BranchJunction(CGPoint(x: r.maxX, y: r.midY), .right)
         }
+    }
+
+    /// The first segment's heading when it's a straight line neither horizontal nor
+    /// vertical; nil otherwise (curves and square lines leave along the edge's normal).
+    private static func firstSlant(_ path: CGPath) -> CGVector? {
+        var points: [CGPoint] = []
+        var straight = false
+        path.applyWithBlock { el in
+            guard points.count < 2 else { return }
+            switch el.pointee.type {
+            case .moveToPoint: points = [el.pointee.points[0]]
+            case .addLineToPoint:
+                if points.count == 1 {
+                    points.append(el.pointee.points[0])
+                    straight = true
+                }
+            default: if points.count == 1 { points.append(points[0]) }
+            }
+        }
+        guard straight, points.count == 2 else { return nil }
+        let dx = points[1].x - points[0].x
+        let dy = points[1].y - points[0].y
+        let len = hypot(dx, dy)
+        guard len > 0.5, abs(dx) > 0.5, abs(dy) > 0.5 else { return nil }
+        return CGVector(dx: dx / len, dy: dy / len)
     }
 
     private static func firstPoint(_ path: CGPath) -> CGPoint? {

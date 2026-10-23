@@ -420,12 +420,17 @@ final class NodeLayer: CALayer {
     private func layoutFoldButton(_ n: SceneNode, canvas: RGBA) {
         let d = Self.foldButtonSize
         let j = Self.junction(n)
+        let out = d / 2 + 2
         let center: CGPoint =
-            switch j.edge {
-            case .left: CGPoint(x: j.point.x - d / 2 - 2, y: j.point.y)
-            case .right: CGPoint(x: j.point.x + d / 2 + 2, y: j.point.y)
-            case .top: CGPoint(x: j.point.x, y: j.point.y - d / 2 - 2)
-            case .bottom: CGPoint(x: j.point.x, y: j.point.y + d / 2 + 2)
+            if let s = j.slant {
+                CGPoint(x: j.point.x + s.dx * out, y: j.point.y + s.dy * out)
+            } else {
+                switch j.edge {
+                case .left: CGPoint(x: j.point.x - d / 2 - 2, y: j.point.y)
+                case .right: CGPoint(x: j.point.x + d / 2 + 2, y: j.point.y)
+                case .top: CGPoint(x: j.point.x, y: j.point.y - d / 2 - 2)
+                case .bottom: CGPoint(x: j.point.x, y: j.point.y + d / 2 + 2)
+                }
             }
         foldButton.frame = CGRect(x: center.x - d / 2, y: center.y - d / 2, width: d, height: d)
         let circle = CGMutablePath()
