@@ -1484,7 +1484,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     private enum Drag {
         case pan(start: CGPoint, offset: CGPoint)
-        case rubber(start: CGPoint, extend: Bool)
+        /// `zones`: the zones selected when a ⇧-band began, which it adds to.
+        case rubber(start: CGPoint, extend: Bool, zones: [String])
         case node(
             id: NodeID, start: CGPoint, subtree: [NodeID], origins: [NodeID: CGPoint], floating: Bool,
             active: Bool, target: DropTarget?)
@@ -1602,11 +1603,14 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             }
             return
         }
+        // A ⇧-band adds to the selected zones, so it remembers them (D258).
+        let extend = event.modifierFlags.contains(.shift)
+        let zones = extend ? controller.selectedZones : []
         if controller.selectedElement != nil { controller.selectElement(nil) }
         if event.modifierFlags.contains(.option) {
             drag = .pan(start: p, offset: camera.offset)
         } else {
-            drag = .rubber(start: w, extend: event.modifierFlags.contains(.shift))
+            drag = .rubber(start: w, extend: extend, zones: zones)
         }
     }
 
@@ -1649,7 +1653,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             c.offset = CGPoint(x: offset.x + p.x - start.x, y: offset.y + p.y - start.y)
             cameraTween = nil
             setCamera(c, animated: false)
-        case .rubber(let start, _)?:
+        case .rubber(let start, _, _)?:
             let r = CGRect(
                 x: min(start.x, w.x), y: min(start.y, w.y), width: abs(w.x - start.x), height: abs(w.y - start.y))
             rubberBand.isHidden = false
@@ -1875,10 +1879,16 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             }
         }
         switch drag {
-        case .rubber(let start, let extend)?:
+        case .rubber(let start, let extend, let selectedZones)?:
             let r = CGRect(
                 x: min(start.x, w.x), y: min(start.y, w.y), width: abs(w.x - start.x), height: abs(w.y - start.y))
             guard r.width > 3 || r.height > 3 else { return }
+            // A band around whole zones selects those zones; ⌘ keeps it to topics (D258).
+            let zones = event.modifierFlags.contains(.command) ? [] : bandZones(r)
+            if !zones.isEmpty {
+                controller.selectZones(selectedZones + zones.filter { !selectedZones.contains($0) })
+                return
+            }
             let hits = controller.scene.order.filter { controller.scene.nodes[$0]!.frame.rect.intersects(r) }
             guard let first = hits.first else { return }
             let base = extend ? controller.selection.nodes : []
@@ -1932,6 +1942,13 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         default:
             break
         }
+    }
+
+    /// The zones a rubber band wholly encloses, back to front (D258). A band that only
+    /// crosses a zone selects the topics it touches, so a zone's topics can still be
+    /// banded from outside it; ⌘-drag bands topics only.
+    func bandZones(_ band: CGRect) -> [String] {
+        controller.scene.zones.filter { band.contains($0.rect) }.map(\.zone.id)
     }
 
     public override func rightMouseDown(with event: NSEvent) {
@@ -2052,6 +2069,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     /// The last selection VoiceOver was told about.
     private var announcedPrimary: NodeID?
     private var announcedLegend = false
+    /// The selected zones VoiceOver was last told about.
+    private var announcedZones: [String] = []
     /// Tests stand in for a running assistive app.
     var assistiveAppOverride: Bool?
     var assistiveAppRunning: Bool {
@@ -2075,8 +2094,12 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         let p = CGPoint(x: bounds.midX, y: bounds.midY)
         return showContextMenu(.canvas(camera.toWorld(p)), at: CGRect(origin: p, size: .zero))
     }
-    /// Read when asked (not on every edit): the selection's description.
-    public override func accessibilityValue() -> Any? { accessibilityTree.label(controller.selection.primary) }
+    /// Read when asked (not on every edit): the selection's description, or the selected
+    /// zone's with its place among the selected zones (D262).
+    public override func accessibilityValue() -> Any? {
+        if case .zone(let id)? = controller.selectedElement { return accessibilityTree.zoneLabel(id) }
+        return accessibilityTree.label(controller.selection.primary)
+    }
 
     public override func accessibilityHitTest(_ point: NSPoint) -> Any? {
         onMain {
@@ -2100,7 +2123,19 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
                 announcedPrimary = nil
             }
         }
-        if assistiveAppRunning, !announcedLegend, announcedPrimary != controller.selection.primary {
+        // A selected zone takes VoiceOver's focus, read with the group (D262); a change to
+        // the group is announced again.
+        let zones = controller.selectedZones
+        if assistiveAppRunning, !announcedLegend, zones != announcedZones {
+            announcedZones = zones
+            if case .zone(let id)? = controller.selectedElement, let e = accessibilityTree.zoneItem(id) {
+                NSAccessibility.post(element: e, notification: .focusedUIElementChanged)
+                NSAccessibility.post(element: self, notification: .selectedChildrenChanged)
+            } else {
+                announcedPrimary = nil
+            }
+        }
+        if assistiveAppRunning, !announcedLegend, zones.isEmpty, announcedPrimary != controller.selection.primary {
             announcedPrimary = controller.selection.primary
             if let e = accessibilityTree.element(controller.selection.primary) {
                 NSAccessibility.post(element: e, notification: .focusedUIElementChanged)

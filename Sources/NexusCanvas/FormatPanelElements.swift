@@ -34,11 +34,9 @@ struct ElementStyleTab: View {
         Divider()
         PanelSection(Loc.t("Actions"), key: "element.actions") {
             Button("Reset style") { controller.resetElementStyle(ref) }.buttonStyle(.plain)
-            Button("Delete", role: .destructive) {
-                controller.perform(Loc.t("Delete")) { $0.removeElement(ref) }
-                controller.selectElement(nil)
-            }
-            .buttonStyle(.plain)
+            // On one of several selected zones, both act on all of them (D228, D260).
+            Button("Delete", role: .destructive) { controller.deleteElement(ref) }
+                .buttonStyle(.plain)
         }
     }
 }
@@ -399,36 +397,61 @@ struct SummarySection: View {
 
 struct ZoneSection: View {
     var controller: CanvasController
+    /// The selected zone (the one clicked last). The section edits it and every zone
+    /// selected with it (D260).
     let zone: Zone
 
-    func set(_ body: @escaping (inout Zone) -> Void) { controller.updateZone(zone.id, body) }
+    /// The zones the section edits.
+    var ids: [String] { controller.zones(with: zone.id) }
+
+    func set(_ body: @escaping (inout Zone) -> Void) { controller.updateZones(ids, body) }
+
+    /// A value the zones share, or nil when they differ (shown as mixed).
+    func common<T: Equatable>(_ key: KeyPath<Zone, T>) -> T? {
+        ids.count > 1 ? controller.commonZoneValue(key) : zone[keyPath: key]
+    }
+
+    func mixed<T: Equatable>(_ key: KeyPath<Zone, T>) -> Bool { common(key) == nil }
+
+    func sizePlaceholder(_ key: KeyPath<Zone, Double>) -> String { mixed(key) ? Loc.t("Mixed") : Loc.t("Auto") }
 
     var body: some View {
+        let several = ids.count > 1
         PanelSection(
-            Loc.t("Zone"), key: "zone",
+            several ? Loc.n("%lld Zone", "%lld Zones", ids.count) : Loc.t("Zone"), key: "zone",
             accessory: {
                 Keycap(text: controller.bindings(for: .zone).first?.glyphs ?? "⌥⌘Z")
             }
         ) {
-            PanelRow(label: Loc.t("Title")) {
-                TextField("Title", text: Binding(get: { zone.title }, set: { v in set { $0.title = v } }))
-                    .textFieldStyle(.roundedBorder)
-                    .frame(maxWidth: 170)
+            // A title names one zone, so titles are edited a zone at a time.
+            if !several {
+                PanelRow(label: Loc.t("Title")) {
+                    TextField("Title", text: Binding(get: { zone.title }, set: { v in set { $0.title = v } }))
+                        .textFieldStyle(.roundedBorder)
+                        .frame(maxWidth: 170)
+                }
             }
             HStack {
                 Text("W")
-                PointField(value: zone.width) { v in if let v { set { $0.width = max(Zone.minimumSize, v) } } }
+                PointField(value: common(\.width), placeholder: sizePlaceholder(\.width)) { v in
+                    if let v { set { $0.width = max(Zone.minimumSize, v) } }
+                }
                 Text("H")
-                PointField(value: zone.height) { v in if let v { set { $0.height = max(Zone.minimumSize, v) } } }
+                PointField(value: common(\.height), placeholder: sizePlaceholder(\.height)) { v in
+                    if let v { set { $0.height = max(Zone.minimumSize, v) } }
+                }
             }
             .font(.chrome(12))
-            PanelToggle(label: Loc.t("Auto resize to content"), isOn: zone.autoResize) { v in set { $0.autoResize = v }
+            PanelToggle(label: Loc.t("Auto resize to content"), isOn: zone.autoResize, mixed: mixed(\.autoResize)) {
+                v in set { $0.autoResize = v }
             }
-            PanelToggle(label: Loc.t("Collapsed"), isOn: zone.collapsed) { v in set { $0.collapsed = v } }
+            PanelToggle(label: Loc.t("Collapsed"), isOn: zone.collapsed, mixed: mixed(\.collapsed)) { v in
+                set { $0.collapsed = v }
+            }
             PanelRow(label: Loc.t("Frame")) {
                 Segments(
                     options: [("rounded", Loc.t("Rounded")), ("square", Loc.t("Square")), ("dashed", Loc.t("Dashed"))],
-                    selection: zone.frame
+                    selection: common(\.frame)
                 ) { v in
                     set { $0.frame = v }
                 }
@@ -444,7 +467,7 @@ struct ZoneSection: View {
                 ) { v in
                     let order: CanvasEditor.ZOrder =
                         v == "front" ? .front : v == "forward" ? .forward : v == "backward" ? .backward : .back
-                    controller.perform(Loc.t("Arrange")) { $0.reorderZone(zone.id, order) }
+                    controller.reorderZones(ids, order)
                 }
                 .frame(maxWidth: 200)
             }
@@ -453,10 +476,18 @@ struct ZoneSection: View {
                 Button("Print Zone…") { controller.printZone(zone.id) }
                 Button("Duplicate") { controller.duplicateZone(zone.id) }
             }
-            Button("Remove zone (keep content)") {
-                controller.perform(Loc.t("Remove Zone")) { $0.removeZone(zone.id) }
-                controller.selectElement(nil)
+            Button(several ? Loc.t("Remove zones (keep content)") : Loc.t("Remove zone (keep content)")) {
+                removeZones()
             }
         }
+    }
+
+    /// Remove zone (keep content), on every zone the section edits, one undo step.
+    func removeZones() {
+        let ids = ids
+        controller.perform(ids.count > 1 ? Loc.t("Remove Zones") : Loc.t("Remove Zone")) { e in
+            for id in ids { e.removeZone(id) }
+        }
+        controller.selectElement(nil)
     }
 }
