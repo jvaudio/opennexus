@@ -4477,6 +4477,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Five eighths done" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Fix Flow" : {
       "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
@@ -6701,6 +6705,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "One eighth done" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "One file per zone, or a PDF page per zone" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
@@ -8313,6 +8321,10 @@
       "comment" : "UI text (QuickCapture.swift)",
       "extractionState" : "migrated"
     },
+    "Seven eighths done" : {
+      "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
     "SF Mono" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -9239,6 +9251,10 @@
     },
     "Threats, data and access" : {
       "comment" : "UI text (Templates.swift)",
+      "extractionState" : "migrated"
+    },
+    "Three eighths done" : {
+      "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
     "Three quarters done" : {

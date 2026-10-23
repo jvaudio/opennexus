@@ -12,9 +12,13 @@ extension MarkerLibrary {
         if id.hasPrefix("priority-"), let n = Int(id.dropFirst(9)) { return Loc.f("Priority %lld", n) }
         switch id {
         case "progress-0": return Loc.t("Not started")
+        case "progress-13": return Loc.t("One eighth done")
         case "progress-25": return Loc.t("Quarter done")
+        case "progress-38": return Loc.t("Three eighths done")
         case "progress-50": return Loc.t("Half done")
+        case "progress-63": return Loc.t("Five eighths done")
         case "progress-75": return Loc.t("Three quarters done")
+        case "progress-88": return Loc.t("Seven eighths done")
         case "progress-100": return Loc.t("Done")
         case "flag-red": return Loc.t("Red flag")
         case "flag-orange": return Loc.t("Orange flag")
@@ -218,6 +222,10 @@ final class LegendLayer: CALayer {
         let mk = MarkerLibrary.marker(id)
         (NSColor(cgColor: RGBA(hex: mk?.color ?? "#8A8A96").cgColor) ?? .gray).setFill()
         NSBezierPath(ovalIn: r).fill()
+        if let pie = mk?.pie {
+            drawPie(pie, in: r)
+            return
+        }
         NSAttributedString(
             string: mk?.glyph ?? "•",
             attributes: [
@@ -225,6 +233,47 @@ final class LegendLayer: CALayer {
                 .paragraphStyle: NodeLayer.centered,
             ]
         ).draw(in: r.offsetBy(dx: 0, dy: 2))
+    }
+}
+
+extension LegendLayer {
+    /// The pie's radius and ring, as fractions of the marker's disc: the size of ◑.
+    static let pieRadius = 0.24
+    static let pieLine = 1.0 / 16
+
+    /// A progress marker's pie, drawn like the ◑ glyph: a white ring, filled clockwise
+    /// from twelve o'clock (D247). The context is flipped.
+    static func drawPie(_ fraction: Double, in r: CGRect) {
+        let c = CGPoint(x: r.midX, y: r.midY)
+        let radius = r.width * pieRadius
+        NSColor.white.set()
+        let ring = NSBezierPath(ovalIn: CGRect(x: c.x - radius, y: c.y - radius, width: radius * 2, height: radius * 2))
+        ring.lineWidth = r.width * pieLine
+        ring.stroke()
+        let wedge = NSBezierPath()
+        wedge.move(to: c)
+        wedge.appendArc(
+            withCenter: c, radius: radius, startAngle: -90, endAngle: -90 + 360 * CGFloat(fraction), clockwise: false)
+        wedge.close()
+        wedge.fill()
+    }
+}
+
+/// A progress marker's pie for SwiftUI, in the current foreground style (D247).
+struct ProgressPie: Shape {
+    var fraction: Double
+
+    func path(in r: CGRect) -> Path {
+        let c = CGPoint(x: r.midX, y: r.midY)
+        let radius = min(r.width, r.height) / 2
+        var p = Path(ellipseIn: CGRect(x: c.x - radius, y: c.y - radius, width: radius * 2, height: radius * 2))
+            .strokedPath(StrokeStyle(lineWidth: radius / 4))
+        p.move(to: c)
+        p.addArc(
+            center: c, radius: radius, startAngle: .degrees(-90), endAngle: .degrees(-90 + 360 * fraction),
+            clockwise: false)
+        p.closeSubpath()
+        return p
     }
 }
 

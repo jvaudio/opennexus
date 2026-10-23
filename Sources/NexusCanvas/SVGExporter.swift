@@ -185,9 +185,13 @@ public enum SVGExporter {
                 let c = mk.map { RGBA(hex: $0.color) } ?? RGBA(hex: "#8A8A96")
                 let glyph = m.hasPrefix("priority-") ? String(m.dropFirst(9)) : mk?.glyph ?? "•"
                 w.line("<circle cx=\"\(n(x + 9))\" cy=\"\(n(rr.midY))\" r=\"9\" fill=\"\(hex(c))\"/>")
-                w.text(
-                    glyph, at: CGPoint(x: x + 9, y: rr.midY + 3.8), font: .systemFont(ofSize: 10.5, weight: .bold),
-                    color: .white, anchor: "middle")
+                if let pie = mk?.pie {
+                    pieMarker(pie, at: CGPoint(x: x + 9, y: rr.midY), &w)
+                } else {
+                    w.text(
+                        glyph, at: CGPoint(x: x + 9, y: rr.midY + 3.8), font: .systemFont(ofSize: 10.5, weight: .bold),
+                        color: .white, anchor: "middle")
+                }
                 x += SceneLegend.glyph
             }
             w.text(
@@ -196,6 +200,19 @@ public enum SVGExporter {
         }
         w.indent -= 1
         w.line("</g>")
+    }
+
+    /// A progress marker's pie on its 18 pt disc, as the canvas draws it (D247).
+    static func pieMarker(_ fraction: Double, at c: CGPoint, _ w: inout Writer) {
+        let r = 18 * LegendLayer.pieRadius
+        let a = (-90 + 360 * fraction) * .pi / 180
+        let end = CGPoint(x: c.x + r * cos(a), y: c.y + r * sin(a))
+        w.line(
+            "<circle cx=\"\(n(c.x))\" cy=\"\(n(c.y))\" r=\"\(n(r))\" fill=\"none\" stroke=\"#FFFFFF\" stroke-width=\"\(n(18 * LegendLayer.pieLine))\"/>"
+        )
+        w.line(
+            "<path d=\"M\(n(c.x)) \(n(c.y)) V\(n(c.y - r)) A\(n(r)) \(n(r)) 0 \(fraction > 0.5 ? 1 : 0) 1 \(n(end.x)) \(n(end.y)) Z\" fill=\"#FFFFFF\"/>"
+        )
     }
 
     static func topic(_ sn: SceneNode, _ node: Node, _ w: inout Writer, metadata: Bool, theme: Theme) {
@@ -266,9 +283,13 @@ public enum SVGExporter {
         for m in sn.otherMarkers {
             if let mk = MarkerLibrary.marker(m) {
                 w.line("<circle cx=\"\(n(x + 9))\" cy=\"\(n(cy))\" r=\"9\" fill=\"\(mk.color)\"/>")
-                w.text(
-                    mk.glyph, at: CGPoint(x: x + 9, y: cy + 3.8), font: .systemFont(ofSize: 10.5, weight: .bold),
-                    color: .white, anchor: "middle")
+                if let pie = mk.pie {
+                    pieMarker(pie, at: CGPoint(x: x + 9, y: cy), &w)
+                } else {
+                    w.text(
+                        mk.glyph, at: CGPoint(x: x + 9, y: cy + 3.8), font: .systemFont(ofSize: 10.5, weight: .bold),
+                        color: .white, anchor: "middle")
+                }
             }
             x += SceneBuilder.markerWidth
         }

@@ -62,9 +62,14 @@ public enum XmindFormat {
         if id.hasPrefix("priority-"), let n = Int(id.dropFirst(9)), (1...9).contains(n) { return "priority-\(n)" }
         switch id {
         case "task-start": return "progress-0"
-        case "task-oct", "task-quarter": return "progress-25"
-        case "task-3oct", "task-half", "task-5oct": return "progress-50"
-        case "task-3quar", "task-7oct": return "progress-75"
+        // Eighths have markers of their own (D247).
+        case "task-oct": return "progress-13"
+        case "task-quarter": return "progress-25"
+        case "task-3oct": return "progress-38"
+        case "task-half": return "progress-50"
+        case "task-5oct": return "progress-63"
+        case "task-3quar": return "progress-75"
+        case "task-7oct": return "progress-88"
         case "task-done": return "progress-100"
         case "flag-red", "flag-orange", "flag-green", "flag-blue": return id
         case "flag-purple", "flag-dark-blue": return "flag-blue"
@@ -125,6 +130,26 @@ public enum XmindFormat {
         let nums = s.split { !$0.isNumber }.compactMap { Int($0) }
         guard nums.count == 2, nums[0] <= nums[1], nums[0] >= 0, nums[1] < count else { return nil }
         return nums[0]...nums[1]
+    }
+
+    /// The canvas's element defaults from the sheet's theme or record, then each boundary's
+    /// and summary's own properties, read once the canvas colour is known (D245). The
+    /// builder gives every element the defaults it doesn't set itself.
+    static func elements(
+        _ ic: inout ICanvas, theme: [String: Any]?, record: [String: Any]?, groups: [[String: Any]],
+        summaries: [[String: Any]], report: inout ImportReport
+    ) {
+        let canvas = XmindStyle.canvasColor(ic.style)
+        let e = XmindStyle.elementStyles(theme, record: record, canvas: canvas, report: &report)
+        if !e.isEmpty {
+            var style = ic.style ?? CanvasStyle()
+            style.elements = e
+            ic.style = style
+        }
+        for (i, own) in groups.enumerated() where !own.isEmpty {
+            XmindStyle.apply(own, canvas: canvas, line: e.boundary.color, to: &ic.groups[i], report: &report)
+        }
+        for (i, own) in summaries.enumerated() where !own.isEmpty { XmindStyle.apply(own, to: &ic.summaries[i]) }
     }
 
     static func ext(_ path: String) -> String {
@@ -188,7 +213,6 @@ public enum XmindFormat {
             callouts = []
             let theme = s["theme"] as? [String: Any]
             let record = Self.record(s["extensions"])
-            let classes = XmindStyle.elementClasses(theme, record: record)
             let rt = s["rootTopic"] as? [String: Any] ?? [:]
             var root = topic(rt)
             let detached = ((rt["children"] as? [String: Any])?["detached"] as? [[String: Any]]) ?? []
@@ -212,39 +236,54 @@ public enum XmindFormat {
             for r in (s["relationships"] as? [[String: Any]]) ?? [] {
                 guard let a = r["end1Id"] as? String, let b = r["end2Id"] as? String else { continue }
                 var link = ICanvas.Link(from: a, to: b, label: (r["title"] as? String) ?? "")
-                // The theme's relationship class under the relationship's own (D219).
-                let p = classes.relationship.merging(Self.properties(r) ?? [:]) { $1 }
-                if !p.isEmpty { XmindStyle.apply(p, to: &link) }
+                link.ref = r["id"] as? String
+                // Its own properties; the theme's class is the canvas's default (D245).
+                if let p = Self.properties(r) { XmindStyle.apply(p, to: &link) }
                 ic.links.append(link)
             }
             if theme != nil || record != nil {
                 ic.style = XmindStyle.canvasStyle(theme ?? [:], sheetStyle: Self.properties(s), record: record)
             }
-            let canvas = XmindStyle.canvasColor(ic.style)
-            for (i, own) in groupProps.enumerated() {
-                let p = classes.boundary.merging(own) { $1 }
-                if !p.isEmpty { XmindStyle.apply(p, canvas: canvas, to: &ic.groups[i], report: &report) }
+            XmindFormat.elements(
+                &ic, theme: theme, record: record, groups: groupProps, summaries: summaryProps, report: &report)
+            var kept = XmindKept()
+            for e in (s["extensions"] as? [[String: Any]]) ?? [] {
+                switch e["provider"] as? String ?? "" {
+                // Derived from the map, and written afresh.
+                case "org.xmind.ui.skeleton.structure.style", "org.xmind.ui.map.unbalanced",
+                    "org.xmind.ui.branch.style", XmindStyle.provider:
+                    break
+                default: kept.extensions.append(e)
+                }
             }
-            for (i, own) in summaryProps.enumerated() {
-                let p = classes.summary.merging(own) { $1 }
-                if !p.isEmpty { XmindStyle.apply(p, to: &ic.summaries[i]) }
+            for (k, v) in s.sorted(by: { $0.key < $1.key }) where Int(k) == nil && !Self.sheetKeys.contains(k) {
+                switch k {
+                case "zones":
+                    // Xmind's zones aren't imported, and they'd name topics by Xmind's ids.
+                    let n = (v as? [Any])?.count ?? 0
+                    if n > 0 { report.skip("Xmind zone (not imported)", n) }
+                case "arrangeableLayerOrder": kept.layerOrder = XmindKept.layerOrder(v)
+                default: kept.keys[k] = v
+                }
             }
-            for e in (s["extensions"] as? [[String: Any]]) ?? [] { ext(e, on: title) }
+            ic.extra = kept.json.map { [XmindKept.key: $0] } ?? [:]
             if let l = s["legend"] { ic.legend = XmindLegend.read(l, report: &report) }
             return ic
         }
 
-        mutating func ext(_ e: [String: Any], on title: String) {
-            let p = e["provider"] as? String ?? ""
-            switch p {
-            case "org.xmind.ui.skeleton.structure.style", "org.xmind.ui.map.unbalanced", "org.xmind.ui.branch.style",
-                XmindStyle.provider:
-                break
-            case _ where p.contains("task"): report.skip("Gantt chart settings on “\(title)”")
-            case _ where p.contains("audio"): report.skip("Audio note on “\(title)” (kept as attachment)")
-            default: report.skip("Xmind extension \(p.split(separator: ".").last ?? "")")
-            }
-        }
+        /// What a sheet holds that OpenNexus reads (or rewrites) itself; everything else is
+        /// kept (D242). Numeric keys are nested sheet copies.
+        static let sheetKeys: Set<String> = [
+            "id", "class", "title", "rootTopic", "theme", "style", "relationships", "extensions", "legend",
+        ]
+
+        /// What a topic holds that OpenNexus reads itself; everything else is kept (D242).
+        /// A floating topic's `position` is read and written afresh; an attached topic's
+        /// isn't kept, since OpenNexus lays it out.
+        static let topicKeys: Set<String> = [
+            "id", "class", "title", "attributedTitle", "notes", "markers", "labels", "href", "image", "branch",
+            "structureClass", "comments", "extensions", "style", "children", "boundaries", "summaries", "position",
+        ]
 
         func text(_ t: [String: Any]) -> String {
             if let s = t["title"] as? String { return s }
@@ -291,27 +330,35 @@ public enum XmindFormat {
             }
             if t["branch"] as? String == "folded" { it.folded = true }
             it.structure = XmindFormat.structure(t["structureClass"] as? String)
-            if t["numbering"] != nil { report.skip("Numbering format") }
             if let raw = t["comments"] {
                 it.comments = XmindComments.list(raw)
                 if it.comments.isEmpty, !XmindComments.isEmpty(raw) { report.skip("Comment in an unknown form") }
             }
             if let id = it.ref, let more = pending.removeValue(forKey: id) { it.comments += more }
+            var kept = XmindKept()
             for e in (t["extensions"] as? [[String: Any]]) ?? [] {
-                if let p = e["provider"] as? String, p.contains("task"), let content = e["content"] as? [String: Any] {
+                let p = e["provider"] as? String ?? ""
+                if p.contains("task"), let content = e["content"] as? [String: Any] {
                     var task = it.task ?? ITask()
                     XmindTask.read(content, into: &task, zone: zone, report: &report)
                     it.task = task
-                } else if e["provider"] as? String != XmindStyle.provider {
-                    ext(e, on: it.text)
+                } else if p.contains("audio") {
+                    report.skip("Audio note on “\(it.text)” (kept as attachment)")
+                } else if p != XmindStyle.provider {
+                    // Pitch slides and other extensions travel with the topic (D242).
+                    kept.extensions.append(e)
                 }
             }
+            for (k, v) in t where !Self.topicKeys.contains(k) { kept.keys[k] = v }
+            it.extra = kept.json.map { [XmindKept.key: $0] } ?? [:]
             let props = Self.properties(t)
             if let record = Self.record(t["extensions"]), let own = XmindStyle.restore(record, written: props) {
                 // OpenNexus's record of the topic's quick style and own style (D218).
                 it.quickStyle = own.quickStyle
                 it.style = own.style
             } else {
+                // Xmind's quick styles are classes (D244).
+                it.quickStyle = XmindStyle.quickStyle(class: t["class"])
                 it.style = props.flatMap(XmindStyle.style)
             }
             let children = t["children"] as? [String: Any] ?? [:]
@@ -451,7 +498,6 @@ public enum XmindFormat {
             callouts = []
             let theme = s.attr("theme").flatMap { themes[$0] }
             let record = Self.record(s)
-            let classes = XmindStyle.elementClasses(theme, record: record)
             let rt = s.kid("topic") ?? XMLElement(name: "topic")
             var root = topic(rt)
             var floating: [ITopic] = []
@@ -479,20 +525,17 @@ public enum XmindFormat {
             for r in s.kid("relationships")?.kids("relationship") ?? [] {
                 guard let a = r.attr("end1"), let b = r.attr("end2") else { continue }
                 var link = ICanvas.Link(from: a, to: b, label: r.kid("title")?.stringValue ?? "")
-                let p = classes.relationship.merging(style(r) ?? [:]) { $1 }
-                if !p.isEmpty { XmindStyle.apply(p, to: &link) }
+                link.ref = r.attr("id")
+                if let p = style(r) { XmindStyle.apply(p, to: &link) }
                 ic.links.append(link)
             }
-            if theme != nil || record != nil { ic.style = XmindStyle.canvasStyle(theme ?? [:], record: record) }
-            let canvas = XmindStyle.canvasColor(ic.style)
-            for (i, own) in groupProps.enumerated() {
-                let p = classes.boundary.merging(own) { $1 }
-                if !p.isEmpty { XmindStyle.apply(p, canvas: canvas, to: &ic.groups[i], report: &report) }
+            if theme != nil || record != nil {
+                // The sheet's own style, a map style, is its background when set, as in Zen
+                // files (D213, D243).
+                ic.style = XmindStyle.canvasStyle(theme ?? [:], sheetStyle: style(s), record: record)
             }
-            for (i, own) in summaryProps.enumerated() {
-                let p = classes.summary.merging(own) { $1 }
-                if !p.isEmpty { XmindStyle.apply(p, to: &ic.summaries[i]) }
-            }
+            XmindFormat.elements(
+                &ic, theme: theme, record: record, groups: groupProps, summaries: summaryProps, report: &report)
             if let l = s.kid("legend") { ic.legend = XmindLegend.read(xml: l, report: &report) }
             return ic
         }
@@ -542,6 +585,7 @@ public enum XmindFormat {
                 it.quickStyle = own.quickStyle
                 it.style = own.style
             } else {
+                it.quickStyle = XmindStyle.quickStyle(class: e.attr("class"))
                 it.style = style(e).flatMap(XmindStyle.style)
             }
             for x in e.kid("extensions")?.kids("extension") ?? [] {
@@ -603,6 +647,46 @@ public enum XmindFormat {
                 summaryProps.append(style(s) ?? [:])
             }
             return it
+        }
+    }
+}
+
+/// What an Xmind sheet or topic holds that OpenNexus doesn't use, kept on the canvas or
+/// node (`extra["xmind"]`) and written back by the `.xmind` export (D242): unknown keys
+/// (`compactLayoutModeLevel`, `topicOverlapping`, a topic's `numbering`), extensions
+/// (Pitch's `org.xmind.ui.ice-cream-pancake`), and the sheet's `arrangeableLayerOrder`,
+/// whose entries name elements by id and are kept by this file's ids instead.
+struct XmindKept {
+    static let key = "xmind"
+
+    var keys: [String: Any] = [:]
+    var extensions: [[String: Any]] = []
+    var layerOrder: [JSONValue]?
+
+    /// `{"keys": {…}, "extensions": […], "layerOrder": […]}`, or nil when there's nothing.
+    var json: JSONValue? {
+        var o: [String: JSONValue] = [:]
+        let k = keys.compactMapValues(Self.value)
+        if !k.isEmpty { o["keys"] = .object(k) }
+        let e = extensions.compactMap(XmindStyle.jsonValue)
+        if !e.isEmpty { o["extensions"] = .array(e) }
+        if let layerOrder { o["layerOrder"] = .array(layerOrder) }
+        return o.isEmpty ? nil : .object(o)
+    }
+
+    /// Any JSON value, a bare number or string included.
+    static func value(_ v: Any) -> JSONValue? { XmindStyle.jsonValue(["v": v])?["v"] }
+
+    /// Each entry of Xmind's layer order (an id, or an object with an `id`) as
+    /// `{"ref": {"sourceRef": id}, "item": …}`; the builder turns the source id into this
+    /// file's element, or drops the entry (D242).
+    static func layerOrder(_ v: Any) -> [JSONValue] {
+        ((v as? [Any]) ?? []).compactMap { item -> JSONValue? in
+            if let id = item as? String { return ["ref": ["sourceRef": .string(id)]] }
+            guard var o = item as? [String: Any], let id = o["id"] as? String else { return nil }
+            // The export writes the element's id afresh.
+            o["id"] = nil
+            return ["ref": ["sourceRef": .string(id)], "item": XmindStyle.jsonValue(o) ?? [:]]
         }
     }
 }

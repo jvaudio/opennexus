@@ -30,6 +30,8 @@ public struct ITopic: Sendable, Equatable {
     public var quickStyle: String?
     public var folded = false
     public var position: CanvasPoint?
+    /// Source data OpenNexus doesn't use, kept on the node to be written back (D242).
+    public var extra: [String: JSONValue] = [:]
     public var children: [ITopic] = []
 
     public init(_ text: String, ref: String? = nil, children: [ITopic] = []) {
@@ -79,6 +81,8 @@ public struct ICanvas: Sendable, Equatable {
         public var dash: String?
         public var width: Double?
         public var color: String?
+        /// The source's id for the relationship, which kept data can name (D242).
+        public var ref: String?
         public init(from: String, to: String, label: String = "", kind: String? = nil) {
             self.from = from
             self.to = to
@@ -147,6 +151,12 @@ public struct ICanvas: Sendable, Equatable {
     public var style: CanvasStyle?
     /// The root was made up to hold several top-level topics (pasting drops it).
     public var synthesizedRoot = false
+    /// Source data OpenNexus doesn't use, kept on the canvas (D242). An object
+    /// `{"sourceRef": id}` anywhere in it becomes the element that id names in this file
+    /// (`{"topic": "n5"}`, `{"relationship": "r1"}`, `{"boundary": "b1"}`,
+    /// `{"summary": "s1"}`); the array entry holding one that names a missing element is
+    /// dropped.
+    public var extra: [String: JSONValue] = [:]
 
     public init(title: String, root: ITopic) {
         self.title = title
@@ -304,6 +314,7 @@ public enum CanvasBuilder {
             n.style = t.style
             n.quickStyle = t.quickStyle
             n.folded = t.folded && !t.children.isEmpty
+            for (k, v) in t.extra { n.extra[k] = v }
             c.nodes[id] = n
             if let r = t.ref { refs[r] = id }
             report.topics += 1
@@ -342,6 +353,8 @@ public enum CanvasBuilder {
             for ch in s.topic.children { _ = add(ch, under: tid) }
             let sid = "s\(c.summaries.count + 1)"
             var sm = Summary(id: sid, parent: parent, from: from, to: to, topic: tid)
+            // The canvas's defaults under the summary's own (D245).
+            sm.adopt(c.style.elements.summary)
             if let v = s.color { sm.color = v }
             if let v = s.width { sm.width = v }
             if let v = s.bracket { sm.bracket = v }
@@ -362,6 +375,7 @@ public enum CanvasBuilder {
             guard !ids.isEmpty else { continue }
             let bid = "b\(c.boundaries.count + 1)"
             var b = Boundary(id: bid, nodes: ids, title: g.title)
+            b.adopt(c.style.elements.boundary)
             if let v = g.color { b.color = v }
             if let v = g.fillOpacity { b.fillOpacity = v }
             if let v = g.dash { b.dash = v }
@@ -371,12 +385,14 @@ public enum CanvasBuilder {
             if let ref = g.ref, elementRefs[ref] == nil { elementRefs[ref] = .boundary(bid) }
         }
         func end(_ ref: String) -> RelationshipEnd? { refs[ref].map(RelationshipEnd.topic) ?? elementRefs[ref] }
+        var linkRefs: [String: String] = [:]
         for l in ic.links {
             guard let from = end(l.from), let to = end(l.to) else {
                 report.skip("Relationship to a missing topic")
                 continue
             }
             var r = Relationship(id: "r\(c.relationships.count + 1)", from: from, to: to, label: l.label)
+            r.adopt(c.style.elements.relationship)
             r.kind = l.kind
             if let v = l.line { r.line = v }
             if let v = l.ends, v.count == 2 { r.ends = v }
@@ -384,6 +400,7 @@ public enum CanvasBuilder {
             if let v = l.width { r.width = v }
             if let v = l.color { r.color = v }
             c.relationships.append(r)
+            if let ref = l.ref { linkRefs[ref] = r.id }
         }
         // Task dependencies name their predecessors by ref.
         for (id, after) in waiting {
@@ -413,6 +430,30 @@ public enum CanvasBuilder {
                 if refs[target] == nil { report.skip("Link to a topic in another file") }
             }
         }
+        // Kept source data naming elements by the source's ids (D242).
+        func resolve(_ v: JSONValue) -> JSONValue? {
+            switch v {
+            case .object(let o):
+                if o.count == 1, let id = o["sourceRef"]?.stringValue {
+                    if let n = refs[id] { return ["topic": .string(n.rawValue)] }
+                    if let r = linkRefs[id] { return ["relationship": .string(r)] }
+                    switch elementRefs[id] {
+                    case .boundary(let b)?: return ["boundary": .string(b)]
+                    case .summary(let s)?: return ["summary": .string(s)]
+                    default: return nil
+                    }
+                }
+                var out: [String: JSONValue] = [:]
+                for (k, x) in o {
+                    guard let r = resolve(x) else { return nil }
+                    out[k] = r
+                }
+                return .object(out)
+            case .array(let a): return .array(a.compactMap(resolve))
+            default: return v
+            }
+        }
+        for (k, v) in ic.extra { if let r = resolve(v) { c.extra[k] = r } }
         report.canvases += 1
         return c
     }

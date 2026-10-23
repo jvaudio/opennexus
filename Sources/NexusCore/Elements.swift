@@ -120,6 +120,183 @@ public struct Summary: Hashable, Sendable, JSONRepresentable {
     }
 }
 
+/// A canvas's own defaults for boundaries, summaries and relationships (D245): an imported
+/// theme's classes, as `CanvasStyle.roles` are for topics. New elements, and imported ones
+/// that don't set a field, take the shape, dash, width, fill and bracket; the canvas draws
+/// an element without a colour of its own in the default's colour. Unset fields keep
+/// OpenNexus's defaults.
+public struct ElementStyles: Hashable, Sendable, JSONRepresentable {
+    public struct BoundaryStyle: Hashable, Sendable {
+        /// hex
+        public var color: String?
+        public var fillOpacity: Double?
+        public var dash: String?
+        public var width: Double?
+        public var shape: String?
+        public var extra: [String: JSONValue] = [:]
+
+        public init(
+            color: String? = nil, fillOpacity: Double? = nil, dash: String? = nil, width: Double? = nil,
+            shape: String? = nil
+        ) {
+            self.color = color
+            self.fillOpacity = fillOpacity
+            self.dash = dash
+            self.width = width
+            self.shape = shape
+        }
+
+        public var isEmpty: Bool { self == BoundaryStyle() }
+    }
+
+    public struct SummaryStyle: Hashable, Sendable {
+        /// hex
+        public var color: String?
+        public var width: Double?
+        public var bracket: String?
+        public var extra: [String: JSONValue] = [:]
+
+        public init(color: String? = nil, width: Double? = nil, bracket: String? = nil) {
+            self.color = color
+            self.width = width
+            self.bracket = bracket
+        }
+
+        public var isEmpty: Bool { self == SummaryStyle() }
+    }
+
+    public struct RelationshipStyle: Hashable, Sendable {
+        /// hex
+        public var color: String?
+        public var line: String?
+        /// Start and end caps, as on a relationship.
+        public var ends: [String]?
+        public var dash: String?
+        public var width: Double?
+        public var extra: [String: JSONValue] = [:]
+
+        public init(
+            color: String? = nil, line: String? = nil, ends: [String]? = nil, dash: String? = nil,
+            width: Double? = nil
+        ) {
+            self.color = color
+            self.line = line
+            self.ends = ends
+            self.dash = dash
+            self.width = width
+        }
+
+        public var isEmpty: Bool { self == RelationshipStyle() }
+    }
+
+    public var boundary = BoundaryStyle()
+    public var summary = SummaryStyle()
+    public var relationship = RelationshipStyle()
+    public var extra: [String: JSONValue] = [:]
+
+    public init(
+        boundary: BoundaryStyle = BoundaryStyle(), summary: SummaryStyle = SummaryStyle(),
+        relationship: RelationshipStyle = RelationshipStyle()
+    ) {
+        self.boundary = boundary
+        self.summary = summary
+        self.relationship = relationship
+    }
+
+    public var isEmpty: Bool { self == ElementStyles() }
+
+    public init(json: JSONValue, path: String) throws {
+        var r = try ObjectReader(json, path: path)
+        if let b = r.raw("boundary"), b != .null {
+            var o = try ObjectReader(b, path: "\(path).boundary")
+            boundary.color = try o.optionalString("color")
+            boundary.fillOpacity = try o.optionalDouble("fillOpacity")
+            boundary.dash = try o.optionalString("dash")
+            boundary.width = try o.optionalDouble("width")
+            boundary.shape = try o.optionalString("shape")
+            boundary.extra = o.leftovers
+        }
+        if let s = r.raw("summary"), s != .null {
+            var o = try ObjectReader(s, path: "\(path).summary")
+            summary.color = try o.optionalString("color")
+            summary.width = try o.optionalDouble("width")
+            summary.bracket = try o.optionalString("bracket")
+            summary.extra = o.leftovers
+        }
+        if let l = r.raw("relationship"), l != .null {
+            var o = try ObjectReader(l, path: "\(path).relationship")
+            relationship.color = try o.optionalString("color")
+            relationship.line = try o.optionalString("line")
+            let e = try o.strings("ends")
+            relationship.ends = e.count == 2 ? e : nil
+            relationship.dash = try o.optionalString("dash")
+            relationship.width = try o.optionalDouble("width")
+            relationship.extra = o.leftovers
+        }
+        extra = r.leftovers
+    }
+
+    public var json: JSONValue {
+        var w = ObjectWriter(extra: extra)
+        if !boundary.isEmpty {
+            var o = ObjectWriter(extra: boundary.extra)
+            o.set("color", boundary.color)
+            o.set("fillOpacity", boundary.fillOpacity)
+            o.set("dash", boundary.dash)
+            o.set("width", boundary.width)
+            o.set("shape", boundary.shape)
+            w.set("boundary", o.value)
+        }
+        if !summary.isEmpty {
+            var o = ObjectWriter(extra: summary.extra)
+            o.set("color", summary.color)
+            o.set("width", summary.width)
+            o.set("bracket", summary.bracket)
+            w.set("summary", o.value)
+        }
+        if !relationship.isEmpty {
+            var o = ObjectWriter(extra: relationship.extra)
+            o.set("color", relationship.color)
+            o.set("line", relationship.line)
+            if let ends = relationship.ends { o.set("ends", ends, omitEmpty: false) }
+            o.set("dash", relationship.dash)
+            o.set("width", relationship.width)
+            w.set("relationship", o.value)
+        }
+        return w.value
+    }
+}
+
+extension Boundary {
+    /// Takes the canvas's defaults for everything but the colour, which the canvas draws
+    /// from the default while the boundary has none of its own (D245).
+    public mutating func adopt(_ d: ElementStyles.BoundaryStyle) {
+        if let v = d.fillOpacity { fillOpacity = v }
+        if let v = d.dash { dash = v }
+        if let v = d.width { width = v }
+        if let v = d.shape { shape = v }
+    }
+}
+
+extension Summary {
+    /// Takes the canvas's width and bracket; the colour stays the default's (D245).
+    public mutating func adopt(_ d: ElementStyles.SummaryStyle) {
+        if let v = d.width { width = v }
+        if let v = d.bracket { bracket = v }
+    }
+}
+
+extension Relationship {
+    /// Takes the canvas's line, caps, dash and width; the colour stays `theme`, which the
+    /// canvas draws in the default's colour (D245).
+    public mutating func adopt(_ d: ElementStyles.RelationshipStyle) {
+        if let v = d.line { line = v }
+        if let v = d.ends, v.count == 2 { ends = v }
+        if let v = d.dash { dash = v }
+        if let v = d.width { width = v }
+    }
+}
+
 /// A speech bubble bound to a topic (⇧⌘C). The bubble's text is a node of kind `callout`.
 public struct Callout: Hashable, Sendable, JSONRepresentable {
     public var id: String

@@ -68,6 +68,13 @@ public struct CanvasStyle: Hashable, Sendable, JSONRepresentable {
     /// imported theme's topic classes. They sit over the theme and node style, under
     /// level styles (D211).
     public var roles: [String: TopicStyle] = [:]
+    /// The canvas's own look for built-in quick styles, by id (`very-important`,
+    /// `important`, `cross-out`): an imported theme's important, minor and expired topic
+    /// classes. Each replaces that quick style's style on this canvas (D244).
+    public var quickStyles: [String: TopicStyle] = [:]
+    /// Defaults for boundaries, summaries and relationships: an imported theme's element
+    /// classes (D245).
+    public var elements = ElementStyles()
     public var extra: [String: JSONValue] = [:]
 
     public init(
@@ -106,6 +113,10 @@ public struct CanvasStyle: Hashable, Sendable, JSONRepresentable {
         for (k, v) in try r.object("roles") ?? [:] {
             roles[k] = try TopicStyle(json: v, path: "\(path).roles.\(k)")
         }
+        for (k, v) in try r.object("quickStyles") ?? [:] {
+            quickStyles[k] = try TopicStyle(json: v, path: "\(path).quickStyles.\(k)")
+        }
+        if let e = r.raw("elements"), e != .null { elements = try ElementStyles(json: e, path: "\(path).elements") }
         extra = r.leftovers
     }
 
@@ -134,6 +145,9 @@ public struct CanvasStyle: Hashable, Sendable, JSONRepresentable {
         w.set("colors", colors, omitEmpty: true)
         let rs = roles.filter { !$0.value.isEmpty }
         if !rs.isEmpty { w.set("roles", .object(rs.mapValues(\.json))) }
+        let qs = quickStyles.filter { !$0.value.isEmpty }
+        if !qs.isEmpty { w.set("quickStyles", .object(qs.mapValues(\.json))) }
+        if !elements.isEmpty { w.set("elements", elements.json) }
         return w.value
     }
 }

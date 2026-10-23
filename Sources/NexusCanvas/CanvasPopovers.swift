@@ -350,15 +350,20 @@ struct MarkerPopover: View {
                                     Button {
                                         controller.toggleMarker(m.id)
                                     } label: {
-                                        Text(m.glyph)
-                                            .font(.chrome(12, weight: .bold))
-                                            .foregroundStyle(.white)
-                                            .frame(width: 24, height: 24)
-                                            .background(RGBA(hex: m.color).color, in: Circle())
-                                            .overlay(
-                                                Circle().strokeBorder(
-                                                    markers.contains(m.id) ? Color.primary : .clear, lineWidth: 2
-                                                ).padding(-3))
+                                        Group {
+                                            if let pie = m.pie {
+                                                ProgressPie(fraction: pie).frame(width: 11, height: 11)
+                                            } else {
+                                                Text(m.glyph).font(.chrome(12, weight: .bold))
+                                            }
+                                        }
+                                        .foregroundStyle(.white)
+                                        .frame(width: 24, height: 24)
+                                        .background(RGBA(hex: m.color).color, in: Circle())
+                                        .overlay(
+                                            Circle().strokeBorder(
+                                                markers.contains(m.id) ? Color.primary : .clear, lineWidth: 2
+                                            ).padding(-3))
                                     }
                                     .buttonStyle(.plain)
                                     .accessibilityLabel(m.id)

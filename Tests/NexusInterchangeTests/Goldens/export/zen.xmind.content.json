@@ -223,6 +223,16 @@
           "svg:fill" : "#17171C"
         }
       },
+      "expiredTopic" : {
+        "id" : "sheet-c1-theme-expiredTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#6B6B76",
+          "fo:text-decoration" : "line-through",
+          "svg:fill" : "#EEEEF1"
+        }
+      },
       "floatingTopic" : {
         "id" : "sheet-c1-theme-floatingTopic",
         "properties" : {
@@ -241,6 +251,16 @@
         }
       },
       "id" : "opennexus.classic",
+      "importantTopic" : {
+        "id" : "sheet-c1-theme-importantTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#FFFFFF",
+          "fo:font-weight" : "bold",
+          "svg:fill" : "#C62F35"
+        }
+      },
       "mainTopic" : {
         "id" : "sheet-c1-theme-mainTopic",
         "properties" : {
@@ -264,6 +284,16 @@
           "line-tapered" : "none",
           "multi-line-colors" : "#5850EC #E4572E #0F9F9A #E0A100 #D6408B #1E8BE0 #5AA02C #9B51E0",
           "svg:fill" : "#F7F7F5"
+        }
+      },
+      "minorTopic" : {
+        "id" : "sheet-c1-theme-minorTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#7A5200",
+          "fo:font-weight" : "bold",
+          "svg:fill" : "#FBE7B5"
         }
       },
       "relationship" : {
@@ -396,6 +426,16 @@
           "svg:fill" : "#17171C"
         }
       },
+      "expiredTopic" : {
+        "id" : "sheet-c2-theme-expiredTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#6B6B76",
+          "fo:text-decoration" : "line-through",
+          "svg:fill" : "#EEEEF1"
+        }
+      },
       "floatingTopic" : {
         "id" : "sheet-c2-theme-floatingTopic",
         "properties" : {
@@ -414,6 +454,16 @@
         }
       },
       "id" : "opennexus.classic",
+      "importantTopic" : {
+        "id" : "sheet-c2-theme-importantTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#FFFFFF",
+          "fo:font-weight" : "bold",
+          "svg:fill" : "#C62F35"
+        }
+      },
       "mainTopic" : {
         "id" : "sheet-c2-theme-mainTopic",
         "properties" : {
@@ -437,6 +487,16 @@
           "line-tapered" : "none",
           "multi-line-colors" : "#5850EC #E4572E #0F9F9A #E0A100 #D6408B #1E8BE0 #5AA02C #9B51E0",
           "svg:fill" : "#F7F7F5"
+        }
+      },
+      "minorTopic" : {
+        "id" : "sheet-c2-theme-minorTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#7A5200",
+          "fo:font-weight" : "bold",
+          "svg:fill" : "#FBE7B5"
         }
       },
       "relationship" : {
@@ -555,6 +615,16 @@
           "svg:fill" : "#17171C"
         }
       },
+      "expiredTopic" : {
+        "id" : "sheet-c3-theme-expiredTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#6B6B76",
+          "fo:text-decoration" : "line-through",
+          "svg:fill" : "#EEEEF1"
+        }
+      },
       "floatingTopic" : {
         "id" : "sheet-c3-theme-floatingTopic",
         "properties" : {
@@ -573,6 +643,16 @@
         }
       },
       "id" : "opennexus.classic",
+      "importantTopic" : {
+        "id" : "sheet-c3-theme-importantTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#FFFFFF",
+          "fo:font-weight" : "bold",
+          "svg:fill" : "#C62F35"
+        }
+      },
       "mainTopic" : {
         "id" : "sheet-c3-theme-mainTopic",
         "properties" : {
@@ -596,6 +676,16 @@
           "line-tapered" : "none",
           "multi-line-colors" : "#5850EC #E4572E #0F9F9A #E0A100 #D6408B #1E8BE0 #5AA02C #9B51E0",
           "svg:fill" : "#F7F7F5"
+        }
+      },
+      "minorTopic" : {
+        "id" : "sheet-c3-theme-minorTopic",
+        "properties" : {
+          "border-line-width" : "0pt",
+          "fill-pattern" : "solid",
+          "fo:color" : "#7A5200",
+          "fo:font-weight" : "bold",
+          "svg:fill" : "#FBE7B5"
         }
       },
       "relationship" : {
