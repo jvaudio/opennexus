@@ -417,6 +417,8 @@ final class ElementRenderer {
     private var scene = Scene()
     /// The element whose text the editor overlay is drawing (its own text hides).
     var editingElement: ElementRef?
+    /// Zones selected with the selected one (D228), drawn selected too.
+    var selectedZones: Set<String> = []
     var textScale: CGFloat = 2
     private var drawnRelationships = Set<String>()
 
@@ -479,7 +481,7 @@ final class ElementRenderer {
             let radius: CGFloat = z.zone.frame == "square" ? 2 : 14
             shape.path = CGPath(roundedRect: rect, cornerWidth: radius, cornerHeight: radius, transform: nil)
             shape.fillColor = z.color.alpha(0.06).cgColor
-            let on = selected == .zone(z.zone.id)
+            let on = selected == .zone(z.zone.id) || selectedZones.contains(z.zone.id)
             shape.strokeColor = (on ? scene.theme.ring : z.color.alpha(0.6)).cgColor
             shape.lineWidth = on ? 2.5 : 1.5
             shape.lineDashPattern = z.zone.frame == "dashed" ? [5, 4] : nil

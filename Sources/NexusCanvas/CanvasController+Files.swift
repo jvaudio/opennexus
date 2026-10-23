@@ -584,8 +584,8 @@ extension CanvasController {
     // MARK: Copy, cut and paste topics
 
     public func copySelection() {
-        if case .zone(let id)? = selectedElement {
-            copyZone(id)
+        if !selectedZones.isEmpty {
+            copyZones(selectedZones)
             return
         }
         let ids = selection.nodes.filter { canvas.nodes[$0] != nil }
@@ -594,15 +594,18 @@ extension CanvasController {
         let pb = pasteboard
         pb.clearContents()
         pb.setData(CanonicalJSON.data(f.json), forType: .nexusFragment)
+        // Where it came from, so a paste back here keeps dependencies outside the copy (D230).
+        pb.setString(fragmentSource, forType: .nexusFragmentSource)
         var text = ""
         for top in f.nodes[f.root]?.children ?? [] { text += IndentedText.export(f, from: top) }
         pb.setString(text, forType: .string)
     }
 
     public func cutSelection() {
-        if case .zone(let id)? = selectedElement {
-            copyZone(id)
-            removeZoneWithContents(id, Loc.t("Cut Zone"))
+        let zones = selectedZones
+        if !zones.isEmpty {
+            copyZones(zones)
+            removeZonesWithContents(zones, zones.count > 1 ? Loc.t("Cut Zones") : Loc.t("Cut Zone"))
             return
         }
         copySelection()
@@ -624,11 +627,12 @@ extension CanvasController {
                 pasteZones(f)
                 return
             }
+            let same = pb.string(forType: .nexusFragmentSource) == fragmentSource
             perform(
                 Loc.t("Paste"),
                 selectionAfter: { (ids: [NodeID]) in Selection(primary: ids.first ?? parent, nodes: ids) }
             ) { e in
-                try e.paste(f, under: parent)
+                try e.paste(f, under: parent, sameCanvas: same)
             }
             return
         }
@@ -667,9 +671,14 @@ extension CanvasController {
     var fragmentSource: String { store.sessionID + "/" + canvasID.rawValue }
 
     /// Copy on a zone: the zone, its members' branches and the relationships touching them.
-    public func copyZone(_ id: String) {
-        guard canvas.zones.contains(where: { $0.id == id }) else { return }
-        let f = canvas.zoneFragment([id])
+    public func copyZone(_ id: String) { copyZones([id]) }
+
+    /// Copy on several selected zones (D228): one fragment holding them all, so a
+    /// relationship between two of them joins the two copies.
+    public func copyZones(_ ids: [String]) {
+        let ids = ids.filter { id in canvas.zones.contains { $0.id == id } }
+        guard !ids.isEmpty else { return }
+        let f = canvas.zoneFragment(ids)
         let pb = pasteboard
         pb.clearContents()
         pb.setData(CanonicalJSON.data(f.json), forType: .nexusFragment)
@@ -679,40 +688,46 @@ extension CanvasController {
         pb.setString(text, forType: .string)
     }
 
-    /// Cut's second half: the zone and its contents go, one undo step.
-    func removeZoneWithContents(_ id: String, _ name: String) {
-        guard let z = canvas.zones.first(where: { $0.id == id }) else { return }
+    /// Cut's second half: the zones and their contents go, one undo step.
+    func removeZonesWithContents(_ ids: [String], _ name: String) {
+        let zones = canvas.zones.filter { ids.contains($0.id) }
+        guard !zones.isEmpty else { return }
         let root = canvas.root
         perform(name, selectionAfter: { Selection(root) }) { e in
-            e.removeZone(id)
-            if !z.members.isEmpty { _ = try e.delete(z.members) }
+            for z in zones { e.removeZone(z.id) }
+            let members = zones.flatMap(\.members)
+            if !members.isEmpty { _ = try e.delete(members) }
         }
-        selectedElement = nil
-        onSceneChange?(false)
+        selectElement(nil)
     }
 
-    /// Pastes a copied zone with its top-left corner where a new floating topic would go,
-    /// and selects it. Relationships to topics or zones outside the copy survive only when
-    /// pasting back into the canvas it came from.
+    /// Pastes copied zones with the top-left corner of their bounds where a new floating
+    /// topic would go, and selects them. Relationships to topics or zones outside the copy
+    /// survive only when pasting back into the canvas it came from.
     func pasteZones(_ f: Canvas) {
         let same = pasteboard.string(forType: .nexusFragmentSource) == fragmentSource
         let p = floatingPlacement?() ?? defaultFloatingPoint()
-        let ids = perform(Loc.t("Paste Zone")) { e in
+        let ids = perform(f.zones.count > 1 ? Loc.t("Paste Zones") : Loc.t("Paste Zone")) { e in
             e.pasteZones(f, at: CanvasPoint(x: Double(p.x), y: Double(p.y)), sameCanvas: same)
         }
-        if let first = ids?.first { selectElement(.zone(first)) }
+        if let ids, !ids.isEmpty { selectZones(ids) }
     }
 
     /// Duplicate Zone (and ⌘D on a selected zone): a copy beside the original, keeping
-    /// relationships to the rest of the canvas.
+    /// relationships to the rest of the canvas. With several zones selected, they're
+    /// copied together, beside the rightmost of them (D228).
     public func duplicateZone(_ id: String? = nil) {
-        guard let id = id ?? targetZone, let z = canvas.zones.first(where: { $0.id == id }) else {
+        var ids = (id ?? targetZone).map { [$0] } ?? []
+        if selectedZones.count > 1, id.map(selectedZones.contains) ?? true { ids = selectedZones }
+        let zones = canvas.zones.filter { ids.contains($0.id) }
+        guard let left = zones.map(\.origin.x).min(), let right = zones.map({ $0.origin.x + $0.width }).max() else {
             showToast(Loc.t("Select a zone first"))
             return
         }
-        let f = canvas.zoneFragment([id])
-        let ids = perform(Loc.t("Duplicate Zone")) { e in e.pasteZones(f, by: z.width + 40, 0, sameCanvas: true) }
-        if let first = ids?.first { selectElement(.zone(first)) }
+        let f = canvas.zoneFragment(ids)
+        let name = zones.count > 1 ? Loc.t("Duplicate Zones") : Loc.t("Duplicate Zone")
+        let copies = perform(name) { e in e.pasteZones(f, by: right - left + 40, 0, sameCanvas: true) }
+        if let copies, !copies.isEmpty { selectZones(copies) }
     }
 
     // MARK: Map Shot (⌃⌘M)

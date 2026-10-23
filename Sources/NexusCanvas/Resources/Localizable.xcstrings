@@ -3449,6 +3449,10 @@
       "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
+    "Cut Zones" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
     "Cycles structure of the branch" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
@@ -3827,6 +3831,10 @@
     },
     "Duplicate Zone" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Duplicate Zones" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Dynamic Type for sidebars, panels and menus" : {
@@ -6241,6 +6249,10 @@
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
+    "Move Zones" : {
+      "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
     "Multi-colour" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -6978,6 +6990,10 @@
       "extractionState" : "migrated"
     },
     "Paste Zone" : {
+      "comment" : "UI text (CanvasController+Pointer.swift)",
+      "extractionState" : "migrated"
+    },
+    "Paste Zones" : {
       "comment" : "UI text (CanvasController+Pointer.swift)",
       "extractionState" : "migrated"
     },
@@ -8153,6 +8169,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Select All Zones" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Select by type · %@" : {
       "comment" : "Text with values filled in (CanvasController+Views.swift)",
       "extractionState" : "migrated"
@@ -9075,6 +9095,10 @@
     },
     "then" : {
       "comment" : "UI text (OnboardingViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Then ⌘C, ⌘X or ⌘D takes them all" : {
+      "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "Thesis, arguments, evidence" : {

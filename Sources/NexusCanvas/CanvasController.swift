@@ -49,6 +49,10 @@ public final class CanvasController {
     public internal(set) var selection: Selection
     /// A selected non-topic element (relationship, boundary, summary, callout, zone).
     public internal(set) var selectedElement: ElementRef?
+    /// The zones selected together with the selected zone (⇧- or ⌘-click, Select All
+    /// Zones; D228). Only meaningful while it holds the selected element: see
+    /// `selectedZones`.
+    var zoneGroup: [String] = []
     /// Connect mode state (⇧⌘L).
     public internal(set) var connect: ConnectState?
     public internal(set) var edit: EditSession?
@@ -387,6 +391,10 @@ public final class CanvasController {
         }
         if canvas.nodes[selection.primary] == nil { selection = Selection(canvas.root) }
         if case .zone(let z)? = selectedElement, !canvas.zones.contains(where: { $0.id == z }) { selectedElement = nil }
+        if !zoneGroup.isEmpty {
+            let zones = Set(canvas.zones.map(\.id))
+            zoneGroup.removeAll { !zones.contains($0) }
+        }
         if let e = edit, canvas.nodes[e.node] == nil {
             edit = nil
             mode = .select

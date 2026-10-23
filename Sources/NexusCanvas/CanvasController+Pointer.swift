@@ -22,13 +22,15 @@ extension CanvasController {
         let at = CanvasPoint(x: Double(point.x), y: Double(point.y))
         var fragment: Canvas?
         var name = Loc.t("Paste")
+        // Copied from this canvas in this document: outside dependencies are kept (D230).
+        let same = pb.string(forType: .nexusFragmentSource) == fragmentSource
         if let data = pb.data(forType: .nexusFragment), let v = try? CanonicalJSON.parse(data),
             let f = try? Canvas(json: v, path: "clipboard")
         {
             if !f.zones.isEmpty {
-                let same = pb.string(forType: .nexusFragmentSource) == fragmentSource
-                let ids = perform(Loc.t("Paste Zone")) { e in e.pasteZones(f, at: at, sameCanvas: same) }
-                if let first = ids?.first { selectElement(.zone(first)) }
+                let name = f.zones.count > 1 ? Loc.t("Paste Zones") : Loc.t("Paste Zone")
+                let ids = perform(name) { e in e.pasteZones(f, at: at, sameCanvas: same) }
+                if let ids, !ids.isEmpty { selectZones(ids) }
                 return
             }
             fragment = f
@@ -48,7 +50,7 @@ extension CanvasController {
         guard let f = fragment else { return paste() }
         let root = canvas.root
         perform(name, selectionAfter: { (ids: [NodeID]) in Selection(primary: ids.first ?? root, nodes: ids) }) { e in
-            let tops = try e.paste(f, under: root)
+            let tops = try e.paste(f, under: root, sameCanvas: same)
             for t in tops { try e.detach(t, at: at) }
             guard tops.count > 1 else { return tops }
             // Every branch starts at the pointer; lay them out once to stack them.

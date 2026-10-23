@@ -192,3 +192,76 @@ import Testing
         #expect(c.relationships.count == rels + 1 && c.relationships.last?.label == "inside")
     }
 }
+
+/// M27: callouts travel with copied topics and zones, with fresh ids (D229).
+@Suite struct CalloutClipboardTests {
+    func id(_ c: Canvas, _ t: String) -> NodeID { c.nodes.first { $0.value.text == t }!.key }
+
+    /// "Pricing" with a callout "Check margins" (and a callout on that bubble, "Ask
+    /// finance"), a relationship from the bubble to "Pro", and a callout on "Risks", which
+    /// stays out of a Pricing copy.
+    func calloutCanvas() throws -> Canvas {
+        var c = sampleCanvas()
+        var undo = UndoStack()
+        try c.edit("Callouts", undo: &undo) { e in
+            let bubble = try e.addCallout(on: id(e.canvas, "Pricing"), text: "Check margins")
+            _ = try e.addCallout(on: bubble, text: "Ask finance")
+            _ = e.connect(.topic(bubble), to: .topic(id(e.canvas, "Pro")), label: "bubble to Pro")
+            _ = try e.addCallout(on: id(e.canvas, "Risks"), text: "Elsewhere")
+        }
+        return c
+    }
+
+    @Test func topicCopyCarriesItsCallouts() throws {
+        var c = try calloutCanvas()
+        var undo = UndoStack()
+        let pricing = id(c, "Pricing")
+        let f = c.fragment([pricing])
+        #expect(f.callouts.count == 2, "the callout and the one on its bubble; not Risks'")
+        #expect(Set(f.callouts.map { f.nodes[$0.topic]?.text }) == ["Check margins", "Ask finance"])
+        #expect(f.relationships.map(\.label) == ["bubble to Pro"], "a bubble end travels like a topic end")
+        #expect(try Canvas(json: f.json, path: "clipboard") == f)
+        let before = c
+        let tops = try c.edit("Paste", undo: &undo) { try $0.paste(f, under: id($0.canvas, "Channels")) }
+        let copy = try #require(tops.first)
+        #expect(c.callouts.count == 5)
+        let new = c.callouts.filter { k in !before.callouts.contains { $0.id == k.id } }
+        #expect(new.count == 2 && Set(new.map(\.id)).isDisjoint(with: before.callouts.map(\.id)))
+        let margins = try #require(new.first { c.nodes[$0.topic]?.text == "Check margins" })
+        let finance = try #require(new.first { c.nodes[$0.topic]?.text == "Ask finance" })
+        #expect(margins.host == copy, "the copy's callout is on the copied topic")
+        #expect(finance.host == margins.topic, "the nested callout follows its bubble")
+        #expect(before.nodes[margins.topic] == nil && c.nodes[margins.topic]?.kind == .callout)
+        let rel = try #require(c.relationships.last)
+        #expect(rel.label == "bubble to Pro" && rel.from == .topic(margins.topic))
+        #expect(rel.to.topic.flatMap { c.nodes[$0]?.text } == "Pro" && rel.to.topic != id(before, "Pro"))
+        #expect(c.validate().isEmpty)
+        undo.undo()!.apply(to: &c)
+        #expect(c == before && c.callouts == before.callouts)
+    }
+
+    @Test func zoneCopyCarriesItsTopicsCallouts() throws {
+        var c = sampleCanvas()
+        var undo = UndoStack()
+        let zone = try c.edit("Zone", undo: &undo) { e -> String in
+            let top = e.addFloating(at: CanvasPoint(x: 2000, y: 1400), text: "Parking lot")
+            let later = try e.addChild(of: top, text: "Later idea")
+            _ = try e.addCallout(on: later, text: "Maybe Q3")
+            return e.addZone(
+                title: "Ideas", origin: CanvasPoint(x: 1960, y: 1340), width: 320, height: 200, members: [top])
+        }
+        let f = c.zoneFragment([zone])
+        #expect(f.callouts.count == 1 && f.nodes[f.callouts[0].topic]?.text == "Maybe Q3")
+        let ids = c.edit("Paste Zone", undo: &undo) { $0.pasteZones(f, by: 0, 600, sameCanvas: false) }
+        let z = try #require(c.zones.first { $0.id == ids.first })
+        let later = try #require(z.members.first.flatMap { c.nodes[$0]?.children.first })
+        let k = try #require(c.callouts.last)
+        #expect(c.callouts.count == 2 && k.id != f.callouts[0].id)
+        #expect(k.host == later && c.nodes[k.topic]?.text == "Maybe Q3" && k.topic != f.callouts[0].topic)
+        #expect(c.validate().isEmpty)
+        // Duplicate's path (the same canvas) copies it too.
+        let again = c.zoneFragment([zone])
+        let dup = c.edit("Duplicate", undo: &undo) { $0.pasteZones(again, by: 400, 0, sameCanvas: true) }
+        #expect(dup.count == 1 && c.callouts.count == 3 && c.validate().isEmpty)
+    }
+}

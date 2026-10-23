@@ -32,6 +32,8 @@ extension CommandID {
     public static let selectSiblings: CommandID = "select.siblings"
     public static let selectChildren: CommandID = "select.children"
     public static let selectAll: CommandID = "select.all"
+    /// Every zone on the canvas, to copy, cut or duplicate them together (M27).
+    public static let selectAllZones: CommandID = "select.allZones"
     public static let collapseSelection: CommandID = "select.collapse"
     public static let find: CommandID = "find.show"
     public static let findNext: CommandID = "find.next"
@@ -385,6 +387,7 @@ public enum DefaultCommands {
         C(.selectSiblings, "Select Siblings", .navigate, keys: [k("shift+cmd+a")], menu: .edit, xmind: true),
         C(.selectChildren, "Select Children", .navigate, keys: [k("opt+cmd+a")], menu: .edit, xmind: true),
         C(.selectAll, "Select All Topics", .navigate, keys: [k("cmd+a")], menu: .edit, xmind: true),
+        C(.selectAllZones, "Select All Zones", .navigate, menu: .edit, note: "Then ⌘C, ⌘X or ⌘D takes them all"),
         C(.collapseSelection, "Select Only Primary", .navigate, keys: [k("esc")]),
         C(
             .find, "Find and Replace…", .navigate, scope: .global, keys: [k("cmd+f")], menu: .edit, xmind: true,

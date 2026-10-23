@@ -105,6 +105,7 @@ extension CanvasController {
             .selectSiblings: { $0.selectSiblings() },
             .selectChildren: { $0.selectChildren() },
             .selectAll: { $0.selectAll() },
+            .selectAllZones: { $0.selectAllZones() },
             .collapseSelection: { $0.setSelection(Selection($0.selection.primary)) },
             .moveUp: { c in c.restructure(Loc.t("Move Up")) { try $0.reorder(c.selection.primary, by: -1) } },
             .moveDown: { c in c.restructure(Loc.t("Move Down")) { try $0.reorder(c.selection.primary, by: 1) } },
@@ -184,7 +185,7 @@ extension CanvasController {
             guard handlers[id] != nil else { return false }
             // Zone commands need a zone: selected, or holding the selected topic.
             if id == .exportZone || id == .printZone || id == .duplicateZone, targetZone == nil { return false }
-            if id == .exportZones, canvas.zones.isEmpty { return false }
+            if id == .exportZones || id == .selectAllZones, canvas.zones.isEmpty { return false }
             if legendHandlers[id] != nil, !canPerformLegend(id) { return false }
             return canvas.nodes[selection.primary] != nil
         case .edit:
@@ -288,7 +289,7 @@ extension CanvasController {
     }
 
     func duplicateBranch() {
-        if case .zone(let id)? = selectedElement { return duplicateZone(id) }
+        if case .zone(let id)? = selectedElement { return duplicateZone(id) }  // the selected zones (D228)
         let target = selection.primary
         perform(Loc.t("Duplicate"), selectionAfter: { Selection($0) }) { try $0.duplicate(target) }
         onReveal?(selection.primary)

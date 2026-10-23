@@ -49,7 +49,12 @@ public enum NexusCLI {
           export <file> --to <format>         Export a canvas. Text goes to stdout; files go beside
                  [--canvas <id|title>]        the map unless --out is given.
                  [--out <path>] [--scale <n>]
-                                              Formats: \(CLIFormat.allCases.map(\.rawValue).joined(separator: ", "))
+                 [--branch <topic>]           Only the branch from a topic (id, "A > B" or title):
+                                              \(CLIFormat.names(\.exportsBranch)).
+                 [--zone <id|title>]          Only one zone and its topics: \(CLIFormat.names(\.exportsZone)).
+                 [--zones each|pages]         Every zone, a file each in the --out folder (default
+                                              "<map> – Zones"), or one PDF with a page per zone.
+                                              Formats: \(CLIFormat.names())
           new "<title>" [--type <type>]       Create a map (mindmap, flowchart, dfd, architecture, …).
                  [--out <path>]
           import <file> [--out <path>]        Convert Xmind, OPML, Markdown, Mermaid, … to .nexus.
@@ -206,13 +211,22 @@ public enum NexusCLI {
             guard let v = Double(s), v > 0, v <= 8 else { throw UsageError(message: "--scale must be between 0 and 8") }
             return v
         }
+        let branch = try option("--branch", &args)
+        let zone = try option("--zone", &args)
+        let zones = try option("--zones", &args)
         let url = file(try positional(args, "file"), env)
         let doc = try MapFiles.read(url)
         let cid: CanvasID
-        do { cid = try MapTools.canvasID(canvasRef.map { ["canvas": .string($0)] } ?? [:], in: doc) } catch {
+        let scope: ExportScope
+        do {
+            cid = try MapTools.canvasID(canvasRef.map { ["canvas": .string($0)] } ?? [:], in: doc)
+            scope = try ExportScope.parse(
+                branch: branch, zone: zone, zones: zones, format: format, in: doc.canvases[cid]!)
+        } catch {
             throw UsageError(message: "\(error)")
         }
-        guard let data = format.export(doc, canvas: cid, scale: scale) else {
+        if scope == .eachZone { return try exportZones(doc, cid, format, url: url, out: out, scale: scale, io, env) }
+        guard let data = format.export(doc, canvas: cid, scope: scope, scale: scale) else {
             io.err("nexus export: couldn't export \(format.rawValue)\n")
             return 1
         }
@@ -220,11 +234,46 @@ public enum NexusCLI {
             io.out(data)
             return 0
         }
-        let target =
-            out.map { file($0, env) }
-            ?? url.deletingPathExtension().appendingPathExtension(format.fileExtension)
+        // Beside the map, named as the app names a branch or zone export ("Plan – Pricing").
+        let suffix = scope.nameSuffix(in: doc.canvases[cid]!)
+            .replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-")
+        let beside =
+            suffix.isEmpty
+            ? url.deletingPathExtension().appendingPathExtension(format.fileExtension)
+            : url.deletingLastPathComponent().appending(
+                path: url.deletingPathExtension().lastPathComponent + suffix + "." + format.fileExtension)
+        let target = out.map { file($0, env) } ?? beside
         try MapFiles.write(data, to: target)
         io.print(target.path)
+        return 0
+    }
+
+    /// `--zones each`: a file per zone in the `--out` folder (made if needed), or in
+    /// "<map> – Zones" beside the map. Prints each file's path.
+    static func exportZones(
+        _ doc: DocumentModel, _ cid: CanvasID, _ format: CLIFormat, url: URL, out: String?, scale: Double?, _ io: IO,
+        _ env: Environment
+    ) throws -> Int32 {
+        guard out != "-" else { throw UsageError(message: "--zones each writes a file per zone; give a folder") }
+        let folder =
+            out.map { file($0, env) }
+            ?? url.deletingLastPathComponent().appending(
+                path: url.deletingPathExtension().lastPathComponent + " – Zones")
+        var isDir: ObjCBool = false
+        if FileManager.default.fileExists(atPath: folder.path, isDirectory: &isDir), !isDir.boolValue {
+            throw UsageError(message: "\(folder.path) is a file; --zones each needs a folder")
+        }
+        let files = format.zoneFiles(doc, canvas: cid, scale: scale)
+        guard !files.isEmpty else {
+            io.err("nexus export: couldn't export \(format.rawValue)\n")
+            return 1
+        }
+        try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+        for f in files {
+            let target = folder.appending(path: f.name)
+            try MapFiles.write(f.data, to: target)
+            io.print(target.path)
+        }
         return 0
     }
 

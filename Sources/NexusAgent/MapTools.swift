@@ -191,12 +191,31 @@ public struct MapTools {
                 ], required: ["path", "type"]), readOnly: false),
         tool(
             "export", "Export",
-            "Exports a canvas. Text formats return the text; png returns an image. With \"out\", writes the file (inside an allowed folder).",
+            "Exports a canvas, or one branch or zone of it. Text formats return the text; png and jpeg return an image. With \"out\", writes the file (inside an allowed folder). With zones \"each\", writes a file per zone into the \"out\" folder.",
             schema(
                 [
                     "path": pathProp, "canvas": canvasProp,
                     "format": ["type": "string", "enum": .array(CLIFormat.allCases.map { .string($0.rawValue) })],
-                    "out": ["type": "string", "description": "Where to write the file (optional)."],
+                    "out": [
+                        "type": "string",
+                        "description": "Where to write the file (optional); a folder for zones \"each\".",
+                    ],
+                    "branch": [
+                        "type": "string",
+                        "description": .string(
+                            "Only this topic's branch. \(topicDesc) Formats: \(CLIFormat.names(\.exportsBranch))."),
+                    ],
+                    "zone": [
+                        "type": "string",
+                        "description": .string(
+                            "Only this zone and its topics: its id (from read_map, e.g. \"z1\") or title. Formats: \(CLIFormat.names(\.exportsZone))."
+                        ),
+                    ],
+                    "zones": [
+                        "type": "string", "enum": ["each", "pages"],
+                        "description":
+                            "Every zone: each writes a file per zone, named after it, into the \"out\" folder; pages writes one pdf with a page per zone.",
+                    ],
                 ], required: ["path", "format"]), readOnly: true),
     ]
 
@@ -736,7 +755,13 @@ public struct MapTools {
             throw ToolError(
                 "Unknown format. Use one of: \(CLIFormat.allCases.map(\.rawValue).joined(separator: ", ")).")
         }
-        guard let data = f.export(doc, canvas: cid) else { throw ToolError("Couldn't export \(f.rawValue).") }
+        let part = try ExportScope.parse(
+            branch: args["branch"]?.stringValue, zone: args["zone"]?.stringValue, zones: args["zones"]?.stringValue,
+            format: f, in: doc.canvases[cid]!)
+        if part == .eachZone { return try exportZones(doc, cid, f, out: args["out"]?.stringValue) }
+        guard let data = f.export(doc, canvas: cid, scope: part) else {
+            throw ToolError("Couldn't export \(f.rawValue).")
+        }
         if let out = args["out"]?.stringValue, !out.isEmpty {
             guard let target = scope.url(for: out), scope.contains(target) else {
                 throw ToolError("\(out) is outside the allowed folders.")
@@ -758,5 +783,32 @@ public struct MapTools {
             ])
         }
         throw ToolError("\(f.rawValue) is a binary format; give “out” to write it to a file.")
+    }
+
+    /// zones "each": a file per zone, named after it, in the `out` folder (made if needed).
+    func exportZones(_ doc: DocumentModel, _ cid: CanvasID, _ f: CLIFormat, out: String?) throws -> Output {
+        guard let out, !out.isEmpty else {
+            throw ToolError("zones “each” writes a file per zone; give “out”, a folder inside an allowed folder.")
+        }
+        guard let folder = scope.url(for: out), scope.contains(folder) else {
+            throw ToolError("\(out) is outside the allowed folders.")
+        }
+        var isDir: ObjCBool = false
+        if FileManager.default.fileExists(atPath: folder.path, isDirectory: &isDir), !isDir.boolValue {
+            throw ToolError("\(out) is a file; zones “each” needs a folder.")
+        }
+        let files = f.zoneFiles(doc, canvas: cid)
+        guard !files.isEmpty else { throw ToolError("Couldn't export \(f.rawValue).") }
+        try permit(
+            policy.files, "create \(files.count) files in \(folder.lastPathComponent)")
+        do {
+            try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
+            for file in files { try MapFiles.write(file.data, to: folder.appending(path: file.name)) }
+        } catch { throw ToolError("Couldn't write into \(out): \(error)") }
+        let bytes = Int64(files.map(\.data.count).reduce(0, +))
+        return Output(
+            text:
+                "Wrote \(files.count) files to \(folder.path) (\(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file))): \(files.map(\.name).joined(separator: ", "))."
+        )
     }
 }
