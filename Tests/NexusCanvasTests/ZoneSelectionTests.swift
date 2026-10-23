@@ -110,6 +110,24 @@ import Testing
         #expect(h.canvas.zones.map(\.id) == [ideas, backlog] && h.controller.selectedZones.isEmpty)
     }
 
+    /// Right-clicking one of several selected zones keeps them all, so the zone menu's
+    /// Duplicate acts on the group as ⌘D does; another zone's menu selects just that zone.
+    @Test func theZoneMenuActsOnTheWholeGroup() throws {
+        let (h, ideas, backlog) = try harness()
+        let c = h.controller
+        c.selectZones([ideas, backlog])
+        c.prepareContextMenu(.element(.zone(backlog)))
+        #expect(c.selectedZones == [ideas, backlog] && c.selectedElement == .zone(backlog))
+        let items = c.contextMenu(for: .element(.zone(backlog))).flatMap(\.items)
+        #expect(items.contains { $0.action == .command(.duplicateZone) })
+        #expect(c.perform(.duplicateZone))
+        #expect(h.canvas.zones.count == 4, "both zones duplicated")
+        // A zone outside the group narrows the selection to it.
+        c.selectZones([ideas])
+        c.prepareContextMenu(.element(.zone(backlog)))
+        #expect(c.selectedZones == [backlog])
+    }
+
     @Test func cutAndDeleteTakeEverySelectedZone() throws {
         let (h, ideas, backlog) = try harness()
         let before = h.canvas

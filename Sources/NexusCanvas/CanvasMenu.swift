@@ -89,7 +89,13 @@ extension CanvasController {
             // Image items act on one topic.
             if selection.nodes != [id] || selectedElement != nil { select(id) }
         case .element(let ref):
-            selectElement(ref)
+            // A zone in a group of selected zones keeps the group, so the menu's Copy, Cut
+            // and Duplicate act on all of them, as their keys do (D228).
+            if case .zone(let z) = ref, selectedZones.count > 1, selectedZones.contains(z) {
+                selectElement(ref, zones: selectedZones)
+            } else {
+                selectElement(ref)
+            }
         case .legend, .canvas:
             if selectedElement != nil { selectElement(nil) }
         }

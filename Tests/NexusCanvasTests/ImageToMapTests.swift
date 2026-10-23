@@ -199,7 +199,11 @@ import Testing
         }
         let pages = Pages()
         let stopped = ImageImportProgress(name: "deck.pdf") { data, name, refine, report in
-            try await ImageToMap.importImage(data, name: name, refine: refine) { done, total in
+            // Announce the pages, then wait for the cancel to arrive before reading any, so
+            // the check doesn't depend on how fast this Mac reads a page.
+            report(0, 3)
+            for _ in 0..<500 where !Task.isCancelled { try? await Task.sleep(for: .milliseconds(10)) }
+            return try await ImageToMap.importImage(data, name: name, refine: refine) { done, total in
                 pages.lock.withLock { pages.read.append(done) }
                 report(done, total)
             }
@@ -210,7 +214,8 @@ import Testing
             if case .cancelled = outcome { cancelled = true }
         }.value
         #expect(cancelled)
-        #expect(pages.lock.withLock { pages.read.last ?? 0 } < 3, "\(pages.read)")
+        #expect(stopped.cancelled)
+        #expect(pages.lock.withLock { pages.read.last ?? 0 } < 3, "the reader stops between pages: \(pages.read)")
     }
 
     @Test func readsPicturesFromThePasteboard() throws {
