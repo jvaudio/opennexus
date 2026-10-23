@@ -851,21 +851,35 @@ struct MergeSheetView: View {
 /// window (D238). VoiceOver reads "Reading plan.pdf" and the page being read.
 struct ReadingProgressBar: View {
     let name: String
-    let value: Double
+    /// The share read, or nil while nobody knows how long is left (one picture being read,
+    /// or the on-device model grouping, D272): the bar sweeps, or with Reduce Motion stays
+    /// still and empty.
+    let value: Double?
     let detail: String
 
     var body: some View {
-        ProgressView(value: value).progressViewStyle(.linear).controlSize(.small)
-            .accessibilityLabel(Loc.f("Reading %@", name))
-            .accessibilityValue(detail)
-            .accessibilityAddTraits(.updatesFrequently)
+        Group {
+            if let value {
+                ProgressView(value: value)
+            } else if UIMotion.reduce {
+                ProgressView(value: 0)
+            } else {
+                ProgressView()
+            }
+        }
+        .progressViewStyle(.linear).controlSize(.small)
+        .accessibilityLabel(Loc.f("Reading %@", name))
+        .accessibilityValue(detail)
+        .accessibilityAddTraits(.updatesFrequently)
     }
 }
 
 // MARK: Image import (File › Import… of a picture or PDF, D238)
 
-/// The window File › Import… shows while a PDF of several pages is read: the page being
-/// read, the share done, and Cancel (Esc), which stops the reading between pages.
+/// The window File › Import… shows while a PDF of several pages is read, or any import
+/// that takes longer than half a second (D272): the page being read and the share done, or
+/// "Grouping…" while the on-device model works, and Cancel (Esc), which stops the reading
+/// between pages or abandons the grouping.
 public struct ImageImportView: View {
     let progress: ImageImportProgress
 
@@ -875,8 +889,11 @@ public struct ImageImportView: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(Loc.f("Importing “%@”", progress.name)).font(.chrome(15, weight: .semibold))
                 .lineLimit(1).truncationMode(.middle)
-            ReadingProgressBar(name: progress.name, value: progress.fraction, detail: progress.detail)
+            ReadingProgressBar(
+                name: progress.name, value: progress.indeterminate ? nil : progress.fraction, detail: progress.detail)
             Text(progress.detail).font(.chrome(13)).foregroundStyle(.secondary)
+                .contentTransition(.opacity)
+                .animation(UIMotion.animation(.easeInOut(duration: 0.2)), value: progress.grouping)
                 .accessibilityHidden(true)
             HStack {
                 Spacer()

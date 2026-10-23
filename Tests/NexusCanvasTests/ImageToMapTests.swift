@@ -111,12 +111,12 @@ import Testing
     /// reading with nothing opened.
     @Test func fileImportShowsPagesAndCancels() async throws {
         let progress = ImageImportProgress(name: "report.pdf") { _, _, _, report in
-            report(0, 4)
-            report(1, 4)
+            report(.pages(0, 4))
+            report(.pages(1, 4))
             while true { try await Task.sleep(for: .seconds(30)) }
         }
         var windows = 0
-        progress.onManyPages = { windows += 1 }
+        progress.onShow = { windows += 1 }
         var outcomes: [String] = []
         #expect(progress.detail == "Reading the text in the image…" && progress.fraction == 0)
         let task = progress.start(Data(), refine: false) { outcome in
@@ -137,15 +137,16 @@ import Testing
         #expect(outcomes == ["cancelled"], "the outcome comes once")
     }
 
-    /// M29: a single picture asks for no window, and a failure is reported, not cancelled.
+    /// M29: a single picture read at once asks for no window, and a failure is reported,
+    /// not cancelled.
     @Test func fileImportOfOnePictureNeedsNoWindow() async throws {
         let one = ImageImportProgress(name: "plan.png") { _, _, _, report in
-            report(0, 1)
-            report(1, 1)
+            report(.pages(0, 1))
+            report(.pages(1, 1))
             return Self.imported()
         }
         var windows = 0
-        one.onManyPages = { windows += 1 }
+        one.onShow = { windows += 1 }
         var canvases = 0
         await one.start(Data(), refine: false) { outcome in
             if case .imported(let im) = outcome { canvases = im.canvases.count }
@@ -160,6 +161,45 @@ import Testing
             if case .failed = outcome { failed = true }
         }.value
         #expect(failed)
+    }
+
+    /// M36 (D272): a single picture still importing after `showAfter` (the model grouping a
+    /// plain list can take 30 s) asks for the window once, with no share to show, then says
+    /// "Grouping…"; Cancel abandons it.
+    @Test func slowPictureShowsTheWindowWhileGrouping() async throws {
+        let slow = ImageImportProgress(name: "notes.png") { _, _, _, report in
+            report(.pages(0, 1))
+            report(.pages(1, 1))
+            report(.grouping)
+            while true { try await Task.sleep(for: .seconds(30)) }
+        }
+        slow.showAfter = .milliseconds(50)
+        var windows = 0
+        slow.onShow = { windows += 1 }
+        var outcomes: [String] = []
+        #expect(slow.indeterminate, "nothing to count before the picture is opened")
+        let task = slow.start(Data(), refine: true) { outcome in
+            if case .cancelled = outcome { outcomes.append("cancelled") }
+        }
+        await settle { windows == 1 && slow.grouping }
+        #expect(windows == 1 && slow.grouping && slow.indeterminate)
+        #expect(slow.detail == "Grouping…" && slow.total == 1 && slow.done == 1)
+        try await Task.sleep(for: .milliseconds(100))
+        #expect(windows == 1, "the window is asked for once")
+        slow.cancel()
+        await task.value
+        #expect(outcomes == ["cancelled"] && slow.finished)
+
+        // Read before `showAfter`, a picture opens with no window, as before.
+        let quick = ImageImportProgress(name: "plan.png") { _, _, _, report in
+            report(.pages(1, 1))
+            return Self.imported()
+        }
+        var quickWindows = 0
+        quick.onShow = { quickWindows += 1 }
+        await quick.start(Data(), refine: false) { _ in }.value
+        try await Task.sleep(for: .milliseconds(700))
+        #expect(quickWindows == 0)
     }
 
     /// M29: the real path, Vision on a three-page PDF: the page count arrives before the
@@ -182,7 +222,7 @@ import Testing
         pdf.closePDF()
         let progress = ImageImportProgress(name: "deck.pdf")
         var totals: [Int] = []
-        progress.onManyPages = { totals.append(progress.total) }
+        progress.onShow = { totals.append(progress.total) }
         var titles: [String] = []
         await progress.start(data as Data, refine: false) { outcome in
             if case .imported(let im) = outcome { titles = im.canvases.map(\.title) }
@@ -201,14 +241,14 @@ import Testing
         let stopped = ImageImportProgress(name: "deck.pdf") { data, name, refine, report in
             // Announce the pages, then wait for the cancel to arrive before reading any, so
             // the check doesn't depend on how fast this Mac reads a page.
-            report(0, 3)
+            report(.pages(0, 3))
             for _ in 0..<500 where !Task.isCancelled { try? await Task.sleep(for: .milliseconds(10)) }
             return try await ImageToMap.importImage(data, name: name, refine: refine) { done, total in
                 pages.lock.withLock { pages.read.append(done) }
-                report(done, total)
+                report(.pages(done, total))
             }
         }
-        stopped.onManyPages = { stopped.cancel() }
+        stopped.onShow = { stopped.cancel() }
         var cancelled = false
         await stopped.start(data as Data, refine: false) { outcome in
             if case .cancelled = outcome { cancelled = true }
@@ -272,12 +312,24 @@ import Testing
         #expect(c.type == .fishbone && c.layout.structure == structure, "\(structure.rawValue)")
     }
 
+    /// M36: a sub-cause that wraps onto a second line starting with a capital reads back
+    /// as one sub-cause, on an upper bone and a lower one.
+    @Test(arguments: [LayoutStructure.fishboneLeft, .fishboneRight])
+    func exportedFishboneWithWrappedSubCausesReadsBack(_ structure: LayoutStructure) throws {
+        let c = try roundTrip(fishboneSubCausesDocument(wrapped: true), structure)
+        #expect(c.type == .fishbone && c.layout.structure == structure, "\(structure.rawValue)")
+    }
+
     @discardableResult func roundTrip(_ doc: DocumentModel, _ structure: LayoutStructure) throws -> Canvas {
         var m = doc
         m.canvases["c1"]!.layout.structure = structure
         var o = ImageExporter.Options()
         o.scale = 2
         let png = ImageExporter.png(try #require(ImageExporter.image(m, canvas: "c1", o)))
+        if let dir = ProcessInfo.processInfo.environment["NEXUS_SNAPSHOT_DIR"] {
+            let first = m.canvases["c1"]!.nodes[m.canvases["c1"]!.root]?.text ?? "map"
+            try png.write(to: URL(fileURLWithPath: dir).appendingPathComponent("\(first)-\(structure.rawValue).png"))
+        }
         let im = try Interchange.importFile(name: "launch.png", data: png)
         let c = im.canvases[0]
         #expect(outline(c, c.root) == outline(m.canvases["c1"]!, m.canvases["c1"]!.root), "\(structure.rawValue)")
@@ -286,15 +338,19 @@ import Testing
     }
 }
 
-/// A fishbone whose causes have sub-causes, on upper and lower bones.
-func fishboneSubCausesDocument() -> DocumentModel {
-    var c = Canvas(id: "c1", title: "Late releases", rootText: "Late releases")
+/// A fishbone whose causes have sub-causes, on upper and lower bones. `wrapped` makes two
+/// sub-causes long enough to wrap, each onto a second line that starts with a capital.
+func fishboneSubCausesDocument(wrapped: Bool = false) -> DocumentModel {
+    let title = wrapped ? "Slow releases" : "Late releases"
+    var c = Canvas(id: "c1", title: title, rootText: title)
     c.type = .fishbone
     var undo = UndoStack()
+    let hires = wrapped ? "New hires waiting on Laptops and Accounts" : "New hires"
+    let queue = wrapped ? "Weekly sign-off by the Change Advisory Board" : "Sign-off queue"
     c.edit("Sample", undo: &undo) { e in
         let tree: [(String, [(String, [(String, [String])])])] = [
-            ("People", [("Staffing", [("New hires", []), ("Contractors", ["Onboarding"])]), ("Skills gaps", [])]),
-            ("Process", [("Big batches", []), ("Manual approvals", [("Sign-off queue", []), ("Change board", [])])]),
+            ("People", [("Staffing", [(hires, []), ("Contractors", ["Onboarding"])]), ("Skills gaps", [])]),
+            ("Process", [("Big batches", []), ("Manual approvals", [(queue, []), ("Change board", [])])]),
             ("Tools", [("Serial test runs", [("Flaky suites", [])]), ("Old scripts", [])]),
             ("Environment", [("Config drift", [("Hand edits", []), ("No audit trail", [])]), ("Noisy alerts", [])]),
         ]

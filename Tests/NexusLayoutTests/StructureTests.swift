@@ -189,7 +189,97 @@ extension StructureTests {
                         #expect(lean * (boneX(y) - edge) >= 10, "\(structure.rawValue): \(d) clears its bone")
                     }
                 }
+                // M36 (D269): causes clear their bone at both corners, the top one too.
+                let f = r.frames[c]!.rect
+                for y in [f.minY, f.maxY] {
+                    #expect(
+                        lean * (boneX(y) - (lean > 0 ? f.maxX : f.minX)) >= 5.5,
+                        "\(structure.rawValue): \(c) clears its bone at \(y)")
+                }
             }
         }
     }
+
+    /// M36 (D268): each sub-cause sits on its own rib, a line under it to a small bone that
+    /// leaves its parent's rib and runs parallel to the main bone (slope ½), nested for a
+    /// sub-cause of a sub-cause; the small bones cross no topic.
+    @Test(arguments: [LayoutStructure.fishboneLeft, .fishboneRight])
+    func fishboneSubCausesHangOffSmallBones(structure: LayoutStructure) {
+        let (root, nodes) = fishboneWithSubCauses()
+        let r = TreeLayout.layout(root: root, nodes: nodes, structure: structure)
+        let head = r.frames[root]!
+        var checked = 0
+        for b in nodes[root]!.children {
+            let upper = r.frames[b]!.center.y < head.center.y
+            let lean: CGFloat = r.frames[b]!.center.x < head.center.x ? 1 : -1
+            var parents = nodes[b]!.children
+            while let p = parents.popLast() {
+                parents += nodes[p]!.children
+                guard !nodes[p]!.children.isEmpty else { continue }
+                #expect(r.families[p] == "fishboneSub")
+                let pf = r.frames[p]!
+                for s in nodes[p]!.children {
+                    let sf = r.frames[s]!
+                    let pts = points(BranchLines.path(from: pf, to: sf, family: "fishboneSub"))
+                    #expect(pts.count == 3)
+                    guard pts.count == 3 else { continue }
+                    let (from, foot, far) = (pts[0], pts[1], pts[2])
+                    // It leaves the parent's rib, under the parent.
+                    #expect(abs(from.y - (pf.rect.maxY - 2)) < 0.01 && pf.rect.minX < from.x && from.x < pf.rect.maxX)
+                    // The small bone leans like the main bone: toward the head going down an
+                    // upper bone, away from it going down a lower one.
+                    #expect(foot.y > from.y && abs(abs(foot.x - from.x) - 0.5 * (foot.y - from.y)) < 0.01)
+                    #expect(
+                        (foot.x - from.x) * lean * (upper ? 1 : -1) > 0, "\(s) on a small bone parallel to its bone")
+                    // The rib runs under the whole sub-cause, from the small bone.
+                    #expect(abs(far.y - foot.y) < 0.01 && abs(far.y - (sf.rect.maxY - 2)) < 0.01)
+                    #expect(
+                        abs(abs(far.x - foot.x) - (sf.rect.width + StructureLayouts.boneOffset(sf.size.height))) < 0.01)
+                    // The small bone crosses no topic.
+                    for t in stride(from: 0.05, through: 0.95, by: 0.05) {
+                        let q = CGPoint(x: from.x + (foot.x - from.x) * t, y: from.y + (foot.y - from.y) * t)
+                        let hit = r.frames.first { $0.key != p && $0.value.rect.insetBy(dx: 1, dy: 1).contains(q) }
+                        #expect(hit == nil, "\(structure.rawValue): \(p)→\(s) crosses \(hit?.key ?? "")")
+                    }
+                    checked += 1
+                }
+            }
+        }
+        #expect(checked == 13)
+    }
+
+    /// M36: on a lower bone, a cause with many sub-causes doesn't push them out as a block:
+    /// each sits as far from the bone as its own rib needs, the same for all of them.
+    @Test(arguments: [LayoutStructure.fishboneLeft, .fishboneRight])
+    func tallStackOnALowerBoneFollowsTheBone(structure: LayoutStructure) {
+        var (root, nodes) = fishboneWithSubCauses()
+        let lower = nodes[root]!.children[1]
+        let cause = nodes[lower]!.children[0]
+        let subs = (0..<6).map { NodeID("tall\($0)") }
+        for s in subs { nodes[s] = LayoutNode(size: CGSize(width: 70, height: 22), children: []) }
+        nodes[cause]!.children = subs
+        let r = TreeLayout.layout(root: root, nodes: nodes, structure: structure)
+        #expect(crowded(r, gap: 4).isEmpty, "\(structure.rawValue): \(crowded(r, gap: 4))")
+        let head = r.frames[root]!
+        let bone = r.frames[lower]!
+        let lean: CGFloat = bone.center.x < head.center.x ? 1 : -1
+        let along = abs(bone.center.y - head.center.y) - bone.size.height / 2
+        func boneX(_ y: CGFloat) -> CGFloat { bone.center.x + lean * (along - abs(y - head.center.y)) * 0.5 }
+        let back = subs.map { s -> CGFloat in
+            let f = r.frames[s]!.rect
+            return lean * (boneX(f.maxY - 2) - (lean > 0 ? f.maxX : f.minX))
+        }
+        // The cause sits 18 pt from the bone, its small bone 10 pt in, the sub-cause 16 pt
+        // from that: 44 pt, where M30 moved the top of a stack this tall out by 85 pt more.
+        #expect(back.allSatisfy { abs($0 - 44) < 0.01 }, "\(structure.rawValue): \(back)")
+    }
+}
+
+/// The points a path moves and draws lines to.
+private func points(_ path: CGPath) -> [CGPoint] {
+    var out: [CGPoint] = []
+    path.applyWithBlock { e in
+        if e.pointee.type == .moveToPoint || e.pointee.type == .addLineToPoint { out.append(e.pointee.points[0]) }
+    }
+    return out
 }
