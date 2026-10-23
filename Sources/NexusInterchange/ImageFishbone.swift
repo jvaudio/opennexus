@@ -20,10 +20,41 @@ extension Builder {
             guard H.size >= medianHeight, H.midY > c.minY + 0.25 * span, H.midY < c.maxY - 0.25 * span else {
                 continue
             }
+            // Sub-causes first (D237), kept only when some are found; then the plain fit
+            // (D192), so a fishbone without them reads exactly as before.
+            // A sub-cause isn't a wrap of its cause, and the next one under it, starting with a
+            // capital, isn't a wrap of it either.
+            func sub(_ a: TextBox) -> Bool {
+                lines.contains { stacked(a, under: $0) && tucked(a, under: $0, headRight: headRight) }
+            }
+            let apart = Self.mergeWrapped(lines, keep: h) { a, b in
+                tucked(b, under: a, headRight: headRight)
+                    || (b.text.first.map { $0.isUppercase || $0.isNumber } == true && sub(a))
+            }
+            if let found = fishbone(apart.lines, head: apart.root, headRight: headRight, subCauses: true) {
+                return found
+            }
             let wrapped = Self.mergeWrapped(lines, keep: h)
             if let found = fishbone(wrapped.lines, head: wrapped.root, headRight: headRight) { return found }
         }
         return nil
+    }
+
+    /// `b` sits under `a`, across from it, at most 1.2 lines below.
+    func stacked(_ b: TextBox, under a: TextBox) -> Bool {
+        let gap = b.minY - a.maxY
+        return a.minY < b.minY && gap >= -0.25 * medianHeight && gap <= 1.2 * max(a.size, b.size)
+            && min(a.maxX, b.maxX) > max(a.minX, b.minX)
+    }
+
+    /// `b`, tightly under `a`, starts behind `a`'s head-side end by half a line or more,
+    /// and isn't a wrapped line of it: those share `a`'s far end (left- or right-aligned
+    /// text) or are inset equally at both ends (centred).
+    func tucked(_ b: TextBox, under a: TextBox, headRight: Bool) -> Bool {
+        let line = medianHeight
+        let headInset = headRight ? a.maxX - b.maxX : b.minX - a.minX
+        let farInset = headRight ? b.minX - a.minX : a.maxX - b.maxX
+        return headInset >= 0.5 * line && abs(farInset) >= 0.3 * line && abs(headInset - farInset) >= 0.5 * line
     }
 
     /// Bones found for one slope: category labels and, for each, its causes (nearest the
@@ -32,6 +63,8 @@ extension Builder {
         var labels: [Int] = []
         var causes: [Int: [Int]] = [:]
         var gaps: [Double] = []
+        /// Each cause's gap, by line.
+        var gap: [Int: Double] = [:]
 
         var spread: Double {
             guard !gaps.isEmpty else { return 0 }
@@ -40,7 +73,11 @@ extension Builder {
         }
     }
 
-    func fishbone(_ lines: [TextBox], head h: Int, headRight: Bool) -> (tree: T, structure: LayoutStructure)? {
+    /// The fit for one head. With `subCauses`, lines tucked under a cause and set back from
+    /// its bone are that cause's sub-causes (D237), and nil unless there are some.
+    func fishbone(
+        _ lines: [TextBox], head h: Int, headRight: Bool, subCauses: Bool = false
+    ) -> (tree: T, structure: LayoutStructure)? {
         let H = lines[h]
         let spine = H.midY
         let tol = 0.5 * medianHeight
@@ -64,11 +101,32 @@ extension Builder {
             let from = up(k) ? L.maxY : L.minY
             return L.midX + lean * slope * max(0, abs(y - from))
         }
+        // Sub-cause candidates, top down: a line tucked under the nearest line above it on
+        // its side of the spine (`host`), across from it and at most 1.2 lines below, whose
+        // head-side end is half a line or more behind the host's, or level with a host that
+        // is itself a candidate (the next sub-cause of a list).
+        var host: [Int: Int] = [:]
+        var candidates: [Int] = []
+        if subCauses {
+            for i in others.sorted(by: { lines[$0].minY < lines[$1].minY }) {
+                let b = lines[i]
+                let above = others.filter { k in k != i && up(k) == up(i) && stacked(b, under: lines[k]) }
+                guard var p = above.max(by: { lines[$0].maxY < lines[$1].maxY }) else { continue }
+                // Out from under a deeper sub-cause, back to the level it lines up with.
+                while let q = host[p], lean * (anchor(lines[p]) - anchor(b)) <= -tol { p = q }
+                let inset = lean * (anchor(lines[p]) - anchor(b))
+                if inset >= tol || (host[p] != nil && abs(inset) < tol) {
+                    host[i] = p
+                    candidates.append(i)
+                }
+            }
+            guard !candidates.isEmpty else { return nil }
+        }
         // Farthest from the spine first: a bone's label is its outermost text.
         let order = others.sorted { fromSpine($0) > fromSpine($1) }
-        func fit(_ slope: Double) -> Bones {
+        func fit(_ slope: Double, without excluded: Set<Int>) -> Bones {
             var f = Bones()
-            for i in order {
+            for i in order where !excluded.contains(i) {
                 let b = lines[i]
                 var best: (k: Int, d: Double)?
                 for k in f.labels where up(k) == up(i) {
@@ -82,6 +140,7 @@ extension Builder {
                 if let best {
                     f.causes[best.k, default: []].append(i)
                     f.gaps.append(best.d)
+                    f.gap[i] = best.d
                 } else {
                     f.labels.append(i)
                 }
@@ -89,12 +148,51 @@ extension Builder {
             return f
         }
         // The slope that explains the text with the fewest bones, then the most even gaps.
-        var best: (slope: Double, bones: Bones)?
-        for step in 4...32 {
-            let slope = Double(step) * 0.05
-            let f = fit(slope)
-            if let b = best, (b.bones.labels.count, b.bones.spread) <= (f.labels.count, f.spread) { continue }
-            best = (slope, f)
+        func bestFit(without excluded: Set<Int>) -> (slope: Double, bones: Bones)? {
+            var best: (slope: Double, bones: Bones)?
+            for step in 4...32 {
+                let slope = Double(step) * 0.05
+                let f = fit(slope, without: excluded)
+                if let b = best, (b.bones.labels.count, b.bones.spread) <= (f.labels.count, f.spread) { continue }
+                best = (slope, f)
+            }
+            return best
+        }
+        var excluded = Set(candidates)
+        /// The cause a sub-cause belongs to: the first host up its chain that isn't one.
+        func cause(of s: Int) -> Int? {
+            var k = host[s]
+            while let x = k, excluded.contains(x) { k = host[x] }
+            return k
+        }
+        /// A sub-cause sits further behind its cause's bone than the bone's causes do: by
+        /// ¾ of a line, or half a line in text no more than 0.8× its cause's.
+        func setBack(_ s: Int, slope: Double, bones: Bones) -> Bool {
+            guard let c = cause(of: s), let (k, list) = bones.causes.first(where: { $0.value.contains(c) }) else {
+                return false
+            }
+            let typical = Self.median(list.compactMap { bones.gap[$0] })
+            let gap = lean * (bone(k, at: lines[s].midY, slope: slope) - anchor(lines[s]))
+            let smaller = lines[s].size <= 0.8 * lines[c].size
+            return gap - typical >= (smaller ? 1 : 1.5) * tol
+        }
+        var best = bestFit(without: excluded)
+        // The candidates set back from the bones of the last fit are the sub-causes, the rest
+        // are causes, and the bones are fitted again, until the sub-causes settle.
+        if subCauses {
+            var settled = false
+            for _ in 0..<5 {
+                guard let (slope, bones) = best else { return nil }
+                let kept = Set(candidates).filter { setBack($0, slope: slope, bones: bones) }
+                if kept == excluded {
+                    settled = true
+                    break
+                }
+                excluded = kept
+                guard !excluded.isEmpty else { return nil }
+                best = bestFit(without: excluded)
+            }
+            guard settled else { return nil }
         }
         guard let (slope, bones) = best else { return nil }
         let causes = bones.causes.values.reduce(0) { $0 + $1.count }
@@ -122,10 +220,26 @@ extension Builder {
         {
             categories.swapAt(i - 1, i)
         }
+        // Sub-causes, top down, hang from their host: beside a host that is a sub-cause too,
+        // they share its parent; behind it, or under a cause, they're its children.
+        var parent: [Int: Int] = [:]
+        var subs: [Int: [Int]] = [:]
+        for s in candidates where excluded.contains(s) {
+            let p = host[s]!
+            let inset = lean * (anchor(lines[p]) - anchor(lines[s]))
+            let under = excluded.contains(p) && abs(inset) < tol ? parent[p]! : p
+            parent[s] = under
+            subs[under, default: []].append(s)
+        }
+        func topic(_ i: Int) -> T {
+            var t = Self.topic(lines[i])
+            t.children = (subs[i] ?? []).map(topic)
+            return t
+        }
         var root = Self.topic(H)
         root.children = categories.map { k in
             var t = Self.topic(lines[k])
-            t.children = (bones.causes[k] ?? []).map { Self.topic(lines[$0]) }
+            t.children = (bones.causes[k] ?? []).map(topic)
             return t
         }
         return (root, headRight ? .fishboneLeft : .fishboneRight)

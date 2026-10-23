@@ -398,6 +398,68 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         #expect(outlineText(ImageOutline.build(photo, title: "x").canvas.root) == outlineText(geometric))
     }
 
+    /// Boxes as Vision reads `ImageVisionTests.fishboneWithSubCauses` (head on the right),
+    /// with one sub-cause of a sub-cause ("Agency staff") set back again under "New hires".
+    static let fishboneWithSubCauses = RecognisedImage(
+        width: 1200, height: 700,
+        boxes: [
+            box("Machines", 313, 83, 96, 21), box("Wear", 322, 135, 45, 19), box("Calibration", 299, 175, 87, 20),
+            box("Monthly checks", 245, 200, 102, 19), box("Storage", 341, 467, 65, 18),
+            box("Supplier", 319, 506, 66, 19), box("Late orders", 270, 532, 75, 14),
+            box("Wrong parts", 266, 549, 78, 17), box("Materials", 315, 591, 92, 21), box("People", 647, 86, 66, 19),
+            box("Training", 620, 137, 65, 18), box("New hires", 582, 163, 62, 14),
+            box("Agency staff", 524, 180, 80, 14), box("Refreshers", 577, 197, 68, 14),
+            box("Staffing", 660, 230, 62, 18), box("Night shift", 615, 255, 68, 18),
+            box("Checklists", 634, 481, 84, 22), box("Handoffs", 622, 522, 75, 19),
+            box("Missing notes", 568, 549, 89, 18), box("Process", 641, 593, 81, 22),
+            box("Late deliveries", 959, 337, 191, 24),
+        ])
+
+    @Test func fishboneSubCausesHangFromTheirCauses() {
+        let expected = """
+            Late deliveries
+              People
+                Training
+                  New hires
+                    Agency staff
+                  Refreshers
+                Staffing
+                  Night shift
+              Process
+                Handoffs
+                  Missing notes
+                Checklists
+              Machines
+                Wear
+                Calibration
+                  Monthly checks
+              Materials
+                Supplier
+                  Late orders
+                  Wrong parts
+                Storage
+
+            """
+        let o = ImageOutline.build(Self.fishboneWithSubCauses, title: "x")
+        #expect(o.layout == .fishbone && o.canvas.structure == .fishboneLeft)
+        #expect(outlineText(o.canvas.root) == expected)
+        var mirrored = Self.fishboneWithSubCauses
+        for i in mirrored.boxes.indices { mirrored.boxes[i].x = 1200 - mirrored.boxes[i].maxX }
+        let m = ImageOutline.build(mirrored, title: "x")
+        #expect(m.canvas.structure == .fishboneRight && outlineText(m.canvas.root) == expected)
+        // In type as large as the causes', set back from the bone is enough.
+        var same = Self.fishboneWithSubCauses
+        for i in same.boxes.indices where same.boxes[i].height < 18 {
+            same.boxes[i].y -= 1
+            same.boxes[i].height = 18
+        }
+        #expect(outlineText(ImageOutline.build(same, title: "x").canvas.root) == expected)
+        // Lines along the bone, each as far from it as the others, stay causes.
+        #expect(
+            outlineText(ImageOutline.build(Self.fishbone, title: "x").canvas.root).hasPrefix(
+                "Launch plan\n  Positioning\n    Developers\n    Teams\n"))
+    }
+
     @Test func columnsOfTextAreNotAFishbone() {
         // A right map: branches stacked in one column beside the root aren't bones.
         let image = RecognisedImage(
@@ -572,6 +634,119 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         #expect(Set(children(c.root)) == ["Vegetables", "Flowers", "Fruit", "Tools"])
         let vegetables = try #require(c.nodes.first { $0.value.text == "Vegetables" }?.key)
         #expect(children(vegetables) == ["Tomatoes", "Beans"])
+    }
+
+    /// A fishbone drawn here, head on the right (or mirrored, on the left): bones at a
+    /// slope of ½, causes in 17 pt along them with a rib each, and each cause's sub-causes
+    /// in 13 pt stacked tightly under it, set back 40 px from its end nearest the bone (M29).
+    static func fishboneWithSubCauses(headRight: Bool) -> Data {
+        let size = CGSize(width: 1200, height: 700)
+        let spine: CGFloat = 350
+        typealias Bone = (label: String, up: Bool, joint: CGFloat, causes: [(String, [String])])
+        let bones: [Bone] = [
+            ("People", true, 800, [("Training", ["New hires", "Refreshers"]), ("Staffing", ["Night shift"])]),
+            ("Process", false, 800, [("Handoffs", ["Missing notes"]), ("Checklists", [])]),
+            ("Machines", true, 480, [("Wear", []), ("Calibration", ["Monthly checks"])]),
+            ("Materials", false, 480, [("Supplier", ["Late orders", "Wrong parts"]), ("Storage", [])]),
+        ]
+        func mx(_ x: CGFloat) -> CGFloat { headRight ? x : size.width - x }
+        let image = NSImage(size: size, flipped: true) { rect in
+            NSColor.white.setFill()
+            rect.fill()
+            /// Draws `text` with its head-side end at `end` (in head-right coordinates).
+            func text(_ s: String, end: CGFloat, top: CGFloat, points: CGFloat, bold: Bool = false) -> CGFloat {
+                let font = bold ? NSFont.boldSystemFont(ofSize: points) : NSFont.systemFont(ofSize: points)
+                let a = NSAttributedString(string: s, attributes: [.font: font, .foregroundColor: NSColor.black])
+                let w = a.size().width
+                a.draw(at: CGPoint(x: headRight ? end - w : size.width - end, y: top))
+                return w
+            }
+            func line(_ a: CGPoint, _ b: CGPoint, _ color: NSColor) {
+                color.setStroke()
+                let p = NSBezierPath()
+                p.move(to: CGPoint(x: mx(a.x), y: a.y))
+                p.line(to: CGPoint(x: mx(b.x), y: b.y))
+                p.lineWidth = 3
+                p.stroke()
+            }
+            line(CGPoint(x: 120, y: spine), CGPoint(x: 930, y: spine), .systemOrange)
+            let headWidth = NSAttributedString(
+                string: "Late deliveries", attributes: [.font: NSFont.boldSystemFont(ofSize: 28)]
+            ).size().width
+            _ = text("Late deliveries", end: 960 + headWidth, top: spine - 17, points: 28, bold: true)
+            for b in bones {
+                func boneX(_ y: CGFloat) -> CGFloat { b.joint - 0.5 * abs(spine - y) }
+                let end: CGFloat = b.up ? 110 : 590
+                line(CGPoint(x: boneX(end), y: end), CGPoint(x: b.joint, y: spine), .systemTeal)
+                let labelWidth = NSAttributedString(
+                    string: b.label, attributes: [.font: NSFont.boldSystemFont(ofSize: 20)]
+                ).size().width
+                _ = text(b.label, end: boneX(end) + labelWidth / 2, top: b.up ? 82 : 592, points: 20, bold: true)
+                // Each cause's block (its line, then its sub-causes), from the label inward.
+                var tops: [CGFloat] = []
+                var y: CGFloat = b.up ? 135 : 565
+                for (_, subs) in b.causes {
+                    let height = 24 + 18 * CGFloat(subs.count)
+                    tops.append(b.up ? y : y - height)
+                    y += b.up ? height + 16 : -(height + 16)
+                }
+                for ((cause, subs), top) in zip(b.causes, tops) {
+                    let right = boneX(top + 10) - 14
+                    let w = text(cause, end: right, top: top, points: 17)
+                    line(CGPoint(x: right - w - 4, y: top + 23), CGPoint(x: boneX(top + 23), y: top + 23), .systemTeal)
+                    for (i, s) in subs.enumerated() {
+                        _ = text(s, end: right - 40, top: top + 26 + 18 * CGFloat(i), points: 13)
+                    }
+                }
+            }
+            return true
+        }
+        let rep = NSBitmapImageRep(
+            bitmapDataPlanes: nil, pixelsWide: Int(size.width), pixelsHigh: Int(size.height), bitsPerSample: 8,
+            samplesPerPixel: 4, hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0,
+            bitsPerPixel: 0)!
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = NSGraphicsContext(bitmapImageRep: rep)
+        image.draw(in: CGRect(origin: .zero, size: size))
+        NSGraphicsContext.restoreGraphicsState()
+        return rep.representation(using: .png, properties: [:])!
+    }
+
+    /// M29: real Vision on the drawn fishbone, head on either side: sub-causes come back
+    /// as children of their causes, in order, and the causes stay on their bones.
+    @Test(arguments: [true, false]) func fishboneSubCausesReadBack(headRight: Bool) throws {
+        let png = Self.fishboneWithSubCauses(headRight: headRight)
+        let im = try Interchange.importFile(name: "fishbone.png", data: png)
+        let c = im.canvases[0]
+        func outline(_ id: NodeID, _ d: Int = 0) -> String {
+            String(repeating: "  ", count: d) + (c.nodes[id]?.text ?? "") + "\n"
+                + (c.nodes[id]?.children ?? []).map { outline($0, d + 1) }.joined()
+        }
+        let expected = """
+            Late deliveries
+              People
+                Training
+                  New hires
+                  Refreshers
+                Staffing
+                  Night shift
+              Process
+                Handoffs
+                  Missing notes
+                Checklists
+              Machines
+                Wear
+                Calibration
+                  Monthly checks
+              Materials
+                Supplier
+                  Late orders
+                  Wrong parts
+                Storage
+
+            """
+        #expect(outline(c.root) == expected)
+        #expect(c.type == .fishbone && c.layout.structure == (headRight ? .fishboneLeft : .fishboneRight))
     }
 
     @Test func recognisesARenderedList() throws {
