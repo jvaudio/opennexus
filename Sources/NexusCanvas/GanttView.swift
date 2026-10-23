@@ -95,7 +95,7 @@ public final class GanttView: NSView {
 }
 
 /// The drawn and interactive surface inside the Gantt's scroll view.
-final class GanttSurface: NSView, RegistryCommandTarget, NSMenuItemValidation {
+final class GanttSurface: NSView, ContextMenuTarget, NSMenuItemValidation {
     let controller: CanvasController
     private(set) var layout: GanttLayout?
     var didScrollOnce = false
@@ -216,31 +216,66 @@ final class GanttSurface: NSView, RegistryCommandTarget, NSMenuItemValidation {
     // MARK: Menus
 
     func performRegistryCommand(_ sender: Any?) {
-        guard let raw = (sender as? NSMenuItem)?.representedObject as? String else { return }
-        if controller.perform(CommandID(rawValue: raw)) { return }
-        nextHandler()?.performRegistryCommand(sender)
+        ContextMenus.performCommand(sender, controller: controller, from: self)
     }
+
+    /// The context menu's items that aren't plain commands.
+    @objc func performMenuAction(_ sender: Any?) { ContextMenus.performAction(sender, controller: controller) }
 
     func validateMenuItem(_ item: NSMenuItem) -> Bool {
-        if item.action == #selector(performRegistryCommand(_:)), let raw = item.representedObject as? String {
-            if controller.canPerform(CommandID(rawValue: raw)) { return true }
-            return (nextHandler() as? any NSMenuItemValidation)?.validateMenuItem(item) ?? false
-        }
-        return true
+        ContextMenus.validate(item, controller: controller, from: self)
     }
 
-    private func nextHandler() -> (any RegistryCommandTarget)? {
-        var r = nextResponder
-        while let cur = r {
-            if let t = cur as? any RegistryCommandTarget { return t }
-            r = cur.nextResponder
-        }
-        return nil
+    // MARK: Context menu (M26, D225)
+
+    /// Shows a context menu at the pointer (tests record it instead: the real one runs a
+    /// modal tracking loop).
+    lazy var presentContextMenu: (NSMenu, NSEvent) -> Void = { [unowned self] menu, event in
+        NSMenu.popUpContextMenu(menu, with: event, for: self)
+    }
+    /// Shows a row's menu below it (Show Menu); tests record it instead.
+    lazy var popUpMenu: (NSMenu, CGPoint) -> Void = { [unowned self] menu, p in
+        _ = menu.popUp(positioning: nil, at: p, in: self)
+    }
+
+    override func rightMouseDown(with event: NSEvent) {
+        if let menu = menu(for: event) { presentContextMenu(menu, event) }
+    }
+
+    /// A row's task menu, or Go to Today and Export Gantt… below the rows. The date
+    /// header has none.
+    override func menu(for event: NSEvent) -> NSMenu? {
+        guard let L = layout else { return nil }
+        let p = convert(event.locationInWindow, from: nil)
+        guard p.y > visibleRect.minY + GanttLayout.headerHeight else { return nil }
+        return prepareMenu(L.row(atY: p.y)?.id)
+    }
+
+    /// Selects the row as a click would (D176) and builds its menu.
+    func prepareMenu(_ id: NodeID?) -> NSMenu? {
+        window?.makeFirstResponder(self)
+        controller.prepareRowMenu(id)
+        let entries = controller.ganttContextMenu(onRow: id != nil)
+        return entries.isEmpty ? nil : ContextMenus.make(entries, target: self)
+    }
+
+    /// Show Menu on a row (VoiceOver), below the row's name.
+    func showMenu(for id: NodeID) -> Bool {
+        guard let r = layout?.rows.first(where: { $0.id == id }), let menu = prepareMenu(id) else { return false }
+        popUpMenu(menu, CGPoint(x: visibleRect.minX + 8, y: r.frame.maxY))
+        return true
     }
 
     // MARK: Mouse
 
     override func mouseDown(with event: NSEvent) {
+        // Control-click opens the context menu, as a right-click does.
+        if event.modifierFlags.intersection(.deviceIndependentFlagsMask).subtracting(.capsLock) == .control,
+            let menu = menu(for: event)
+        {
+            presentContextMenu(menu, event)
+            return
+        }
         window?.makeFirstResponder(self)
         guard let L = layout else { return }
         let p = convert(event.locationInWindow, from: nil)
@@ -350,16 +385,16 @@ final class GanttSurface: NSView, RegistryCommandTarget, NSMenuItemValidation {
 
     /// Row elements, kept (and reused per topic) so assistive apps can read them after
     /// this call returns; frames are in this view's space, so scrolling keeps them right.
-    private var axRows: [NSAccessibilityElement] = []
-    private var axCache: [NodeID: NSAccessibilityElement] = [:]
+    private var axRows: [MenuRowElement] = []
+    private var axCache: [NodeID: MenuRowElement] = [:]
 
     private func rebuildAccessibility() {
         guard let L = layout else { return }
         let c = controller.canvas
         let today = controller.todayDate
-        var cache: [NodeID: NSAccessibilityElement] = [:]
+        var cache: [NodeID: MenuRowElement] = [:]
         axRows = L.rows.map { r in
-            let e = axCache[r.id] ?? NSAccessibilityElement()
+            let e = axCache[r.id] ?? MenuRowElement()
             cache[r.id] = e
             var label = c.nodes[r.id]?.text ?? ""
             if r.kind == .summary {
@@ -376,6 +411,8 @@ final class GanttSurface: NSView, RegistryCommandTarget, NSMenuItemValidation {
             e.setAccessibilitySelected(controller.selection.nodes.contains(r.id))
             e.setAccessibilityDisclosureLevel(r.depth)
             let id = r.id
+            // Show Menu opens the row's context menu (D226).
+            e.showMenu = { [weak self] in self?.showMenu(for: id) ?? false }
             e.setAccessibilityCustomActions([
                 NSAccessibilityCustomAction(name: Loc.t("Move a working day earlier")) { [weak self] in
                     self?.controller.select(id)
@@ -396,6 +433,9 @@ final class GanttSurface: NSView, RegistryCommandTarget, NSMenuItemValidation {
     }
 
     override func accessibilityChildren() -> [Any]? { axRows }
+
+    /// Show Menu on the chart itself: the selected row's menu.
+    override func accessibilityPerformShowMenu() -> Bool { showMenu(for: controller.selection.primary) }
 
     override func accessibilitySelectedRows() -> [Any]? {
         axRows.filter { $0.isAccessibilitySelected() }

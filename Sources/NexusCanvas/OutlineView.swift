@@ -81,7 +81,7 @@ struct OutlineHints: View {
 }
 
 @MainActor
-final class OutlineDocumentView: NSView, NSTextViewDelegate {
+final class OutlineDocumentView: NSView, NSTextViewDelegate, ContextMenuTarget, NSMenuItemValidation {
     let controller: CanvasController
     let editor = NodeTextView()
     let noteEditor = NSTextView()
@@ -374,6 +374,13 @@ final class OutlineDocumentView: NSView, NSTextViewDelegate {
 
     override func mouseDown(with event: NSEvent) {
         let p = convert(event.locationInWindow, from: nil)
+        // Control-click opens the context menu, as a right-click does.
+        if event.modifierFlags.intersection(.deviceIndependentFlagsMask).subtracting(.capsLock) == .control,
+            let menu = menu(for: event)
+        {
+            presentContextMenu(menu, event)
+            return
+        }
         window?.makeFirstResponder(self)
         if noteNode != nil { commitNote() }
         guard let row = rows.last(where: { $0.rect.contains(p) }) else { return }
@@ -393,27 +400,82 @@ final class OutlineDocumentView: NSView, NSTextViewDelegate {
         if event.clickCount == 2 { controller.beginEditing(row.id) }
     }
 
+    // MARK: Context menu (M26, D225)
+
+    /// Shows a context menu at the pointer (tests record it instead: the real one runs a
+    /// modal tracking loop).
+    lazy var presentContextMenu: (NSMenu, NSEvent) -> Void = { [unowned self] menu, event in
+        NSMenu.popUpContextMenu(menu, with: event, for: self)
+    }
+    /// Shows a row's menu below it (Show Menu); tests record it instead.
+    lazy var popUpMenu: (NSMenu, CGPoint) -> Void = { [unowned self] menu, p in
+        _ = menu.popUp(positioning: nil, at: p, in: self)
+    }
+
+    override func rightMouseDown(with event: NSEvent) {
+        if let menu = menu(for: event) { presentContextMenu(menu, event) }
+    }
+
+    /// The row under the pointer's menu: a topic's, or its note's, link's or fold line's.
+    override func menu(for event: NSEvent) -> NSMenu? {
+        let p = convert(event.locationInWindow, from: nil)
+        guard let row = rows.last(where: { $0.rect.contains(p) }) else { return nil }
+        return prepareMenu(row.id)
+    }
+
+    /// Selects the row as a click would (D176) and builds its menu.
+    func prepareMenu(_ id: NodeID) -> NSMenu? {
+        window?.makeFirstResponder(self)
+        if noteNode != nil { commitNote() }
+        controller.prepareRowMenu(id)
+        let entries = controller.outlineContextMenu()
+        return entries.isEmpty ? nil : ContextMenus.make(entries, target: self)
+    }
+
+    /// Show Menu on a row (VoiceOver), below the row's text.
+    func showMenu(for id: NodeID) -> Bool {
+        guard let row = rows.first(where: { $0.id == id && ($0.kind == .topic || $0.kind == .title) }),
+            let menu = prepareMenu(id)
+        else { return false }
+        popUpMenu(menu, CGPoint(x: row.textRect.minX, y: row.rect.maxY))
+        return true
+    }
+
+    /// The outline's own menu items run here; anything else (the menu bar's items, whose
+    /// keys the outline scope reads differently) goes up the responder chain as before.
+    func performRegistryCommand(_ sender: Any?) {
+        guard (sender as? NSMenuItem)?.target === self else {
+            ContextMenus.nextHandler(after: self)?.performRegistryCommand(sender)
+            return
+        }
+        ContextMenus.performCommand(sender, controller: controller, from: self)
+    }
+
+    @objc func performMenuAction(_ sender: Any?) { ContextMenus.performAction(sender, controller: controller) }
+
+    func validateMenuItem(_ item: NSMenuItem) -> Bool {
+        guard item.target === self else {
+            return (ContextMenus.nextHandler(after: self) as? any NSMenuItemValidation)?.validateMenuItem(item) ?? false
+        }
+        return ContextMenus.validate(item, controller: controller, from: self)
+    }
+
     // MARK: Accessibility
 
+    /// Rows VoiceOver reads; Show Menu opens a row's menu (D226).
     override func accessibilityChildren() -> [Any]? {
         rows.filter { $0.kind == .topic || $0.kind == .title }.map { r in
-            let e = NSAccessibilityElement.electronicElement(
-                role: .row, label: r.text.string, frame: convert(r.rect, to: nil), parent: self)
+            let e = MenuRowElement()
+            e.setAccessibilityRole(.row)
+            e.setAccessibilityLabel(r.text.string)
+            e.setAccessibilityParent(self)
+            if let w = window { e.setAccessibilityFrame(w.convertToScreen(convert(r.rect, to: nil))) }
+            let id = r.id
+            e.showMenu = { [weak self] in self?.showMenu(for: id) ?? false }
             return e
         }
     }
-}
 
-extension NSAccessibilityElement {
-    @MainActor
-    static func electronicElement(role: NSAccessibility.Role, label: String, frame: CGRect, parent: NSView)
-        -> NSAccessibilityElement
-    {
-        let e = NSAccessibilityElement()
-        e.setAccessibilityRole(role)
-        e.setAccessibilityLabel(label)
-        e.setAccessibilityParent(parent)
-        if let w = parent.window { e.setAccessibilityFrame(w.convertToScreen(frame)) }
-        return e
-    }
+    /// Show Menu on the outline itself: the selected row's menu.
+    override func accessibilityPerformShowMenu() -> Bool { showMenu(for: controller.selection.primary) }
 }

@@ -15,7 +15,7 @@ import UniformTypeIdentifiers
 
 /// The canvas: an opaque, layer-backed surface with one layer per node and per branch
 /// line, a spring animator, a camera, and the in-node text editor.
-public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidation {
+public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget, NSMenuItemValidation {
     public let controller: CanvasController
 
     private let host = FlippedView()
@@ -1974,46 +1974,13 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
     /// commands such as Export… and Format Panel continue up the responder chain); the
     /// few other items through `performMenuAction` (D173, D174).
     func makeMenu(_ entries: [CanvasMenuEntry], title: String = "") -> NSMenu {
-        let menu = NSMenu(title: title)
-        for e in entries {
-            switch e {
-            case .separator:
-                menu.addItem(.separator())
-            case .submenu(let title, let children):
-                let item = NSMenuItem(title: title, action: nil, keyEquivalent: "")
-                item.submenu = makeMenu(children, title: title)
-                menu.addItem(item)
-            case .item(let i):
-                let item: NSMenuItem
-                if case .command(let id) = i.action {
-                    item = NSMenuItem(title: i.title, action: #selector(performRegistryCommand(_:)), keyEquivalent: "")
-                    item.representedObject = id.rawValue
-                } else {
-                    item = NSMenuItem(title: i.title, action: #selector(performMenuAction(_:)), keyEquivalent: "")
-                    item.representedObject = MenuActionBox(i.action)
-                }
-                item.target = self
-                if let chord = i.key {
-                    item.keyEquivalent = chord.key.keyEquivalent
-                    item.keyEquivalentModifierMask = chord.menuModifierMask
-                }
-                item.state = i.checked ? .on : .off
-                menu.addItem(item)
-            }
-        }
-        return menu
+        ContextMenus.make(entries, title: title, target: self)
     }
 
-    /// Context-menu items that aren't plain commands (Add Floating Topic at the pointer,
-    /// Edit Label, Collapse Zone, Remove Image, Sticker…).
+    /// Context-menu items that aren't plain commands (Add Floating Topic, Paste and Zone at
+    /// the pointer, Edit Label, Collapse Zone, Remove Image, Sticker…).
     @objc func performMenuAction(_ sender: Any?) {
-        guard let box = (sender as? NSMenuItem)?.representedObject as? MenuActionBox else { return }
-        if let id = box.action.command, let t = NSApp.currentEvent?.type,
-            [.leftMouseUp, .leftMouseDown, .rightMouseUp, .otherMouseUp].contains(t)
-        {
-            controller.noteMouseUse(id)
-        }
-        controller.runMenuAction(box.action)
+        ContextMenus.performAction(sender, controller: controller)
         refreshOverlays()
     }
 
