@@ -286,7 +286,7 @@ Choices made where the design was silent or ambiguous, each with a one-line rati
 | D213 | **The sheet's own `style.svg:fill` is the background when set,** over the theme's map fill. An opaque `#RRGGBBFF` drops its alpha byte. | Xmind paints the sheet style over the theme: Entegral's sheet is dark on a light theme. |
 | D214 | **Real files are checked by an env-gated harness, never committed:** `XmindRealFileTests` runs only with `NEXUS_XMIND_REAL`. It reads Xmind's JSON directly for the content check, compares the resolved look after a re-export, and with `NEXUS_XMIND_OUT` saves a plain and an edited copy as `.nexus`; `nexus export` then makes the `.xmind` files with Xmind's thumbnail. | The user's maps are private work data. The same checks can be rerun on any new sample, which is how the still-unchecked importers will be verified. |
 
-## M24 · Fold from the mouse
+## M24 · Fold from the mouse, and the structure picker
 
 | # | Decision | Rationale |
 | --- | --- | --- |
