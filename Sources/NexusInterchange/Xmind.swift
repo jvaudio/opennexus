@@ -206,7 +206,9 @@ public enum XmindFormat {
                 if let p = Self.properties(r) { XmindStyle.apply(p, to: &link) }
                 ic.links.append(link)
             }
-            if let theme = s["theme"] as? [String: Any] { ic.style = XmindStyle.canvasStyle(theme, report: &report) }
+            if let theme = s["theme"] as? [String: Any] {
+                ic.style = XmindStyle.canvasStyle(theme, sheetStyle: Self.properties(s), report: &report)
+            }
             for e in (s["extensions"] as? [[String: Any]]) ?? [] { ext(e, on: title) }
             if let l = s["legend"] { ic.legend = XmindLegend.read(l, report: &report) }
             return ic

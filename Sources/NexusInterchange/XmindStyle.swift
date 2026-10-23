@@ -26,6 +26,8 @@ enum XmindStyle {
     static let branchLines: [(String, String)] = [
         ("curved", "org.xmind.branchConnection.curve"), ("straight", "org.xmind.branchConnection.straight"),
         ("elbow", "org.xmind.branchConnection.elbow"), ("rounded", "org.xmind.branchConnection.roundedElbow"),
+        // Read, not written: Xmind 2026's rounded fold from the central topic.
+        ("curved", "org.xmind.branchConnection.roundedfold"),
     ]
     static let patterns: [(String, String)] = [("solid", "solid"), ("dashed", "dash"), ("dotted", "dot")]
     static let weights: [(String, String)] = [
@@ -96,9 +98,15 @@ enum XmindStyle {
         case "tint"?, "gradient"?: lost.append("Tint and gradient fills (written as solid)")
         default: break
         }
-        if s.fill != "none", let c = s.fillColor.flatMap(color) {
+        if s.fill != "none", s.fillColor == "canvas" {
+            // The bare map shows through Xmind's unfilled topic: the same look.
+            p["fill-pattern"] = "none"
+        } else if s.fill != "none", let c = s.fillColor.flatMap(color) {
             p["svg:fill"] = c
             if p["fill-pattern"] == nil { p["fill-pattern"] = "solid" }
+        } else if s.fill != "none", s.fillColor?.hasPrefix("branch") == true {
+            // Xmind fills a solid topic with no colour of its own in the branch colour.
+            p["fill-pattern"] = "solid"
         }
         switch s.border {
         case "none"?: p["border-line-width"] = "0pt"
@@ -259,6 +267,7 @@ enum XmindStyle {
             // The canvas's base for the role, as `StyleEnvironment` layers it.
             var base = env.nodeStyle.layer(r).merged(
                 over: StyleResolver.themeLayer(t, role: r).merged(over: StyleResolver.defaults(r)))
+            if let own = env.canvasStyle.roles[r.rawValue] { base = own.merged(over: base) }
             // Branch colours come from the map's line colours in Xmind.
             if base.borderColor == "branch" { base.borderColor = nil }
             base.shadow = nil
@@ -269,7 +278,9 @@ enum XmindStyle {
             // Xmind wants opaque colours: translucent theme fills are mixed over the canvas.
             let opaque = { (c: String) in RGBA(hexString: c).map { $0.composited(over: env.canvas).hex } }
             var p = properties(base, color: opaque, lost: &ignored)
-            if let f = env.canvasStyle.font, !f.isEmpty, f != "system" { p["fo:font-family"] = xmind(fonts, f) ?? f }
+            if env.canvasStyle.roles[r.rawValue]?.font == nil, let f = env.canvasStyle.font, !f.isEmpty, f != "system" {
+                p["fo:font-family"] = xmind(fonts, f) ?? f
+            }
             let line = env.canvasStyle.lineShape ?? (env.nodeStyle.line.shape ?? t.lineShape)
             if let x = xmind(branchLines, line == "tapered" ? "curved" : line) { p["line-class"] = x }
             return p
@@ -288,8 +299,11 @@ enum XmindStyle {
             lost.append("Node style, colour mode and background pattern (Xmind keeps the theme's colours)")
         }
         let sub = role(.sub)
+        // A canvas carrying another app's colours or topic styles writes them untagged, so
+        // they import back as written rather than as the OpenNexus theme (D211).
+        let tagged = env.canvasStyle.roles.isEmpty && env.canvasStyle.palette != "canvas"
         return [
-            "id": "\(themePrefix)\(t.id)", "title": "\(t.name) (OpenNexus)",
+            "id": tagged ? "\(themePrefix)\(t.id)" : "\(sheet)-theme", "title": "\(t.name) (OpenNexus)",
             "map": klass("map", map),
             "centralTopic": klass("centralTopic", role(.root)),
             "mainTopic": klass("mainTopic", role(.main)),
@@ -303,9 +317,13 @@ enum XmindStyle {
         ]
     }
 
-    /// What a sheet's theme sets on the canvas: OpenNexus's own theme when it wrote it,
-    /// and the background and font either way.
-    static func canvasStyle(_ theme: [String: Any], report: inout ImportReport) -> CanvasStyle? {
+    /// What a sheet's theme and style set on the canvas (D210, D211): OpenNexus's own theme
+    /// when it wrote it; otherwise the theme's background, branch colours, font, line
+    /// class and topic-class styles. The sheet's own `style` fill is the background when
+    /// set, as in Xmind.
+    static func canvasStyle(_ theme: [String: Any], sheetStyle: [String: Any]? = nil, report: inout ImportReport)
+        -> CanvasStyle?
+    {
         func props(_ k: String) -> [String: Any] {
             ((theme[k] as? [String: Any])?["properties"] as? [String: Any]) ?? [:]
         }
@@ -314,19 +332,80 @@ enum XmindStyle {
         let ours = id.hasPrefix(themePrefix) && id.count > themePrefix.count
         if ours { s.theme = String(id.dropFirst(themePrefix.count)) }
         let base = Theme.named(s.theme)
-        if let bg = hex(props("map")["svg:fill"]), bg != base.canvas.hex { s.background = bg }
+        if let bg = hex(sheetStyle?["svg:fill"]).map(opaque) ?? hex(props("map")["svg:fill"]), bg != base.canvas.hex {
+            s.background = bg
+        }
         if let f = (props("centralTopic")["fo:font-family"] as? String).map({ nexus(fonts, $0) ?? $0 }),
             f != base.font
         {
             s.font = f
         }
-        if let line = nexus(branchLines, props("mainTopic")["line-class"]), line != base.lineShape,
+        // The central topic's line class draws its main branches, the most visible lines.
+        let lineClass = props("centralTopic")["line-class"] ?? props("mainTopic")["line-class"]
+        if let line = nexus(branchLines, lineClass), line != base.lineShape,
             !(line == "curved" && base.lineShape == "tapered")
         {
             s.lineShape = line
         }
-        if !ours, !theme.isEmpty { report.skip("Xmind theme (its background is kept; OpenNexus’s theme is used)") }
+        if !ours {
+            // Another app's theme: its branch colours travel with the canvas, and its topic
+            // classes become role styles.
+            let colors = ((props("map")["multi-line-colors"] as? String) ?? "")
+                .split(separator: " ").compactMap { hex(String($0)).map(opaque) }
+            if !colors.isEmpty {
+                s.colors = colors
+                s.palette = "canvas"
+            }
+            for (klass, role) in [
+                ("centralTopic", "root"), ("mainTopic", "main"), ("subTopic", "sub"), ("floatingTopic", "floating"),
+            ] {
+                guard var r = roleStyle(props(klass), role: role) else { continue }
+                if r.font == s.font { r.font = nil }
+                if !r.isEmpty { s.roles[role] = r }
+            }
+            if !theme.isEmpty {
+                report.skip("Xmind theme’s boundary, summary and relationship styles (OpenNexus’s are used)")
+            }
+        }
         return s == CanvasStyle() ? nil : s
+    }
+
+    /// An Xmind topic class as a role style. A solid fill or border with no colour of its
+    /// own takes the branch colour, as in Xmind; subtopics get a tint of it.
+    static func roleStyle(_ p: [String: Any], role: String) -> TopicStyle? {
+        guard var s = style(p) else { return nil }
+        // Branch lines keep the branch colours; the canvas carries the line shape.
+        s.line = nil
+        switch p["fill-pattern"] as? String {
+        case "solid"? where hex(p["svg:fill"]) == nil:
+            s.fill = "solid"
+            s.fillColor = role == "sub" ? "branch@0.2" : "branch"
+        case "none"?:
+            // Xmind draws an unfilled topic over the bare map; the canvas colour looks the
+            // same, keeps lines from showing through, and gives its text a contrast base.
+            s.fill = "solid"
+            s.fillColor = "canvas"
+        default: break
+        }
+        // Xmind's "inherited" text is black or white, whichever suits the fill.
+        if s.textColor == nil { s.textColor = "auto" }
+        // Defaults stay unset, so the canvas's own choices still apply.
+        if s.italic == false { s.italic = nil }
+        if s.underline == false { s.underline = nil }
+        if s.strikethrough == false { s.strikethrough = nil }
+        if s.textCase == "none" { s.textCase = nil }
+        if let w = s.borderWidth, w > 0 {
+            // A width alone is a visible solid border in Xmind. Its colour is the branch's;
+            // the central topic has no branch, so it takes the class's line colour.
+            if s.border == nil { s.border = "solid" }
+            if s.borderColor == nil { s.borderColor = role == "root" ? hex(p["line-color"]) ?? s.fillColor : "branch" }
+        }
+        return s.isEmpty ? nil : s
+    }
+
+    /// `#RRGGBBAA` → `#RRGGBB` when opaque; Xmind writes the alpha byte on some fills.
+    static func opaque(_ c: String) -> String {
+        c.count == 9 && c.hasSuffix("FF") ? String(c.prefix(7)) : c
     }
 }
 

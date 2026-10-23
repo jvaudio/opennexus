@@ -9105,6 +9105,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "This map’s colours" : {
+      "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
     "This sets the tour’s example and your template shelf. You can change it any time in Settings." : {
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
