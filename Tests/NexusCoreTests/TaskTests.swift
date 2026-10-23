@@ -273,12 +273,18 @@ func taskCanvas() -> (Canvas, design: NodeID, build: NodeID, ship: NodeID) {
         #expect(c.nodes[copy[3]]?.todo?.after.map(\.task) == [copy[2]])
         // Only Build: its dependency on Design (outside) survives in the same canvas…
         let one = c.fragment([build])
-        let pasted = try c.edit("Paste", undo: &u) { try $0.paste(one, under: risks) }
+        let pasted = try c.edit("Paste", undo: &u) { try $0.paste(one, under: risks, sameCanvas: true) }
         #expect(c.nodes[pasted[0]]?.todo?.after.map(\.task) == [design])
         // …but not in another canvas.
         var other = Canvas(id: "c9", title: "Other")
         let elsewhere = try other.edit("Paste", undo: &u) { try $0.paste(one, under: $0.canvas.root) }
         #expect(other.nodes[elsewhere[0]]?.todo?.after.isEmpty == true)
+        // Nor in a canvas whose id and topic ids match but that isn't the source (D230).
+        var twin = taskCanvas().0
+        let risks2 = twin.nodes.first { $0.value.text == "Risks" }!.key
+        let lookalike = try twin.edit("Paste", undo: &u) { try $0.paste(one, under: risks2) }
+        #expect(twin.id == c.id && twin.nodes[design] != nil)
+        #expect(twin.nodes[lookalike[0]]?.todo?.after.isEmpty == true)
     }
 
     @Test func repairDropsBrokenDependencies() {

@@ -109,9 +109,43 @@ public enum StickerLibrary {
 extension CanvasController {
     // MARK: Selection of elements
 
-    public func selectElement(_ ref: ElementRef?) {
+    public func selectElement(_ ref: ElementRef?) { selectElement(ref, zones: []) }
+
+    /// Every selected zone, in the order they were selected: the selected zone and the
+    /// zones ⇧- or ⌘-clicked with it (D228). Empty when no zone is selected.
+    public var selectedZones: [String] {
+        guard case .zone(let z)? = selectedElement else { return [] }
+        return zoneGroup.contains(z) ? zoneGroup : [z]
+    }
+
+    /// ⇧- or ⌘-click on a zone: adds it to the selected zones, or takes it out (D228). The
+    /// zone clicked last is the selected element (the Format panel's).
+    public func toggleZone(_ id: String) {
+        guard canvas.zones.contains(where: { $0.id == id }) else { return }
+        var zones = selectedZones
+        if let i = zones.firstIndex(of: id) {
+            zones.remove(at: i)
+            selectElement(zones.last.map { .zone($0) }, zones: zones)
+        } else {
+            zones.append(id)
+            selectElement(.zone(id), zones: zones)
+        }
+    }
+
+    /// Selects these zones together, the first as the selected element.
+    public func selectZones(_ ids: [String]) {
+        let zones = ids.filter { id in canvas.zones.contains { $0.id == id } }
+        selectElement(zones.first.map { .zone($0) }, zones: zones)
+    }
+
+    /// Select All Zones (`select.allZones`): every zone on the canvas, so ⌘C, ⌘X and ⌘D
+    /// take them all.
+    public func selectAllZones() { selectZones(canvas.zones.map(\.id)) }
+
+    func selectElement(_ ref: ElementRef?, zones: [String]) {
         if mode == .edit { commitEdit() }
         selectedElement = ref
+        zoneGroup = zones.count > 1 ? zones : []
         legendSelected = false
         if case .callout(let id)? = ref, let k = canvas.callouts.first(where: { $0.id == id }) {
             selection = Selection(k.topic)
@@ -147,8 +181,12 @@ extension CanvasController {
     }
 
     /// Removes a relationship, boundary, summary, callout or zone (one undo step).
+    /// A zone among several selected takes the others with it (D228).
     public func deleteElement(_ ref: ElementRef) {
-        perform(Loc.t("Delete")) { $0.removeElement(ref) }
+        let zones = selectedZones
+        let refs: [ElementRef] =
+            zones.count > 1 && ref == .zone(ref.id) && zones.contains(ref.id) ? zones.map { .zone($0) } : [ref]
+        perform(Loc.t("Delete")) { e in for r in refs { e.removeElement(r) } }
         selectedElement = nil
         onSceneChange?(true)
     }
@@ -457,6 +495,15 @@ extension CanvasController {
 
     public func moveZone(_ id: String, by delta: CGSize) {
         perform(Loc.t("Move Zone")) { $0.moveZone(id, by: delta.width, delta.height) }
+    }
+
+    /// Dragging one of several selected zones moves them all, one undo step (D228).
+    public func moveZones(_ ids: [String], by delta: CGSize) {
+        guard ids.count > 1 else {
+            if let id = ids.first { moveZone(id, by: delta) }
+            return
+        }
+        perform(Loc.t("Move Zones")) { e in for id in ids { e.moveZone(id, by: delta.width, delta.height) } }
     }
 
     /// Reset Style (⌥⌘R) on an element returns it to its defaults.

@@ -400,6 +400,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         applyFrames(all: true)
         elements.textScale = textScale
         elements.editingElement = controller.edit?.element
+        elements.selectedZones = Set(controller.selectedZones)
         elements.update(
             scene: scene, selected: controller.selectedElement, connect: controller.connect,
             frame: { [weak self] in self?.animatedFrame($0)?.rect }, animated: animate)
@@ -1404,7 +1405,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
         case node(
             id: NodeID, start: CGPoint, subtree: [NodeID], origins: [NodeID: CGPoint], floating: Bool,
             active: Bool, target: DropTarget?)
-        case zone(id: String, start: CGPoint, members: [NodeID], origins: [NodeID: CGPoint], active: Bool)
+        /// The clicked zone `id`, and every selected zone in `ids`, which move together.
+        case zone(
+            id: String, ids: [String], start: CGPoint, members: [NodeID], origins: [NodeID: CGPoint], active: Bool)
         /// The legend (M14), moved by its top-left corner.
         case legend(start: CGPoint, origin: CGPoint, active: Bool)
     }
@@ -1475,19 +1478,31 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                 controller.beginEditingElement(el)
                 return
             }
-            controller.selectElement(el)
-            if case .zone(let zid) = el, let z = controller.canvas.zones.first(where: { $0.id == zid }) {
+            // ⇧- or ⌘-click adds a zone to the selected zones or takes it out (D228); a
+            // click on one of several selected zones keeps them, to drag them together.
+            if case .zone(let zid) = el,
+                event.modifierFlags.contains(.command) || event.modifierFlags.contains(.shift)
+            {
+                controller.toggleZone(zid)
+                return
+            }
+            let zones = controller.selectedZones
+            if !(zones.count > 1 && el == .zone(el.id) && zones.contains(el.id)) { controller.selectElement(el) }
+            if case .zone(let zid) = el, controller.canvas.zones.contains(where: { $0.id == zid }) {
                 if w.y - (controller.scene.zones.first { $0.zone.id == zid }?.rect.minY ?? 0) < 30,
                     w.x - (controller.scene.zones.first { $0.zone.id == zid }?.rect.minX ?? 0) < 30
                 {
                     controller.updateZone(zid) { $0.collapsed.toggle() }
                     return
                 }
+                let ids = controller.selectedZones
                 var members: [NodeID] = []
-                for m in z.members { members += controller.canvas.subtree(m) }
+                for z in controller.canvas.zones where ids.contains(z.id) {
+                    for m in z.members { members += controller.canvas.subtree(m) }
+                }
                 var origins: [NodeID: CGPoint] = [:]
                 for d in members { origins[d] = springs[d]?.value }
-                drag = .zone(id: zid, start: w, members: members, origins: origins, active: false)
+                drag = .zone(id: zid, ids: ids, start: w, members: members, origins: origins, active: false)
             }
             return
         }
@@ -1656,7 +1671,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             drag = .node(
                 id: id, start: start, subtree: sub, origins: origins, floating: floating, active: active, target: target
             )
-        case .zone(let zid, let start, let members, let origins, var active)?:
+        case .zone(let zid, let ids, let start, let members, let origins, var active)?:
             let dx = w.x - start.x
             let dy = w.y - start.y
             if !active && hypot(dx, dy) * camera.zoom < 4 { return }
@@ -1670,9 +1685,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
             applyFrames(all: true)
             elements.zonesLayer.sublayers?.forEach { _ in }
             CATransaction.commit()
-            drag = .zone(id: zid, start: start, members: members, origins: origins, active: active)
+            drag = .zone(id: zid, ids: ids, start: start, members: members, origins: origins, active: active)
             zoneDragOffset = CGSize(width: dx, height: dy)
-            elements.offsetZone(zid, by: zoneDragOffset)
+            for id in ids { elements.offsetZone(id, by: zoneDragOffset) }
             elements.updateGeometry(
                 selected: controller.selectedElement, connect: nil,
                 frame: { [weak self] in self?.animatedFrame($0)?.rect })
@@ -1813,10 +1828,16 @@ public final class CanvasView: NSView, RegistryCommandTarget, NSMenuItemValidati
                 // Dropped on empty canvas: settle back.
                 update(animated: true)
             }
-        case .zone(let zid, _, _, _, let active)?:
-            guard active else { return }
-            elements.offsetZone(zid, by: .zero)
-            controller.moveZone(zid, by: zoneDragOffset)
+        case .zone(let zid, let ids, _, _, _, let active)?:
+            guard active else {
+                // A plain click on one of several selected zones selects just that one.
+                if ids.count > 1, event.modifierFlags.intersection([.command, .shift]).isEmpty {
+                    controller.selectElement(.zone(zid))
+                }
+                return
+            }
+            for id in ids { elements.offsetZone(id, by: .zero) }
+            controller.moveZones(ids, by: zoneDragOffset)
         case .legend(let start, let origin, let active)?:
             guard active else { return }
             controller.moveLegend(to: CanvasPoint(x: origin.x + w.x - start.x, y: origin.y + w.y - start.y))

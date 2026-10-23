@@ -4,8 +4,8 @@ import Foundation
 
 extension Canvas {
     /// The selected branches as a self-contained canvas: a placeholder root whose children
-    /// are copies of each selected topic's subtree, plus the relationships, boundaries and
-    /// summaries wholly inside them. Used for copy, cut and "Copy canvas".
+    /// are copies of each selected topic's subtree, plus the relationships, boundaries,
+    /// summaries and callouts wholly inside them. Used for copy, cut and "Copy canvas".
     public func fragment(_ tops: [NodeID]) -> Canvas {
         let parents = parentMap()
         // A topic whose ancestor is also selected travels with that ancestor.
@@ -30,13 +30,37 @@ extension Canvas {
         f.boundaries = boundaries.filter { !$0.nodes.isEmpty && Set($0.nodes).isSubset(of: keep) }
         // A summary over copied siblings comes with its own topic (which isn't their child).
         f.summaries = summaries.filter { keep.contains($0.parent) && keep.contains($0.from) && keep.contains($0.to) }
-        // Relationships whose ends all travel: topics, boundaries and summaries (D181).
-        f.relationships = relationships.filter { r in
-            [r.from, r.to].allSatisfy { end in end.zone == nil && (end.topic.map(keep.contains) ?? f.has(end)) }
-        }
         for s in f.summaries { for d in subtree(s.topic) { f.nodes[d] = nodes[d] } }
+        // A callout on a copied topic comes with its bubble, and so does one on a copied
+        // bubble or summary topic (D229).
+        let hosted = callouts(on: Set(f.nodes.keys))
+        f.callouts = callouts.filter { hosted.contains($0.id) }
+        for k in f.callouts { for d in subtree(k.topic) { f.nodes[d] = nodes[d] } }
+        // Relationships whose ends all travel: topics (bubbles and summary topics too),
+        // boundaries and summaries (D181).
+        f.relationships = relationships.filter { r in
+            [r.from, r.to].allSatisfy { end in
+                end.zone == nil && (end.topic.map { $0 != placeholder && f.nodes[$0] != nil } ?? f.has(end))
+            }
+        }
         f.nextSequence = Canvas.seed(for: f.nodes.keys)
         return f
+    }
+
+    /// The ids of the callouts hosted by `topics` or, in turn, by those callouts' bubbles.
+    func callouts(on topics: Set<NodeID>) -> Set<String> {
+        var inside = topics
+        var out = Set<String>()
+        var grew = true
+        while grew {
+            grew = false
+            for k in callouts where !out.contains(k.id) && inside.contains(k.host) {
+                out.insert(k.id)
+                inside.formUnion(subtree(k.topic))
+                grew = true
+            }
+        }
+        return out
     }
 }
 
@@ -70,10 +94,13 @@ extension Canvas {
 
 extension CanvasEditor {
     /// Copies `src`'s branch at `top` (with fresh ids) under `parent`. Relationships,
-    /// boundaries and summaries inside the branch come along. Returns the new top.
+    /// boundaries, summaries and callouts inside the branch come along. A dependency on a
+    /// topic outside it survives only when `sameCanvas` (a paste back into the canvas and
+    /// document it came from, D230). Returns the new top.
     @discardableResult
-    public mutating func graft(_ src: Canvas, top: NodeID, under parent: NodeID, at index: Int? = nil) throws -> NodeID
-    {
+    public mutating func graft(
+        _ src: Canvas, top: NodeID, under parent: NodeID, at index: Int? = nil, sameCanvas: Bool = false
+    ) throws -> NodeID {
         guard self[parent] != nil, src.nodes[top] != nil else { throw TreeOperationRefusal.missingNode }
         var map: [NodeID: NodeID] = [:]
         let ids = src.subtree(top)
@@ -81,9 +108,8 @@ extension CanvasEditor {
         for s in src.summaries where map[s.parent] != nil && map[s.from] != nil && map[s.to] != nil {
             map[s.topic] = map[s.topic] ?? makeNodeID()
         }
-        // Dependencies outside the branch survive only within the same canvas (Duplicate
-        // Branch, paste back into the source).
-        insertCopies(of: src, map, sameCanvas: src.id == canvas.id) { old, n in
+        mapCallouts(of: src, &map)
+        insertCopies(of: src, map, sameCanvas: sameCanvas) { old, n in
             guard old == top else { return }
             n.kind = .topic
             n.position = nil
@@ -117,6 +143,7 @@ extension CanvasEditor {
         for s in f.summaries where map[s.parent] != nil && map[s.from] != nil && map[s.to] != nil {
             map[s.topic] = map[s.topic] ?? makeNodeID()
         }
+        mapCallouts(of: f, &map)
         let topSet = Set(tops)
         insertCopies(of: f, map, sameCanvas: sameCanvas) { old, n in
             guard topSet.contains(old) else { return }
@@ -145,6 +172,15 @@ extension CanvasEditor {
     public mutating func pasteZones(_ f: Canvas, at origin: CanvasPoint, sameCanvas: Bool) -> [String] {
         guard let x = f.zones.map(\.origin.x).min(), let y = f.zones.map(\.origin.y).min() else { return [] }
         return pasteZones(f, by: origin.x - x, origin.y - y, sameCanvas: sameCanvas)
+    }
+
+    /// Gives the bubbles of the callouts on copied topics (and on copied bubbles) new ids
+    /// too, so `copyElements` copies those callouts (D229).
+    private mutating func mapCallouts(of src: Canvas, _ map: inout [NodeID: NodeID]) {
+        let hosted = src.callouts(on: Set(map.keys))
+        for k in src.callouts where hosted.contains(k.id) {
+            for d in src.subtree(k.topic) where map[d] == nil { map[d] = makeNodeID() }
+        }
     }
 
     /// Inserts copies of `src`'s nodes under their new ids in `map`, with children, topic
@@ -176,17 +212,26 @@ extension CanvasEditor {
         }
     }
 
-    /// Adds copies of `rels` and of the boundaries and summaries wholly inside `map`, with
-    /// fresh ids. A relationship end the copy carries moves to its copy; any other end is
-    /// kept only when `sameCanvas` and it's still here, or the relationship is dropped.
+    /// Adds copies of `rels` and of the boundaries, summaries and callouts wholly inside
+    /// `map`, with fresh ids. A relationship end the copy carries moves to its copy; any
+    /// other end is kept only when `sameCanvas` and it's still here, or the relationship is
+    /// dropped.
     private mutating func copyElements(
         of src: Canvas, nodes map: [NodeID: NodeID], zones: [String: String] = [:], relationships rels: [Relationship],
         sameCanvas: Bool
     ) {
         let bounds = src.boundaries.filter { !$0.nodes.isEmpty && $0.nodes.allSatisfy { map[$0] != nil } }
         let sums = src.summaries.filter { map[$0.parent] != nil && map[$0.from] != nil && map[$0.to] != nil }
-        guard !rels.isEmpty || !bounds.isEmpty || !sums.isEmpty else { return }
+        let calls = src.callouts.filter { map[$0.host] != nil && map[$0.topic] != nil }
+        guard !rels.isEmpty || !bounds.isEmpty || !sums.isEmpty || !calls.isEmpty else { return }
         updateMeta { c in
+            for k in calls {
+                var x = k
+                x.id = Self.fresh("k", c.callouts.map(\.id))
+                x.host = map[k.host]!
+                x.topic = map[k.topic]!
+                c.callouts.append(x)
+            }
             // New ids by end kind, so an end of any kind can follow its element.
             var elements: [String: [String: String]] = ["zone": zones]
             for b in bounds {
@@ -242,10 +287,11 @@ extension CanvasEditor {
     }
 
     /// Pastes a fragment: each of its top-level topics becomes a child of `parent`.
+    /// `sameCanvas`: it was copied from this canvas in this document (D230).
     @discardableResult
-    public mutating func paste(_ fragment: Canvas, under parent: NodeID) throws -> [NodeID] {
+    public mutating func paste(_ fragment: Canvas, under parent: NodeID, sameCanvas: Bool = false) throws -> [NodeID] {
         let tops = fragment.nodes[fragment.root]?.children ?? []
-        return try tops.map { try graft(fragment, top: $0, under: parent) }
+        return try tops.map { try graft(fragment, top: $0, under: parent, sameCanvas: sameCanvas) }
     }
 }
 
