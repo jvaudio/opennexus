@@ -46,12 +46,11 @@ private func d(_ s: String) -> TaskDate { TaskDate(s)! }
         let h = harness()
         #expect(h.controller.scene.legend != nil)
         h.press("shift+cmd+p")
-        // The canvas's own box steps aside; every slide gets the corner legend.
+        // The canvas's own box steps aside; each slide's corner legend lists that slide's
+        // markers (M28: the Ideas slide has none, so it has no legend).
         #expect(h.controller.scene.legend == nil, "not drawn on the stage while presenting")
-        for s in h.controller.slides {
-            let l = try #require(h.controller.presentLegend(for: s), "\(s.title)")
-            #expect(l.rows.map(\.text) == ["Priority 1", "Blocked", "Q4"])
-        }
+        let rows = h.controller.slides.map { h.controller.presentLegend(for: $0)?.rows.map(\.text) }
+        #expect(rows == [["Priority 1", "Blocked", "Q4"], ["Blocked"], ["Priority 1", "Q4"], nil])
         // L turns it off (one undo step, saved in the deck settings) and back on.
         let depth = h.undo.stack.undoStack.count
         h.press("l")
@@ -165,11 +164,13 @@ private func d(_ s: String) -> TaskDate { TaskDate(s)! }
         let withLegend = SlideExporter.renderSlides(on, canvas: "c1", prefs: prefs, today: d("2026-11-04"))
         let without = SlideExporter.renderSlides(off, canvas: "c1", prefs: prefs, today: d("2026-11-04"))
         #expect(withLegend.count == 4 && without.count == 4)
-        // The bottom-left corner (above the 64 pt margin) holds the legend on every slide.
+        // The bottom-left corner (above the 64 pt margin) holds the legend on every slide
+        // with markers; the Ideas slide has none, so its corner is the stage (M28).
         let corner = CGRect(x: 84, y: 1080 - 64 - 200, width: 300, height: 200)
-        for i in withLegend.indices {
+        for i in 0..<3 {
             #expect(Self.differing(withLegend[i], without[i], in: corner) > 2000, "slide \(i + 1)")
         }
+        #expect(Self.differing(withLegend[3], without[3], in: corner) == 0, "Ideas: no legend")
         // The rest of the slide is the same.
         let top = CGRect(x: 1200, y: 0, width: 700, height: 200)
         #expect(Self.differing(withLegend[1], without[1], in: top) == 0)
@@ -290,6 +291,186 @@ private func d(_ s: String) -> TaskDate { TaskDate(s)! }
         #expect(h.canvas.legend?.position == CanvasPoint(x: start.x + 10, y: start.y + 10))
     }
 
+    // MARK: M28 · Legend fit
+
+    /// A marked topic in each far corner of the map, so the title slide fills the stage and
+    /// puts "Bottom left" in the legend's corner. "Notes" has no markers.
+    static func cornerDocument() -> DocumentModel {
+        var c = Canvas(id: "c1", title: "Corners", rootText: "Plan")
+        var u = UndoStack()
+        c.edit("Sample", undo: &u) { e in
+            _ = try! e.addChild(of: e.canvas.root, text: "Notes")
+            let low = e.addFloating(at: CanvasPoint(x: -900, y: 500), text: "Bottom left")
+            let high = e.addFloating(at: CanvasPoint(x: 900, y: -500), text: "Top right")
+            e.update(low) { $0.markers = ["flag-red"] }
+            e.update(high) { $0.markers = ["priority-1"] }
+            e.updateMeta { $0.legend = Legend() }
+        }
+        return DocumentModel(canvases: [c])
+    }
+
+    @Test func slideFitMovesOnlyWhenTheLegendCoversATopic() {
+        let stage = CGRect(x: 100, y: 100, width: 1600, height: 900)
+        let legend = CGRect(x: 60, y: 850, width: 300, height: 160)
+        let away = [
+            CGRect(x: 0, y: 0, width: 100, height: 40), CGRect(x: 1500, y: 0, width: 100, height: 40),
+            CGRect(x: 800, y: 860, width: 100, height: 40),
+        ]
+        let content = away.reduce(CGRect.null) { $0.union($1) }
+        let plain = SlideFit.camera(content, in: stage)
+        #expect(plain.zoom == 1 && plain.offset == CGPoint(x: 100, y: 100))
+        // Nothing under the legend: the whole-stage fit, as before.
+        #expect(SlideFit.camera(content, topics: away, stage: stage, legend: legend) == plain)
+        #expect(SlideFit.camera(content, topics: away, stage: stage, legend: nil) == plain)
+        // A topic in the corner: the larger of the fits above and beside the legend.
+        let corner = away + [CGRect(x: 0, y: 860, width: 100, height: 40)]
+        #expect(corner.contains { plain.toView($0).intersects(legend) })
+        let c = SlideFit.camera(content, topics: corner, stage: stage, legend: legend)
+        #expect(
+            !corner.contains { c.toView($0).intersects(legend.insetBy(dx: -SlideFit.gap / 2, dy: -SlideFit.gap / 2)) })
+        #expect(abs(c.zoom - (1700 - 372) / 1600) < 0.001, "beside the legend is roomier than above it")
+        #expect(stage.contains(c.toView(content)))
+    }
+
+    @Test func slidesFrameTheirTopicsClearOfTheLegend() throws {
+        let h = harness(Self.cornerDocument())
+        let v = h.host.canvasView
+        h.press("shift+cmd+p")
+        h.press("f")  // Stage only: the stage reaches down into the legend's corner.
+        let slide = h.controller.slides[0]
+        let legend = try #require(v.presentLegendRect())
+        let topics = slide.focus.compactMap { h.controller.scene.nodes[$0]?.frame.rect }
+        let content = topics.reduce(CGRect.null) { $0.union($1) }
+        let stage = v.stageRect(aspect: h.canvas.presentation.aspectRatio)
+        // Fitting the whole stage would put "Bottom left" under the legend…
+        let plain = SlideFit.camera(content, in: stage)
+        #expect(topics.contains { plain.toView($0).intersects(legend) })
+        // …so the slide fits around it, inside the stage.
+        for r in topics {
+            #expect(!v.camera.toView(r).intersects(legend))
+            #expect(stage.insetBy(dx: -1, dy: -1).contains(v.camera.toView(r)))
+        }
+        #expect(v.camera.zoom <= plain.zoom)
+        // The legend sits on the progress dots' line, left of them.
+        let dots = 22 + CGFloat(h.controller.slides.count - 1) * 13
+        #expect(abs(legend.maxY - (v.bounds.height - 28)) < 0.01 && legend.maxX < v.bounds.width - 56 - dots)
+        // With the strip, the legend sits just above it.
+        h.press("f")
+        let above = try #require(v.presentLegendRect())
+        #expect(abs(above.maxY - (v.bounds.height - 28 - SlideStripView.height)) < 0.01)
+        #expect(!topics.contains { v.camera.toView($0).intersects(above) })
+        // The Notes slide has no markers, so no legend and nothing to avoid.
+        h.controller.goToSlide(1)
+        #expect(v.presentLegendRect() == nil)
+        // Exported slides frame around the legend's place on a 1920 × 1080 slide.
+        let prefs = Preferences.isolated()
+        prefs.set("appearance.followSystem", false)
+        var checked = 0
+        let images = SlideExporter.renderSlides(Self.cornerDocument(), canvas: "c1", prefs: prefs) { view, s in
+            guard let box = view.presentLegendRect(), let l = view.controller.presentLegend(for: s) else { return }
+            #expect(box == PresentLegendPlacement.export(SlideExporter.size).rect(l, in: SlideExporter.size))
+            let rects = s.focus.compactMap { view.controller.scene.nodes[$0]?.frame.rect }
+            let full = SlideFit.camera(
+                rects.reduce(CGRect.null) { $0.union($1) }, in: view.stageRect(aspect: 16.0 / 9))
+            #expect(rects.contains { full.toView($0).intersects(box) }, "the plain fit would cover a topic")
+            #expect(!rects.contains { view.camera.toView($0).intersects(box) })
+            checked += 1
+        }
+        #expect(images.count == 2 && checked == 1)
+    }
+
+    @Test func eachSlidesLegendListsItsOwnMarkers() throws {
+        let h = harness()
+        h.press("shift+cmd+p")
+        func slide(_ t: String) -> Slide? { h.controller.slides.first { $0.title == t } }
+        let launch = try #require(slide("Launch"))
+        // VoiceOver reads what the slide shows.
+        let spoken = try #require(h.controller.presentLegend(for: launch)?.spoken)
+        #expect(spoken.contains("Priority 1") && spoken.contains("Q4") && !spoken.contains("Blocked"))
+        // A merged slide lists both slides' markers, in the legend's order.
+        let build = try #require(h.controller.slides.firstIndex { $0.title == "Build" })
+        h.controller.goToSlide(build)
+        h.press("m")
+        let merged = try #require(slide("Build · Launch"))
+        #expect(h.controller.presentLegend(for: merged)?.rows.map(\.text) == ["Priority 1", "Blocked", "Q4"])
+        h.undo.undo(h.store)
+        #expect(slide("Build") != nil)
+        // A topic hidden from slides, or under a fold, takes its markers with it.
+        let design = id(h, "Design")
+        h.controller.perform("Hide") { $0.update(design) { $0.presentHidden = true } }
+        #expect(h.controller.presentLegend(for: try #require(slide("Build"))) == nil)
+        #expect(h.controller.presentLegend(for: h.controller.slides[0])?.rows.map(\.text) == ["Priority 1", "Q4"])
+        h.controller.perform("Show") { $0.update(design) { $0.presentHidden = false } }
+        let buildID = id(h, "Build")
+        h.controller.perform("Fold") { try $0.toggleFold(buildID) }
+        #expect(h.controller.presentLegend(for: try #require(slide("Build"))) == nil)
+        // A canvas legend that lists nothing yet stays off the slides.
+        var doc = LegendTests.document(legend: Legend())
+        doc.canvases["c1"]!.nodes = doc.canvases["c1"]!.nodes.mapValues { n in
+            var n = n
+            n.markers = []
+            n.labels = []
+            return n
+        }
+        let blank = harness(doc)
+        blank.press("shift+cmd+p")
+        #expect(blank.controller.slides.allSatisfy { blank.controller.presentLegend(for: $0) == nil })
+    }
+
+    @Test func diagramDecksCloseWithATimelineSlide() throws {
+        var flow = TechSamples.flowchart()
+        var u = UndoStack()
+        flow.edit("Tasks", undo: &u) { e in
+            let email = e.canvas.nodes.first { $0.value.text == "Enter email" }!.key
+            let send = e.canvas.nodes.first { $0.value.text == "Email the link" }!.key
+            e.updateTask(email) {
+                $0.start = d("2026-11-02")
+                $0.due = d("2026-11-03")
+                $0.owner = "Ana"
+            }
+            e.updateTask(send) { $0.due = d("2026-11-06") }
+        }
+        let h = harness(DocumentModel(canvases: [flow]))
+        h.press("shift+cmd+p")
+        let before = h.controller.slides.map(\.id)
+        #expect(before.first == "title" && before.dropFirst().allSatisfy { $0.hasPrefix("flow:") })
+        h.press("t")
+        let root = h.canvas.root
+        #expect(h.controller.slides.map(\.id) == before + ["timeline:\(root.rawValue)"])
+        let slide = try #require(h.controller.slides.last)
+        #expect(h.controller.slideTitle(slide) == "Forgot password · Timeline")
+        #expect(slide.kicker.hasSuffix("STEP \(before.count) OF \(before.count)"))
+        let chart = try #require(h.controller.timelineChart(for: slide))
+        let rows = chart.renderer.layout.rows.map(\.id)
+        #expect(rows.contains(id(h, "Enter email")) && rows.contains(id(h, "Email the link")))
+        let spoken = h.controller.timelineSpoken(slide)
+        #expect(spoken.hasPrefix("Timeline for Forgot password: Enter email, ⚠︎ Ana · "))
+        #expect(spoken.contains("Email the link, ◆ "))
+        #expect(h.controller.presentLegend(for: slide) == nil && h.controller.slideTaskLine(slide) == nil)
+        // Sequences close the same way, and exports draw it as a chart.
+        var seq = TechSamples.sequence()
+        seq.edit("Task", undo: &u) { e in
+            let auth = e.canvas.nodes.first { $0.value.text == "Auth service" }!.key
+            e.updateTask(auth) {
+                $0.start = d("2026-11-02")
+                $0.due = d("2026-11-04")
+            }
+            e.updateMeta { $0.presentation.timeline = true }
+        }
+        #expect(Deck.slides(seq).last?.id == "timeline:\(seq.root.rawValue)")
+        let prefs = Preferences.isolated()
+        prefs.set("appearance.followSystem", false)
+        let images = SlideExporter.renderSlides(
+            DocumentModel(canvases: [seq]), canvas: "c1", prefs: prefs, today: d("2026-11-04"))
+        #expect(images.count == Deck.slides(seq).count)
+        let middle = CGRect(x: 400, y: 400, width: 1100, height: 300)
+        #expect(Self.differing(images[images.count - 1], images[images.count - 2], in: middle) > 5000)
+        // Without dated tasks, nothing changes.
+        var plain = TechSamples.flowchart()
+        plain.presentation.timeline = true
+        #expect(!Deck.slides(plain).contains { $0.timeline != nil })
+    }
+
     /// Visual review: NEXUS_SNAPSHOT_DIR=… writes the exported slides with the corner legend
     /// and a Timeline slide.
     @Test(.enabled(if: ProcessInfo.processInfo.environment["NEXUS_SNAPSHOT_DIR"] != nil)) func snapshot() throws {
@@ -302,5 +483,32 @@ private func d(_ s: String) -> TaskDate { TaskDate(s)! }
         for (i, img) in images.enumerated() {
             try ImageExporter.png(img).write(to: dir.appending(path: "m21-slide\(i + 1).png"))
         }
+        // M28: a slide framed around the legend, and a flowchart's closing Timeline.
+        for (i, img) in SlideExporter.renderSlides(Self.cornerDocument(), canvas: "c1", prefs: prefs).enumerated() {
+            try ImageExporter.png(img).write(to: dir.appending(path: "m28-corner\(i + 1).png"))
+        }
+        var flow = TechSamples.flowchart()
+        var u = UndoStack()
+        flow.edit("Tasks", undo: &u) { e in
+            for (k, t) in ["Enter email", "Create reset token", "Email the link"].enumerated() {
+                let n = e.canvas.nodes.first { $0.value.text == t }!.key
+                e.updateTask(n) {
+                    $0.start = d("2026-11-02").adding(days: k * 2)
+                    $0.due = d("2026-11-03").adding(days: k * 2)
+                }
+            }
+            e.updateMeta { $0.presentation.timeline = true }
+        }
+        let deck = SlideExporter.renderSlides(
+            DocumentModel(canvases: [flow]), canvas: "c1", prefs: prefs, today: d("2026-11-04"))
+        if let last = deck.last { try ImageExporter.png(last).write(to: dir.appending(path: "m28-flow-timeline.png")) }
+        // The screen with the stage alone, framed around the legend.
+        let h = harness(Self.cornerDocument())
+        h.press("shift+cmd+p")
+        h.press("f")
+        h.snapshot(to: dir.appending(path: "m28-screen-stage.png"))
+        h.press("f")
+        h.snapshot(to: dir.appending(path: "m28-screen-strip.png"))
+        h.window.orderOut(nil)
     }
 }

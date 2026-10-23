@@ -34,17 +34,18 @@ struct PresentOverlayView: View {
                 .padding(.leading, 56)
                 .padding(.top, 36)
                 .allowsHitTesting(false)
+                // The slide's legend in its corner (M21, D200) and the progress dots share
+                // a line just above the strip, where the framing expects them (M28, D232).
+                let placement = PresentLegendPlacement.screen(stageOnly: p.stageOnly)
                 VStack {
                     Spacer()
                     HStack(alignment: .bottom) {
-                        // The canvas's legend in the slide's corner (M21, D200).
                         if let l = controller.presentLegend(for: slide) {
                             PresentLegendCorner(
-                                legend: l, theme: controller.scene.theme, canvas: controller.scene.canvasColor
+                                legend: l, theme: controller.scene.theme, canvas: controller.scene.canvasColor,
+                                placement: placement
                             )
-                            .padding(.leading, 56)
-                            .padding(.bottom, p.stageOnly ? 28 : 268)
-                            .allowsHitTesting(false)
+                            .padding(.leading, placement.leading)
                         }
                         Spacer()
                         HStack(spacing: 6) {
@@ -55,8 +56,12 @@ struct PresentOverlayView: View {
                             }
                         }
                         .padding(.trailing, 56)
-                        .padding(.bottom, p.stageOnly ? 28 : 268)
                     }
+                    .padding(.bottom, placement.bottom)
+                }
+                .allowsHitTesting(false)
+                VStack {
+                    Spacer()
                     if !p.stageOnly { SlideStripView(controller: controller, state: p, slides: slides) }
                 }
                 if p.showKeys { PresentKeysView().frame(maxWidth: .infinity, maxHeight: .infinity) }
@@ -69,6 +74,8 @@ struct SlideStripView: View {
     var controller: CanvasController
     let state: PresentState
     let slides: [Slide]
+    /// The strip's height; the corner legend and the dots sit above it (D232).
+    static let height: CGFloat = 236
 
     var body: some View {
         let settings = controller.canvas.presentation
@@ -148,7 +155,7 @@ struct SlideStripView: View {
             .font(.chrome(12.5))
         }
         .padding(16)
-        .frame(height: 236)
+        .frame(height: Self.height)
         .background(.regularMaterial)
         .overlay(alignment: .top) { Divider() }
     }

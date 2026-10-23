@@ -76,7 +76,8 @@ public struct Slide: Hashable, Sendable, Identifiable {
     public var flow: String?
     public var note: String?
     public var skipped: Bool = false
-    /// A Timeline slide: the branch under this topic drawn as a compact Gantt (M21).
+    /// A Timeline slide: the branch under this topic drawn as a compact Gantt (M21), or
+    /// the whole diagram when it is the central topic (M28).
     public var timeline: NodeID?
 }
 
@@ -144,7 +145,7 @@ public enum Deck {
                         id: "msg:\(r.id)", kicker: kicker, title: r.label.isEmpty ? "Message \(i + 1)" : r.label,
                         focus: all, highlight: [from, to], flow: r.id, note: c.nodes[to]?.note?.text))
             }
-            return out
+            return out + diagramTimeline(c, kicker: kicker, title: rootText, focus: all)
         }
         if DiagramCatalog.isTechnical(c.type) && s.stepThroughFlow {
             // One slide per flow, breadth-first from the diagram's sources.
@@ -175,7 +176,7 @@ public enum Deck {
                         id: "flow:\(f.id)", kicker: kicker, title: title, focus: all, highlight: [f.from, f.to],
                         flow: f.id, note: c.nodes[f.to]?.note?.text))
             }
-            return out
+            return out + diagramTimeline(c, kicker: kicker, title: rootText, focus: all)
         }
         // Hierarchies: one slide per main topic, framed on its branch.
         for m in (c.nodes[c.root]?.children ?? []) where visible(m) {
@@ -193,6 +194,20 @@ public enum Deck {
             }
         }
         return out
+    }
+
+    /// Flow and message decks have no branches, so with Timeline slides on they close
+    /// with one for the whole diagram (M28, D235): every dated task, filed under the
+    /// central topic as `timeline:<root>`.
+    static func diagramTimeline(_ c: Canvas, kicker: String, title: String, focus: [NodeID]) -> [Slide] {
+        guard c.presentation.timeline, focus.contains(where: { c.nodes[$0]?.todo?.isScheduled == true }) else {
+            return []
+        }
+        var t = Slide(
+            id: "timeline:\(c.root.rawValue)", kicker: kicker, title: title, focus: focus, highlight: [], flow: nil,
+            note: nil)
+        t.timeline = c.root
+        return [t]
     }
 }
 

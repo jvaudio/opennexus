@@ -130,6 +130,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     /// Forces Reduce Motion (Settings › Accessibility override, and tests).
     public var reduceMotionOverride: Bool?
+    /// Where the slide's corner legend goes when this view renders exported slides (nil:
+    /// the screen's place, D232).
+    var slideLegendPlacement: PresentLegendPlacement?
     var reduceMotion: Bool {
         reduceMotionOverride ?? controller.reduceMotionPreference
             ?? NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
@@ -756,9 +759,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             b = b.union(bd.rect)
         }
         let target = aspect.map { stageRect(aspect: $0) } ?? bounds.insetBy(dx: 60, dy: 60)
-        let z = min(1.4, max(0.1, min(target.width / max(b.width, 1), target.height / max(b.height, 1))))
-        let cam = Camera(
-            offset: CGPoint(x: target.midX - b.midX * z, y: target.midY - b.midY * z), zoom: z)
+        // A slide keeps its topics clear of the corner legend (M28, D232).
+        let cam = SlideFit.camera(b, topics: rects, stage: target, legend: aspect == nil ? nil : presentLegendRect())
         let transition = controller.present == nil ? "glide" : controller.canvas.presentation.transition
         // Zoom pulls out to show both slides, then pushes in; Glide flies straight; Cut jumps.
         let via = transition == "zoom" ? CameraTween.overview(from: camera, to: cam, in: bounds) : nil

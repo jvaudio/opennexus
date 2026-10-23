@@ -70,15 +70,26 @@ public struct SceneLegend: Equatable {
     static var labelFont: NSFont { .systemFont(ofSize: 11, weight: .medium) }
 
     /// Lays the legend out beside `content` (the rest of the scene), or at its position.
+    /// `among` keeps only the markers and labels those topics carry, in the canvas
+    /// legend's order and with its names, and leaves an empty legend empty (a slide's
+    /// corner legend, D233).
     @MainActor
-    static func make(_ legend: Legend, canvas: NexusCore.Canvas, content: CGRect) -> SceneLegend {
-        let used = canvas.legendContents
+    static func make(
+        _ legend: Legend, canvas: NexusCore.Canvas, content: CGRect, among: Set<NodeID>? = nil
+    ) -> SceneLegend {
+        var used = canvas.legendContents
+        if let among {
+            let on = among.compactMap { canvas.nodes[$0] }
+            let markers = Set(on.flatMap(\.markers))
+            let labels = Set(on.flatMap(\.labels))
+            used = (used.markers.filter(markers.contains), used.labels.filter(labels.contains))
+        }
         var rows: [Row] = []
         for m in MarkerLibrary.order(used.markers) {
             rows.append(Row(marker: m, text: legend.markers[m] ?? MarkerLibrary.name(m), rect: .zero))
         }
         for l in used.labels { rows.append(Row(label: l, text: l, rect: .zero)) }
-        if rows.isEmpty { rows.append(Row(text: Loc.t("No markers or labels yet"), rect: .zero)) }
+        if rows.isEmpty, among == nil { rows.append(Row(text: Loc.t("No markers or labels yet"), rect: .zero)) }
         func width(_ s: String, _ f: NSFont) -> CGFloat { ceil((s as NSString).size(withAttributes: [.font: f]).width) }
         var w = max(140, width(Loc.t("Legend"), titleFont))
         for r in rows {
