@@ -5037,6 +5037,10 @@
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
+    "Import" : {
+      "comment" : "UI text (AppDelegate.swift)",
+      "extractionState" : "migrated"
+    },
     "Import .xmind, OPML, Markdown, Mermaid, PlantUML, draw.io, FreeMind, MindManager, MindNode, Word, text, or a picture or PDF to read as a map." : {
       "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
@@ -5067,6 +5071,10 @@
     },
     "Important" : {
       "comment" : "UI text (LegendViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Importing “%@”" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "In document" : {
