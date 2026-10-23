@@ -67,6 +67,37 @@ enum ContextMenus {
         nextHandler(after: responder)?.performRegistryCommand(sender)
     }
 
+    /// Runs a row menu's item without the menu (VoiceOver's custom actions, D256): as
+    /// choosing it would, a command the controller doesn't run going up the chain.
+    @discardableResult
+    static func run(_ action: CanvasMenuAction, controller: CanvasController, from responder: NSResponder) -> Bool {
+        guard case .command(let id) = action else { return controller.runMenuAction(action) }
+        if controller.perform(id) { return true }
+        guard let next = nextHandler(after: responder) else { return false }
+        let item = NSMenuItem()
+        item.action = commandSelector
+        item.representedObject = id.rawValue
+        next.performRegistryCommand(item)
+        return true
+    }
+
+    /// A menu's items as VoiceOver custom actions (D179, D256): submenus flattened, each
+    /// item once, without the commands in `skipping` and the Structure items (⌥⌘1–9 and
+    /// the Format panel have them).
+    static func customActions(
+        _ entries: [CanvasMenuEntry], skipping: Set<CommandID> = [],
+        run: @escaping @MainActor (CanvasMenuAction) -> Bool
+    ) -> [NSAccessibilityCustomAction] {
+        var seen: [CanvasMenuAction] = []
+        return entries.flatMap(\.items).compactMap { item in
+            if let id = item.action.command, skipping.contains(id) || id.rawValue.hasPrefix("structure.") { return nil }
+            // Replace Image… is Insert › Image… again.
+            guard !seen.contains(item.action) else { return nil }
+            seen.append(item.action)
+            return NSAccessibilityCustomAction(name: item.title) { run(item.action) }
+        }
+    }
+
     /// Runs an item that isn't a plain command.
     static func performAction(_ sender: Any?, controller: CanvasController) {
         guard let box = (sender as? NSMenuItem)?.representedObject as? MenuActionBox else { return }
@@ -98,13 +129,20 @@ enum ContextMenus {
 }
 
 /// A row VoiceOver reads in the outline or the Gantt; Show Menu (VO-Shift-M) opens the
-/// row's context menu (D226).
+/// row's context menu (D226). An outline row lists its menu as custom actions, made when
+/// VoiceOver asks (D256).
 @MainActor
 final class MenuRowElement: NSAccessibilityElement {
     nonisolated(unsafe) var showMenu: (@MainActor @Sendable () -> Bool)?
+    nonisolated(unsafe) var customActions: (@MainActor @Sendable () -> [NSAccessibilityCustomAction])?
 
     override func accessibilityPerformShowMenu() -> Bool {
         let show = showMenu
         return onMain { show?() ?? false }
+    }
+
+    override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
+        guard let make = customActions else { return super.accessibilityCustomActions() }
+        return onMain { make() }
     }
 }

@@ -408,6 +408,13 @@ extension CanvasController {
             )
             return
         }
+        let image = imageAsset(data, ext: ext, size: size)
+        perform(Loc.t("Image")) { e in e.update(id) { $0.image = image } }
+    }
+
+    /// Stores an image's bytes (optimised when Settings › Files asks) and returns what a
+    /// topic holds: at most 200 pt wide, its aspect kept.
+    func imageAsset(_ data: Data, ext: String, size: CGSize?) -> AssetRef {
         var data = data
         var ext = ext
         if prefs.bool("files.optimiseImages"), let (d, e) = Self.optimisedImage(data, ext: ext) {
@@ -417,7 +424,7 @@ extension CanvasController {
         let name = storeAsset(data, ext: ext)
         let w = size.map { min(Double($0.width), 200) }
         let h = size.map { Double($0.height) * (w ?? 200) / max(Double($0.width), 1) }
-        perform(Loc.t("Image")) { e in e.update(id) { $0.image = AssetRef(asset: name, width: w, height: h) } }
+        return AssetRef(asset: name, width: w, height: h)
     }
 
     public func removeImage(on id: NodeID) {

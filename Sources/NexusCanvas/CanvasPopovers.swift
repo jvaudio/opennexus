@@ -6,11 +6,15 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /// Presents the canvas's popovers next to a topic (note, link, labels, markers & stickers,
-/// audio) and handles image / attachment requests.
+/// comments, audio), on the canvas or on the topic's outline row, and handles image /
+/// attachment requests.
 @MainActor
 final class CanvasPopovers: NSObject, NSPopoverDelegate {
     weak var view: CanvasView?
     private var popover: NSPopover?
+    /// The view the popover hangs from (the canvas, or an outline row's view), which gets
+    /// focus back when it closes.
+    private weak var anchorView: NSView?
     private var player: AVAudioPlayer?
 
     init(view: CanvasView) {
@@ -66,32 +70,55 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
     }
 
     private func show(_ content: some View, at id: NodeID, size: CGSize) {
-        guard let view, let f = view.viewRect(of: id) else { return }
-        show(content, rect: f, size: size)
+        guard let (anchor, f) = anchor(for: id) else { return }
+        show(content, rect: f, in: anchor, size: size)
     }
 
-    private func show(_ content: some View, rect f: CGRect, size: CGSize) {
+    /// Where a topic's popover hangs: its row in the outline while the outline has focus or
+    /// the canvas is hidden (Outline view), else the topic on the canvas (D254).
+    func anchor(for id: NodeID) -> (NSView, CGRect)? {
+        guard let view else { return nil }
+        let c = view.controller
+        let canvasShown = view.window != nil && !view.isHiddenOrHasHiddenAncestor
+        if c.outlineFocused || !canvasShown, let row = c.outlineAnchor?(id) { return row }
+        return view.viewRect(of: id).map { (view, $0) }
+    }
+
+    /// Shows the popover (tests record it instead: there's no screen to show it on).
+    lazy var present: (NSPopover, CGRect, NSView) -> Void = { p, rect, view in
+        p.show(relativeTo: rect, of: view, preferredEdge: .maxX)
+    }
+
+    private func show(_ content: some View, rect f: CGRect, in anchor: NSView? = nil, size: CGSize) {
         guard let view else { return }
+        let anchor = anchor ?? view
+        anchorView = anchor
         close()
         let p = NSPopover()
         p.behavior = .transient
         p.contentSize = size
         p.contentViewController = NSHostingController(rootView: content.frame(width: size.width, height: size.height))
         p.delegate = self
-        p.show(relativeTo: f, of: view, preferredEdge: .maxX)
+        present(p, f, anchor)
         popover = p
     }
 
+    /// Closes the popover and gives focus back to the view it hung from.
     func close() {
         popover?.performClose(nil)
         popover = nil
-        view.map { $0.window?.makeFirstResponder($0) }
+        restoreFocus()
+    }
+
+    private func restoreFocus() {
+        guard let v = anchorView ?? view else { return }
+        v.window?.makeFirstResponder(v)
     }
 
     nonisolated func popoverDidClose(_ notification: Notification) {
         MainActor.assumeIsolated {
             popover = nil
-            if let v = view { v.window?.makeFirstResponder(v) }
+            restoreFocus()
         }
     }
 }
