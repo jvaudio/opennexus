@@ -117,12 +117,21 @@ struct PanelRow<Trailing: View>: View {
 struct PanelToggle: View {
     let label: String
     let isOn: Bool
+    /// Several selected items differ (D260): shown off, with "Mixed" beside the label;
+    /// turning it on sets every one.
+    var mixed = false
     let set: (Bool) -> Void
 
     var body: some View {
-        Toggle(isOn: Binding(get: { isOn }, set: set)) { Text(label).font(.chrome(13)) }
-            .toggleStyle(.switch)
-            .controlSize(.small)
+        let toggle = Toggle(isOn: Binding(get: { isOn && !mixed }, set: set)) {
+            HStack(spacing: 6) {
+                Text(label).font(.chrome(13))
+                if mixed { Text(Loc.t("Mixed")).font(.chrome(11)).foregroundStyle(.secondary) }
+            }
+        }
+        .toggleStyle(.switch)
+        .controlSize(.small)
+        if mixed { toggle.accessibilityValue(Text(Loc.t("Mixed"))) } else { toggle }
     }
 }
 

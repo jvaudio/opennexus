@@ -86,7 +86,7 @@ import Testing
         let rotors = v.accessibilityCustomRotors()
         #expect(
             rotors.map(\.label) == [
-                "Topics", "Notes", "Comments", "Edges", "Boundaries", "AI suggestions", "Connect targets",
+                "Topics", "Notes", "Comments", "Edges", "Boundaries", "Zones", "AI suggestions", "Connect targets",
             ])
         func walk(_ label: String) -> [String] {
             let r = rotors.first { $0.label == label }!

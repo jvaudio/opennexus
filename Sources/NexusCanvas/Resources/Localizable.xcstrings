@@ -177,6 +177,10 @@
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
+    "%@. Zone around %@." : {
+      "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "%@. Zone." : {
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
@@ -1229,6 +1233,30 @@
         }
       }
     },
+    "%lld Zones" : {
+      "comment" : "Count phrase with plural variants (FormatPanelElements.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Zone"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Zones"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld%%" : {
       "comment" : "Text with values filled in (TaskViews.swift)",
       "extractionState" : "migrated"
@@ -1881,6 +1909,10 @@
       "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
+    "Add to Selection" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Add Topic" : {
       "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
@@ -2174,7 +2206,7 @@
       "extractionState" : "migrated"
     },
     "Arrange" : {
-      "comment" : "UI text (FormatPanelElements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Arrange works on zones and floating topics" : {
@@ -2923,6 +2955,10 @@
     },
     "Collapsed" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Collapsed." : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
     "Colored branch" : {
@@ -6065,6 +6101,10 @@
       "comment" : "Node type (Threat Model)",
       "extractionState" : "migrated"
     },
+    "Mixed" : {
+      "comment" : "UI text (FormatPanelControls.swift)",
+      "extractionState" : "migrated"
+    },
     "mm" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -7653,6 +7693,10 @@
       "comment" : "UI text (AllowedFoldersView.swift)",
       "extractionState" : "migrated"
     },
+    "Remove from Selection" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Remove Image" : {
       "comment" : "UI text (CanvasMenu.swift)",
       "extractionState" : "migrated"
@@ -7678,6 +7722,14 @@
       "extractionState" : "migrated"
     },
     "Remove zone (keep content)" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Remove Zones" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Remove zones (keep content)" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
@@ -8231,6 +8283,14 @@
     },
     "Selected tasks, finish to start, in row order" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Selected, %lld of %lld selected zones." : {
+      "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "Selected." : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
     "Selection ring" : {
@@ -9910,7 +9970,7 @@
       "extractionState" : "migrated"
     },
     "Zones" : {
-      "comment" : "UI text (CanvasController+Files.swift)",
+      "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
     "Zoom" : {

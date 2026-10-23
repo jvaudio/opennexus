@@ -311,6 +311,45 @@ private func id(_ c: Canvas, _ text: String) -> NodeID { c.nodes.first { $0.valu
         #expect(pasted.to == .boundary(c.boundaries[1].id))
     }
 
+    /// M34 (D259): Arrange on several zones keeps their order among themselves; one zone
+    /// moves as `reorderZone` moves it.
+    @Test func reorderZonesMovesTheGroup() throws {
+        var c = sampleCanvas()
+        var undo = UndoStack()
+        let ids = try c.edit("Zones", undo: &undo) { e in
+            (0..<5).map { i in
+                e.addZone(
+                    title: "Z\(i)", origin: CanvasPoint(x: Double(i) * 400, y: 900), width: 300, height: 200,
+                    members: [])
+            }
+        }
+        func order() -> [String] { c.zones.map(\.title) }
+        let picked = [ids[3], ids[1]]
+        try c.edit("Front", undo: &undo) { $0.reorderZones(picked, .front) }
+        #expect(order() == ["Z0", "Z2", "Z4", "Z1", "Z3"])
+        try c.edit("Back", undo: &undo) { $0.reorderZones(picked, .back) }
+        #expect(order() == ["Z1", "Z3", "Z0", "Z2", "Z4"])
+        try c.edit("Forward", undo: &undo) { $0.reorderZones(picked, .forward) }
+        #expect(order() == ["Z0", "Z1", "Z3", "Z2", "Z4"], "each one step past an unselected zone")
+        try c.edit("Forward", undo: &undo) { $0.reorderZones([ids[2], ids[4]], .forward) }
+        #expect(order() == ["Z0", "Z1", "Z3", "Z2", "Z4"], "a zone behind a selected one at the front stays")
+        try c.edit("Backward", undo: &undo) { $0.reorderZones([ids[0], ids[2]], .backward) }
+        #expect(order() == ["Z0", "Z1", "Z2", "Z3", "Z4"], "the rearmost stays; Z2 steps back past Z3")
+        // One zone: the same as reorderZone.
+        for order in [CanvasEditor.ZOrder.front, .back, .forward, .backward] {
+            var a = c
+            var b = c
+            var u = UndoStack()
+            try a.edit("One", undo: &u) { $0.reorderZones([ids[2]], order) }
+            try b.edit("One", undo: &u) { $0.reorderZone(ids[2], order) }
+            #expect(a.zones == b.zones)
+        }
+        let before = c
+        try c.edit("Front", undo: &undo) { $0.reorderZones(picked, .front) }
+        undo.undo()!.apply(to: &c)
+        #expect(c == before)
+    }
+
     @Test func topicLinksParse() {
         let link = TopicLink.make(canvas: "c2", node: "n7")
         #expect(link == "nexus:topic/c2/n7")
