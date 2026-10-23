@@ -15,6 +15,14 @@ final class MinimapView: NSView {
     /// Called when the camera or the scene changes.
     func refresh(panning: Bool) {
         guard let c = canvas else { return }
+        // Slides and exports move the camera too, but there's nothing to navigate: the
+        // minimap would cover Present's strip.
+        if c.controller.present != nil || c.exportMode {
+            hideTimer?.invalidate()
+            hideTimer = nil
+            isHidden = true
+            return
+        }
         let mode = c.controller.prefs.string("appearance.minimap")
         let big = c.controller.scene.nodes.count > 1
         switch mode {

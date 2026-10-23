@@ -206,6 +206,8 @@ public final class CanvasController {
     /// A topic's row in the outline, as a view and a rect in it, while the outline shows
     /// it: popovers anchor there when the outline has focus or the canvas is hidden (D254).
     @ObservationIgnored var outlineAnchor: ((NodeID) -> (NSView, CGRect)?)?
+    /// The same for a task's row in the Gantt, while it has focus or the canvas is hidden.
+    @ObservationIgnored var ganttAnchor: ((NodeID) -> (NSView, CGRect)?)?
     @ObservationIgnored public var onZen: ((Bool) -> Void)?
     @ObservationIgnored public var onPresent: ((Bool) -> Void)?
     /// Export the deck: "PDF", "PowerPoint", "Keynote" or "Video".

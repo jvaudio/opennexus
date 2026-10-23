@@ -74,13 +74,15 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
         show(content, rect: f, in: anchor, size: size)
     }
 
-    /// Where a topic's popover hangs: its row in the outline while the outline has focus or
-    /// the canvas is hidden (Outline view), else the topic on the canvas (D254).
+    /// Where a topic's popover hangs: its row in the outline or the Gantt while that view
+    /// has focus or the canvas is hidden, else the topic on the canvas (D254).
     func anchor(for id: NodeID) -> (NSView, CGRect)? {
         guard let view else { return nil }
         let c = view.controller
         let canvasShown = view.window != nil && !view.isHiddenOrHasHiddenAncestor
-        if c.outlineFocused || !canvasShown, let row = c.outlineAnchor?(id) { return row }
+        if c.outlineFocused, let row = c.outlineAnchor?(id) { return row }
+        if c.ganttFocused, let row = c.ganttAnchor?(id) { return row }
+        if !canvasShown, let row = c.outlineAnchor?(id) ?? c.ganttAnchor?(id) { return row }
         return view.viewRect(of: id).map { (view, $0) }
     }
 

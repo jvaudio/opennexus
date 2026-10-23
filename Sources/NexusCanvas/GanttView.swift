@@ -117,6 +117,18 @@ final class GanttSurface: NSView, ContextMenuTarget, NSMenuItemValidation {
         setAccessibilityElement(true)
         setAccessibilityRole(.outline)
         setAccessibilityLabel(Loc.t("Tasks"))
+        controller.ganttAnchor = { [weak self] id in self?.popoverAnchor(id) }
+    }
+
+    /// A task's row as a popover's anchor: its name column, scrolled into view, while the
+    /// Gantt is on screen. Nil when it's hidden or the topic has no row (folded away).
+    func popoverAnchor(_ id: NodeID) -> (NSView, CGRect)? {
+        guard window != nil, !isHiddenOrHasHiddenAncestor else { return nil }
+        reload()
+        guard let L = layout, let r = L.rows.first(where: { $0.id == id }) else { return nil }
+        let name = CGRect(x: r.frame.minX, y: r.frame.minY, width: max(L.tableWidth, 1), height: r.frame.height)
+        scrollToVisible(name)
+        return (self, name)
     }
 
     required init?(coder: NSCoder) { fatalError() }
