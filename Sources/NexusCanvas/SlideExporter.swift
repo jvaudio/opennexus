@@ -12,10 +12,10 @@ public enum SlideExporter {
 
     /// One image per playing slide (skipped slides are left out), with kicker and title,
     /// the task line, the corner legend and Timeline charts (M21). `prefs` and `today`
-    /// default to the app's.
+    /// default to the app's; `inspect` sees each slide's view before it's drawn (tests).
     public static func renderSlides(
         _ model: DocumentModel, canvas id: CanvasID, size: CGSize = size, prefs: Preferences? = nil,
-        today: TaskDate? = nil
+        today: TaskDate? = nil, inspect: ((CanvasView, Slide) -> Void)? = nil
     ) -> [CGImage] {
         let store = DocumentStore(model: model)
         let controller = CanvasController(store: store)
@@ -25,6 +25,8 @@ public enum SlideExporter {
         controller.switchCanvas(to: id)
         let view = CanvasView(controller: controller)
         view.reduceMotionOverride = true
+        // Frame each slide around the legend's place on the exported slide (D232).
+        view.slideLegendPlacement = .export(size)
         let window = NSWindow(
             contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         window.contentView = view
@@ -38,6 +40,7 @@ public enum SlideExporter {
             controller.present?.stageOnly = true
             controller.showSlide()
             view.layoutSubtreeIfNeeded()
+            inspect?(view, s)
             if let img = render(view, controller, size: size, slide: s) {
                 out.append(img)
             }

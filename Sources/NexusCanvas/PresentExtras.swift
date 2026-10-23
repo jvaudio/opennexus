@@ -5,15 +5,29 @@ import SwiftUI
 
 // Present's legend, task lines and Timeline slides (M21). The screen and the slide
 // exports draw the same pieces: the legend through `LegendLayer.draw`, the Timeline
-// through `GanttRenderer`.
+// through `GanttRenderer`. M28: the legend lists only the slide's markers, and the
+// framing keeps the slide's topics clear of it.
 
 @MainActor
 extension CanvasController {
     /// The legend in a corner of the slide (D200): the canvas shows one, the deck's Legend
-    /// setting is on, and the slide isn't a Timeline (which has no markers).
+    /// setting is on, and the slide isn't a Timeline (which has no markers). It lists only
+    /// the markers and labels on the slide's topics, and a slide without any has none
+    /// (D233).
     public func presentLegend(for slide: Slide?) -> SceneLegend? {
-        guard let l = canvas.legend, l.visible, canvas.presentation.legend, slide?.timeline == nil else { return nil }
-        return SceneLegend.make(l, canvas: canvas, content: .zero)
+        guard let l = canvas.legend, l.visible, canvas.presentation.legend, let slide, slide.timeline == nil else {
+            return nil
+        }
+        let legend = SceneLegend.make(l, canvas: canvas, content: .zero, among: slideTopics(slide))
+        return legend.rows.isEmpty ? nil : legend
+    }
+
+    /// The topics a slide frames (the rest dims or is out of shot), less those hidden
+    /// from slides and those under a fold (D233).
+    func slideTopics(_ s: Slide) -> Set<NodeID> {
+        let shown = Set(canvas.visibleNodes())
+        let ids = s.focus.isEmpty ? Array(shown) : s.focus.filter(shown.contains)
+        return Set(ids.filter { canvas.nodes[$0].map { !$0.presentHidden } ?? false })
     }
 
     /// The slide's own topic: the main topic of a branch, a flow's target, the central
@@ -60,10 +74,17 @@ extension CanvasController {
     /// The canvas has a dated task (the Timeline chip shows only then).
     var canvasHasScheduledTasks: Bool { canvas.nodes.values.contains { $0.todo?.isScheduled == true } }
 
+    /// The topics a Timeline slide charts: its branch, or every topic for a diagram's
+    /// Timeline, which is filed under the central topic (D235).
+    func timelineTopics(_ top: NodeID) -> [NodeID] {
+        top == canvas.root
+            ? canvas.tops.flatMap { canvas.subtree($0, includeFolded: true) } : canvas.subtree(top, includeFolded: true)
+    }
+
     /// The compact Gantt for a Timeline slide (D202): the branch's rows, over its own dates.
     func timelineChart(for s: Slide) -> TimelineChart? {
         guard let top = s.timeline, canvas.nodes[top] != nil else { return nil }
-        let only = Set(canvas.subtree(top, includeFolded: true))
+        let only = Set(timelineTopics(top))
         func layout(_ scale: GanttScale) -> GanttLayout {
             GanttLayout(canvas: canvas, collapsed: [], scale: scale, today: todayDate, only: only)
         }
@@ -88,11 +109,98 @@ extension CanvasController {
     /// What VoiceOver reads for a Timeline slide's chart.
     func timelineSpoken(_ s: Slide) -> String {
         guard let top = s.timeline else { return "" }
-        let rows = canvas.subtree(top, includeFolded: true).compactMap { id -> String? in
+        let rows = timelineTopics(top).compactMap { id -> String? in
             guard let n = canvas.nodes[id], n.todo != nil else { return nil }
             return [n.text, TaskFormat.line(canvas, id, today: todayDate)].compactMap { $0 }.joined(separator: ", ")
         }
         return Loc.f("Timeline for %@", s.title) + ": " + rows.joined(separator: "; ")
+    }
+}
+
+/// Where the corner legend sits on a slide (D200, D232): bottom-left, on the progress
+/// dots' line, a little larger than on the canvas and never taller than `maxHeight`.
+/// The overlay, the framing and the exported slides all place it from here.
+struct PresentLegendPlacement: Equatable {
+    var leading: CGFloat
+    /// From the bottom of the view or slide to the bottom of the box.
+    var bottom: CGFloat
+    var base: CGFloat
+    var maxHeight: CGFloat
+
+    /// On screen: 1.2×, 28 pt above the slide strip, or above the window's edge when the
+    /// stage is alone.
+    static func screen(stageOnly: Bool) -> Self {
+        Self(leading: 56, bottom: 28 + (stageOnly ? 0 : SlideStripView.height), base: 1.2, maxHeight: 320)
+    }
+
+    /// On an exported slide (1920 × 1080): 2×, at the title's margin.
+    static func export(_ size: CGSize) -> Self {
+        Self(leading: 84, bottom: 64, base: 2, maxHeight: size.height * 0.42)
+    }
+
+    func scale(_ l: SceneLegend) -> CGFloat { min(base, maxHeight / max(l.rect.height, 1)) }
+
+    /// The box in a view or slide of `size` (flipped: y grows down).
+    func rect(_ l: SceneLegend, in size: CGSize) -> CGRect {
+        let k = scale(l)
+        let h = l.rect.height * k
+        return CGRect(x: leading, y: size.height - bottom - h, width: l.rect.width * k, height: h)
+    }
+}
+
+/// Fitting a slide's topics to the stage around the corner legend (D232).
+enum SlideFit {
+    static let maxZoom: CGFloat = 1.4
+    /// The clear space kept between the legend and the nearest topic.
+    static let gap: CGFloat = 12
+
+    /// `content` (world) centred in `target` (view), as large as fits.
+    static func camera(_ content: CGRect, in target: CGRect) -> Camera {
+        let z = min(
+            maxZoom, max(0.1, min(target.width / max(content.width, 1), target.height / max(content.height, 1))))
+        return Camera(offset: CGPoint(x: target.midX - content.midX * z, y: target.midY - content.midY * z), zoom: z)
+    }
+
+    /// The whole-stage fit, unless it puts one of `topics` (world rects) under `legend`
+    /// (view). Then the content fits the stage above the legend or beside it, whichever
+    /// is larger, and moves from the centre only as far as that space asks.
+    static func camera(_ content: CGRect, topics: [CGRect], stage: CGRect, legend: CGRect?) -> Camera {
+        let full = camera(content, in: stage)
+        guard let legend else { return full }
+        let keepOut = legend.insetBy(dx: -gap, dy: -gap)
+        // A topic may touch the edge of the kept-out space, so the test leaves it half the gap.
+        let near = legend.insetBy(dx: -gap / 2, dy: -gap / 2)
+        func clear(_ c: Camera) -> Bool { !topics.contains { c.toView($0).intersects(near) } }
+        if clear(full) { return full }
+        func placed(in r: CGRect) -> Camera {
+            var c = camera(content, in: r)
+            let w = content.width * c.zoom
+            let h = content.height * c.zoom
+            let x = min(max(stage.midX - w / 2, r.minX), r.maxX - w)
+            let y = min(max(stage.midY - h / 2, r.minY), r.maxY - h)
+            c.offset = CGPoint(x: x - content.minX * c.zoom, y: y - content.minY * c.zoom)
+            return c
+        }
+        let above = CGRect(x: stage.minX, y: stage.minY, width: stage.width, height: keepOut.minY - stage.minY)
+        let beside = CGRect(x: keepOut.maxX, y: stage.minY, width: stage.maxX - keepOut.maxX, height: stage.height)
+        let fits = [above, beside].filter { $0.width >= 80 && $0.height >= 80 }.map(placed).filter(clear)
+        func moved(_ c: Camera) -> CGFloat { hypot(c.offset.x - full.offset.x, c.offset.y - full.offset.y) }
+        // The larger zoom wins; at the same zoom, the smaller move.
+        return fits.min { a, b in
+            abs(a.zoom - b.zoom) > 0.001 ? a.zoom > b.zoom : moved(a) < moved(b)
+        } ?? full
+    }
+}
+
+extension CanvasView {
+    /// The corner legend's box on the current slide, in view coordinates, or nil when the
+    /// slide has none (D232).
+    func presentLegendRect() -> CGRect? {
+        guard let p = controller.present else { return nil }
+        let slides = controller.slides
+        guard p.index < slides.count, let l = controller.presentLegend(for: slides[p.index]) else { return nil }
+        let placement = slideLegendPlacement ?? .screen(stageOnly: p.stageOnly)
+        return placement.rect(l, in: bounds.size)
     }
 }
 
@@ -139,14 +247,10 @@ struct PresentLegendCorner: View {
     let legend: SceneLegend
     let theme: Theme
     let canvas: RGBA
-
-    /// A little larger than on the canvas, and never taller than `maxHeight`.
-    static func scale(_ l: SceneLegend, base: CGFloat, maxHeight: CGFloat) -> CGFloat {
-        min(base, maxHeight / max(l.rect.height, 1))
-    }
+    let placement: PresentLegendPlacement
 
     var body: some View {
-        let k = Self.scale(legend, base: 1.2, maxHeight: 320)
+        let k = placement.scale(legend)
         LegendDrawing(legend: legend, theme: theme, canvas: canvas, scale: k)
             .frame(width: legend.rect.width * k, height: legend.rect.height * k)
             .accessibilityElement()
@@ -247,9 +351,12 @@ extension SlideExporter {
             ring.stroke()
         }
         if let l = c.presentLegend(for: slide), let ctx = NSGraphicsContext.current?.cgContext {
-            let k = PresentLegendCorner.scale(l, base: 2, maxHeight: size.height * 0.42)
+            // The same box the framing kept clear (D232).
+            let placement = PresentLegendPlacement.export(size)
+            let k = placement.scale(l)
+            let box = placement.rect(l, in: size)
             ctx.saveGState()
-            ctx.translateBy(x: 84, y: size.height - 64 - l.rect.height * k)
+            ctx.translateBy(x: box.minX, y: box.minY)
             ctx.scaleBy(x: k, y: k)
             LegendLayer.draw(l, theme: theme, canvas: c.scene.canvasColor, origin: l.rect.origin)
             ctx.restoreGState()
