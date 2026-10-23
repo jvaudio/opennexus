@@ -14,13 +14,15 @@ public enum ImageText {
     public static let maxPages = 100
 
     /// Each page's text: a picture is one page, a PDF or multi-page TIFF up to `maxPages`.
-    /// `progress` gets (pages read, pages to read) after each page. Checks for cancellation
-    /// between pages.
+    /// `progress` gets (0, pages to read) once the source is open, so page counts show from
+    /// the first page (D238), then (pages read, pages to read) after each page. Checks for
+    /// cancellation between pages.
     public static func recognize(
         _ data: Data, name: String, progress: (@Sendable (Int, Int) -> Void)? = nil
     ) throws -> [RecognisedImage] {
         let source = try Source(data, name: name)
         let count = min(source.count, maxPages)
+        progress?(0, count)
         var pages: [RecognisedImage] = []
         for i in 0..<count {
             try Task.checkCancellation()

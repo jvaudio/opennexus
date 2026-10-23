@@ -398,7 +398,11 @@ struct Builder {
     }
 
     /// A topic whose text wraps onto a second line reads as two boxes stacked tightly.
-    static func mergeWrapped(_ lines: [TextBox], keep root: Int) -> (lines: [TextBox], root: Int) {
+    /// `apart` keeps a line (second) under another (first) apart even when they stack like
+    /// a wrap: a fishbone's sub-cause under its cause (D237).
+    static func mergeWrapped(
+        _ lines: [TextBox], keep root: Int, apart: ((TextBox, TextBox) -> Bool)? = nil
+    ) -> (lines: [TextBox], root: Int) {
         var items = lines.enumerated().map { ($0.element, $0.offset == root) }
         var merged = true
         while merged {
@@ -411,7 +415,9 @@ struct Builder {
                     let gap = b.minY - a.maxY
                     let aligned =
                         abs(a.midX - b.midX) < 0.25 * max(a.width, b.width) || abs(a.minX - b.minX) < 0.3 * h
-                    guard gap > -0.2 * h, gap < 0.45 * h, aligned, h / min(a.size, b.size) < 1.45 else { continue }
+                    guard gap > -0.2 * h, gap < 0.45 * h, aligned, h / min(a.size, b.size) < 1.45,
+                        !(apart?(a, b) ?? false)
+                    else { continue }
                     items[i] = (a.union(b), items[i].1 || items[j].1)
                     items.remove(at: j)
                     merged = true

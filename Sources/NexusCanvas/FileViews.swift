@@ -796,10 +796,7 @@ struct MergeSheetView: View {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(s.name).font(.chrome(15))
                                 Text(s.detail).font(.chrome(13)).foregroundStyle(.secondary)
-                                if let p = s.progress {
-                                    ProgressView(value: p).progressViewStyle(.linear).controlSize(.small)
-                                        .accessibilityLabel(Loc.f("Reading %@", s.name))
-                                }
+                                if let p = s.progress { ReadingProgressBar(name: s.name, value: p, detail: s.detail) }
                             }
                             Spacer()
                             Button {
@@ -847,6 +844,49 @@ struct MergeSheetView: View {
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
         }
+    }
+}
+
+/// A picture's or PDF's reading progress: the merge sheet's row (D191) and File › Import…'s
+/// window (D238). VoiceOver reads "Reading plan.pdf" and the page being read.
+struct ReadingProgressBar: View {
+    let name: String
+    let value: Double
+    let detail: String
+
+    var body: some View {
+        ProgressView(value: value).progressViewStyle(.linear).controlSize(.small)
+            .accessibilityLabel(Loc.f("Reading %@", name))
+            .accessibilityValue(detail)
+            .accessibilityAddTraits(.updatesFrequently)
+    }
+}
+
+// MARK: Image import (File › Import… of a picture or PDF, D238)
+
+/// The window File › Import… shows while a PDF of several pages is read: the page being
+/// read, the share done, and Cancel (Esc), which stops the reading between pages.
+public struct ImageImportView: View {
+    let progress: ImageImportProgress
+
+    public init(progress: ImageImportProgress) { self.progress = progress }
+
+    public var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(Loc.f("Importing “%@”", progress.name)).font(.chrome(15, weight: .semibold))
+                .lineLimit(1).truncationMode(.middle)
+            ReadingProgressBar(name: progress.name, value: progress.fraction, detail: progress.detail)
+            Text(progress.detail).font(.chrome(13)).foregroundStyle(.secondary)
+                .accessibilityHidden(true)
+            HStack {
+                Spacer()
+                Button(Loc.t("Cancel")) { progress.cancel() }.buttonStyle(FileButtonStyle())
+                    .keyboardShortcut(.cancelAction)
+                    .disabled(progress.cancelled)
+            }
+        }
+        .padding(20)
+        .frame(width: .chromeWidth(380))
     }
 }
 

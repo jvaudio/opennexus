@@ -134,7 +134,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     /// Image to mind map (M12): Vision and, when it can run, Apple Intelligence work off the
-    /// main thread; the new document opens when they finish.
+    /// main thread; the new document opens when they finish. A PDF of several pages shows
+    /// its progress in a window with Cancel (D238).
     @MainActor func importImage(_ url: URL) {
         let data: Data
         do {
@@ -143,13 +144,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             return importFailed(url.lastPathComponent, error)
         }
         let refine = Preferences.shared.bool(ImageToMap.refineKey)
-        Task { @MainActor in
-            do {
-                self.openImported(try await ImageToMap.importImage(data, name: url.lastPathComponent, refine: refine))
-            } catch {
-                self.importFailed(url.lastPathComponent, error)
+        let progress = ImageImportProgress(name: url.lastPathComponent)
+        progress.onManyPages = { [weak self, weak progress] in
+            if let progress { self?.showImportProgress(progress) }
+        }
+        progress.start(data, refine: refine) { [weak self] outcome in
+            guard let self else { return }
+            self.importWindows.removeValue(forKey: progress.id)?.close()
+            switch outcome {
+            case .imported(let im): self.openImported(im)
+            case .failed(let error): self.importFailed(url.lastPathComponent, error)
+            case .cancelled: break
             }
         }
+    }
+
+    /// Image imports showing their progress, by id.
+    private var importWindows: [UUID: NSWindow] = [:]
+
+    @MainActor func showImportProgress(_ progress: ImageImportProgress) {
+        let w = NSPanel(
+            contentRect: CGRect(x: 0, y: 0, width: 380, height: 140), styleMask: [.titled],
+            backing: .buffered, defer: false)
+        w.title = Loc.t("Import")
+        w.isReleasedWhenClosed = false
+        w.contentView = NSHostingView(rootView: ImageImportView(progress: progress))
+        w.setContentSize(w.contentView?.fittingSize ?? w.frame.size)
+        w.center()
+        // Several PDFs imported at once cascade.
+        let step = CGFloat(importWindows.count) * 24
+        w.setFrameTopLeftPoint(CGPoint(x: w.frame.minX + step, y: w.frame.maxY - step))
+        w.makeKeyAndOrderFront(nil)
+        importWindows[progress.id] = w
     }
 
     @MainActor func openImported(_ imported: Imported) {
