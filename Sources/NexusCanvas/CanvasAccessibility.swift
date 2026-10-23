@@ -166,6 +166,7 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
         var seen: [CanvasMenuAction] = []
         return entries.flatMap(\.items).compactMap { item in
             if let id = item.action.command, skipping.contains(id) || id.rawValue.hasPrefix("structure.") { return nil }
+            if case .structure = item.action { return nil }
             // Replace Image… is Insert › Image… again.
             guard !seen.contains(item.action) else { return nil }
             seen.append(item.action)

@@ -96,7 +96,8 @@ public enum XmindFormat {
         if c.contains("fishbone.rightHeaded") { return .fishboneRight }
         if c.contains("fishbone") { return .fishboneLeft }
         if c.contains("timeline.vertical") { return .timelineVertical }
-        if c.contains("timeline") { return .timelineHorizontal }
+        // Xmind's horizontal timeline alternates its branches above and below the axis (D251).
+        if c.contains("timeline") { return .timelineAlternating }
         if c.contains("spreadsheet") || c.contains("treetable") { return .treeTable }
         if c.contains("brace.left") { return .braceLeft }
         if c.contains("brace") { return .braceRight }
@@ -110,7 +111,7 @@ public enum XmindFormat {
         case .orgDown?: .org
         case .treeIndented?, .treeDown?: .tree
         case .fishboneLeft?, .fishboneRight?: .fishbone
-        case .timelineHorizontal?, .timelineVertical?: .timeline
+        case .timelineHorizontal?, .timelineVertical?, .timelineAlternating?: .timeline
         case .treeTable?: .treeTable
         case .braceLeft?, .braceRight?: .brace
         case .matrix?: .matrix

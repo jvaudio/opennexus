@@ -9261,6 +9261,10 @@
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
+    "Timeline (alternating)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
+      "extractionState" : "migrated"
+    },
     "Timeline (vertical)" : {
       "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"

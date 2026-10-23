@@ -198,10 +198,11 @@ struct StyleTab: View {
     }
 
     /// The picker's choices: the nine structures in ⌥⌘1…9 order, each named from the
-    /// structure it applies, and the current one first when it's another direction.
+    /// structure it applies, then the extras (D249), and the current one first when it's
+    /// another direction.
     static func structureOptions(current: LayoutStructure) -> [(LayoutStructure, String)] {
-        let cycle = CanvasController.structureCycle
-        let all = cycle.contains(current) ? cycle : [current] + cycle
+        let offered = CanvasController.structureCycle + CanvasController.structureExtras
+        let all = offered.contains(current) ? offered : [current] + offered
         return all.map { ($0, CanvasController.structureName($0)) }
     }
 

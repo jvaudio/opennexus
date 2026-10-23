@@ -144,7 +144,9 @@ public enum XmindWriter {
         case .orgDown: ("org.xmind.ui.org-chart.down", true)
         case .treeIndented: ("org.xmind.ui.tree.right", true)
         case .treeDown: ("org.xmind.ui.org-chart.down", false)
-        case .timelineHorizontal: ("org.xmind.ui.timeline.horizontal", true)
+        // Xmind has one horizontal timeline, drawn like ours alternating (D251).
+        case .timelineAlternating: ("org.xmind.ui.timeline.horizontal", true)
+        case .timelineHorizontal: ("org.xmind.ui.timeline.horizontal", false)
         case .timelineVertical: ("org.xmind.ui.timeline.vertical", true)
         case .fishboneLeft: ("org.xmind.ui.fishbone.leftHeaded", true)
         case .fishboneRight: ("org.xmind.ui.fishbone.rightHeaded", true)

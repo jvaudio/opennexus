@@ -14,6 +14,9 @@ extension CanvasController {
         .treeTable, .treeIndented,
     ]
 
+    /// Structures offered after the nine, with no ⌥⌘ key: Xmind's alternating timeline (D249).
+    public static let structureExtras: [LayoutStructure] = [.timelineAlternating]
+
     /// Commands that work in Select mode on the current selection.
     private var handlers: [CommandID: (CanvasController) -> Void] {
         var h: [CommandID: (CanvasController) -> Void] = [
@@ -364,6 +367,7 @@ extension CanvasController {
         case .braceLeft: Loc.t("Brace Map (left)")
         case .treeDown: Loc.t("Tree Chart (down)")
         case .timelineVertical: Loc.t("Timeline (vertical)")
+        case .timelineAlternating: Loc.t("Timeline (alternating)")
         case .fishboneRight: Loc.t("Fishbone (right)")
         default: Loc.t(diagramType(for: s).displayName)
         }

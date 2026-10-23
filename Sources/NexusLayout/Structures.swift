@@ -65,8 +65,11 @@ struct StructureLayouts {
         l.frames[top] = NodeFrame(center: .zero, size: s, side: side, depth: depth)
         switch structure.family {
         case "timeline":
-            structure == .timelineVertical
-                ? timelineVertical(top, depth: depth, into: &l) : timeline(top, depth: depth, side: side, into: &l)
+            switch structure {
+            case .timelineVertical: timelineVertical(top, depth: depth, into: &l)
+            case .timelineAlternating: timelineAlternating(top, depth: depth, side: side, into: &l)
+            default: timeline(top, depth: depth, side: side, into: &l)
+            }
         case "fishbone":
             // fishbone.left: bones grow left of the head; .right mirrors. A branch on the
             // left of its parent always grows left so it never folds back.
@@ -101,6 +104,7 @@ struct StructureLayouts {
             l.frames[k] = NodeFrame(center: CGPoint(x: cx, y: y + s.height / 2), size: s, side: side, depth: depth)
             y += s.height
             bottom = y
+            if nodes[k]?.folded == true { l.families[k] = "indent" }
             if !kids(k).isEmpty {
                 l.families[k] = "indent"
                 let nx = side == .left ? x - Self.indent : x + Self.indent
@@ -158,6 +162,96 @@ struct StructureLayouts {
             }
             y = bottom + 24
         }
+    }
+
+    // MARK: Alternating timeline
+
+    /// Room between an event and the stack of topics on its stem.
+    static let stemGap: CGFloat = 18
+    /// How far a stem's topics sit beside it.
+    static let stemInset: CGFloat = 14
+    /// Room between two branches on the same side of the axis.
+    static let branchGap: CGFloat = 24
+
+    /// Whether the `i`th event's branch rises above the axis (the first does).
+    static func branchAbove(_ i: Int) -> Bool { i % 2 == 0 }
+
+    /// Xmind's horizontal timeline (D248). Events ride the axis as in `timeline`; each
+    /// event's branch leaves from a stem at its centre, above the axis and below it in
+    /// turn, its topics stacked beside the stem (the first at the top) and growing away
+    /// from the root as logic charts. Events are as close as the axis allows, and a stem
+    /// waits until the last branch on its side has ended.
+    func timelineAlternating(_ top: NodeID, depth: Int, side: Side, into l: inout LocalLayout) {
+        let root = l.frames[top]!.rect
+        let dir: CGFloat = side == .left ? -1 : 1
+        let events = kids(top)
+        l.families[top] = "timelineAlt"
+        // Branches clear the tallest event, so none reaches into a neighbour on the axis.
+        let half = (events.map { size($0).height }.max() ?? 0) / 2
+        var cursor = dir > 0 ? root.maxX + 36 : root.minX - 36
+        // Where the last branch above (true) and below (false) the axis ends.
+        var reach: [Bool: CGFloat] = [:]
+        for (i, e) in events.enumerated() {
+            let s = size(e)
+            var cx = cursor + dir * s.width / 2
+            let above = Self.branchAbove(i)
+            let column = branchColumn(e, depth: depth + 2, side: side)
+            if !column.frames.isEmpty, let r = reach[above] {
+                cx = dir > 0 ? max(cx, r + Self.branchGap) : min(cx, r - Self.branchGap)
+            }
+            l.frames[e] = NodeFrame(center: CGPoint(x: cx, y: 0), size: s, side: side, depth: depth + 1)
+            cursor = cx + dir * (s.width / 2 + 28)
+            guard !column.frames.isEmpty else { continue }
+            l.families[e] = above ? "timelineUp" : "timelineDown"
+            let y = above ? -half - Self.stemGap - column.bbox.height : half + Self.stemGap
+            let placed = column.translated(by: CGPoint(x: cx + dir * Self.stemInset, y: y))
+            l.frames.merge(placed.frames) { a, _ in a }
+            l.families.merge(placed.families) { a, _ in a }
+            let b = placed.bbox
+            reach[above] = dir > 0 ? b.maxX : b.minX
+        }
+    }
+
+    /// `id`'s children stacked as logic charts, the first at the top: their near edges
+    /// at x = 0, the stack's top at y = 0, growing toward `side`.
+    func branchColumn(_ id: NodeID, depth: Int, side: Side) -> LocalLayout {
+        var l = LocalLayout()
+        var y: CGFloat = 0
+        for k in kids(id) {
+            let chart = logicChart(k, depth: depth, side: side)
+            let b = chart.bbox
+            let w = size(k).width / 2
+            let placed = chart.translated(by: CGPoint(x: side == .left ? -w : w, y: y - b.minY))
+            l.frames.merge(placed.frames) { a, _ in a }
+            l.families.merge(placed.families) { a, _ in a }
+            y += b.height + Self.stackGap
+        }
+        return l
+    }
+
+    /// A logic chart of `id`'s subtree, `id` at the origin and its children's charts
+    /// stacked beside it toward `side`, centred on it.
+    func logicChart(_ id: NodeID, depth: Int, side: Side) -> LocalLayout {
+        var l = LocalLayout()
+        let s = size(id)
+        l.frames[id] = NodeFrame(center: .zero, size: s, side: side, depth: depth)
+        let ks = kids(id)
+        guard !ks.isEmpty else { return l }
+        l.families[id] = "logic"
+        let dir: CGFloat = side == .left ? -1 : 1
+        let gap = spacing.siblingGap(depth + 1)
+        let charts = ks.map { logicChart($0, depth: depth + 1, side: side) }
+        let total = charts.reduce(0) { $0 + $1.bbox.height } + gap * CGFloat(ks.count - 1)
+        let edge = dir * (s.width / 2 + spacing.levelGap)
+        var y = -total / 2
+        for (k, chart) in zip(ks, charts) {
+            let b = chart.bbox
+            let placed = chart.translated(by: CGPoint(x: edge + dir * size(k).width / 2, y: y - b.minY))
+            l.frames.merge(placed.frames) { a, _ in a }
+            l.families.merge(placed.families) { a, _ in a }
+            y += b.height + gap
+        }
+        return l
     }
 
     // MARK: Fishbone

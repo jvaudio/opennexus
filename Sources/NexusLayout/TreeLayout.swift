@@ -22,10 +22,13 @@ public struct LayoutNode: Sendable, Equatable {
     /// `marginBefore` is the leading side (top in horizontal trees) and holds a title band.
     public var margin: CGFloat
     public var marginBefore: CGFloat
+    /// Has children, all hidden under a fold. The layout still names the family its
+    /// children would be laid out with, for the fold control (D250).
+    public var folded: Bool
 
     public init(
         size: CGSize, children: [NodeID], structure: LayoutStructure? = nil, siblingGap: CGFloat? = nil,
-        levelGap: CGFloat? = nil, margin: CGFloat = 0, marginBefore: CGFloat? = nil
+        levelGap: CGFloat? = nil, margin: CGFloat = 0, marginBefore: CGFloat? = nil, folded: Bool = false
     ) {
         self.size = size
         self.children = children
@@ -34,6 +37,7 @@ public struct LayoutNode: Sendable, Equatable {
         self.levelGap = levelGap
         self.margin = margin
         self.marginBefore = marginBefore ?? margin
+        self.folded = folded
     }
 }
 
@@ -59,6 +63,7 @@ public struct NodeFrame: Sendable, Equatable {
 public struct LayoutResult: Sendable, Equatable {
     public var frames: [NodeID: NodeFrame] = [:]
     /// The structure family each parent's children were laid out with (for branch-line geometry).
+    /// A folded topic has the family its children would have.
     public var families: [NodeID: String] = [:]
     /// Boxes drawn behind topics (matrix cells, tree-table cells), relative to each node.
     public var cells: [NodeID: LayoutCell] = [:]
@@ -116,11 +121,61 @@ public enum TreeLayout {
             let local = StructureLayouts(nodes: nodes, spacing: spacing).layout(
                 root, structure: s, depth: 0, side: .right)
             engine.merge(local.translated(by: origin), into: &result)
-            return result
+        } else {
+            result.frames[root] = NodeFrame(center: origin, size: r.size, side: .right, depth: 0)
+            engine.place(root, structure: s, depth: 0, into: &result)
         }
-        result.frames[root] = NodeFrame(center: origin, size: r.size, side: .right, depth: 0)
-        engine.place(root, structure: s, depth: 0, into: &result)
+        nameFoldedFamilies(root: root, structure: s, nodes: nodes, into: &result)
         return result
+    }
+
+    /// The family a structure lays its top topic's children out with.
+    static func topFamily(_ s: LayoutStructure) -> String {
+        switch s.family {
+        case "timeline": s == .timelineVertical ? "timelineV" : s == .timelineAlternating ? "timelineAlt" : "timeline"
+        case "matrix", "treeTable": "none"
+        case "tree": "indent"
+        default: s.family
+        }
+    }
+
+    /// A folded topic has no visible children, so the layout recorded no family for it. It
+    /// gets the one its children would be laid out with: its own structure's, or the next
+    /// level of its parent's (D250).
+    static func nameFoldedFamilies(
+        root: NodeID, structure: LayoutStructure, nodes: [NodeID: LayoutNode], into result: inout LayoutResult
+    ) {
+        var queue: [(id: NodeID, parent: String?, index: Int)] = [(root, nil, 0)]
+        var i = 0
+        while i < queue.count {
+            let (id, parent, index) = queue[i]
+            i += 1
+            guard let n = nodes[id], result.frames[id] != nil else { continue }
+            if n.folded, result.families[id] == nil {
+                // Structures that lay out their whole subtree ignore overrides inside it.
+                let own =
+                    id == root ? structure : parent.flatMap { Self.engineFamilies.contains($0) ? n.structure : nil }
+                result.families[id] = own.map(topFamily) ?? parent.map { nextFamily($0, index: index) } ?? "logic"
+            }
+            let family = result.families[id]
+            for (k, child) in n.children.enumerated() { queue.append((child, family, k)) }
+        }
+    }
+
+    /// Families `Engine.place` records, where a topic's own structure applies.
+    static let engineFamilies: Set<String> = ["mindmap", "logic", "org", "tree", "brace"]
+
+    /// The family of the `index`th child of a topic whose children have `family`, for its
+    /// own children.
+    static func nextFamily(_ family: String, index: Int) -> String {
+        switch family {
+        case "timeline", "indent", "fishboneSub": "indent"
+        case "timelineAlt": StructureLayouts.branchAbove(index) ? "timelineUp" : "timelineDown"
+        case "timelineUp", "timelineDown", "timelineV", "mindmap": "logic"
+        case "fishbone": "fishboneCause"
+        case "fishboneCause": "fishboneSub"
+        default: family
+        }
     }
 
     struct Engine {
