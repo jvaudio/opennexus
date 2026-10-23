@@ -2449,6 +2449,10 @@
       "comment" : "Diagram type",
       "extractionState" : "migrated"
     },
+    "Brace Map (left)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
+      "extractionState" : "migrated"
+    },
     "BRACKET" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
@@ -4441,6 +4445,10 @@
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
+    "Fishbone (right)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
+      "extractionState" : "migrated"
+    },
     "Fit" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -5621,8 +5629,8 @@
       "comment" : "Diagram type",
       "extractionState" : "migrated"
     },
-    "Logic Chart → right" : {
-      "comment" : "UI text (FormatPanel.swift)",
+    "Logic Chart (left)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
     "Logic Left · Solid" : {
@@ -5995,6 +6003,14 @@
     },
     "Mind Map · Underline" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Mind Map (left)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
+      "extractionState" : "migrated"
+    },
+    "Mind Map (right)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
     "Mind maps" : {
@@ -8710,7 +8726,7 @@
       "extractionState" : "migrated"
     },
     "Structure" : {
-      "comment" : "UI text (CanvasMenu.swift)",
+      "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "Structure · this branch" : {
@@ -9209,6 +9225,10 @@
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
     },
+    "Timeline (vertical)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
+      "extractionState" : "migrated"
+    },
     "Timeline for %@" : {
       "comment" : "Text with values filled in (PresentExtras.swift)",
       "extractionState" : "migrated"
@@ -9387,6 +9407,10 @@
     },
     "Tree Chart" : {
       "comment" : "Diagram type",
+      "extractionState" : "migrated"
+    },
+    "Tree Chart (down)" : {
+      "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
     "Tree Table" : {
