@@ -14,8 +14,7 @@ extension CanvasController {
     /// The empty-canvas menu's Paste (D222): what ⌘V would paste, as floating topics with
     /// the first where the menu opened and the rest stacked below it (one undo step). A
     /// copied zone lands with its top-left corner there; one line of text becomes one
-    /// floating topic. An image has no topic to go on here, so it goes on the selected
-    /// topic, as ⌘V puts it.
+    /// floating topic, and an image a floating topic holding it (D253).
     public func paste(at point: CGPoint) {
         if mode == .edit { return }
         let pb = pasteboard
@@ -47,7 +46,7 @@ extension CanvasController {
                 return
             }
         }
-        guard let f = fragment else { return paste() }
+        guard let f = fragment else { return pasteImage(at: at) }
         let root = canvas.root
         perform(name, selectionAfter: { (ids: [NodeID]) in Selection(primary: ids.first ?? root, nodes: ids) }) { e in
             let tops = try e.paste(f, under: root, sameCanvas: same)
@@ -68,6 +67,23 @@ extension CanvasController {
                 next = y + below + Self.pastedBranchGap
             }
             return tops
+        }
+    }
+
+    /// An image on the clipboard (what ⌘V would put on the selected topic) as a new
+    /// floating topic holding it, at the point, selected, one undo step (D253).
+    private func pasteImage(at point: CanvasPoint) {
+        for type in [NSPasteboard.PasteboardType.png, .tiff] {
+            guard let data = pasteboard.data(forType: type), let rep = NSBitmapImageRep(data: data),
+                let png = rep.representation(using: .png, properties: [:])
+            else { continue }
+            let image = imageAsset(png, ext: "png", size: CGSize(width: rep.pixelsWide, height: rep.pixelsHigh))
+            perform(Loc.t("Paste"), selectionAfter: { Selection($0) }) { e in
+                let id = e.addFloating(at: point, text: "")
+                e.update(id) { $0.image = image }
+                return id
+            }
+            return
         }
     }
 

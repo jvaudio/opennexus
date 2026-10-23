@@ -191,11 +191,12 @@ extension ContextMenuTests {
         #expect(
             titles(m) == [
                 "Add Child Topic", "Add Sibling After", "Add Sibling Before", "Add Parent Topic", "-", "Edit Topic",
-                "Task…", "To-Do", "-", "Indent", "Outdent", "Move Up", "-", "Cut", "Copy", "Paste", "Duplicate Branch",
+                "Insert", "-", "Indent", "Outdent", "Move Up", "-", "Cut", "Copy", "Paste", "Duplicate Branch",
                 "-", "Format Panel", "-", "Export Branch", "-", "Delete", "Delete, Keep Children",
             ])
-        // Every item is a registry command with the canvas's title and key, aimed at the outline.
-        for it in allItems(m) {
+        // Every item but Sticker… is a registry command with the canvas's title and key,
+        // aimed at the outline.
+        for it in allItems(m) where it.title != "Sticker…" {
             #expect(it.action == #selector(CanvasView.performRegistryCommand(_:)) && it.target === doc, "\(it.title)")
             let id = CommandID(rawValue: try #require(it.representedObject as? String))
             #expect(it.keyEquivalent == (h.controller.bindings(for: id).first?.key.keyEquivalent ?? ""), "\(it.title)")
@@ -232,7 +233,8 @@ extension ContextMenuTests {
         h.controller.setSelection(Selection(primary: pricing, nodes: [pricing, channels]))
         let multi = try rightClick(channels)
         #expect(h.controller.selection.nodes == [pricing, channels])
-        #expect(titles(multi) == ["Cut", "Copy", "-", "To-Do", "-", "Format Panel", "-", "Delete"])
+        #expect(
+            titles(multi) == ["Cut", "Copy", "-", "Label", "Markers…", "To-Do", "-", "Format Panel", "-", "Delete"])
         choose(item(multi, "To-Do"))
         #expect(h.canvas.nodes[pricing]?.todo != nil && h.canvas.nodes[channels]?.todo != nil)
 

@@ -6,7 +6,8 @@ import NexusTheme
 /// The canvas as VoiceOver sees it (M10, README §12): a tree of topics under the central
 /// topic, each read as "Pricing. Main topic, level 2 of 4. 3 children, collapsed…",
 /// with frames that follow the camera, actions that run the same commands as the keys,
-/// and rotors for topics, notes, edges, boundaries, AI suggestions and Connect targets.
+/// and rotors for topics, notes, edges, boundaries, zones, AI suggestions and Connect
+/// targets. Zones follow the topics, read with their place among the selected zones (M34).
 ///
 /// Elements are made only when an assistive app asks, reused per topic (VoiceOver keeps
 /// its place across edits), and labels are computed when read, so a 5k map costs nothing
@@ -39,6 +40,7 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
         class_addProtocol(TopicElement.self, proto)
         class_addProtocol(ElementItem.self, proto)
         class_addProtocol(LegendItem.self, proto)
+        class_addProtocol(ZoneItem.self, proto)
     }()
 
     var controller: CanvasController? { view?.controller }
@@ -64,12 +66,54 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
     }
 
     /// The canvas's children: the central topic, then floating, summary and callout tops,
-    /// then the legend when it shows (M14).
+    /// then the zones (M34), then the legend when it shows (M14).
     func roots() -> [Any] {
         guard let c = controller else { return [] }
         var out: [Any] = c.canvas.tops.compactMap { element($0) }
+        out += zoneItems()
         if let l = legendItem() { out.append(l) }
         return out
+    }
+
+    // MARK: Zones (M34, D262)
+
+    private var zones: [String: ZoneItem] = [:]
+
+    /// One element per zone, back to front, reused per zone.
+    func zoneItems() -> [ZoneItem] {
+        guard let c = controller else { return [] }
+        let ids = c.scene.zones.map(\.zone.id)
+        for id in zones.keys where !ids.contains(id) { zones[id] = nil }
+        return ids.map { id in
+            let e = zones[id] ?? ZoneItem(id: id, tree: self)
+            zones[id] = e
+            return e
+        }
+    }
+
+    func zoneItem(_ id: String) -> ZoneItem? { zoneItems().first { $0.id == id } }
+
+    /// "Ideas. Zone around 2 topics. Selected, 1 of 2 selected zones." Read when asked, so
+    /// it follows the selection.
+    func zoneLabel(_ id: String) -> String {
+        guard let c = controller, let z = c.canvas.zones.first(where: { $0.id == id }) else { return "" }
+        let title = z.title.isEmpty ? Loc.t("Zone") : z.title
+        let count = z.members.reduce(0) { $0 + c.canvas.subtree($1).count }
+        var text = Loc.f("%@. Zone around %@.", title, Loc.n("%lld topic", "%lld topics", count))
+        if z.collapsed { text += " " + Loc.t("Collapsed.") }
+        let selected = c.selectedZones
+        if let i = selected.firstIndex(of: id) {
+            text +=
+                " "
+                + (selected.count > 1
+                    ? Loc.f("Selected, %lld of %lld selected zones.", i + 1, selected.count) : Loc.t("Selected."))
+        }
+        return text
+    }
+
+    func zoneFrame(_ id: String) -> CGRect {
+        guard let r = controller?.scene.zones.first(where: { $0.zone.id == id })?.rect else { return .zero }
+        return screenRect(r)
     }
 
     private var legend: LegendItem?
@@ -163,24 +207,19 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
         if case .topic(let id) = target, c.canvas.nodes[id]?.image != nil {
             entries += c.contextMenu(previewing: .image(id))
         }
-        var seen: [CanvasMenuAction] = []
-        return entries.flatMap(\.items).compactMap { item in
-            if let id = item.action.command, skipping.contains(id) || id.rawValue.hasPrefix("structure.") { return nil }
-            if case .structure = item.action { return nil }
-            // Replace Image… is Insert › Image… again.
-            guard !seen.contains(item.action) else { return nil }
-            seen.append(item.action)
-            return NSAccessibilityCustomAction(name: item.title) { [weak self] in
-                self?.runMenu(item.action, on: target) ?? false
-            }
+        return ContextMenus.customActions(entries, skipping: skipping) { [weak self] action in
+            self?.runMenu(action, on: target) ?? false
         }
     }
 
-    /// Selects the target (that topic alone, or the element), then runs the item.
+    /// Selects the target (that topic alone, or the element), then runs the item. A zone
+    /// in the selected group keeps the group, as a right-click on it does (D228, D262).
     func runMenu(_ action: CanvasMenuAction, on target: CanvasMenuTarget) -> Bool {
         guard let c = controller else { return false }
         switch target {
         case .topic(let id), .image(let id): c.select(id)
+        case .element(.zone(let id)) where c.selectedZones.count > 1 && c.selectedZones.contains(id):
+            c.selectElement(.zone(id), zones: c.selectedZones)
         case .element(let ref): c.selectElement(ref)
         case .legend, .canvas: break
         }
@@ -260,7 +299,7 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
 
     enum RotorKind: String, CaseIterable {
         case topics = "Topics", notes = "Notes", comments = "Comments", edges = "Edges", boundaries = "Boundaries"
-        case suggestions = "AI suggestions", connect = "Connect targets"
+        case zones = "Zones", suggestions = "AI suggestions", connect = "Connect targets"
 
         var title: String {
             switch self {
@@ -269,6 +308,7 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
             case .comments: Loc.t("Comments")
             case .edges: Loc.t("Edges")
             case .boundaries: Loc.t("Boundaries")
+            case .zones: Loc.t("Zones")
             case .suggestions: Loc.t("AI suggestions")
             case .connect: Loc.t("Connect targets")
             }
@@ -300,6 +340,7 @@ final class CanvasAccessibility: NSObject, @preconcurrency NSAccessibilityCustom
             return preorder().filter { !(c.canvas.nodes[$0]?.comments.isEmpty ?? true) }.compactMap { element($0) }
         case .edges: return edgeItems()
         case .boundaries: return boundaryItems()
+        case .zones: return zoneItems()
         case .suggestions:
             return (c.ghosts?.ideas.indices).map { $0.compactMap { element(CanvasController.ghostID($0)) } } ?? []
         case .connect: return c.connect?.candidates.compactMap(connectItem) ?? []
@@ -539,4 +580,58 @@ final class ElementItem: NSAccessibilityElement {
         return onMain { t.menuActions(.element(r)) }
     }
     override func accessibilityPerformShowMenu() -> Bool { tree.showMenu(.element(ref), world: world) }
+}
+
+/// A zone (M34, D262): read with its place among the selected zones, and pressed to select
+/// it alone. "Add to Selection" and "Remove from Selection" are ⇧-click for VoiceOver.
+@MainActor
+final class ZoneItem: NSAccessibilityElement {
+    let id: String
+    unowned let tree: CanvasAccessibility
+
+    init(id: String, tree: CanvasAccessibility) {
+        self.id = id
+        self.tree = tree
+        super.init()
+        setAccessibilityIdentifier("zone-\(id)")
+    }
+
+    override func accessibilityRole() -> NSAccessibility.Role? { .group }
+    override func accessibilityRoleDescription() -> String? { "zone" }
+    override func accessibilityLabel() -> String? { tree.zoneLabel(id) }
+    override func accessibilityFrame() -> NSRect { tree.zoneFrame(id) }
+    override func accessibilityParent() -> Any? {
+        let t = tree
+        return onMain { t.view }
+    }
+    override func isAccessibilityElement() -> Bool { true }
+    override func isAccessibilityEnabled() -> Bool { true }
+    override func isAccessibilitySelected() -> Bool { tree.controller?.selectedZones.contains(id) ?? false }
+    override func isAccessibilityFocused() -> Bool { tree.controller?.selectedElement == .zone(id) }
+
+    /// Selects this zone alone, as a click does.
+    override func accessibilityPerformPress() -> Bool {
+        tree.controller?.selectElement(.zone(id))
+        return true
+    }
+
+    override func accessibilityCustomActions() -> [NSAccessibilityCustomAction]? {
+        let selected = tree.controller?.selectedZones.contains(id) ?? false
+        let toggle = NSAccessibilityCustomAction(
+            name: selected ? Loc.t("Remove from Selection") : Loc.t("Add to Selection")
+        ) { [weak self] in
+            guard let self, let c = self.tree.controller else { return false }
+            c.toggleZone(self.id)
+            NSAccessibility.post(element: self, notification: .selectedChildrenChanged)
+            return true
+        }
+        // The rest of the zone's context menu (D179), on the whole group when it's in one.
+        let (t, i) = (tree, id)
+        return [toggle] + onMain { t.menuActions(.element(.zone(i))) }
+    }
+
+    override func accessibilityPerformShowMenu() -> Bool {
+        guard let r = tree.controller?.scene.zones.first(where: { $0.zone.id == id })?.rect else { return false }
+        return tree.showMenu(.element(.zone(id)), world: r)
+    }
 }

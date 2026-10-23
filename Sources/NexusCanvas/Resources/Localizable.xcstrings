@@ -22,7 +22,7 @@
       "extractionState" : "migrated"
     },
     "? keys" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     ".* Regex" : {
@@ -174,6 +174,10 @@
       "extractionState" : "migrated"
     },
     "%@. Summary." : {
+      "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@. Zone around %@." : {
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
@@ -1229,6 +1233,30 @@
         }
       }
     },
+    "%lld Zones" : {
+      "comment" : "Count phrase with plural variants (FormatPanelElements.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Zone"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Zones"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "%lld%%" : {
       "comment" : "Text with values filled in (TaskViews.swift)",
       "extractionState" : "migrated"
@@ -1275,6 +1303,10 @@
     },
     "⇄ swap" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "⇥ \/ ⇧⇥" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "⇥ ↩ ⇧↩ ⌘↩, structures, markers, Pitch → Present" : {
@@ -1881,6 +1913,10 @@
       "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
+    "Add to Selection" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Add Topic" : {
       "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
@@ -2174,7 +2210,7 @@
       "extractionState" : "migrated"
     },
     "Arrange" : {
-      "comment" : "UI text (FormatPanelElements.swift)",
+      "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
     "Arrange works on zones and floating topics" : {
@@ -2230,7 +2266,7 @@
       "extractionState" : "migrated"
     },
     "Aspect" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Aspect ratio" : {
@@ -2925,6 +2961,10 @@
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
+    "Collapsed." : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Colored branch" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
@@ -3175,6 +3215,10 @@
     },
     "Control-Return accepts this suggestion" : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "controls" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Conversation" : {
@@ -3443,6 +3487,10 @@
     },
     "Cut" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Cut transition" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Cut Zone" : {
@@ -4217,6 +4265,10 @@
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "Export slides as %@" : {
+      "comment" : "Text with values filled in (PresentStrip.swift)",
+      "extractionState" : "migrated"
+    },
     "Export Split by Main Branch…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -4714,7 +4766,11 @@
       "extractionState" : "migrated"
     },
     "Glide" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
+      "extractionState" : "migrated"
+    },
+    "Glide transition" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Global font" : {
@@ -5414,7 +5470,7 @@
       "extractionState" : "migrated"
     },
     "Legend on slides" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Legend on Slides" : {
@@ -6063,6 +6119,10 @@
     },
     "Mitigation" : {
       "comment" : "Node type (Threat Model)",
+      "extractionState" : "migrated"
+    },
+    "Mixed" : {
+      "comment" : "UI text (FormatPanelControls.swift)",
       "extractionState" : "migrated"
     },
     "mm" : {
@@ -7653,6 +7713,10 @@
       "comment" : "UI text (AllowedFoldersView.swift)",
       "extractionState" : "migrated"
     },
+    "Remove from Selection" : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Remove Image" : {
       "comment" : "UI text (CanvasMenu.swift)",
       "extractionState" : "migrated"
@@ -7678,6 +7742,14 @@
       "extractionState" : "migrated"
     },
     "Remove zone (keep content)" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Remove Zones" : {
+      "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Remove zones (keep content)" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
@@ -8233,6 +8305,14 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "Selected, %lld of %lld selected zones." : {
+      "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "Selected." : {
+      "comment" : "UI text (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Selection ring" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -8482,7 +8562,7 @@
       "extractionState" : "migrated"
     },
     "Slide %lld of %lld" : {
-      "comment" : "Text with values filled in (PresentViews.swift)",
+      "comment" : "Text with values filled in (PresentExtras.swift)",
       "extractionState" : "migrated"
     },
     "Slide %lld: %@" : {
@@ -8494,7 +8574,7 @@
       "extractionState" : "migrated"
     },
     "Slide Theme" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Slides" : {
@@ -8686,11 +8766,11 @@
       "extractionState" : "migrated"
     },
     "Step through flow" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Step Through Flow" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Sticker" : {
@@ -9057,6 +9137,10 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "The strip's controls (↩ or Space uses one)" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "The task has no dates yet" : {
       "comment" : "UI text (Schedule.swift)",
       "extractionState" : "migrated"
@@ -9274,7 +9358,7 @@
       "extractionState" : "migrated"
     },
     "Timeline slides" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Timeline Slides" : {
@@ -9654,7 +9738,7 @@
       "extractionState" : "migrated"
     },
     "Video" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Video export failed: %@" : {
@@ -9914,11 +9998,11 @@
       "extractionState" : "migrated"
     },
     "Zones" : {
-      "comment" : "UI text (CanvasController+Files.swift)",
+      "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
     "Zoom" : {
-      "comment" : "UI text (PresentViews.swift)",
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Zoom and topic count" : {
@@ -9939,6 +10023,10 @@
     },
     "Zoom Out" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Zoom transition" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Zooms" : {

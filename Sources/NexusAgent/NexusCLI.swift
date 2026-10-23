@@ -120,7 +120,15 @@ public enum NexusCLI {
         return a
     }
 
+    /// "1 canvas", "2 canvases": a count with its noun, as the CLI's English output says it.
+    static func counted(_ n: Int, _ one: String, _ many: String) -> String { "\(n) \(n == 1 ? one : many)" }
+
     // MARK: validate
+
+    /// The summary `validate` prints after "valid": "1 canvas, 1 topic" (D257).
+    static func contentSummary(_ doc: DocumentModel) -> String {
+        "\(counted(doc.canvases.count, "canvas", "canvases")), \(counted(doc.topicCount, "topic", "topics"))"
+    }
 
     /// Checks the files as they are on disk (not a re-serialisation), then each canvas.
     public static func validationIssues(_ url: URL) throws -> (issues: [String], summary: String) {
@@ -129,7 +137,7 @@ public enum NexusCLI {
             let issues =
                 doc.repairs.map { "needs repair: \($0)" }
                 + doc.orderedCanvases.flatMap { c in c.validate().map { "\(c.id.rawValue): \($0)" } }
-            return (issues, "\(doc.canvases.count) canvases, \(doc.topicCount) topics")
+            return (issues, contentSummary(doc))
         }
         let files = NexusPackage.flatten(try FileWrapper(url: url, options: [.immediate]))
         if PackageCrypto.isEncrypted(files) {
@@ -141,7 +149,7 @@ public enum NexusCLI {
             let doc = try NexusPackage.read(files: files)
             issues += doc.repairs.map { "needs repair: \($0)" }
             for c in doc.orderedCanvases { issues += c.validate().map { "canvases/\(c.id.rawValue).json: \($0)" } }
-            return (issues, "\(doc.canvases.count) canvases, \(doc.topicCount) topics")
+            return (issues, contentSummary(doc))
         } catch {
             return (issues + ["\(error)"], "")
         }

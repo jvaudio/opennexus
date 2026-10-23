@@ -166,6 +166,29 @@ extension CanvasEditor {
         updateMeta { c in Self.move(&c.zones, where: { $0.id == id }, order) }
     }
 
+    /// Arrange on several selected zones (D259): Front and Rear move them all to that end,
+    /// in the order they had; Forward and Backward move each past its unselected neighbour.
+    /// One zone moves as `reorderZone` moves it.
+    public mutating func reorderZones(_ ids: [String], _ order: ZOrder) {
+        let picked = Set(ids)
+        updateMeta { c in
+            let isPicked = { (z: Zone) in picked.contains(z.id) }
+            switch order {
+            case .front: c.zones = c.zones.filter { !isPicked($0) } + c.zones.filter(isPicked)
+            case .back: c.zones = c.zones.filter(isPicked) + c.zones.filter { !isPicked($0) }
+            case .forward:
+                for i in c.zones.indices.dropLast().reversed()
+                where isPicked(c.zones[i]) && !isPicked(c.zones[i + 1]) {
+                    c.zones.swapAt(i, i + 1)
+                }
+            case .backward:
+                for i in c.zones.indices.dropFirst() where isPicked(c.zones[i]) && !isPicked(c.zones[i - 1]) {
+                    c.zones.swapAt(i, i - 1)
+                }
+            }
+        }
+    }
+
     public mutating func reorderFloating(_ id: NodeID, _ order: ZOrder) {
         updateMeta { c in Self.move(&c.floating, where: { $0 == id }, order) }
     }

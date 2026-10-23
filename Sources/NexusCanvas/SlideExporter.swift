@@ -25,8 +25,9 @@ public enum SlideExporter {
         controller.switchCanvas(to: id)
         let view = CanvasView(controller: controller)
         view.reduceMotionOverride = true
-        // Frame each slide around the legend's place on the exported slide (D232).
-        view.slideLegendPlacement = .export(size)
+        // Frame each slide around the legend's and the chart's places on the exported
+        // slide (D232, D264).
+        view.slideExportSize = size
         let window = NSWindow(
             contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
         window.contentView = view
@@ -93,7 +94,7 @@ public enum SlideExporter {
         let title = NSAttributedString(
             string: controller.slideTitle(slide),
             attributes: [.font: NSFont.systemFont(ofSize: 64, weight: .bold), .foregroundColor: ink])
-        let titleBox = CGRect(x: 84, y: 92, width: size.width - 168, height: 160)
+        let titleBox = SlideTitleMetrics.titleBox(size)
         title.draw(with: titleBox, options: [.usesLineFragmentOrigin])
         let titleHeight = min(
             ceil(title.boundingRect(with: titleBox.size, options: [.usesLineFragmentOrigin]).height), titleBox.height)

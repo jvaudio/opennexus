@@ -240,6 +240,44 @@ import Testing
         #expect(c == before && c.callouts == before.callouts)
     }
 
+    /// M34 (D261): Duplicate Branch (⌘D) goes through `graft`, so it carries callouts,
+    /// nested ones and bubble relationships too, remapped; a dependency outside the branch
+    /// is kept, and topic links inside it follow the copy.
+    @Test func duplicateBranchCarriesItsCallouts() throws {
+        var c = try calloutCanvas()
+        var undo = UndoStack()
+        let (pricing, pro, risks, free) = (id(c, "Pricing"), id(c, "Pro"), id(c, "Risks"), id(c, "Free tier"))
+        let link = TopicLink.make(canvas: c.id, node: pro)
+        try c.edit("Setup", undo: &undo) { e in
+            try e.addDependency(pro, on: risks)
+            e.update(free) { $0.link = link }
+            _ = try e.addBoundary(around: [pro], title: "Paid")
+        }
+        let before = c
+        let copy = try c.edit("Duplicate", undo: &undo) { try $0.duplicate(pricing) }
+        #expect(
+            c.nodes[c.root]!.children.firstIndex(of: copy) == before.nodes[c.root]!.children.firstIndex(of: pricing)!
+                + 1)
+        #expect(c.nodes[copy]?.children.map { c.nodes[$0]!.text } == ["Free tier", "Pro", "Annual discount"])
+        let new = c.callouts.filter { k in !before.callouts.contains { $0.id == k.id } }
+        #expect(new.count == 2 && c.callouts.count == 5)
+        let margins = try #require(new.first { c.nodes[$0.topic]?.text == "Check margins" })
+        let finance = try #require(new.first { c.nodes[$0.topic]?.text == "Ask finance" })
+        #expect(margins.host == copy && finance.host == margins.topic)
+        #expect(before.nodes[margins.topic] == nil && before.nodes[finance.topic] == nil)
+        let proCopy = try #require(c.nodes[copy]?.children[1])
+        let rel = try #require(c.relationships.last)
+        #expect(rel.label == "bubble to Pro" && rel.from == .topic(margins.topic) && rel.to == .topic(proCopy))
+        #expect(c.relationships.count == before.relationships.count + 1)
+        #expect(c.boundaries.count == 2 && c.boundaries.last?.nodes == [proCopy] && c.boundaries.last?.title == "Paid")
+        #expect(c.nodes[proCopy]?.todo?.after.map(\.task) == [risks], "the dependency outside the branch is kept")
+        let freeCopy = try #require(c.nodes[copy]?.children[0])
+        #expect(c.nodes[freeCopy]?.link == TopicLink.make(canvas: c.id, node: proCopy))
+        #expect(c.validate().isEmpty)
+        undo.undo()!.apply(to: &c)
+        #expect(c == before && c.callouts == before.callouts)
+    }
+
     @Test func zoneCopyCarriesItsTopicsCallouts() throws {
         var c = sampleCanvas()
         var undo = UndoStack()

@@ -219,27 +219,20 @@ extension CanvasEditor {
         }
     }
 
-    /// Command-D: copies the branch; the copy lands after the original.
+    /// Command-D: copies the branch; the copy lands after the original. It goes through
+    /// `graft` as a paste back into this canvas would (D261): relationships, boundaries,
+    /// summaries and callouts inside the branch come along with fresh ids, and dependencies
+    /// on topics outside it are kept.
     @discardableResult
     public mutating func duplicate(_ id: NodeID) throws -> NodeID {
         guard self[id] != nil else { throw TreeOperationRefusal.missingNode }
-        guard let p = parentOf(id) else { throw TreeOperationRefusal.cannotDuplicateRoot }
-        func copy(_ src: NodeID) -> NodeID {
-            var node = self[src]!
-            let kids = node.children
-            node.children = []
-            let nid = makeNodeID()
-            insert(node, as: nid)
-            let copies = kids.map(copy)
-            update(nid) { $0.children = copies }
-            return nid
+        guard let p = parentOf(id), let i = self[p]?.children.firstIndex(of: id) else {
+            throw TreeOperationRefusal.cannotDuplicateRoot
         }
-        let nid = copy(id)
-        update(p) {
-            let i = $0.children.firstIndex(of: id) ?? $0.children.count - 1
-            $0.children.insert(nid, at: i + 1)
-        }
-        return nid
+        let folded = self[p]?.folded ?? false
+        let copy = try graft(canvas, top: id, under: p, at: i + 1, sameCanvas: true)
+        if folded { update(p) { $0.folded = true } }
+        return copy
     }
 
     /// Command-/: folds or unfolds one branch.

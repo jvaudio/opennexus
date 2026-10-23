@@ -8,3 +8,6 @@ xcuserdata/
 
 # Local signing (your team ID); see App/Config/Base.xcconfig.
 App/Config/Signing.local.xcconfig
+
+# Release builds (App/tools/release.sh).
+/dist/

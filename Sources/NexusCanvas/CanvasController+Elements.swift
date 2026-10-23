@@ -132,6 +132,13 @@ extension CanvasController {
         }
     }
 
+    /// The zones a command on zone `id` acts on: every selected zone when `id` is one of
+    /// them, else just `id` (D228, D260).
+    public func zones(with id: String) -> [String] {
+        let zones = selectedZones
+        return zones.contains(id) ? zones : [id]
+    }
+
     /// Selects these zones together, the first as the selected element.
     public func selectZones(_ ids: [String]) {
         let zones = ids.filter { id in canvas.zones.contains { $0.id == id } }
@@ -290,10 +297,11 @@ extension CanvasController {
         beginEditingElement(.zone(id))
     }
 
-    /// ⌥⌘] / ⌥⌘[ on a zone or a floating topic.
+    /// ⌥⌘] / ⌥⌘[ on a zone or a floating topic. Several selected zones move together,
+    /// keeping their order among themselves (D259).
     public func reorderSelection(_ order: CanvasEditor.ZOrder) {
-        if case .zone(let id)? = selectedElement {
-            perform(Loc.t("Arrange")) { $0.reorderZone(id, order) }
+        if case .zone? = selectedElement {
+            reorderZones(selectedZones, order)
             return
         }
         let id = selection.primary
@@ -302,6 +310,12 @@ extension CanvasController {
             return
         }
         perform(Loc.t("Arrange")) { $0.reorderFloating(id, order) }
+    }
+
+    /// Arrange on these zones, one undo step: Bring to Front, Send to Back and the Format
+    /// panel's Order (D259).
+    public func reorderZones(_ ids: [String], _ order: CanvasEditor.ZOrder) {
+        perform(Loc.t("Arrange")) { $0.reorderZones(ids, order) }
     }
 
     // MARK: Enrichments
@@ -394,6 +408,13 @@ extension CanvasController {
             )
             return
         }
+        let image = imageAsset(data, ext: ext, size: size)
+        perform(Loc.t("Image")) { e in e.update(id) { $0.image = image } }
+    }
+
+    /// Stores an image's bytes (optimised when Settings › Files asks) and returns what a
+    /// topic holds: at most 200 pt wide, its aspect kept.
+    func imageAsset(_ data: Data, ext: String, size: CGSize?) -> AssetRef {
         var data = data
         var ext = ext
         if prefs.bool("files.optimiseImages"), let (d, e) = Self.optimisedImage(data, ext: ext) {
@@ -403,7 +424,7 @@ extension CanvasController {
         let name = storeAsset(data, ext: ext)
         let w = size.map { min(Double($0.width), 200) }
         let h = size.map { Double($0.height) * (w ?? 200) / max(Double($0.width), 1) }
-        perform(Loc.t("Image")) { e in e.update(id) { $0.image = AssetRef(asset: name, width: w, height: h) } }
+        return AssetRef(asset: name, width: w, height: h)
     }
 
     public func removeImage(on id: NodeID) {
@@ -527,7 +548,7 @@ extension CanvasController {
                 k.side = "auto"
             }
         case .zone(let id):
-            updateZone(id) { z in
+            updateZones(zones(with: id)) { z in
                 z.frame = "rounded"
                 z.color = nil
                 z.autoResize = true
@@ -564,5 +585,22 @@ extension CanvasController {
 
     public func updateZone(_ id: String, _ body: @escaping (inout Zone) -> Void) {
         perform(Loc.t("Zone Style")) { $0.updateZone(id, body) }
+    }
+
+    /// The Format panel's zone section with several zones selected: one change to every
+    /// one of them, one undo step (D260).
+    public func updateZones(_ ids: [String], _ body: @escaping (inout Zone) -> Void) {
+        guard ids.count > 1 else {
+            if let id = ids.first { updateZone(id, body) }
+            return
+        }
+        perform(Loc.t("Zone Style")) { e in for id in ids { e.updateZone(id, body) } }
+    }
+
+    /// The selected zones' common value, or nil when they differ (shown as mixed, D260).
+    public func commonZoneValue<T: Equatable>(_ key: KeyPath<Zone, T>) -> T? {
+        let values = selectedZones.compactMap { id in canvas.zones.first { $0.id == id }?[keyPath: key] }
+        guard let first = values.first, values.allSatisfy({ $0 == first }) else { return nil }
+        return first
     }
 }

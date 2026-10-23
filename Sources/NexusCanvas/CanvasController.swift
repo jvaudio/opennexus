@@ -203,6 +203,9 @@ public final class CanvasController {
     /// The outline pane has keyboard focus (its key scope is active).
     @ObservationIgnored public var outlineFocused = false
     @ObservationIgnored public var onOutlineEditChange: ((EditSession?) -> Void)?
+    /// A topic's row in the outline, as a view and a rect in it, while the outline shows
+    /// it: popovers anchor there when the outline has focus or the canvas is hidden (D254).
+    @ObservationIgnored var outlineAnchor: ((NodeID) -> (NSView, CGRect)?)?
     @ObservationIgnored public var onZen: ((Bool) -> Void)?
     @ObservationIgnored public var onPresent: ((Bool) -> Void)?
     /// Export the deck: "PDF", "PowerPoint", "Keynote" or "Video".

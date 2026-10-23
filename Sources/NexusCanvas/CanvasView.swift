@@ -81,7 +81,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     private var morphUntil: CFTimeInterval = 0
     private var lastMorphSerial = 0
     private var imageCache: [String: CGImage] = [:]
-    private var popovers: CanvasPopovers?
+    private(set) var popovers: CanvasPopovers?
 
     /// A topic's rect in view coordinates (popover anchors).
     func viewRect(of id: NodeID) -> CGRect? {
@@ -130,9 +130,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     /// Forces Reduce Motion (Settings › Accessibility override, and tests).
     public var reduceMotionOverride: Bool?
-    /// Where the slide's corner legend goes when this view renders exported slides (nil:
-    /// the screen's place, D232).
-    var slideLegendPlacement: PresentLegendPlacement?
+    /// The slide size when this view renders exported slides (nil: on screen). The corner
+    /// legend and a Timeline chart take their export places (D232, D264).
+    var slideExportSize: CGSize?
     var reduceMotion: Bool {
         reduceMotionOverride ?? controller.reduceMotionPreference
             ?? NSWorkspace.shared.accessibilityDisplayShouldReduceMotion
@@ -753,15 +753,33 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     /// Flies the camera so `ids` fill the view (or the slide stage at `aspect`).
     func frame(_ ids: [NodeID], aspect: Double?) {
-        let rects = ids.compactMap { controller.scene.nodes[$0]?.frame.rect }
+        let scene = controller.scene
+        let rects = ids.compactMap { scene.nodes[$0]?.frame.rect }
         guard bounds.width > 0, !rects.isEmpty else { return }
         var b = rects.reduce(CGRect.null) { $0.union($1) }
-        for bd in controller.scene.boundaries where rects.contains(where: { bd.rect.intersects($0) }) {
-            b = b.union(bd.rect)
-        }
+        // The outlines framed with the topics: boundaries they touch and, on a slide, zones
+        // they're in (D263).
+        let framed = Set(ids)
+        let outlines =
+            scene.boundaries.filter { bd in rects.contains { bd.rect.intersects($0) } }.map(\.rect)
+            + (aspect == nil ? [] : scene.zones.filter { $0.zone.members.contains(where: framed.contains) }.map(\.rect))
+        for r in outlines { b = b.union(r) }
         let target = aspect.map { stageRect(aspect: $0) } ?? bounds.insetBy(dx: 60, dy: 60)
-        // A slide keeps its topics clear of the corner legend (M28, D232).
-        let cam = SlideFit.camera(b, topics: rects, stage: target, legend: aspect == nil ? nil : presentLegendRect())
+        var cam = SlideFit.camera(b, in: target)
+        if aspect != nil {
+            // A slide keeps its topics, their outlines and the branch lines between them
+            // clear of the corner legend (D232, D263), and below a Timeline chart (D264).
+            let lines = scene.edges.filter { framed.contains($0.parent) && framed.contains($0.child) }.compactMap {
+                e -> CGPath? in
+                guard let p = scene.nodes[e.parent]?.frame, let c = scene.nodes[e.child]?.frame else { return nil }
+                return BranchLines.path(
+                    from: p, to: c, family: e.family, shape: BranchLineShape(name: e.line.shape),
+                    parentBaseline: e.parentBaseline, childBaseline: e.childBaseline)
+            }
+            cam = SlideFit.camera(
+                b, topics: rects + outlines, lines: lines, stage: target, legend: presentLegendRect(),
+                chart: presentChartRect())
+        }
         let transition = controller.present == nil ? "glide" : controller.canvas.presentation.transition
         // Zoom pulls out to show both slides, then pushes in; Glide flies straight; Cut jumps.
         let via = transition == "zoom" ? CameraTween.overview(from: camera, to: cam, in: bounds) : nil
@@ -1484,7 +1502,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     private enum Drag {
         case pan(start: CGPoint, offset: CGPoint)
-        case rubber(start: CGPoint, extend: Bool)
+        /// `zones`: the zones selected when a ⇧-band began, which it adds to.
+        case rubber(start: CGPoint, extend: Bool, zones: [String])
         case node(
             id: NodeID, start: CGPoint, subtree: [NodeID], origins: [NodeID: CGPoint], floating: Bool,
             active: Bool, target: DropTarget?)
@@ -1602,11 +1621,14 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             }
             return
         }
+        // A ⇧-band adds to the selected zones, so it remembers them (D258).
+        let extend = event.modifierFlags.contains(.shift)
+        let zones = extend ? controller.selectedZones : []
         if controller.selectedElement != nil { controller.selectElement(nil) }
         if event.modifierFlags.contains(.option) {
             drag = .pan(start: p, offset: camera.offset)
         } else {
-            drag = .rubber(start: w, extend: event.modifierFlags.contains(.shift))
+            drag = .rubber(start: w, extend: extend, zones: zones)
         }
     }
 
@@ -1649,7 +1671,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             c.offset = CGPoint(x: offset.x + p.x - start.x, y: offset.y + p.y - start.y)
             cameraTween = nil
             setCamera(c, animated: false)
-        case .rubber(let start, _)?:
+        case .rubber(let start, _, _)?:
             let r = CGRect(
                 x: min(start.x, w.x), y: min(start.y, w.y), width: abs(w.x - start.x), height: abs(w.y - start.y))
             rubberBand.isHidden = false
@@ -1875,10 +1897,16 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             }
         }
         switch drag {
-        case .rubber(let start, let extend)?:
+        case .rubber(let start, let extend, let selectedZones)?:
             let r = CGRect(
                 x: min(start.x, w.x), y: min(start.y, w.y), width: abs(w.x - start.x), height: abs(w.y - start.y))
             guard r.width > 3 || r.height > 3 else { return }
+            // A band around whole zones selects those zones; ⌘ keeps it to topics (D258).
+            let zones = event.modifierFlags.contains(.command) ? [] : bandZones(r)
+            if !zones.isEmpty {
+                controller.selectZones(selectedZones + zones.filter { !selectedZones.contains($0) })
+                return
+            }
             let hits = controller.scene.order.filter { controller.scene.nodes[$0]!.frame.rect.intersects(r) }
             guard let first = hits.first else { return }
             let base = extend ? controller.selection.nodes : []
@@ -1932,6 +1960,13 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         default:
             break
         }
+    }
+
+    /// The zones a rubber band wholly encloses, back to front (D258). A band that only
+    /// crosses a zone selects the topics it touches, so a zone's topics can still be
+    /// banded from outside it; ⌘-drag bands topics only.
+    func bandZones(_ band: CGRect) -> [String] {
+        controller.scene.zones.filter { band.contains($0.rect) }.map(\.zone.id)
     }
 
     public override func rightMouseDown(with event: NSEvent) {
@@ -2052,6 +2087,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     /// The last selection VoiceOver was told about.
     private var announcedPrimary: NodeID?
     private var announcedLegend = false
+    /// The selected zones VoiceOver was last told about.
+    private var announcedZones: [String] = []
     /// Tests stand in for a running assistive app.
     var assistiveAppOverride: Bool?
     var assistiveAppRunning: Bool {
@@ -2075,8 +2112,12 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         let p = CGPoint(x: bounds.midX, y: bounds.midY)
         return showContextMenu(.canvas(camera.toWorld(p)), at: CGRect(origin: p, size: .zero))
     }
-    /// Read when asked (not on every edit): the selection's description.
-    public override func accessibilityValue() -> Any? { accessibilityTree.label(controller.selection.primary) }
+    /// Read when asked (not on every edit): the selection's description, or the selected
+    /// zone's with its place among the selected zones (D262).
+    public override func accessibilityValue() -> Any? {
+        if case .zone(let id)? = controller.selectedElement { return accessibilityTree.zoneLabel(id) }
+        return accessibilityTree.label(controller.selection.primary)
+    }
 
     public override func accessibilityHitTest(_ point: NSPoint) -> Any? {
         onMain {
@@ -2100,7 +2141,19 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
                 announcedPrimary = nil
             }
         }
-        if assistiveAppRunning, !announcedLegend, announcedPrimary != controller.selection.primary {
+        // A selected zone takes VoiceOver's focus, read with the group (D262); a change to
+        // the group is announced again.
+        let zones = controller.selectedZones
+        if assistiveAppRunning, !announcedLegend, zones != announcedZones {
+            announcedZones = zones
+            if case .zone(let id)? = controller.selectedElement, let e = accessibilityTree.zoneItem(id) {
+                NSAccessibility.post(element: e, notification: .focusedUIElementChanged)
+                NSAccessibility.post(element: self, notification: .selectedChildrenChanged)
+            } else {
+                announcedPrimary = nil
+            }
+        }
+        if assistiveAppRunning, !announcedLegend, zones.isEmpty, announcedPrimary != controller.selection.primary {
             announcedPrimary = controller.selection.primary
             if let e = accessibilityTree.element(controller.selection.primary) {
                 NSAccessibility.post(element: e, notification: .focusedUIElementChanged)
