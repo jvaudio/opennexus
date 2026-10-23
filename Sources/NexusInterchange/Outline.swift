@@ -54,11 +54,29 @@ public enum MarkdownFormat {
         return out.filter { scope.contains($0) && TaskMarkup.anchorable($0) }
     }
 
+    /// The line before a canvas's floating topics (D239). An HTML comment, so Markdown
+    /// renders nothing for it, and the importer knows the bullets after it float.
+    static let floatingMarker = "<!-- Floating topics -->"
+
+    /// A topic as a bullet `level` deep, with its note indented under it.
+    static func bullet(_ id: NodeID, _ n: Node, level: Int, anchors: Set<NodeID>, notes: Bool) -> String {
+        let indent = String(repeating: "  ", count: max(level, 0))
+        var out = "\(indent)- \(item(id, n, anchors: anchors))\n"
+        if notes, let note = n.note?.text, !note.trimmed.isEmpty {
+            for l in note.trimmed.split(separator: "\n", omittingEmptySubsequences: false) {
+                out += "\(indent)  \(l)\n"
+            }
+        }
+        return out
+    }
+
     /// One canvas as Markdown. Branch scope starts at `from`.
     public static func export(_ c: Canvas, from top: NodeID? = nil, options o: Options = Options()) -> String {
         var out = ""
         let start = top ?? c.root
-        let anchors = anchors(c, topics: c.subtree(start), comments: o.comments)
+        // The whole canvas takes in its floating topics, so a task can name one (D239).
+        let scope = top.map { c.subtree($0) } ?? ([c.root] + c.floating).flatMap { c.subtree($0) }
+        let anchors = anchors(c, topics: scope, comments: o.comments)
         c.walk(from: start) { id, n, d in
             if o.headings && d < o.headingDepth {
                 if !out.isEmpty { out += "\n" }
@@ -69,19 +87,15 @@ public enum MarkdownFormat {
                 if o.headings && level == 0 && !out.hasSuffix("\n\n") && !out.isEmpty && !lastWasBullet(out) {
                     out += "\n"
                 }
-                let indent = String(repeating: "  ", count: max(level, 0))
-                out += "\(indent)- \(item(id, n, anchors: anchors))\n"
-                if o.notes, let note = n.note?.text, !note.trimmed.isEmpty {
-                    for l in note.trimmed.split(separator: "\n", omittingEmptySubsequences: false) {
-                        out += "\(indent)  \(l)\n"
-                    }
-                }
+                out += bullet(id, n, level: level, anchors: anchors, notes: o.notes)
             }
         }
+        // Floating topics are bullets after the marker, with the same check boxes, task
+        // tokens and notes as the main tree's (D239).
         if top == nil && !c.floating.isEmpty {
-            out += "\n"
+            out += "\n\(floatingMarker)\n\n"
             for f in c.floating {
-                c.walk(from: f) { _, n, d in out += String(repeating: "  ", count: d) + "- " + line(n) + "\n" }
+                c.walk(from: f) { id, n, d in out += bullet(id, n, level: d, anchors: anchors, notes: o.notes) }
             }
         }
         if o.comments {
@@ -126,7 +140,8 @@ public enum MarkdownFormat {
     }
 
     /// Markdown into a topic tree: headings nest, bullets nest by indentation, paragraphs
-    /// become the note of the topic above, `- [ ]` becomes a to-do.
+    /// become the note of the topic above, `- [ ]` becomes a to-do. Bullets after the
+    /// floating marker are floating topics, up to the next heading or rule (D239).
     public static func parse(_ text: String, title: String, report: inout ImportReport) -> ICanvas {
         var lines = text.replacingOccurrences(of: "\r\n", with: "\n").components(separatedBy: "\n")
         // YAML front matter.
@@ -140,6 +155,8 @@ public enum MarkdownFormat {
         }
         var stack: [Entry] = []
         var tops: [ITopic] = []
+        var floats: [ITopic] = []
+        var floating = false
         var inFence = false
         var fenceLang = ""
         var fence: [String] = []
@@ -155,10 +172,12 @@ public enum MarkdownFormat {
         func pop(to level: Int) {
             while let last = stack.last, last.level >= level {
                 stack.removeLast()
-                if stack.isEmpty {
-                    tops.append(last.topic)
-                } else {
+                if !stack.isEmpty {
                     stack[stack.count - 1].topic.children.append(last.topic)
+                } else if floating {
+                    floats.append(last.topic)
+                } else {
+                    tops.append(last.topic)
                 }
             }
         }
@@ -166,6 +185,12 @@ public enum MarkdownFormat {
             flushNote()
             pop(to: level)
             stack.append(Entry(level: level, topic: t))
+        }
+        /// Closes the tree being read, and starts or ends the floating topics.
+        func float(_ on: Bool) {
+            flushNote()
+            pop(to: Int.min)
+            floating = on
         }
 
         for raw in lines {
@@ -189,6 +214,11 @@ public enum MarkdownFormat {
                 continue
             }
             let t = raw.trimmingCharacters(in: .whitespaces)
+            if t.caseInsensitiveCompare(floatingMarker) == .orderedSame {
+                float(true)
+                continue
+            }
+            if floating && (t == "---" || t == "***" || heading(t) != nil) { float(false) }
             if t.isEmpty || t == "---" || t == "***" {
                 if let last = noteLines.last, !last.isEmpty { noteLines.append("") }
                 continue
@@ -230,16 +260,17 @@ public enum MarkdownFormat {
             root = ITopic(title)
             root.children = tops
         }
+        var ic = ICanvas(title: root.text, root: root)
+        ic.synthesizedRoot = tops.count != 1
+        ic.floating = floats
         for (name, anchor, comment) in comments {
             let byAnchor = anchor.map { a in { (t: ITopic) in t.ref == a } }
-            if !(byAnchor.map { attach(comment, to: &root, where: $0) } ?? false),
-                !attach(comment, to: &root, where: { $0.text == name })
+            if !(byAnchor.map { attach(comment, to: &ic, where: $0) } ?? false),
+                !attach(comment, to: &ic, where: { $0.text == name })
             {
                 report.skip("Comment on a missing topic")
             }
         }
-        var ic = ICanvas(title: root.text, root: root)
-        ic.synthesizedRoot = tops.count != 1
         return ic
     }
 
@@ -261,6 +292,14 @@ public enum MarkdownFormat {
             t.task = task
         }
         return t
+    }
+
+    /// Adds `c` to the first topic that `match` accepts, in the main tree and then in the
+    /// floating topics.
+    static func attach(_ c: TopicComment, to ic: inout ICanvas, where match: (ITopic) -> Bool) -> Bool {
+        if attach(c, to: &ic.root, where: match) { return true }
+        for i in ic.floating.indices where attach(c, to: &ic.floating[i], where: match) { return true }
+        return false
     }
 
     /// Adds `c` to the first topic, in outline order, that `match` accepts.

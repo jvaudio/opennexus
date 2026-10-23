@@ -148,6 +148,92 @@ import Testing
         #expect(summary(c) == ["Plan", ".Comments", "..Collect feedback", "..Bold idea"])
     }
 
+    /// The plan with two floating topics: a parking lot of tasks, one waiting on Beta and
+    /// one that GA waits on, with a note and a comment; and a plain floating idea.
+    func floatingPlan() -> Canvas {
+        var c = plan()
+        var u = UndoStack()
+        c.edit("Floating", undo: &u) { e in
+            let lot = e.addFloating(at: CanvasPoint(x: 400, y: 300), text: "Parking lot")
+            e.update(lot) { $0.note = Note(text: "Ideas for after GA.") }
+            let docs = try! e.addChild(of: lot, text: "Docs site")
+            e.updateTask(docs) {
+                $0.owner = "Kim"
+                $0.start = TaskDate("2026-11-16")
+                $0.progress = 10
+            }
+            try! e.addDependency(docs, on: id(e.canvas, "Beta · Nov"))
+            let audit = try! e.addChild(of: lot, text: "Security audit")
+            e.updateTask(audit) {
+                $0.due = TaskDate("2026-12-18")
+                $0.owner = "Ana Lee"
+            }
+            e.update(audit) {
+                $0.markers = ["priority-2"]
+                $0.comments = [TopicComment(author: "Sam", date: "2026-10-21T09:00:00Z", text: "Book it early")]
+            }
+            try! e.addDependency(id(e.canvas, "GA · Jan"), on: audit, type: .finishToFinish, lag: -1)
+            let wiki = try! e.addChild(of: docs, text: "Wiki at 50%")
+            e.update(wiki) { $0.todo = Todo(done: true) }
+            e.addFloating(at: CanvasPoint(x: -300, y: 300), text: "Stray idea")
+        }
+        return c
+    }
+
+    /// Each floating topic's tree, summarised like the main tree.
+    func floatingSummary(_ c: Canvas) -> [String] {
+        c.floating.flatMap { f -> [String] in
+            var sub = c
+            sub.root = f
+            return summary(sub)
+        }
+    }
+
+    @Test(arguments: [true, false]) func markdownRoundTripsFloatingTasks(headings: Bool) throws {
+        let c = floatingPlan()
+        var o = MarkdownFormat.Options()
+        o.headings = headings
+        let md = MarkdownFormat.export(c, options: o)
+        let audit = id(c, "Security audit").rawValue
+        let beta = id(c, "Beta · Nov").rawValue
+        #expect(md.contains("\n<!-- Floating topics -->\n\n- Parking lot\n  Ideas for after GA.\n"), "\(md)")
+        #expect(md.contains("\n  - [ ] Docs site @Kim 2026-11-16→ 10% after:^\(beta)\n"))
+        #expect(md.contains("\n  - [ ] Security audit (P2) @[Ana Lee] →2026-12-18 ^\(audit)\n"))
+        #expect(md.contains("\n    - [x] Wiki at \\50%\n"), "a floating to-do's title is escaped too")
+        #expect(md.contains(",^\(audit)(FF-1)\n"), "a main-tree task can wait on a floating one")
+        #expect(md.contains("- **Security audit** ^\(audit) · Sam · 2026-10-21T09:00:00Z: Book it early"))
+
+        let im = try reimport(md, "plan.md")
+        let back = try #require(im.canvases.first)
+        #expect(back.floating.count == 2)
+        #expect(summary(back) == summary(c), "the main tree keeps none of the floating topics")
+        #expect(floatingSummary(back) == floatingSummary(c))
+        #expect(back.nodes[back.floating[0]]?.note?.text == "Ideas for after GA.")
+        #expect(back.validate().isEmpty)
+        #expect(im.report.tasks == 6 && im.report.dependencies == 4 && im.report.comments == 5)
+        #expect(im.report.notConverted == 0, "\(im.report.lines)")
+        // A branch export has no floating topics.
+        #expect(!MarkdownFormat.export(c, from: id(c, "Pricing")).contains("Floating"))
+    }
+
+    @Test func floatingMarkerEndsAtAHeadingOrRule() throws {
+        let md = """
+            # Plan
+            - Main
+            <!-- floating topics -->
+            - [ ] Loose @Ana
+              - Child
+            ---
+            # Second
+            - Point
+            """
+        let im = try reimport(md, "f.md")
+        let c = try #require(im.canvases.first)
+        #expect(c.floating.map { c.nodes[$0]!.text } == ["Loose"])
+        #expect(node(c, "Loose").todo?.owner == "Ana" && node(c, "Loose").children.count == 1)
+        #expect(summary(c) == ["f", ".Plan", "..Main", ".Second", "..Point"], "\(summary(c))")
+    }
+
     // MARK: OPML
 
     @Test func opmlRoundTripsTasksAndComments() throws {
