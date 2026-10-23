@@ -732,7 +732,7 @@ Work in order. Each milestone ends with green tests, a short demo note in `docs/
   - Every row in §12 is met and recorded.
   - An accessibility audit with Accessibility Inspector reports no issues.
 
-The milestones below came after the handoff: an Xmind parity review (M11–M22), checks against real Xmind files and the gaps they found (M23–M30). Each one's plan, results and known gaps are in `docs/plans/Mx.md`, and its decisions in `docs/DECISIONS.md`.
+The milestones below came after the handoff: an Xmind parity review (M11–M22), checks against real Xmind files and the gaps they found (M23–M36), and release packaging (M37). Each one's plan, results and known gaps are in `docs/plans/Mx.md`, and its decisions in `docs/DECISIONS.md`.
 
 ### M11 · Task planning
 
@@ -909,6 +909,83 @@ The milestones below came after the handoff: an Xmind parity review (M11–M22),
   - No two topics come within 4 pt of each other.
   - Sub-causes stay clear of their bone.
   - OpenNexus's own fishbone export reads back through image import.
+
+### M31 · Xmind remaining gaps
+
+- **Build:**
+  - Xmind data OpenNexus doesn't use (Pitch settings, unknown keys and extensions, layer order) kept and written back.
+  - XMind 8 themes.
+  - Xmind's important, minor and expired topics.
+  - Canvas-level boundary, summary and relationship defaults.
+  - Eighth-step progress markers.
+- **Accept when:**
+  - Re-saving an Xmind file through OpenNexus keeps what Xmind wrote.
+  - Each mapping round-trips exactly in `.xmind` and XMind 8.
+
+### M32 · Xmind's timeline and the fold control
+
+- **Build:**
+  - "Timeline (alternating)": Xmind's horizontal timeline, with branches above and below the axis.
+  - The fold control on the point where a branch line leaves its topic, in every structure.
+- **Accept when:**
+  - Xmind timelines import and export as alternating.
+  - The layout has no overlaps on either side.
+  - The "−" and "+N" sit on the drawn line's start.
+
+### M33 · Menu and outline gaps
+
+- **Build:**
+  - An image pasted from the empty-canvas menu becomes a floating topic.
+  - Popovers open on outline rows (and Gantt rows).
+  - Outline rows get VoiceOver actions.
+  - Singular-aware counts in `nexus validate`.
+- **Accept when:**
+  - Each item works from its menu and key, one undo step each.
+  - VoiceOver's actions equal the menu.
+
+### M34 · Zone selection, part 3
+
+- **Build:**
+  - A rubber band around whole zones selects them.
+  - Arrange and the Format panel act on a group of zones.
+  - VoiceOver zone elements and a Zones rotor.
+  - Duplicate Branch carries callouts.
+- **Accept when:**
+  - A band that only crosses a zone still selects its topics.
+  - Mixed values show as mixed.
+  - Each change is one undo step.
+
+### M35 · Present, part 3
+
+- **Build:**
+  - An opaque legend card.
+  - Timeline slides framed below their chart.
+  - Progress dots that never meet the legend.
+  - The strip reachable from the keyboard and VoiceOver.
+- **Accept when:**
+  - No framed content is under the legend or the chart, on screen or in exports, at any window width.
+
+### M36 · Fishbone ribs and image import
+
+- **Build:**
+  - Fishbone sub-causes on their own small ribs, as Xmind draws them.
+  - Image import that reads ribs, lower-bone sub-causes and wrapped sub-causes.
+  - The import window, with a "Grouping…" phase and Cancel, for single pictures too.
+- **Accept when:**
+  - No fishbone topic touches another or its bone.
+  - OpenNexus's own fishbone exports, wrapped sub-causes included, read back exactly.
+  - The image bench still passes.
+
+### M37 · Release packaging
+
+- **Build:**
+  - `App/tools/release.sh`: a Developer ID–signed Release archive, signature checks, and a signed DMG.
+  - Notarization and stapling when a notarytool profile exists.
+  - Install docs in the README.
+- **Accept when:**
+  - Every signed part passes the checks.
+  - The DMG installs on another Mac running macOS 27.
+  - The full suite, lint and the app build pass on the released commit.
 
 ---
 
