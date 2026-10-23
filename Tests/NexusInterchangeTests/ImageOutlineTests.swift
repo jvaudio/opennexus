@@ -626,6 +626,6 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         _ = try ImageText.recognize(data as Data, name: "garden.pdf") { done, total in
             calls.lock.withLock { calls.list.append("\(done)/\(total)") }
         }
-        #expect(calls.list == ["1/2", "2/2"])
+        #expect(calls.list == ["0/2", "1/2", "2/2"], "the page count comes before the first page (M29)")
     }
 }

@@ -9,7 +9,7 @@ import Testing
 /// M12: an image's map lands in the open document as one undo step.
 @MainActor
 @Suite(.serialized) struct ImageToMapTests {
-    static func imported() -> Imported {
+    nonisolated static func imported() -> Imported {
         let image = RecognisedImage(
             width: 600, height: 300,
             boxes: [
@@ -100,6 +100,117 @@ import Testing
         #expect(read.progress == nil && read.canvases.count == 1 && read.canvases[0].nodes.count == 16)
         h.controller.applyMerge()
         #expect(h.store.model.canvasOrder.count == 3, "the picture's canvas and the map of content")
+    }
+
+    /// Waits (up to two seconds) for the main actor to catch up with the reading.
+    func settle(_ ready: () -> Bool) async {
+        for _ in 0..<200 where !ready() { try? await Task.sleep(for: .milliseconds(10)) }
+    }
+
+    /// M29: File › Import… of a long PDF shows the page being read, and Cancel stops the
+    /// reading with nothing opened.
+    @Test func fileImportShowsPagesAndCancels() async throws {
+        let progress = ImageImportProgress(name: "report.pdf") { _, _, _, report in
+            report(0, 4)
+            report(1, 4)
+            while true { try await Task.sleep(for: .seconds(30)) }
+        }
+        var windows = 0
+        progress.onManyPages = { windows += 1 }
+        var outcomes: [String] = []
+        #expect(progress.detail == "Reading the text in the image…" && progress.fraction == 0)
+        let task = progress.start(Data(), refine: false) { outcome in
+            switch outcome {
+            case .imported: outcomes.append("imported")
+            case .failed: outcomes.append("failed")
+            case .cancelled: outcomes.append("cancelled")
+            }
+        }
+        await settle { progress.done == 1 }
+        #expect(progress.total == 4 && progress.done == 1 && progress.fraction == 0.25)
+        #expect(progress.detail == "Reading page 2 of 4…", "the page being read, as in the merge sheet")
+        #expect(windows == 1, "the window is asked for once, when the pages are known")
+        progress.cancel()
+        await task.value
+        #expect(outcomes == ["cancelled"] && progress.cancelled && progress.finished)
+        progress.cancel()
+        #expect(outcomes == ["cancelled"], "the outcome comes once")
+    }
+
+    /// M29: a single picture asks for no window, and a failure is reported, not cancelled.
+    @Test func fileImportOfOnePictureNeedsNoWindow() async throws {
+        let one = ImageImportProgress(name: "plan.png") { _, _, _, report in
+            report(0, 1)
+            report(1, 1)
+            return Self.imported()
+        }
+        var windows = 0
+        one.onManyPages = { windows += 1 }
+        var canvases = 0
+        await one.start(Data(), refine: false) { outcome in
+            if case .imported(let im) = outcome { canvases = im.canvases.count }
+        }.value
+        #expect(canvases == 1 && windows == 0 && !one.cancelled)
+
+        let broken = ImageImportProgress(name: "broken.pdf") { _, name, _, _ in
+            throw ImportError.invalid(name, "no pages")
+        }
+        var failed = false
+        await broken.start(Data(), refine: false) { outcome in
+            if case .failed = outcome { failed = true }
+        }.value
+        #expect(failed)
+    }
+
+    /// M29: the real path, Vision on a three-page PDF: the page count arrives before the
+    /// first page, the window is asked for, and every page becomes a canvas.
+    @Test func fileImportReadsEveryPageWithProgress() async throws {
+        let data = NSMutableData()
+        var box = CGRect(x: 0, y: 0, width: 500, height: 300)
+        let pdf = try #require(CGContext(consumer: CGDataConsumer(data: data)!, mediaBox: &box, nil))
+        for title in ["Kickoff", "Timeline", "Budget"] {
+            pdf.beginPDFPage(nil)
+            NSGraphicsContext.saveGraphicsState()
+            NSGraphicsContext.current = NSGraphicsContext(cgContext: pdf, flipped: false)
+            NSAttributedString(string: title, attributes: [.font: NSFont.boldSystemFont(ofSize: 40)])
+                .draw(at: CGPoint(x: 30, y: 200))
+            NSAttributedString(string: "First point", attributes: [.font: NSFont.systemFont(ofSize: 22)])
+                .draw(at: CGPoint(x: 70, y: 130))
+            NSGraphicsContext.restoreGraphicsState()
+            pdf.endPDFPage()
+        }
+        pdf.closePDF()
+        let progress = ImageImportProgress(name: "deck.pdf")
+        var totals: [Int] = []
+        progress.onManyPages = { totals.append(progress.total) }
+        var titles: [String] = []
+        await progress.start(data as Data, refine: false) { outcome in
+            if case .imported(let im) = outcome { titles = im.canvases.map(\.title) }
+        }.value
+        await settle { progress.done == 3 }
+        #expect(totals == [3], "the window is asked for before the first page is read")
+        #expect(progress.done == 3 && progress.total == 3 && progress.fraction == 1)
+        #expect(titles == ["Kickoff", "Timeline", "Budget"])
+
+        // Cancelled as soon as its window would show, Vision stops between pages.
+        final class Pages: @unchecked Sendable {
+            let lock = NSLock()
+            var read: [Int] = []
+        }
+        let pages = Pages()
+        let stopped = ImageImportProgress(name: "deck.pdf") { data, name, refine, report in
+            try await ImageToMap.importImage(data, name: name, refine: refine) { done, total in
+                pages.lock.withLock { pages.read.append(done) }
+                report(done, total)
+            }
+        }
+        stopped.onManyPages = { stopped.cancel() }
+        var cancelled = false
+        await stopped.start(data as Data, refine: false) { outcome in
+            if case .cancelled = outcome { cancelled = true }
+        }.value
+        #expect(cancelled)
+        #expect(pages.lock.withLock { pages.read.last ?? 0 } < 3, "\(pages.read)")
     }
 
     @Test func readsPicturesFromThePasteboard() throws {

@@ -2,6 +2,7 @@ import AppKit
 import NexusAI
 import NexusCore
 import NexusInterchange
+import Observation
 
 /// Image to mind map (M12): Vision reads the text and the layout heuristics rebuild the
 /// hierarchy; when the layout shows none, Apple Intelligence, if it can run, picks the
@@ -77,6 +78,95 @@ public enum ImageToMap {
         }
         if let pdf = pb.data(forType: .pdf) { return (pdf, Loc.t("Pasted Image") + ".pdf") }
         return nil
+    }
+}
+
+/// File › Import… of a picture or PDF (M29, D238): the reading off the main thread, the
+/// pages read so far, and Cancel. The app shows it in a small window once the source turns
+/// out to have two or more pages; a single picture reads in under a second, as before.
+@MainActor
+@Observable
+public final class ImageImportProgress: Identifiable {
+    /// How an import ended: its document, an error, or cancelled (nothing opens).
+    public enum Outcome {
+        case imported(Imported)
+        case failed(any Error)
+        case cancelled
+    }
+
+    /// Reads a picture or PDF, reporting (pages read, pages to read). `ImageToMap.importImage`
+    /// in the app; tests pass their own.
+    public typealias Reader =
+        @Sendable (Data, String, Bool, @escaping @Sendable (Int, Int) -> Void) async throws -> Imported
+
+    public let id = UUID()
+    public let name: String
+    public private(set) var done = 0
+    /// Pages to read; 0 until the source is opened.
+    public private(set) var total = 0
+    public private(set) var cancelled = false
+    public private(set) var finished = false
+    /// Called once, when the source turns out to have two or more pages.
+    @ObservationIgnored public var onManyPages: (() -> Void)?
+    @ObservationIgnored private var task: Task<Void, Never>?
+    @ObservationIgnored private let read: Reader
+
+    public init(name: String, read: Reader? = nil) {
+        self.name = name
+        self.read =
+            read ?? { data, name, refine, progress in
+                try await ImageToMap.importImage(data, name: name, refine: refine, progress: progress)
+            }
+    }
+
+    /// The share of pages read (0–1).
+    public var fraction: Double { total > 0 ? Double(done) / Double(total) : 0 }
+
+    /// "Reading page 2 of 5…", the same words as the merge sheet's row (D191).
+    public var detail: String {
+        total > 1
+            ? Loc.f("Reading page %lld of %lld…", min(done + 1, total), total)
+            : Loc.t("Reading the text in the image…")
+    }
+
+    /// Starts reading; `finish` gets the outcome once, on the main actor. The returned task
+    /// ends when it has.
+    @discardableResult
+    public func start(
+        _ data: Data, refine: Bool, finish: @escaping @MainActor (Outcome) -> Void
+    ) -> Task<Void, Never> {
+        let read = read
+        let name = name
+        let t = Task { @MainActor [weak self] in
+            let outcome: Outcome
+            do {
+                let im = try await read(data, name, refine) { done, total in
+                    Task { @MainActor in self?.pages(done, of: total) }
+                }
+                outcome = Task.isCancelled ? .cancelled : .imported(im)
+            } catch {
+                outcome = Task.isCancelled || error is CancellationError ? .cancelled : .failed(error)
+            }
+            self?.finished = true
+            finish(outcome)
+        }
+        task = t
+        return t
+    }
+
+    /// Cancel: the reading stops between pages and nothing opens.
+    public func cancel() {
+        guard !finished, !cancelled else { return }
+        cancelled = true
+        task?.cancel()
+    }
+
+    func pages(_ d: Int, of t: Int) {
+        guard !cancelled else { return }
+        let first = total <= 1 && t > 1
+        total = t
+        done = max(done, min(d, t))
+        if first { onManyPages?() }
     }
 }
 
