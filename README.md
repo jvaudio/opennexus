@@ -1,4 +1,9 @@
-# OpenNexus
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/svg/lockup/opennexus-lockup-dark.svg">
+    <img src="brand/svg/lockup/opennexus-lockup-light.svg" alt="OpenNexus" width="320">
+  </picture>
+</h1>
 
 An open-source, native **macOS 27** app for mind maps and technical diagrams:
 Xmind's keyboard flow, plus flowcharts, data flow diagrams, threat models, architecture
@@ -28,6 +33,8 @@ Sources/
 App/                   Xcode project for the macOS app and its extensions (thin shell)
   tools/               make_project.py, release.sh, axaudit.swift
 schema/                published JSON Schema for .nexus files
+brand/                 the Aperture brand kit: spec (BRAND.md), icons, marks, lockups
+scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints)
 Handoff/               design handoff package (brief, artboards, screenshots, specs)
 ```
 
@@ -49,6 +56,13 @@ swift run nexus validate path/to/Map.nexus
 
 ```bash
 swift run nexus --help
+```
+
+Lint as CI does: Swift formatting, and the brand checks (no old logo, document icon up to
+date with `brand/`):
+
+```bash
+scripts/lint.sh
 ```
 
 ## Install

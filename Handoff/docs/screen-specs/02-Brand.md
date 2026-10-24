@@ -1,42 +1,27 @@
-# 01 · Logo & app icon direction
+# 01 · Brand: Aperture
 
-- Source: `design/source/Brand.dc.html`
+- Source: `design/source/Brand.dc.html` (shows `brand/reference/brand-board.png`)
 - Screenshot: `screenshots/02-Brand.png`
-- Artboard size: 1440×900 pt
+- Artboard size: 1440×1100 pt
 
-> Text extracted verbatim from the rendered artboard, top-to-bottom. Use it alongside the screenshot for exact copy, labels, shortcuts and values.
+> The brand kit in `brand/` replaces this artboard's earlier logo directions. `brand/BRAND.md`
+> is the numeric spec (geometry, optical sizes, colours, lockups, surfaces, don'ts) and
+> `brand/reference/brand-board.png` the visual one. Take values from BRAND.md, not from the
+> screenshot.
 
-```text
-01 · BRAND
-A mark made of the thing it makes
+The board's sections, top to bottom:
 
-Nexus means connection, network, relationship. Every direction is built only from the app’s own primitives: nodes and edges. Recommended: A · Triad.
-
-A · TRIAD · RECOMMENDED
-OpenNexus
-
-A root and two children joined into a closed loop: a tree that became a graph. The two edge colours are the app’s two collaborators: Iris (you) and Aurora (local AI).
-
-B · JUNCTION
-opennexus
-
-An N drawn as one path through four nodes: Connect mode in a single stroke. Strong as a monogram; reads more “flowchart” than “mind map”.
-
-C · ORBIT
-OpenNexus
-
-A radial mind map caught mid-orbit. Friendliest of the three, but the closest to existing mind-map logos.
-
-APP ICON · MACOS 27
-
-Layered for Icon Composer: graphite glass plate, Triad floating above with a soft specular edge. Ships Default, Dark, Clear and Tinted appearances.
-
-DEFAULT
-LIGHT
-CLEAR
-TINTED
-64 · 32 · 16 PX
-Wordmark Bricolage Grotesque 700, −3% tracking; “Nexus” in Iris.
-Small sizes drop the edge colours, keep the triangle.
-Document icon .nexus: page with the Triad in the fold.
-```
+- **Aperture: a node left open.** A ring with an opening on the right, and two branches
+  leaving through the gap. The three colours are the canvas states: Iris for Select and Edit,
+  Amber for Connect, Aurora for on-device AI.
+- **Primary lockup**, light and dark: the mark, then "Open" (Geist 500) and "Nexus" (Geist
+  700). In the app the lockup is the `BrandLockup` asset, never live text.
+- **Clear space and minimum size:** clear space is the ring radius (14 of 64 units) on every
+  side. Minimum: mark 16 px, horizontal lockup 96 px wide. Below 32 px use the optical size.
+- **Geometry on a 64-unit grid:** BRAND.md §1. The gap always faces right.
+- **App icon, macOS 27 appearances:** Default (Iris), Dark (graphite), Tinted and Clear, from
+  the Icon Composer layers: background, ring, branches, root node.
+- **Colour, every element and context:** BRAND.md §2.
+- **Small and system sizes:** the menu bar template, Finder at 16, favicon at 32, and the
+  `.nexus` document icon.
+- **Don'ts:** BRAND.md §6.

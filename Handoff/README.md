@@ -458,7 +458,7 @@ Screenshot names are `screenshots/NN-<File>.png`. Specs are `docs/screen-specs/N
 | # | Artboard | What it specifies |
 | --- | --- | --- |
 | 01 | 00 · OpenNexus overview (`Main`) | Product positioning, pillars |
-| 02 | 01 · Logo & app icon (`Brand`) | Logo, wordmark and app-icon direction |
+| 02 | 01 · Brand (`Brand`) | The Aperture mark, lockups and app icon; the spec is `brand/BRAND.md` |
 | 03 | 02 · Visual system & tokens (`System`) | Colours, type, materials, radii, spacing, elevation, state pill |
 | 04 | 03 · Theme sheet & builder (`Themes`) | 4 required themes on one map; theme builder; launch set of 12 |
 | 05 | 04 · Motion spec (`Motion`) | Curves, durations, Reduce Motion fallbacks for every moment |
