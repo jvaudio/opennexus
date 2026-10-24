@@ -37,6 +37,22 @@
 			<string>$(PRODUCT_MODULE_NAME).NexusDocument</string>
 		</dict>
 	</array>
+	<!-- M38: software updates through Sparkle, off until the user agrees (D275). With no
+	     SUEnableAutomaticChecks here, Sparkle asks before its first check. The app has no
+	     network entitlement: Sparkle's own Downloader service fetches the feed and update,
+	     and its Installer service replaces the app. Updates must carry this key's signature. -->
+	<key>SUFeedURL</key>
+	<string>https://raw.githubusercontent.com/jvaudio/opennexus/main/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>idwIYa9lVmOXTrchB25baXY4l/RRbYrzvaBL0c87UO8=</string>
+	<key>SUEnableDownloaderService</key>
+	<true/>
+	<key>SUEnableInstallerLauncherService</key>
+	<true/>
+	<key>SUVerifyUpdateBeforeExtraction</key>
+	<true/>
+	<key>SUScheduledCheckInterval</key>
+	<integer>86400</integer>
 	<!-- M9: the App Group shared with the extensions and the embedded `nexus` tool. -->
 	<key>OpenNexusAppGroup</key>
 	<string>$(TeamIdentifierPrefix)com.opennexus</string>

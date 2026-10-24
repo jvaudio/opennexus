@@ -41,6 +41,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         if !launchedAtLogin { Onboarding.launch() }
+        Updates.shared.start()
     }
 
     /// Spotlight results open straight to the topic; Handoff for iCloud documents is
@@ -261,6 +262,9 @@ enum MainMenu {
     private static func appMenu() -> NSMenu {
         let m = NSMenu(title: Loc.t("OpenNexus"))
         m.addItem(item(Loc.t("About OpenNexus"), #selector(NSApplication.orderFrontStandardAboutPanel(_:)), ""))
+        let updates = item(Loc.t("Check for Updates…"), #selector(Updates.checkForUpdates(_:)), "")
+        updates.target = Updates.shared
+        m.addItem(updates)
         m.addItem(.separator())
         m.addItem(item("Settings…", #selector(AppDelegate.showSettings(_:)), ","))
         m.addItem(.separator())

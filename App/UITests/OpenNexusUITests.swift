@@ -14,7 +14,10 @@ final class OpenNexusUITests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments =
             [
-                "-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO", "-onboarding.done",
+                // Sparkle doesn't ask about update checks during tests (D275).
+                "-ApplePersistenceIgnoreState", "YES", "-NSQuitAlwaysKeepsWindows", "NO", "-SUEnableAutomaticChecks",
+                "NO",
+                "-onboarding.done",
                 onboarded ? "YES" : "NO",
             ]
             + extra

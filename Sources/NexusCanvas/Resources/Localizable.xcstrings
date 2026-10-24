@@ -1761,6 +1761,10 @@
       "comment" : "Text with values filled in (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
+    "About once a day" : {
+      "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
     "About OpenNexus" : {
       "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
@@ -2125,10 +2129,6 @@
       "comment" : "Command category",
       "extractionState" : "migrated"
     },
-    "App Store or GitHub" : {
-      "comment" : "Settings value",
-      "extractionState" : "migrated"
-    },
     "App-wide behaviour. Per-document look lives in the Format panel (⌘I)." : {
       "comment" : "Settings pane subtitle",
       "extractionState" : "migrated"
@@ -2403,6 +2403,10 @@
     },
     "Beta" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Beta also offers test versions before they're released" : {
+      "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
     "blank mind map ·" : {
@@ -2795,6 +2799,14 @@
     },
     "Check for updates automatically" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Check for updates now" : {
+      "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Check for Updates…" : {
+      "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "Check spelling while typing" : {
@@ -3793,8 +3805,8 @@
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
-    "Documents, AI prompts and AI results never leave this Mac. OpenNexus has no network permission, so this log stays empty." : {
-      "comment" : "UI text (SettingsCards.swift)",
+    "Documents, AI prompts and AI results never leave this Mac. OpenNexus itself has no network permission, so macOS blocks any connection it might try." : {
+      "comment" : "UI text (NetworkActivity.swift)",
       "extractionState" : "migrated"
     },
     "Does nothing" : {
@@ -3830,6 +3842,10 @@
       "extractionState" : "migrated"
     },
     "Double-click empty canvas" : {
+      "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Download and install updates automatically" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
@@ -4769,6 +4785,14 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "GitHub" : {
+      "comment" : "Settings value",
+      "extractionState" : "migrated"
+    },
+    "github.com\/jvaudio\/opennexus" : {
+      "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
     "Glide" : {
       "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
@@ -5257,8 +5281,8 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
-    "Install updates automatically" : {
-      "comment" : "Settings row",
+    "Installed when you quit OpenNexus" : {
+      "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
     "Installs \/usr\/local\/bin\/nexus" : {
@@ -5443,6 +5467,10 @@
     },
     "Last documents" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Last update check: %@." : {
+      "comment" : "Text with values filled in (NetworkActivity.swift)",
       "extractionState" : "migrated"
     },
     "Layout & guides" : {
@@ -6573,10 +6601,6 @@
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
-    "No outbound requests. OpenNexus has no network entitlement, so macOS blocks any connection it might try." : {
-      "comment" : "UI text (AppPreferences.swift)",
-      "extractionState" : "migrated"
-    },
     "No previous sibling to move under" : {
       "comment" : "UI text (TreeOperations.swift)",
       "extractionState" : "migrated"
@@ -6805,6 +6829,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "only" : {
+      "comment" : "UI text (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
     "Only to-dos and tasks: status, priority, owner, dates, working days, progress, dependencies." : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
@@ -6885,20 +6913,16 @@
       "comment" : "UI text (AppPreferences.swift)",
       "extractionState" : "migrated"
     },
+    "OpenNexus makes no network requests" : {
+      "comment" : "Why a Settings row is locked",
+      "extractionState" : "migrated"
+    },
     "OpenNexus schema · the whole document · assets stay in the .nexus package" : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "OpenNexus uses it for **%@** (%@ scope). You’re assigning it to **%@**." : {
       "comment" : "Text with values filled in (ShortcutsPane.swift)",
-      "extractionState" : "migrated"
-    },
-    "OpenNexus v1 makes no network requests" : {
-      "comment" : "Why a Settings row is locked",
-      "extractionState" : "migrated"
-    },
-    "OpenNexus v1 makes no network requests, so it never checks for updates itself." : {
-      "comment" : "Settings footnote",
       "extractionState" : "migrated"
     },
     "Opens Connect mode" : {
@@ -7866,7 +7890,7 @@
       "extractionState" : "migrated"
     },
     "requests" : {
-      "comment" : "UI text (SettingsCards.swift)",
+      "comment" : "UI text (NetworkActivity.swift)",
       "extractionState" : "migrated"
     },
     "Require Touch ID to open encrypted documents" : {
@@ -9677,6 +9701,14 @@
       "comment" : "UI text (DocumentWindowController.swift)",
       "extractionState" : "migrated"
     },
+    "Update checks are off (Settings › General › Updates); the update service connects only when you choose Check for Updates…." : {
+      "comment" : "UI text (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
+    "Update checks are on: about once a day, the separate update service fetches the list of versions from %@, and downloads a new version only when there is one. Nothing about you or your documents is sent." : {
+      "comment" : "Text with values filled in (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
     "Update style" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
@@ -9697,7 +9729,11 @@
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
-    "Updates come from where you installed OpenNexus" : {
+    "Updates are signed and checked before they're installed. Nothing is sent but the request for the list of versions." : {
+      "comment" : "Settings footnote",
+      "extractionState" : "migrated"
+    },
+    "Updates come from" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },

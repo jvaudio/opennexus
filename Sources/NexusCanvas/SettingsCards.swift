@@ -25,7 +25,7 @@ struct CardView: View {
         case .card("frames"): FramePicker(prefs: prefs)
         case .card("matColor"): MatColorRow(prefs: prefs)
         case .card("agentCard"): AgentCard(prefs: prefs)
-        case .card("networkLog"): NetworkLogCard(onAction: onAction)
+        case .card("networkLog"): NetworkLogCard(prefs: prefs, onAction: onAction)
         case .card("maskPreview"): MaskPreviewCard(prefs: prefs)
         case .card("voiceOverPreview"): VoiceOverPreview(prefs: prefs)
         default: EmptyView()
@@ -490,18 +490,20 @@ private struct FlowChips: View {
 }
 
 private struct NetworkLogCard: View {
+    var prefs: Preferences
     var onAction: (String) -> Void
     var body: some View {
+        let _ = prefs.revision
+        let head = NetworkActivity.headline(prefs)
         // Dark like artboard 41, so the log reads as the system's record rather than a setting.
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
-                Text("0").font(.chrome(34, weight: .bold))
-                Text("requests").font(.chrome(14)).foregroundStyle(.white.opacity(0.75))
+                Text(head.value).font(.chrome(34, weight: .bold))
+                Text(head.unit).font(.chrome(14)).foregroundStyle(.white.opacity(0.75))
             }
-            Text(
-                "Documents, AI prompts and AI results never leave this Mac. OpenNexus has no network permission, so this log stays empty."
-            )
-            .font(.chrome(12.5)).foregroundStyle(.white.opacity(0.7)).fixedSize(horizontal: false, vertical: true)
+            .accessibilityElement(children: .combine)
+            Text(NetworkActivity.summary(prefs))
+                .font(.chrome(12.5)).foregroundStyle(.white.opacity(0.7)).fixedSize(horizontal: false, vertical: true)
             Button("Open log…") { onAction("privacy.log") }
         }
         .foregroundStyle(.white)

@@ -59,18 +59,35 @@ import Testing
         #expect(SettingsSchema.search("zzz-nothing").isEmpty)
     }
 
-    /// Rows that would need the network are shown off and locked (README §12).
+    /// Rows that would need the network are shown off and locked (README §12), except
+    /// update checks, which are opt-in and off by default (D275).
     @Test func networkRowsAreLockedOff() {
         let locked = SettingsSchema.allRows.filter { $0.2.locked != nil }.map(\.2.key)
-        #expect(
-            Set(locked) == [
-                "general.updatesCheck", "general.updatesInstall", "general.updatesChannel", "privacy.usageStats",
-                "privacy.crashReports", "privacy.linkPreviews",
-            ])
+        #expect(Set(locked) == ["privacy.usageStats", "privacy.crashReports", "privacy.linkPreviews"])
         let prefs = Preferences.isolated()
         #expect(
-            !prefs.bool("general.updatesCheck") && !prefs.bool("privacy.usageStats")
+            !prefs.bool("general.updatesCheck") && !prefs.bool("general.updatesInstall")
+                && prefs.string("general.updatesChannel") == "stable" && !prefs.bool("privacy.usageStats")
                 && prefs.string("privacy.crashReports") == "never")
+    }
+
+    /// Settings › Privacy & Data says what can leave the Mac: nothing, or update checks.
+    @Test func networkActivitySaysWhatCanLeave() {
+        let prefs = Preferences.isolated()
+        #expect(NetworkActivity.headline(prefs) == ("0", "requests"))
+        #expect(NetworkActivity.summary(prefs).contains("Update checks are off"))
+        prefs.set("general.updatesCheck", true)
+        #expect(NetworkActivity.headline(prefs) == ("Updates", "only"))
+        let on = NetworkActivity.summary(prefs)
+        #expect(on.contains("Update checks are on") && on.contains(NetworkActivity.source) && !on.contains("Last"))
+        prefs.set("general.updatesLastCheck", Date(timeIntervalSince1970: 1_792_800_000).timeIntervalSince1970)
+        #expect(NetworkActivity.summary(prefs).contains("Last update check"))
+        // A past check (Check Now with checks off) is mentioned, but the headline stays at 0.
+        prefs.set("general.updatesCheck", false)
+        #expect(NetworkActivity.headline(prefs) == ("0", "requests"))
+        #expect(NetworkActivity.summary(prefs).contains("Last update check"))
+        let rows = SettingsSchema.allRows.map(\.2)
+        #expect(rows.contains { $0.key == "general.updatesCheckNow" && $0.kind == .button("Check Now") })
     }
 
     @Test func preferencesPersistNotifyAndReset() {

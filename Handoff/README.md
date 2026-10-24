@@ -105,6 +105,9 @@ Non-negotiables:
   - Local and owned: no network calls, telemetry or accounts. AI uses Apple on-device
     frameworks only (Foundation Models, Translation, Vision, NaturalLanguage, SpeechAnalyzer,
     Image Playground). Nothing leaves the Mac unless the user explicitly exports or shares.
+    *Amended in M38 (D275):* the one exception is software update checks, off until the user
+    turns them on, made by Sparkle's update service, not by the app, which still has no
+    network entitlement.
   - Plain, documented, diff-friendly .nexus package format with a published JSON schema.
   - Accessibility: full VoiceOver tree for the canvas, Reduce Motion / Transparency honoured,
     colour never the only signal, WCAG AA for all themes (AAA for High Contrast).
@@ -732,7 +735,7 @@ Work in order. Each milestone ends with green tests, a short demo note in `docs/
   - Every row in §12 is met and recorded.
   - An accessibility audit with Accessibility Inspector reports no issues.
 
-The milestones below came after the handoff: an Xmind parity review (M11–M22), checks against real Xmind files and the gaps they found (M23–M36), and release packaging (M37). Each one's plan, results and known gaps are in `docs/plans/Mx.md`, and its decisions in `docs/DECISIONS.md`.
+The milestones below came after the handoff: an Xmind parity review (M11–M22), checks against real Xmind files and the gaps they found (M23–M36), release packaging (M37) and software updates (M38). Each one's plan, results and known gaps are in `docs/plans/Mx.md`, and its decisions in `docs/DECISIONS.md`.
 
 ### M11 · Task planning
 
@@ -987,6 +990,17 @@ The milestones below came after the handoff: an Xmind parity review (M11–M22),
   - The DMG installs on another Mac running macOS 27.
   - The full suite, lint and the app build pass on the released commit.
 
+### M38 · Software updates
+
+- **Build:**
+  - Opt-in updates through Sparkle: Check for Updates…, the Settings › General › Updates rows (check, install, channel) and a feed of every release (`appcast.xml`).
+  - EdDSA-signed updates.
+  - `App/tools/publish.sh`.
+- **Accept when:**
+  - Nothing is fetched until the user turns checks on or chooses Check for Updates.
+  - The app keeps no network entitlement.
+  - A signed update installs on quit, and a wrongly signed one is refused.
+
 ---
 
 ## 12. Quality bars: performance, accessibility, privacy
@@ -998,7 +1012,7 @@ The milestones below came after the handoff: an Xmind parity review (M11–M22),
 | Pan and zoom with 5,000 nodes | 120 fps on ProMotion |
 | Open a 1,000-node document | < 1 s |
 | First AI ghost suggestion | < 1.5 s |
-| Network traffic with default settings | none |
+| Network traffic with default settings | none (update checks are opt-in, D275) |
 | Theme contrast | AA for all themes, AAA for High Contrast |
 
 Measure with `os_signpost` and XCTest performance tests. Keep a `Benchmarks/` folder with generated 1k and 5k maps.

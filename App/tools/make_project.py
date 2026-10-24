@@ -24,7 +24,7 @@ def oid(*parts):
 TARGETS = [
     dict(
         name="OpenNexus", type="com.apple.product-type.application", product="OpenNexus.app",
-        wrapper="wrapper.application", folder="OpenNexus", packages=["OpenNexusKit"],
+        wrapper="wrapper.application", folder="OpenNexus", packages=["OpenNexusKit"], remote=["Sparkle"],
         settings={
             "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
             "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
@@ -95,7 +95,7 @@ COMMON = {
     "CURRENT_PROJECT_VERSION": "1",
     "ENABLE_HARDENED_RUNTIME": "YES",
     "GENERATE_INFOPLIST_FILE": "YES",
-    "MARKETING_VERSION": "0.1",
+    "MARKETING_VERSION": "0.2",
     "PRODUCT_NAME": "$(TARGET_NAME)",
     "SWIFT_APPROACHABLE_CONCURRENCY": "YES",
     "SWIFT_EMIT_LOC_STRINGS": "YES",
@@ -168,6 +168,10 @@ MAIN_GROUP = oid("group", "main")
 PRODUCTS = oid("group", "products")
 SUPPORT = oid("group", "support")
 PKG = oid("package", "..")
+# Remote packages (M38): name → (repository, minimum version), resolved up to the next major
+# version. Package.resolved pins the exact one.
+REMOTE = {"Sparkle": ("https://github.com/sparkle-project/Sparkle", "2.6.4")}
+REMOTE_REF = {name: oid("remote", name) for name in REMOTE}
 CONFIG_REF = oid("file", "Config/Base.xcconfig")
 LOCAL_REF = oid("file", "Config/Signing.local.xcconfig")
 
@@ -190,6 +194,13 @@ for t in TARGETS:
         bf = oid("buildfile", n, p)
         product_deps.setdefault(n, []).append(dep)
         add("XCSwiftPackageProductDependency", dep, f"{dep} /* {p} */ = {{\n\t\t\tisa = XCSwiftPackageProductDependency;\n\t\t\tpackage = {PKG} /* XCLocalSwiftPackageReference \"..\" */;\n\t\t\tproductName = {p};\n\t\t}};")
+        add("PBXBuildFile", bf, f"{bf} /* {p} in Frameworks */ = {{isa = PBXBuildFile; productRef = {dep} /* {p} */; }};")
+        files.append(f"{bf} /* {p} in Frameworks */")
+    for p in t.get("remote", []):
+        dep = oid("pkgdep", n, p)
+        bf = oid("buildfile", n, p)
+        product_deps.setdefault(n, []).append(dep)
+        add("XCSwiftPackageProductDependency", dep, f'{dep} /* {p} */ = {{\n\t\t\tisa = XCSwiftPackageProductDependency;\n\t\t\tpackage = {REMOTE_REF[p]} /* XCRemoteSwiftPackageReference "{p}" */;\n\t\t\tproductName = {p};\n\t\t}};')
         add("PBXBuildFile", bf, f"{bf} /* {p} in Frameworks */ = {{isa = PBXBuildFile; productRef = {dep} /* {p} */; }};")
         files.append(f"{bf} /* {p} in Frameworks */")
     add("PBXFrameworksBuildPhase", t["phases"]["frameworks"], "{} /* Frameworks */ = {{\n\t\t\tisa = PBXFrameworksBuildPhase;\n\t\t\tbuildActionMask = 2147483647;\n\t\t\tfiles = (\n{}\t\t\t);\n\t\t\trunOnlyForDeploymentPostprocessing = 0;\n\t\t}};".format(t["phases"]["frameworks"], "".join(f"\t\t\t\t{f},\n" for f in files)))
@@ -300,15 +311,20 @@ add("PBXGroup", EXT_GROUP, f'{EXT_GROUP} /* Extensions */ = {{\n\t\t\tisa = PBXG
 add("PBXGroup", PRODUCTS, f'{PRODUCTS} /* Products */ = {{\n\t\t\tisa = PBXGroup;\n\t\t\tchildren = (\n' + "".join(f'\t\t\t\t{t["ref"]} /* {t["product"]} */,\n' for t in TARGETS) + '\t\t\t);\n\t\t\tname = Products;\n\t\t\tsourceTree = "<group>";\n\t\t};')
 add("PBXGroup", MAIN_GROUP, f'{MAIN_GROUP} = {{\n\t\t\tisa = PBXGroup;\n\t\t\tchildren = (\n\t\t\t\t{app["sync"]} /* OpenNexus */,\n\t\t\t\t{EXT_GROUP} /* Extensions */,\n\t\t\t\t{TARGETS[-1]["sync"]} /* nexus */,\n\t\t\t\t{oid("sync", "OpenNexusUITests")} /* UITests */,\n\t\t\t\t{SUPPORT} /* Support */,\n\t\t\t\t{CONFIG_REF} /* Base.xcconfig */,\n\t\t\t\t{PRODUCTS} /* Products */,\n\t\t\t);\n\t\t\tsourceTree = "<group>";\n\t\t}};')
 add("XCLocalSwiftPackageReference", PKG, f'{PKG} /* XCLocalSwiftPackageReference ".." */ = {{\n\t\t\tisa = XCLocalSwiftPackageReference;\n\t\t\trelativePath = ..;\n\t\t}};')
+for name, (url, minimum) in REMOTE.items():
+    r = REMOTE_REF[name]
+    add("XCRemoteSwiftPackageReference", r, f'{r} /* XCRemoteSwiftPackageReference "{name}" */ = {{\n\t\t\tisa = XCRemoteSwiftPackageReference;\n\t\t\trepositoryURL = "{url}";\n\t\t\trequirement = {{\n\t\t\t\tkind = upToNextMajorVersion;\n\t\t\t\tminimumVersion = {minimum};\n\t\t\t}};\n\t\t}};')
+remote_refs = "".join(f'\t\t\t\t{REMOTE_REF[n]} /* XCRemoteSwiftPackageReference "{n}" */,\n' for n in REMOTE)
 
 attrs = "".join(f'\t\t\t\t\t{t["id"]} = {{\n\t\t\t\t\t\tCreatedOnToolsVersion = 27.0;\n\t\t\t\t\t}};\n' for t in TARGETS)
-add("PBXProject", PROJ, f'{PROJ} /* Project object */ = {{\n\t\t\tisa = PBXProject;\n\t\t\tattributes = {{\n\t\t\t\tBuildIndependentTargetsInParallel = 1;\n\t\t\t\tLastSwiftUpdateCheck = 2700;\n\t\t\t\tLastUpgradeCheck = 2700;\n\t\t\t\tTargetAttributes = {{\n{attrs}\t\t\t\t}};\n\t\t\t}};\n\t\t\tbuildConfigurationList = {PROJ_CFGS} /* Build configuration list for PBXProject "OpenNexus" */;\n\t\t\tdevelopmentRegion = en;\n\t\t\thasScannedForEncodings = 0;\n\t\t\tknownRegions = (\n\t\t\t\ten,\n\t\t\t\tBase,\n\t\t\t);\n\t\t\tmainGroup = {MAIN_GROUP};\n\t\t\tminimizedProjectReferenceProxies = 1;\n\t\t\tpackageReferences = (\n\t\t\t\t{PKG} /* XCLocalSwiftPackageReference ".." */,\n\t\t\t);\n\t\t\tpreferredProjectObjectVersion = 77;\n\t\t\tproductRefGroup = {PRODUCTS} /* Products */;\n\t\t\tprojectDirPath = "";\n\t\t\tprojectRoot = "";\n\t\t\ttargets = (\n' + "".join(f'\t\t\t\t{t["id"]} /* {t["name"]} */,\n' for t in TARGETS) + "\t\t\t);\n\t\t};")
+add("PBXProject", PROJ, f'{PROJ} /* Project object */ = {{\n\t\t\tisa = PBXProject;\n\t\t\tattributes = {{\n\t\t\t\tBuildIndependentTargetsInParallel = 1;\n\t\t\t\tLastSwiftUpdateCheck = 2700;\n\t\t\t\tLastUpgradeCheck = 2700;\n\t\t\t\tTargetAttributes = {{\n{attrs}\t\t\t\t}};\n\t\t\t}};\n\t\t\tbuildConfigurationList = {PROJ_CFGS} /* Build configuration list for PBXProject "OpenNexus" */;\n\t\t\tdevelopmentRegion = en;\n\t\t\thasScannedForEncodings = 0;\n\t\t\tknownRegions = (\n\t\t\t\ten,\n\t\t\t\tBase,\n\t\t\t);\n\t\t\tmainGroup = {MAIN_GROUP};\n\t\t\tminimizedProjectReferenceProxies = 1;\n\t\t\tpackageReferences = (\n\t\t\t\t{PKG} /* XCLocalSwiftPackageReference ".." */,\n{remote_refs}\t\t\t);\n\t\t\tpreferredProjectObjectVersion = 77;\n\t\t\tproductRefGroup = {PRODUCTS} /* Products */;\n\t\t\tprojectDirPath = "";\n\t\t\tprojectRoot = "";\n\t\t\ttargets = (\n' + "".join(f'\t\t\t\t{t["id"]} /* {t["name"]} */,\n' for t in TARGETS) + "\t\t\t);\n\t\t};")
 
 ORDER = [
     "PBXBuildFile", "PBXContainerItemProxy", "PBXCopyFilesBuildPhase", "PBXFileReference",
     "PBXFileSystemSynchronizedRootGroup", "PBXFrameworksBuildPhase", "PBXGroup", "PBXNativeTarget", "PBXProject",
     "PBXResourcesBuildPhase", "PBXShellScriptBuildPhase", "PBXSourcesBuildPhase", "PBXTargetDependency", "XCBuildConfiguration",
-    "XCConfigurationList", "XCLocalSwiftPackageReference", "XCSwiftPackageProductDependency",
+    "XCConfigurationList", "XCLocalSwiftPackageReference", "XCRemoteSwiftPackageReference",
+    "XCSwiftPackageProductDependency",
 ]
 out = ["// !$*UTF8*$!", "{", "\tarchiveVersion = 1;", "\tclasses = {", "\t};", "\tobjectVersion = 77;", "\tobjects = {", ""]
 for sec in ORDER:
