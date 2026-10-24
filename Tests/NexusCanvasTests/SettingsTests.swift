@@ -82,9 +82,9 @@ import Testing
         #expect(on.contains("Update checks are on") && on.contains(NetworkActivity.source) && !on.contains("Last"))
         prefs.set("general.updatesLastCheck", Date(timeIntervalSince1970: 1_792_800_000).timeIntervalSince1970)
         #expect(NetworkActivity.summary(prefs).contains("Last update check"))
-        // A past check (Check Now with checks off) is mentioned, but the headline stays at 0.
+        // After a check made with Check Now, checks off no longer means 0 requests.
         prefs.set("general.updatesCheck", false)
-        #expect(NetworkActivity.headline(prefs) == ("0", "requests"))
+        #expect(NetworkActivity.headline(prefs) == ("Updates", "on request"))
         #expect(NetworkActivity.summary(prefs).contains("Last update check"))
         let rows = SettingsSchema.allRows.map(\.2)
         #expect(rows.contains { $0.key == "general.updatesCheckNow" && $0.kind == .button("Check Now") })

@@ -48,16 +48,22 @@ final class Updates: NSObject, SPUUpdaterDelegate {
 
     var canCheckForUpdates: Bool { updater.canCheckForUpdates }
 
-    /// Settings → Sparkle. Turning on automatic installs turns on checks, which they need.
+    /// Settings → Sparkle. Automatic installs need checks: turning installs on turns checks on,
+    /// and turning checks off turns installs off, so switching checks off always stops them.
     private func applySettings(_ key: String?) {
         guard !applying, key == nil || key!.hasPrefix("general.updates") else { return }
         applying = true
         defer { applying = false }
         var check = prefs.bool("general.updatesCheck")
-        let install = prefs.bool("general.updatesInstall")
+        var install = prefs.bool("general.updatesInstall")
         if install && !check {
-            check = true
-            prefs.set("general.updatesCheck", true)
+            if key == "general.updatesCheck" {
+                install = false
+                prefs.set("general.updatesInstall", false)
+            } else {
+                check = true
+                prefs.set("general.updatesCheck", true)
+            }
         }
         if updater.automaticallyChecksForUpdates != check { updater.automaticallyChecksForUpdates = check }
         if updater.automaticallyDownloadsUpdates != install { updater.automaticallyDownloadsUpdates = install }

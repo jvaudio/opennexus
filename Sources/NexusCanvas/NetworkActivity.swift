@@ -16,9 +16,11 @@ public enum NetworkActivity {
         return t > 0 ? Date(timeIntervalSince1970: t) : nil
     }
 
-    /// The card's headline: "0 requests", or, while checks are on, that they're the only traffic.
+    /// The card's headline: while checks are on, that they're the only traffic; with them off,
+    /// "0 requests" until someone chooses Check for Updates…, then that checks happen on request.
     public static func headline(_ prefs: Preferences) -> (value: String, unit: String) {
-        updateChecksOn(prefs) ? (Loc.t("Updates"), Loc.t("only")) : ("0", Loc.t("requests"))
+        if updateChecksOn(prefs) { return (Loc.t("Updates"), Loc.t("only")) }
+        return lastCheck(prefs) == nil ? ("0", Loc.t("requests")) : (Loc.t("Updates"), Loc.t("on request"))
     }
 
     public static func summary(_ prefs: Preferences) -> String {

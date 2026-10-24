@@ -6781,6 +6781,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "on request" : {
+      "comment" : "UI text (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
     "on-device" : {
       "comment" : "Settings value",
       "extractionState" : "migrated"

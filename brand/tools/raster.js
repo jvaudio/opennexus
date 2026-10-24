@@ -1,4 +1,5 @@
 // Usage: node raster.js <kitDir>  — rasterises SVG masters to PNG with Chromium
+//        CHROMIUM=/path/to/chromium node raster.js <kitDir>  — with a browser of your own
 const path = require('path');
 const fs = require('fs');
 const { chromium } = require(process.env.PW || 'playwright');
@@ -36,7 +37,8 @@ add('web/avatar-fullbleed.svg', 'web/github-avatar-512.png', 512);
 add('web/social-preview.svg', 'web/social-preview-1280x640.png', 1280, 640);
 
 (async () => {
-  const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+  // Playwright's own Chromium (npx playwright install chromium); CHROMIUM=<path> picks another.
+  const b = await chromium.launch(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {});
   const page = await b.newPage();
   for (const j of jobs) {
     const svg = fs.readFileSync(path.join(K, j.src), 'utf8');

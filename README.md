@@ -121,7 +121,8 @@ The script also signs the DMG for Sparkle with the EdDSA key in your login keych
 once with Sparkle's `generate_keys --account opennexus`; the first signing asks to use it),
 and adds the release to `appcast.xml`. `CHANNEL=beta` marks it for the Beta channel. Then
 publish it: this tags the build, creates the GitHub Release with the DMG, and only then
-pushes the feed, so installed copies are offered the new version:
+pushes the feed, so installed copies are offered the new version. A Beta build becomes a
+GitHub pre-release, read from its feed entry:
 
 ```bash
 App/tools/publish.sh 0.2
