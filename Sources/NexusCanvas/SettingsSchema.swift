@@ -123,8 +123,9 @@ private func sec(_ title: String, _ column: Int = 0, _ rows: [SettingRow], footn
 }
 
 public enum SettingsSchema {
-    /// OpenNexus v1 makes no network requests (README §12); rows that would are shown, off.
-    public static let noNetwork = "OpenNexus v1 makes no network requests"
+    /// OpenNexus makes no network requests (README §12); rows that would are shown, off.
+    /// Update checks are the one exception, opt-in and made by Sparkle's service (D275).
+    public static let noNetwork = "OpenNexus makes no network requests"
 
     public static let panes: [SettingPane] = [
         general, editing, appearance, files, ai, shortcuts, export, integrations, privacy, accessibility,
@@ -195,17 +196,23 @@ public enum SettingsSchema {
             sec(
                 "Updates", 1,
                 [
+                    // Off until the user agrees (D275): the only network use, done by Sparkle's
+                    // update service, not by OpenNexus.
                     T(
-                        "general.updatesCheck", "Check for updates automatically", false, nil, ["update"],
-                        locked: noNetwork),
+                        "general.updatesCheck", "Check for updates automatically", false, "About once a day",
+                        ["update", "sparkle"]),
                     T(
-                        "general.updatesInstall", "Install updates automatically", false, nil, ["update"],
-                        locked: noNetwork),
+                        "general.updatesInstall", "Download and install updates automatically", false,
+                        "Installed when you quit OpenNexus", ["update"]),
                     S(
-                        "general.updatesChannel", "Channel", [("stable", "Stable"), ("beta", "Beta")], "stable", nil,
-                        [], locked: noNetwork),
-                    I("general.updatesWhere", "Updates come from where you installed OpenNexus", "App Store or GitHub"),
-                ], footnote: "OpenNexus v1 makes no network requests, so it never checks for updates itself."),
+                        "general.updatesChannel", "Channel", [("stable", "Stable"), ("beta", "Beta")], "stable",
+                        "Beta also offers test versions before they're released", ["update"]),
+                    B("general.updatesCheckNow", "Check for updates now", "Check Now", nil, ["update"]),
+                    I("general.updatesWhere", "Updates come from", "GitHub", "github.com/jvaudio/opennexus"),
+                ],
+                footnote:
+                    "Updates are signed and checked before they're installed. Nothing is sent but the request for the list of versions."
+            ),
             sec(
                 "Help & tips", 1,
                 [

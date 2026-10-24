@@ -40,6 +40,26 @@ import Testing
         }
     }
 
+    /// Software updates (D275) are opt-in, done by Sparkle's own services, and signed: the
+    /// app still has no network entitlement, nothing turns checks on by default, the feed
+    /// is HTTPS on GitHub, and updates must carry the EdDSA signature.
+    @Test func updatesAreOptInAndSigned() throws {
+        let support = NetworkPrivacyTests.repo.appending(path: "App/Support")
+        let data = try Data(contentsOf: support.appending(path: "Info.plist"))
+        let info = try #require(try PropertyListSerialization.propertyList(from: data, format: nil) as? [String: Any])
+        #expect(info["SUEnableDownloaderService"] as? Bool == true, "the Downloader service does the fetching")
+        #expect(info["SUEnableInstallerLauncherService"] as? Bool == true)
+        #expect(info["SUEnableAutomaticChecks"] == nil, "Sparkle asks before its first check")
+        #expect(info["SUAutomaticallyUpdate"] == nil && info["SUAllowsAutomaticUpdates"] as? Bool != false)
+        let feed = try #require(info["SUFeedURL"] as? String)
+        #expect(feed.hasPrefix("https://") && feed.contains("jvaudio/opennexus"))
+        #expect(((info["SUPublicEDKey"] as? String) ?? "").count == 44, "an Ed25519 public key")
+        #expect(info["SUVerifyUpdateBeforeExtraction"] as? Bool == true)
+        let ents = try String(contentsOf: support.appending(path: "OpenNexus.entitlements"), encoding: .utf8)
+        #expect(ents.contains("-spks") && ents.contains("-spki"), "Sparkle's installer services")
+        #expect(!ents.contains("com.apple.security.network"))
+    }
+
     /// Diagnostics are opt-in and never sent: the rows that would use the network are locked off.
     @Test func analyticsAndUpdatesAreOff() throws {
         let schema = try String(

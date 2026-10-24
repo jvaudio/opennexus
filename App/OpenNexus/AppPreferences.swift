@@ -170,6 +170,8 @@ final class AppPreferences {
         switch action {
         case "general.replayTour":
             (NSApp.delegate as? AppDelegate)?.showWelcome(nil)
+        case "general.updatesCheckNow":
+            Updates.shared.checkForUpdates(nil)
         case "general.whatsNew", "about.notes":
             showInfo(Loc.t("What’s new in OpenNexus 1.0"), WhatsNew.text)
         case "about.source":
@@ -226,12 +228,7 @@ final class AppPreferences {
                 ChatStore.clearAll()
             }
         case "privacy.log":
-            showInfo(
-                Loc.t("Network activity"),
-                Loc.t(
-                    "No outbound requests. OpenNexus has no network entitlement, so macOS blocks any connection it might try."
-                )
-            )
+            showInfo(Loc.t("Network activity"), NetworkActivity.summary(prefs))
         default:
             if action.hasPrefix("snapshot.copy:") || action.hasPrefix("snapshot.compare:") {
                 let path = String(action.split(separator: ":", maxSplits: 1)[1])

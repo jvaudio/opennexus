@@ -12,6 +12,7 @@
 		3DDAF9460A5445AEE2F8D97E /* NexusAgentKit in Frameworks */ = {isa = PBXBuildFile; productRef = 2366E69D08CA5CA50399E632 /* NexusAgentKit */; };
 		400914B702091A220692095A /* NexusShared in Frameworks */ = {isa = PBXBuildFile; productRef = 09BDE3D75AF7C50A469F9D86 /* NexusShared */; };
 		44846E656F84DE61477A0CDA /* OpenNexusKit in Frameworks */ = {isa = PBXBuildFile; productRef = FA8D346CF2F46D1E63F2DAC2 /* OpenNexusKit */; };
+		67B4FA71EF8B761270591A90 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 6361D128999FFF161D3C8635 /* Sparkle */; };
 		70969204F7ADDEB2BFBF910D /* SpotlightImporter.appex in Embed */ = {isa = PBXBuildFile; fileRef = FB7FA1C59AEC54BB4C7F7D8C /* SpotlightImporter.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		863A5A9AF31C958AE7013145 /* nexus in Embed */ = {isa = PBXBuildFile; fileRef = 7B6AA8C1BFEB156A71DCB094 /* nexus */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		8DE1649103C02DE19C556015 /* Widgets.appex in Embed */ = {isa = PBXBuildFile; fileRef = 82B29CD2484C01EC9A2A0DD7 /* Widgets.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -178,6 +179,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				99FD746047CFA759FD07E467 /* OpenNexusKit in Frameworks */,
+				67B4FA71EF8B761270591A90 /* Sparkle in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -500,6 +502,7 @@
 			name = OpenNexus;
 			packageProductDependencies = (
 				57CFA4F959F4311B562D03B8,
+				6361D128999FFF161D3C8635,
 			);
 			productName = OpenNexus;
 			productReference = D94CDD1CD83101CE365974E5 /* OpenNexus.app */;
@@ -552,6 +555,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				13B6A09A1BCFDBF170717D85 /* XCLocalSwiftPackageReference ".." */,
+				EC225F6B7AF07666F5E5B805 /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 0500089CBF0A8CDDA7483BA4 /* Products */;
@@ -761,7 +765,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -787,7 +791,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -805,7 +809,7 @@
 				CURRENT_PROJECT_VERSION = "1";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.nexus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -831,7 +835,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.SpotlightImporter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -857,7 +861,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookThumbnail;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -883,7 +887,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.SpotlightImporter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -933,7 +937,7 @@
 				CURRENT_PROJECT_VERSION = "1";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.nexus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -983,7 +987,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1009,7 +1013,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookThumbnail;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1035,7 +1039,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookPreview;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1067,7 +1071,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -1093,7 +1097,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1119,7 +1123,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookPreview;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1151,7 +1155,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -1172,7 +1176,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.UITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1194,7 +1198,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = "0.1";
+				MARKETING_VERSION = "0.2";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.UITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1298,6 +1302,17 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
+/* Begin XCRemoteSwiftPackageReference section */
+		EC225F6B7AF07666F5E5B805 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.6.4;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
 /* Begin XCSwiftPackageProductDependency section */
 		09BDE3D75AF7C50A469F9D86 /* NexusShared */ = {
 			isa = XCSwiftPackageProductDependency;
@@ -1313,6 +1328,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 13B6A09A1BCFDBF170717D85 /* XCLocalSwiftPackageReference ".." */;
 			productName = OpenNexusKit;
+		};
+		6361D128999FFF161D3C8635 /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EC225F6B7AF07666F5E5B805 /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 		9307AD410D26C205C4C0EC3E /* NexusShared */ = {
 			isa = XCSwiftPackageProductDependency;

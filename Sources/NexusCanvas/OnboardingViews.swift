@@ -19,7 +19,7 @@ public struct WelcomeView: View {
             Color(white: 0.07)
             SelfBuildingMap().opacity(0.35)
             VStack(spacing: 0) {
-                AppMark(size: 84).padding(.bottom, 26)
+                AppIconTile(size: 84).padding(.bottom, 26)
                 Text("WELCOME TO OPENNEXUS").font(.chrome(13, weight: .medium, design: .monospaced)).kerning(2)
                     .foregroundStyle(.white.opacity(0.6)).padding(.bottom, 10)
                 Text(Loc.t("Think at the speed\nof your keyboard.")).font(.chrome(44, weight: .heavy)).kerning(-1.3)

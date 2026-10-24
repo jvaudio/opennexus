@@ -100,7 +100,11 @@ final class QuickCapture: NSObject, NSMenuDelegate {
     func showStatusItem() {
         guard statusItem == nil else { return }
         let item = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
-        item.button?.image = NSImage(systemSymbolName: "triangle", accessibilityDescription: "OpenNexus")
+        // The Aperture template image, 18 pt, black and alpha only (brand/BRAND.md §5).
+        let icon = NSImage(named: "MenuBarIcon")
+        icon?.isTemplate = true
+        icon?.accessibilityDescription = "OpenNexus"
+        item.button?.image = icon
         let menu = NSMenu()
         menu.delegate = self
         item.menu = menu

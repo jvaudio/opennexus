@@ -23,7 +23,8 @@ jobs:
         run: xcodebuild -version
 
       - name: Lint
-        run: swift format lint --strict -r Sources Tests App/OpenNexus
+        # Swift formatting, and the brand checks (no old mark, document icon up to date).
+        run: scripts/lint.sh
 
       - name: Build packages
         run: swift build

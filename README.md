@@ -1,4 +1,9 @@
-# OpenNexus
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/svg/lockup/opennexus-lockup-dark.svg">
+    <img src="brand/svg/lockup/opennexus-lockup-light.svg" alt="OpenNexus" width="320">
+  </picture>
+</h1>
 
 An open-source, native **macOS 27** app for mind maps and technical diagrams:
 Xmind's keyboard flow, plus flowcharts, data flow diagrams, threat models, architecture
@@ -28,6 +33,8 @@ Sources/
 App/                   Xcode project for the macOS app and its extensions (thin shell)
   tools/               make_project.py, release.sh, axaudit.swift
 schema/                published JSON Schema for .nexus files
+brand/                 the Aperture brand kit: spec (BRAND.md), icons, marks, lockups
+scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints)
 Handoff/               design handoff package (brief, artboards, screenshots, specs)
 ```
 
@@ -51,6 +58,13 @@ swift run nexus validate path/to/Map.nexus
 swift run nexus --help
 ```
 
+Lint as CI does: Swift formatting, and the brand checks (no old logo, document icon up to
+date with `brand/`):
+
+```bash
+scripts/lint.sh
+```
+
 ## Install
 
 Download `OpenNexus-<version>.dmg` from the release, open it and drag OpenNexus to
@@ -60,6 +74,23 @@ A notarized release opens with a double-click. A release that's only signed (no
 notarization yet) needs one extra step the first time: Control-click OpenNexus in
 Applications and choose Open, or open it once and use System Settings › Privacy & Security
 › Open Anyway.
+
+### Updates
+
+From 0.2 on, OpenNexus can update itself. Updates are off until you turn them on: Settings ›
+General › Updates, or answer yes when OpenNexus asks on a later launch. You can also choose
+OpenNexus › Check for Updates… at any time.
+
+With checks on, OpenNexus looks for a new version about once a day. Turn on "Download and
+install updates automatically" to have new versions installed when you quit; otherwise it
+asks first. The Beta channel also offers test versions.
+
+The app itself still has no network permission. Sparkle's separate update service fetches
+[`appcast.xml`](appcast.xml) from this repository and the DMG from GitHub Releases, and
+every update must carry the project's signature before it's installed. Version 0.1 predates
+updates, so install 0.2 by hand once.
+
+### Command-line tool
 
 The command-line tool is inside the app. To use it from Terminal:
 
@@ -85,6 +116,27 @@ from account.apple.com); the script uses it whenever it exists:
 ```bash
 xcrun notarytool store-credentials opennexus --apple-id you@example.com --team-id ABCDE12345
 ```
+
+The script also signs the DMG for Sparkle with the EdDSA key in your login keychain (made
+once with Sparkle's `generate_keys --account opennexus`; the first signing asks to use it),
+and adds the release to `appcast.xml`. `CHANNEL=beta` marks it for the Beta channel. Then
+publish it: this tags the build, creates the GitHub Release with the DMG, and only then
+pushes the feed, so installed copies are offered the new version. A Beta build becomes a
+GitHub pre-release, read from its feed entry:
+
+```bash
+App/tools/publish.sh 0.2
+```
+
+Keep a backup of the update signing key: without it, installed copies can't be updated.
+
+```bash
+generate_keys --account opennexus -x ~/opennexus-update-key.txt
+```
+
+`generate_keys` is in Sparkle's `bin/` folder, under the build's
+`SourcePackages/artifacts/sparkle/Sparkle/bin`. Store the exported file somewhere safe and
+offline, not in Git.
 
 ## File format
 
