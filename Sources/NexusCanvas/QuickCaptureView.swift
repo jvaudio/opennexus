@@ -34,7 +34,8 @@ public struct QuickCaptureView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 12) {
-                AppMarkGlyph().frame(width: 18, height: 18).alignmentGuide(.firstTextBaseline) { $0[.bottom] - 3 }
+                ApertureMark(opticalSize: .boost(1.5), decorative: true).frame(width: 20, height: 20)
+                    .alignmentGuide(.firstTextBaseline) { $0[.bottom] - 3 }
                 TextField("Jot an idea", text: $model.text, axis: .vertical)
                     .textFieldStyle(.plain)
                     .font(.chrome(21, weight: .regular))
@@ -71,30 +72,5 @@ public struct QuickCaptureView: View {
         let current = t.current.title
         t.next()
         return t.targets.count > 1 ? "\(current) · \(t.current.title)" : current
-    }
-}
-
-/// The OpenNexus triangle in the accent colours, small enough for a text line.
-struct AppMarkGlyph: View {
-    var body: some View {
-        Canvas { ctx, s in
-            let a = CGPoint(x: s.width * 0.5, y: s.height * 0.12)
-            let b = CGPoint(x: s.width * 0.12, y: s.height * 0.88)
-            let c = CGPoint(x: s.width * 0.88, y: s.height * 0.88)
-            var p = Path()
-            p.move(to: a)
-            p.addLine(to: b)
-            p.addLine(to: c)
-            p.closeSubpath()
-            ctx.stroke(
-                p,
-                with: .linearGradient(
-                    Gradient(colors: [Color(hex: "#5850EC"), Color(hex: "#0F7F7A")]), startPoint: b, endPoint: c),
-                lineWidth: s.width * 0.11)
-            let r = s.width * 0.13
-            ctx.fill(
-                Path(ellipseIn: CGRect(x: a.x - r, y: a.y - r, width: r * 2, height: r * 2)), with: .color(.primary))
-        }
-        .accessibilityHidden(true)
     }
 }

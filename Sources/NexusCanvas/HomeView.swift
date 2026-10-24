@@ -207,6 +207,8 @@ public struct HomeView: View {
 
     var sidebar: some View {
         VStack(alignment: .leading, spacing: 2) {
+            // The Aperture lockup (brand/BRAND.md §3), at least 96 pt wide.
+            BrandLockup(height: 30).padding(.bottom, 10)
             sideItem("home", Loc.t("Home"))
             sideItem("recents", Loc.t("Recents"))
             sideItem("templates", Loc.t("Templates"))

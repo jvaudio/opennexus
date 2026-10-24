@@ -49,56 +49,13 @@ private struct Card<Content: View>: View {
     }
 }
 
-/// The OpenNexus mark: a triangle of three nodes.
-public struct AppMark: View {
-    var size: CGFloat = 48
-    public init(size: CGFloat = 48) { self.size = size }
-    public var body: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: size * 0.24)
-                .fill(
-                    LinearGradient(
-                        colors: [Color(white: 0.2), Color(white: 0.11)], startPoint: .top, endPoint: .bottom)
-                )
-                .overlay(RoundedRectangle(cornerRadius: size * 0.24).stroke(Color.white.opacity(0.1)))
-                .shadow(color: .black.opacity(0.45), radius: size * 0.12, y: size * 0.06)
-            Canvas { ctx, s in
-                let a = CGPoint(x: s.width * 0.5, y: s.height * 0.3)
-                let b = CGPoint(x: s.width * 0.34, y: s.height * 0.66)
-                let c = CGPoint(x: s.width * 0.66, y: s.height * 0.66)
-                var p = Path()
-                p.move(to: a)
-                p.addLine(to: b)
-                p.addLine(to: c)
-                p.closeSubpath()
-                ctx.stroke(
-                    p,
-                    with: .linearGradient(
-                        Gradient(colors: [Color(hex: "#9B8CFF"), Color(hex: "#3DD6C6")]), startPoint: b, endPoint: c),
-                    lineWidth: s.width * 0.05)
-                let r = s.width * 0.07
-                ctx.fill(
-                    Path(ellipseIn: CGRect(x: a.x - r, y: a.y - r, width: r * 2, height: r * 2)), with: .color(.white))
-                ctx.fill(
-                    Path(ellipseIn: CGRect(x: b.x - r, y: b.y - r, width: r * 2, height: r * 2)),
-                    with: .color(Color(hex: "#9B8CFF")))
-                ctx.fill(
-                    Path(ellipseIn: CGRect(x: c.x - r, y: c.y - r, width: r * 2, height: r * 2)),
-                    with: .color(Color(hex: "#3DD6C6")))
-            }
-        }
-        .frame(width: size, height: size)
-        .accessibilityHidden(true)
-    }
-}
-
 private struct AboutCard: View {
     var onAction: (String) -> Void
     var body: some View {
         Card {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 14) {
-                    AppMark(size: 54)
+                    AppIconTile(size: 52)
                     VStack(alignment: .leading, spacing: 3) {
                         Text(
                             Loc.f(
