@@ -42,7 +42,15 @@ other=$(git status --porcelain | grep -v ' appcast.xml$' || true)
 xcrun stapler validate "$DMG" >/dev/null 2>&1 || print -u2 "publish: warning: $DMG isn't notarized and stapled"
 
 BUILT=$(git rev-parse HEAD)
-if ! git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+if git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; then
+    # A tag left from an earlier attempt must name this build, or the DMG would be
+    # published under another commit's tag.
+    TAGGED=$(git rev-parse "$TAG^{commit}")
+    [[ $TAGGED == "$BUILT" ]] || {
+        print -u2 "publish: $TAG already names ${TAGGED[1,12]}, not this build (${BUILT[1,12]})"
+        exit 1
+    }
+else
     git tag -a "$TAG" "$BUILT" -m "OpenNexus $VERSION"
 fi
 git push origin "$TAG"
