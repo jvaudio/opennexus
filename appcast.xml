@@ -1,9 +1,19 @@
 <?xml version='1.0' encoding='utf-8'?>
-<rss version="2.0">
+<rss xmlns:sparkle="http://www.andymatuschak.org/xml-namespaces/sparkle" version="2.0">
   <channel>
     <title>OpenNexus</title>
     <link>https://github.com/jvaudio/opennexus</link>
     <description>OpenNexus updates</description>
     <language>en</language>
+    <item>
+      <title>OpenNexus 0.2</title>
+      <pubDate>Sat, 24 Oct 2026 23:52:49 GMT</pubDate>
+      <sparkle:version>108</sparkle:version>
+      <sparkle:shortVersionString>0.2</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>27.0</sparkle:minimumSystemVersion>
+      <sparkle:fullReleaseNotesLink>https://github.com/jvaudio/opennexus/releases/tag/v0.2</sparkle:fullReleaseNotesLink>
+      <description>&lt;p&gt;OpenNexus 0.2 is available.&lt;/p&gt;&lt;p&gt;&lt;a href="https://github.com/jvaudio/opennexus/releases/tag/v0.2"&gt;What’s new&lt;/a&gt;&lt;/p&gt;</description>
+      <enclosure url="https://github.com/jvaudio/opennexus/releases/download/v0.2/OpenNexus-0.2.dmg" sparkle:edSignature="K+Sc1t9bQWvhxTzEe2RHYHOECfCTjZdcizQ5kPSS6d5/bNgxUA1Zpy0yh1S7k5iisRWECgMOAvO1cky+WacjCw==" length="25017410" type="application/octet-stream" />
+    </item>
   </channel>
 </rss>
