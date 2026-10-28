@@ -138,6 +138,9 @@
           "type": "array",
           "uniqueItems": true
         },
+        "guide": {
+          "$ref": "#/$defs/guide"
+        },
         "id": {
           "$ref": "#/$defs/id"
         },
@@ -685,6 +688,23 @@
         },
         "name": {
           "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "guide": {
+      "additionalProperties": true,
+      "description": "Guide mode's saved state for this canvas (M41): the steps skipped, in the guide named by id. Written only when a step is skipped; progress and the panel's visibility are never stored.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "skipped": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
         }
       },
       "type": "object"

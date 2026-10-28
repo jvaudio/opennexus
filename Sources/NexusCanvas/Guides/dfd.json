@@ -1,0 +1,52 @@
+{
+  "example": [],
+  "id": "dfd",
+  "steps": [
+    {
+      "id": "process",
+      "match": {
+        "named": true,
+        "nodeType": "process"
+      },
+      "tip": "Start with one process for the whole system. {topic.addChild} adds what it talks to.",
+      "title": "Name the system you’re modelling"
+    },
+    {
+      "id": "externals",
+      "match": {
+        "nodeType": "entity"
+      },
+      "tip": "People or systems outside your control that send or receive data, such as “Customer” or “Bank”.",
+      "title": "Add external entities"
+    },
+    {
+      "id": "flows",
+      "match": {
+        "edge": {
+          "labelled": true
+        }
+      },
+      "tip": "Name the data each flow carries, such as “login request”. {element.label} labels the selected flow.",
+      "title": "Label the data flows"
+    },
+    {
+      "id": "stores",
+      "match": {
+        "nodeType": "store"
+      },
+      "optional": true,
+      "tip": "Where data rests: a database, a queue, a log. Pick Data Store from {insert.slash}.",
+      "title": "Add data stores"
+    },
+    {
+      "id": "rules",
+      "match": {
+        "rules": "dfd"
+      },
+      "optional": true,
+      "tip": "Every flow touches a process, stores are written by a process, and every flow is labelled.",
+      "title": "Clear the rule checks"
+    }
+  ],
+  "type": "dfd"
+}

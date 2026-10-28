@@ -196,9 +196,12 @@ final class HomeWindow {
         // A starter from the shelf or the picker; a Blank one is what ⌘N makes for its type.
         model.onTemplate = { [weak self] t in
             self?.window?.orderOut(nil)
-            NewDocument.make(
+            let doc = NewDocument.make(
                 model: t.document(prefs: .shared), editRoot: t.isBlank && Preferences.shared.bool("editing.startInEdit")
             )
+            if StarterGallery.startsWithGuide(t, prefs: .shared) {
+                (doc?.windowControllers.first as? DocumentWindowController)?.controller.guideVisible = true
+            }
         }
         model.onInbox = { [weak self] in
             Inbox.ensure()
@@ -230,16 +233,18 @@ enum NewDocument {
             editRoot: Preferences.shared.bool("editing.startInEdit"))
     }
 
-    static func make(model: DocumentModel, editRoot: Bool = false) {
+    @discardableResult
+    static func make(model: DocumentModel, editRoot: Bool = false) -> NexusDocument? {
         guard
             let nx = try? NSDocumentController.shared.makeUntitledDocument(ofType: "com.opennexus.document")
                 as? NexusDocument
-        else { return }
+        else { return nil }
         nx.store.replace(with: model)
         if !editRoot { nx.markImported() }
         NSDocumentController.shared.addDocument(nx)
         nx.makeWindowControllers()
         nx.showWindows()
+        return nx
     }
 }
 

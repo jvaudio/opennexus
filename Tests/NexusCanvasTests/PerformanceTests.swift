@@ -51,6 +51,27 @@ func ms(_ d: Duration) -> Double {
         #expect(ms(m) < 16, "key→caret median \(ms(m)) ms")
     }
 
+    /// Key press to caret with the guide open (M41): still under 16 ms. Matching waits for
+    /// the next run-loop turn.
+    @Test func keyToCaretUnder16msWithTheGuideOpen() throws {
+        let h = CanvasHarness(model: bigDocument(mains: 8, subs: 5, leaves: 4))
+        h.controller.guideVisible = true
+        let clock = ContinuousClock()
+        var samples: [Duration] = []
+        for i in 0..<30 {
+            let main = h.canvas.nodes[h.canvas.root]!.children[i % 8]
+            h.controller.select(main)
+            h.controller.updateGuide()
+            let d = clock.measure { h.press("tab") }
+            #expect(h.controller.mode == .edit && h.controller.guideUpdatePending)
+            samples.append(d)
+            h.press("return")
+            h.controller.updateGuide()
+        }
+        let m = median(samples)
+        #expect(ms(m) < 16, "key→caret with the guide open: median \(ms(m)) ms")
+    }
+
     /// Layout reflow on a 1,000-node map: under 50 ms.
     @Test func reflow1000NodesUnder50ms() {
         let doc = bigDocument(mains: 10, subs: 10, leaves: 9)  // 1,011 topics

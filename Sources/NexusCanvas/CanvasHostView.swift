@@ -62,7 +62,8 @@ public final class CanvasHostView: NSView {
         let jump = NSHostingView(rootView: JumpView(controller: controller))
         let present = NSHostingView(rootView: PresentOverlayView(controller: controller))
         // On-device AI (M6).
-        let aiPanel = NSHostingView(rootView: AIPanelView(controller: controller))
+        // The AI panel, or the guide in its place (M41).
+        let aiPanel = NSHostingView(rootView: TrailingPanelView(controller: controller))
         aiPanelView = aiPanel
         let aiSheet = NSHostingView(rootView: AISheetView(controller: controller))
         aiPanel.sizingOptions = [.intrinsicContentSize]

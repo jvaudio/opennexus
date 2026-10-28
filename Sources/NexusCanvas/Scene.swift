@@ -248,6 +248,8 @@ public struct Scene {
     /// The marker legend, when the canvas shows one and the whole canvas is drawn (M14).
     public var legend: SceneLegend?
     public var decor: [SceneDecor] = []
+    /// Each topic's effective node type on a technical canvas (Guide mode reuses them).
+    public var nodeTypes: [NodeID: NodeType] = [:]
     /// DFD rule checks for this canvas.
     public var violations: [DFDRules.Violation] = []
     public var theme: Theme = .classic
@@ -427,6 +429,7 @@ public struct SceneBuilder {
                 if let t = DiagramCatalog.effectiveType(id, in: canvas, parents: parents) { nodeTypes[id] = t }
             }
         }
+        scene.nodeTypes = nodeTypes
         let isDFD = diagramType == .dfd || diagramType == .threatModel
         let dfdNumbers = isDFD ? DFDRules.numbers(canvas) : [:]
         let threatList = diagramType == .threatModel ? Stride.threats(canvas) : []

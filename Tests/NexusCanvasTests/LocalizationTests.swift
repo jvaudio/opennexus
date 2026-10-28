@@ -55,6 +55,16 @@ import Testing
             out[s.summary] = out[s.summary] ?? "Starter summary (Home's template shelf, starter picker)"
             out[s.kicker] = out[s.kicker] ?? "Starter kicker, small capitals over its name"
         }
+        for g in GuideLibrary.all {
+            for st in g.steps {
+                out[st.title] = out[st.title] ?? "Guide step (Guide mode, \(g.id))"
+                if !st.tip.isEmpty {
+                    out[st.tip] =
+                        out[st.tip]
+                        ?? "Guide tip (\(g.id)). Keep each {command.id} as it is: it shows the command's keys."
+                }
+            }
+        }
         for i in DiagramCatalog.icons { out[i.name] = out[i.name] ?? "Icon name" }
         for c in Stride.allCases { out[c.name] = out[c.name] ?? "STRIDE category" }
         for r in Stride.risks + Stride.statuses { out[r] = out[r] ?? "Threat risk or status" }
@@ -173,6 +183,7 @@ import Testing
         let p = Loc.t("Add Child Topic")
         #expect(p.hasPrefix("⟦Ådd Çhíld Töpíç") && p.count >= Int(Double("Add Child Topic".count) * 1.4))
         #expect(Loc.pseudolocalize("%d topics").contains("%d"), "placeholders survive")
+        #expect(Loc.pseudolocalize("Press {topic.addChild} now").contains("{topic.addChild}"), "guide tokens survive")
     }
 
     @Test func countPhrasesUseTheCatalogsPluralVariants() {

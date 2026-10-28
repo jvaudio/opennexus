@@ -54,6 +54,8 @@ extension CanvasController {
             .aiGhosts: { $0.requestGhosts() },
             .aiPrompt: { $0.openPromptBar() },
             .aiPanel: { $0.toggleAIPanel() },
+            .guide: { $0.toggleGuide() },
+            .setNodeType: { $0.showNodeTypeControl() },
             .export: { $0.openExport() },
             .mapShot: { $0.openMapShot() },
             .copyAsImage: { $0.copyAsImage() },

@@ -1,0 +1,80 @@
+{
+  "example": [],
+  "id": "architecture",
+  "steps": [
+    {
+      "id": "name",
+      "match": {
+        "depth": 0,
+        "named": true
+      },
+      "tip": "The central topic is the diagram’s title. {topic.edit} renames it.",
+      "title": "Name the platform"
+    },
+    {
+      "id": "clients",
+      "match": {
+        "nodeType": [
+          "client",
+          "mobile",
+          "actor",
+          "saas"
+        ]
+      },
+      "tip": "Users, browsers, mobile apps and outside systems. {diagram.iconLibrary} picks an icon.",
+      "title": "Add who uses it"
+    },
+    {
+      "id": "services",
+      "match": {
+        "nodeType": [
+          "service",
+          "gateway",
+          "fn",
+          "container",
+          "cluster",
+          "host",
+          "lb"
+        ]
+      },
+      "min": 2,
+      "tip": "Each service, gateway or function that handles requests. Names like “API gateway” pick their icon.",
+      "title": "Add the services"
+    },
+    {
+      "id": "data",
+      "match": {
+        "nodeType": [
+          "db",
+          "cache",
+          "queue",
+          "stream",
+          "storage"
+        ]
+      },
+      "tip": "Databases, caches, queues and buckets. Names like “Orders DB” pick their icon.",
+      "title": "Add where data lives"
+    },
+    {
+      "id": "links",
+      "match": {
+        "edge": {
+          "labelled": true
+        }
+      },
+      "optional": true,
+      "tip": "Name the protocol or call, such as “HTTPS” or “gRPC”. {element.label} labels the selected connector.",
+      "title": "Label the connections"
+    },
+    {
+      "id": "groups",
+      "match": {
+        "boundary": true
+      },
+      "optional": true,
+      "tip": "Select the topics that belong together and press {element.boundary}.",
+      "title": "Group by network or trust"
+    }
+  ],
+  "type": "architecture"
+}

@@ -181,6 +181,12 @@ public struct StarterGalleryView: View {
                 }
             }
             Spacer()
+            if let s = model.selected, GuideLibrary.guide(for: s.type) != nil {
+                Toggle("Start with Guide", isOn: $model.startsWithGuide)
+                    .toggleStyle(.checkbox)
+                    .font(.chrome(13))
+                    .help("Opens Guide mode (⌃⌘G) beside the new map")
+            }
             if !embedded {
                 Button("Cancel") { model.cancel() }.keyboardShortcut(.cancelAction).controlSize(.large)
             }
@@ -207,6 +213,7 @@ struct StarterCard: View {
     @Environment(\.displayScale) private var displayScale
 
     var tint: Color { Color(hex: DiagramDescriptor[starter.type].tint) }
+    var guided: Bool { GuideLibrary.guide(for: starter.type) != nil }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
@@ -226,6 +233,15 @@ struct StarterCard: View {
             }
             .frame(height: StarterThumbnails.size.height)
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(alignment: .topTrailing) {
+                if guided {
+                    Text("GUIDED").font(.chrome(9.5, weight: .bold, design: .monospaced)).foregroundStyle(tint)
+                        .padding(.horizontal, 6).frame(height: 18)
+                        .background(Capsule().fill(Color(nsColor: .textBackgroundColor)))
+                        .overlay(Capsule().stroke(tint.opacity(0.4)))
+                        .padding(8)
+                }
+            }
             .animation(
                 UIMotion.animation(
                     .spring(response: Motion.snap.response, dampingFraction: Motion.snap.dampingFraction)),
@@ -258,7 +274,10 @@ struct StarterCard: View {
         }
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Loc.t(starter.name))
-        .accessibilityValue("\(Loc.t(starter.summary)), \(starter.category.title)")
+        .accessibilityValue(
+            [Loc.t(starter.summary), starter.category.title, guided ? Loc.t("Guided") : nil].compactMap { $0 }
+                .joined(separator: ", ")
+        )
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
     }
 }

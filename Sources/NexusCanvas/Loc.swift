@@ -50,10 +50,14 @@ public enum Loc {
         guard !s.hasPrefix("⟦") else { return s }  // already looked up once
         var out = ""
         var inPlaceholder = false
+        // A guide tip's `{command.id}` (M41) stays whole, like a `%@`.
+        var inToken = false
         for ch in s {
-            if ch == "%" || ch == "{" { inPlaceholder = true }
-            out.append(inPlaceholder ? ch : (accents[ch] ?? ch))
-            if inPlaceholder, ch.isLetter || ch == "}" { inPlaceholder = false }
+            if ch == "{" { inToken = true }
+            if ch == "%" { inPlaceholder = true }
+            out.append(inPlaceholder || inToken ? ch : (accents[ch] ?? ch))
+            if inToken, ch == "}" { inToken = false }
+            if inPlaceholder, ch.isLetter { inPlaceholder = false }
         }
         let pad = String(repeating: "·", count: max(2, s.count * 2 / 5))
         return "⟦\(out) \(pad)⟧"

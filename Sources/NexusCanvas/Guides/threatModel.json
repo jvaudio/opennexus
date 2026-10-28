@@ -1,0 +1,68 @@
+{
+  "example": [],
+  "id": "threatModel",
+  "steps": [
+    {
+      "id": "scope",
+      "match": {
+        "depth": 0,
+        "named": true
+      },
+      "tip": "The central topic is the model’s title. {topic.edit} renames it.",
+      "title": "Name the system in scope"
+    },
+    {
+      "id": "processes",
+      "match": {
+        "named": true,
+        "nodeType": "process"
+      },
+      "tip": "{topic.addChild} adds a process: a service or job that handles data.",
+      "title": "Add the processes"
+    },
+    {
+      "id": "entities",
+      "match": {
+        "nodeType": "entity"
+      },
+      "tip": "Users, partners and outside systems, such as “Customer” or “Payment provider”.",
+      "title": "Add who and what is outside"
+    },
+    {
+      "id": "flows",
+      "match": {
+        "edge": {
+          "labelled": true
+        }
+      },
+      "tip": "Name the data each flow carries. {element.label} labels the selected flow.",
+      "title": "Label the data flows"
+    },
+    {
+      "id": "boundary",
+      "match": {
+        "boundary": true
+      },
+      "tip": "Select what sits inside one zone of trust and press {element.boundary}.",
+      "title": "Draw a trust boundary"
+    },
+    {
+      "id": "threats",
+      "match": {
+        "nodeType": "threat"
+      },
+      "tip": "Select an element and press {diagram.suggestThreats} for STRIDE suggestions.",
+      "title": "Add threats"
+    },
+    {
+      "id": "mitigations",
+      "match": {
+        "nodeType": "mitigation"
+      },
+      "optional": true,
+      "tip": "Add a Mitigation under each threat from {insert.slash}; the threat table marks it mitigated.",
+      "title": "Mitigate them"
+    }
+  ],
+  "type": "threatModel"
+}

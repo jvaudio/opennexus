@@ -323,6 +323,9 @@ func reviewDocument() -> DocumentModel {
         #expect(!v.validate(["legend": "yes"], definition: "presentation").isEmpty)
         #expect(!v.validate(["clauses": "risk: high"], definition: "filter").isEmpty)
         #expect(!v.validate(["text": "x", "children": [], "presentHidden": 1], definition: "node").isEmpty)
+        // M41: a canvas's skipped guide steps.
+        #expect(v.validate(["id": "dfd", "skipped": ["stores"]], definition: "guide").isEmpty)
+        #expect(!v.validate(["id": "dfd", "skipped": "stores"], definition: "guide").isEmpty)
     }
 
     @Test func publishedSchemaMatchesBundledCopy() throws {

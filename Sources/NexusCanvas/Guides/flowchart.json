@@ -1,0 +1,60 @@
+{
+  "example": [
+    "Order received",
+    "  Check stock",
+    "    In stock?",
+    "      Ship order",
+    "        Done",
+    "      Back-order"
+  ],
+  "id": "flowchart",
+  "steps": [
+    {
+      "id": "start",
+      "match": {
+        "named": true,
+        "nodeType": "start"
+      },
+      "tip": "The first topic is the start. Name what sets the process off.",
+      "title": "Start where the process begins"
+    },
+    {
+      "id": "steps",
+      "match": {
+        "named": true,
+        "nodeType": "process"
+      },
+      "min": 2,
+      "tip": "{topic.addChild} adds the next step after the selected one.",
+      "title": "Add the steps"
+    },
+    {
+      "id": "decision",
+      "match": {
+        "nodeType": "decision"
+      },
+      "tip": "End a step with “?” and it becomes a decision. Give it a branch for each answer.",
+      "title": "Add a decision"
+    },
+    {
+      "id": "end",
+      "match": {
+        "nodeType": "end"
+      },
+      "tip": "Name the last step “Done”, or pick End from {insert.slash}.",
+      "title": "Finish with an end"
+    },
+    {
+      "id": "labels",
+      "match": {
+        "edge": {
+          "labelled": true
+        }
+      },
+      "optional": true,
+      "tip": "{element.label} labels the selected connector, such as “yes” and “no”.",
+      "title": "Label the branches"
+    }
+  ],
+  "type": "flowchart"
+}

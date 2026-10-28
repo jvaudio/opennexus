@@ -119,6 +119,28 @@ public final class StarterGallery {
 
     public func cancel() { onCancel() }
 
+    /// Start with Guide (M41), remembered per starter: on at first for a Blank starter whose
+    /// type has a guide, off for a template (it's filled in already).
+    public static func startsWithGuide(_ s: Starter, prefs: Preferences) -> Bool {
+        guard GuideLibrary.guide(for: s.type) != nil else { return false }
+        return prefs.defaults.object(forKey: "starters.guide.\(s.id)") as? Bool ?? s.isBlank
+    }
+
+    /// The selected starter's Start with Guide, for the footer's checkbox.
+    public var startsWithGuide: Bool {
+        get {
+            _ = guideChoices
+            return selected.map { Self.startsWithGuide($0, prefs: prefs) } ?? false
+        }
+        set {
+            guard let s = selected else { return }
+            prefs.defaults.set(newValue, forKey: "starters.guide.\(s.id)")
+            guideChoices += 1
+        }
+    }
+    /// Bumped when a choice changes, so the checkbox redraws.
+    private var guideChoices = 0
+
     /// Filtering keeps the selection when it still shows, and otherwise selects the first card.
     private func keepSelectionVisible() {
         let v = visible

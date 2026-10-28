@@ -343,6 +343,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         gallery.onChoose = { [weak self, weak window, weak sheet] starter in
             if let sheet { window?.endSheet(sheet) }
             self?.controller.addCanvas(from: starter)
+            if StarterGallery.startsWithGuide(starter, prefs: .shared) { self?.controller.guideVisible = true }
             if let v = self?.host.canvasView { window?.makeFirstResponder(v) }
         }
         window.beginSheet(sheet)

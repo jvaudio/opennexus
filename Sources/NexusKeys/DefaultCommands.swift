@@ -62,6 +62,8 @@ extension CommandID {
     public static let iconLibrary: CommandID = "diagram.iconLibrary"
     public static let copyMermaid: CommandID = "diagram.copyMermaid"
     public static let threatTable: CommandID = "diagram.threatTable"
+    /// Format › Data › Type for the selected topics (M41).
+    public static let setNodeType: CommandID = "diagram.setNodeType"
     public static let suggestThreats: CommandID = "diagram.suggestThreats"
     // AI actions (M6), also in ⌘K
     public static let aiBreakdown: CommandID = "ai.breakdown"
@@ -127,6 +129,8 @@ extension CommandID {
     /// The marker legend (M14).
     public static let toggleLegend: CommandID = "view.legend"
     public static let editLegend: CommandID = "view.editLegend"
+    /// Guide mode's panel (M41).
+    public static let guide: CommandID = "view.guide"
     /// Moving the legend from the keyboard (M21): select it, then arrows nudge it.
     public static let selectLegend: CommandID = "legend.select"
     public static let resetLegendPosition: CommandID = "legend.resetPosition"
@@ -332,6 +336,7 @@ public enum DefaultCommands {
             note: "Architecture icons; ↩ inserts a child"),
         C(.copyMermaid, "Copy as Mermaid", .file, scope: .global, menu: .edit, note: "Sequence and flowchart"),
         C(.threatTable, "Threat Table", .view, scope: .global, menu: .view, note: "Threat models"),
+        C(.setNodeType, "Set Node Type…", .elements, menu: .format, note: "Format › Data › Type"),
         C(.suggestThreats, "Suggest STRIDE Threats", .ai, menu: .ai, note: "Threat models"),
     ]
 
@@ -506,6 +511,9 @@ public enum DefaultCommands {
                 .toggleLegend, "Legend", .view, scope: .global, keys: [k("opt+cmd+l")], menu: .view,
                 note: "Markers and labels used on this canvas"),
             C(.editLegend, "Edit Legend…", .view, scope: .global, menu: .view, note: "Describe each marker"),
+            C(
+                .guide, "Guide", .view, scope: .global, keys: [k("ctrl+cmd+g")], menu: .view,
+                note: "Steps toward a well-formed diagram"),
         ]
         + zip(1...5, ["Search", "Outline", "Notes", "Tags", "To-dos"]).map { n, name in
             C(.navigationTab(n), "Navigation: \(name)", .view, scope: .global, keys: [k("ctrl+cmd+\(n)")], menu: .view)

@@ -177,6 +177,8 @@ public struct Canvas: Hashable, Sendable {
     public var filters: [NodeFilter] = []
     /// Present mode deck settings.
     public var presentation = PresentationSettings()
+    /// Guide steps skipped (M41).
+    public var guide = GuideSettings()
     /// The work calendar the Gantt and task durations use (M11).
     public var schedule = WorkSchedule()
     /// The marker and label legend (M14); nil when the canvas has never had one.
@@ -231,7 +233,8 @@ public struct Canvas: Hashable, Sendable {
             && a.root == b.root && a.nodes == b.nodes && a.floating == b.floating
             && a.relationships == b.relationships && a.boundaries == b.boundaries && a.summaries == b.summaries
             && a.callouts == b.callouts && a.zones == b.zones && a.diagram == b.diagram
-            && a.filters == b.filters && a.presentation == b.presentation && a.schedule == b.schedule
+            && a.filters == b.filters && a.presentation == b.presentation && a.guide == b.guide
+            && a.schedule == b.schedule
             && a.legend == b.legend && a.extra == b.extra
     }
 
@@ -273,6 +276,7 @@ extension Canvas: JSONRepresentable {
         presentation =
             try r.raw("presentation").map { try PresentationSettings(json: $0, path: "\(path).presentation") }
             ?? PresentationSettings()
+        guide = try r.raw("guide").map { try GuideSettings(json: $0, path: "\(path).guide") } ?? GuideSettings()
         schedule = try r.raw("schedule").map { try WorkSchedule(json: $0, path: "\(path).schedule") } ?? WorkSchedule()
         if let l = r.raw("legend"), l != .null { legend = try Legend(json: l, path: "\(path).legend") }
         extra = r.leftovers
@@ -298,6 +302,7 @@ extension Canvas: JSONRepresentable {
         if !diagram.isEmpty { w.set("diagram", diagram.json) }
         if !filters.isEmpty { w.set("filters", .array(filters.map(\.json))) }
         if !presentation.isDefault { w.set("presentation", presentation.json) }
+        if !guide.isDefault { w.set("guide", guide.json) }
         if !schedule.isDefault { w.set("schedule", schedule.json) }
         if let legend { w.set("legend", legend.json) }
         return w.value

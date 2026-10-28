@@ -1,0 +1,132 @@
+{
+  "$id": "https://opennexus.app/schema/guide.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One guide for Guide mode (M41), as one JSON file: the steps toward a well-formed diagram of one type, matched against the canvas. The built-ins live in Sources/NexusCanvas/Guides/. Tips quote commands as {command.id}.",
+  "properties": {
+    "example": {
+      "description": "An outline in the starter syntax (two spaces a level), drawn above the steps.",
+      "items": {
+        "pattern": "^(  )*[^ ]",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "id": {
+      "description": "Unique id; the file is named after it.",
+      "pattern": "^[A-Za-z][A-Za-z0-9-]*$",
+      "type": "string"
+    },
+    "steps": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "pattern": "^[a-z][A-Za-z0-9-]*$",
+            "type": "string"
+          },
+          "match": {
+            "additionalProperties": false,
+            "description": "What the step counts. Topic fields combine; edge, boundary and rules count those instead of topics.",
+            "properties": {
+              "boundary": {
+                "description": "Count boundaries.",
+                "type": "boolean"
+              },
+              "depth": {
+                "description": "Topics this deep: 0 is the root, 1 the main topics.",
+                "minimum": 0,
+                "type": "integer"
+              },
+              "each": {
+                "description": "min matches under every topic one level up, not in all.",
+                "type": "boolean"
+              },
+              "edge": {
+                "additionalProperties": false,
+                "description": "Count data flows (technical types: tree links and relationships) or relationships.",
+                "properties": {
+                  "labelled": {
+                    "description": "Only those with a label.",
+                    "type": "boolean"
+                  }
+                },
+                "type": "object"
+              },
+              "kind": {
+                "description": "Topics of this kind.",
+                "enum": [
+                  "root",
+                  "topic",
+                  "floating",
+                  "summary"
+                ]
+              },
+              "named": {
+                "description": "Only topics given their own text, not a new topic's placeholder.",
+                "type": "boolean"
+              },
+              "nodeType": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "items": {
+                      "type": "string"
+                    },
+                    "minItems": 1,
+                    "type": "array"
+                  }
+                ],
+                "description": "Topics of this semantic type, or one of these; inferred when a topic has none."
+              },
+              "rules": {
+                "description": "Met when this rule set finds nothing.",
+                "enum": [
+                  "dfd"
+                ]
+              }
+            },
+            "type": "object"
+          },
+          "min": {
+            "description": "How many matches meet the step (default 1).",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "optional": {
+            "description": "Not needed to finish the guide.",
+            "type": "boolean"
+          },
+          "tip": {
+            "type": "string"
+          },
+          "title": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "match",
+          "title"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "type": {
+      "description": "The diagram type it guides.",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "steps",
+    "type"
+  ],
+  "title": "OpenNexus guide",
+  "type": "object"
+}
