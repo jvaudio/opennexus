@@ -61,7 +61,12 @@ enum ReadingDirection: Equatable {
         switch self {
         case .leftToRight: return image
         case .rightToLeft:
-            for i in out.boxes.indices { out.boxes[i].x = image.width - image.boxes[i].maxX }
+            for i in out.boxes.indices {
+                out.boxes[i].x = image.width - image.boxes[i].maxX
+                out.boxes[i].inked = image.boxes[i].inked.map {
+                    (image.width - $0.upperBound)...(image.width - $0.lowerBound)
+                }
+            }
         case .vertical:
             // Columns right to left become rows top to bottom.
             out.width = image.height
@@ -71,6 +76,9 @@ enum ReadingDirection: Equatable {
                 out.boxes[i].y = image.width - b.maxX
                 out.boxes[i].width = b.height
                 out.boxes[i].height = b.width
+                // Its width in ems and its ink were measured across the column, not along it.
+                out.boxes[i].em = nil
+                out.boxes[i].inked = nil
             }
         }
         return out
