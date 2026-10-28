@@ -6,6 +6,16 @@
     <description>OpenNexus updates</description>
     <language>en</language>
     <item>
+      <title>OpenNexus 0.3</title>
+      <pubDate>Wed, 28 Oct 2026 19:42:28 GMT</pubDate>
+      <sparkle:version>110</sparkle:version>
+      <sparkle:shortVersionString>0.3</sparkle:shortVersionString>
+      <sparkle:minimumSystemVersion>27.0</sparkle:minimumSystemVersion>
+      <sparkle:fullReleaseNotesLink>https://github.com/jvaudio/opennexus/releases/tag/v0.3</sparkle:fullReleaseNotesLink>
+      <description>&lt;p&gt;OpenNexus 0.3 is available.&lt;/p&gt;&lt;p&gt;&lt;a href="https://github.com/jvaudio/opennexus/releases/tag/v0.3"&gt;What’s new&lt;/a&gt;&lt;/p&gt;</description>
+      <enclosure url="https://github.com/jvaudio/opennexus/releases/download/v0.3/OpenNexus-0.3.dmg" sparkle:edSignature="gQY+B0MYEiLvNN91S3XgZf7WtdVshmypaaga3JGKZUQMqDuFglyeerv5BkgNEbYZmc3BYPjZV/9qwzMQ5gywAQ==" length="26183199" type="application/octet-stream" />
+    </item>
+    <item>
       <title>OpenNexus 0.2</title>
       <pubDate>Sat, 24 Oct 2026 23:52:49 GMT</pubDate>
       <sparkle:version>108</sparkle:version>
