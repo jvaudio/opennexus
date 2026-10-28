@@ -45,6 +45,7 @@ extension CanvasController {
             .findPrevious: { $0.stepSearch(-1) },
             .zen: { $0.toggleZen() },
             .present: { c in c.present == nil ? c.startPresent() : c.endPresent() },
+            .presentFromTopic: { c in if c.present == nil { c.presentFromSelection() } },
             .showCanvas: { $0.viewMode = .canvas },
             .showOutline: { $0.viewMode = .outline },
             .showSplit: { $0.viewMode = .split },

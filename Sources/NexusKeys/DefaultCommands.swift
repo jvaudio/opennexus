@@ -125,6 +125,8 @@ extension CommandID {
     public static let previousPanel: CommandID = "view.previousPanel"
     public static let filterBar: CommandID = "view.filter"
     public static let present: CommandID = "view.present"
+    /// Present from the selected topic's slide (M42).
+    public static let presentFromTopic: CommandID = "view.presentFromTopic"
     public static let convert: CommandID = "view.convert"
     /// The marker legend (M14).
     public static let toggleLegend: CommandID = "view.legend"
@@ -504,6 +506,9 @@ public enum DefaultCommands {
             C(
                 .present, "Present", .view, scope: .global, keys: [k("shift+cmd+p")], hyper: k("hyper+p"), menu: .view,
                 xmind: true),
+            C(
+                .presentFromTopic, "Present from Selected Topic", .view, scope: .global, keys: [k("opt+cmd+p")],
+                menu: .view, note: "Starts at the selection's slide"),
             C(
                 .convert, "Convert Diagram Type…", .view, scope: .global, keys: [k("opt+cmd+t")], hyper: k("hyper+t"),
                 menu: .format, note: "Live previews in the picker"),

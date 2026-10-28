@@ -1309,7 +1309,7 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
-    "→ \/ Space" : {
+    "→ \/ Space \/ click" : {
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
@@ -1551,6 +1551,10 @@
     },
     "⤳ Topic or canvas" : {
       "comment" : "UI text (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
+    "1 2 3 … ↩" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "1 day" : {
@@ -2501,6 +2505,10 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "B \/ W" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Back" : {
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
@@ -2551,6 +2559,14 @@
     },
     "Beta also offers test versions before they're released" : {
       "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
+    "Black or white screen" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Black screen" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Blank" : {
@@ -2819,6 +2835,10 @@
     },
     "Callout Style" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Calm" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Can’t read the due date “%@”" : {
@@ -3897,6 +3917,10 @@
       "comment" : "UI text (TaskViews.swift)",
       "extractionState" : "migrated"
     },
+    "Depth" : {
+      "comment" : "UI text (PresentStrip.swift)",
+      "extractionState" : "migrated"
+    },
     "Depth parallax when zoomed out" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -4085,6 +4109,10 @@
       "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
+    "Dynamic" : {
+      "comment" : "UI text (PresentStrip.swift)",
+      "extractionState" : "migrated"
+    },
     "Dynamic Type for sidebars, panels and menus" : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
@@ -4205,6 +4233,10 @@
       "comment" : "Settings pane",
       "extractionState" : "migrated"
     },
+    "Elapsed: %lld minutes %lld seconds" : {
+      "comment" : "Text with values filled in (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Elbow" : {
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
@@ -4285,6 +4317,10 @@
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
+    "End on this slide's topic" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Endpoints auto-slide to best edge" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
@@ -4359,6 +4395,10 @@
     },
     "Every agent edit is one undo step and is marked with the ✦ provenance sparkle." : {
       "comment" : "Settings footnote",
+      "extractionState" : "migrated"
+    },
+    "Every branch" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Every canvas as an XMind 8 sheet (content.xml): topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, the legend, task info and styles." : {
@@ -5053,6 +5093,18 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Go to slide %@" : {
+      "comment" : "Text with values filled in (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Go to slide %@ ↩" : {
+      "comment" : "Text with values filled in (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Go to that slide" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Go to Today" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -5251,6 +5303,10 @@
     },
     "Hiragino Sans" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "hold ⇧" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Hold ⌘ any time to see these again. Your tutorial map stays as your first document." : {
@@ -5737,6 +5793,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Laser pointer" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Last document" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -6047,6 +6107,10 @@
     },
     "Main Topic" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Main topics" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Make" : {
@@ -7349,6 +7413,22 @@
       "comment" : "UI text (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
     },
+    "OVERVIEW · O RETURNS TO THE SLIDE" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Overview between branches" : {
+      "comment" : "UI text (PresentStrip.swift)",
+      "extractionState" : "migrated"
+    },
+    "Overview of the whole map" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Overviews" : {
+      "comment" : "UI text (PresentStrip.swift)",
+      "extractionState" : "migrated"
+    },
     "Owner" : {
       "comment" : "UI text (TaskViews.swift)",
       "extractionState" : "migrated"
@@ -7589,6 +7669,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Present from Selected Topic" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Present it, or hide the guide and keep going." : {
       "comment" : "UI text (GuideViews.swift)",
       "extractionState" : "migrated"
@@ -7599,6 +7683,10 @@
     },
     "Presentation" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Presentation Style" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Presenter view" : {
@@ -8933,6 +9021,10 @@
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "Showtime" : {
+      "comment" : "UI text (PresentStrip.swift)",
+      "extractionState" : "migrated"
+    },
     "Shrink ↑" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
@@ -9019,6 +9111,10 @@
     },
     "Slide %lld: %@, skipped" : {
       "comment" : "Text with values filled in (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Slide Depth" : {
+      "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
     "Slide Theme" : {
@@ -9218,6 +9314,10 @@
       "extractionState" : "migrated"
     },
     "Start, due, owner, progress, dependencies" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Starts at the selection's slide" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
@@ -9837,6 +9937,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Time: %@" : {
+      "comment" : "Text with values filled in (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Timeline" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -10375,6 +10479,10 @@
     },
     "White" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "White screen" : {
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Whiteboard" : {

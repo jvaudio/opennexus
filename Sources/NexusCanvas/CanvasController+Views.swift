@@ -66,6 +66,12 @@ public struct PresentState: Equatable, Sendable {
     public var started = Date()
     /// The strip control ⇥ moved to (`StripControl.id`); ↩ and Space use it (D266).
     public var stripFocus: String?
+    /// O: the whole map, with the slide's topic lit (M42).
+    public var overview = false
+    /// B or W: the screen goes black or white until the next key (M42).
+    public var blank: String?
+    /// Digits typed toward a slide number; ↩ goes there (M42).
+    public var typed = ""
 }
 
 /// Fuzzy subsequence match: returns a score (higher is better) and matched indices.
@@ -131,6 +137,16 @@ extension CanvasController {
                 }
                 v.glow = s.flow != nil ? Set(s.highlight.suffix(1)) : []
                 v.flowGlow = s.flow
+                // Dynamic and Showtime spotlight the slide: what's dimmed blurs, and
+                // Showtime lights its focus topic (M42). The overview (O) shows it all.
+                let style = c.presentation.style
+                v.blurDimmed = style != "calm"
+                if style == "showtime", s.flow == nil, let h = s.highlight.last { v.glow = [h] }
+                if p.overview {
+                    v.dimmed = []
+                    v.blurDimmed = false
+                    v.glow = Set(s.highlight.suffix(1))
+                }
             }
             v.hidden = Set(all.filter { c.nodes[$0]?.presentHidden == true })
             v.hideLegend = true
@@ -684,6 +700,38 @@ extension CanvasController {
         refreshView(frame: Array(canvas.nodes.keys))
     }
 
+    /// Esc (M42): Present ends on the current slide's topic, selected and framed.
+    public func endPresentOnSlide() {
+        guard let p = present else { return }
+        let s = slides
+        let slide = p.index < s.count ? s[p.index] : nil
+        let topic = slide?.highlight.last ?? canvas.root
+        present = nil
+        onPresent?(false)
+        selection = Selection(canvas.nodes[topic] != nil ? topic : canvas.root)
+        selectedElement = nil
+        refreshView(frame: slide.map { $0.focus.isEmpty ? Array(canvas.nodes.keys) : $0.focus })
+    }
+
+    /// Present from Selected Topic (⌥⌘P): the deck starts at the selection's slide.
+    public func presentFromSelection() {
+        let id = selection.primary
+        startPresent(at: Deck.index(for: id, in: slides, canvas: canvas))
+    }
+
+    /// A click on the stage: the next step (or, with the screen blanked, the slide back).
+    public func presentClick() {
+        guard let p = present else { return }
+        if p.blank != nil {
+            present?.blank = nil
+        } else if p.overview {
+            present?.overview = false
+            showSlide()
+        } else {
+            stepSlide(1)
+        }
+    }
+
     func showSlide() {
         guard let p = present else { return }
         let s = slides
@@ -745,10 +793,59 @@ extension CanvasController {
             default: break
             }
         }
+        // B or W blanks the screen; any key brings the slide back, without stepping (M42).
+        if let b = p.blank {
+            // The other letter switches colour; the same one, or any other key, brings it back.
+            let other = b == "black" ? "w" : "b"
+            present?.blank = characters?.lowercased() == other ? (other == "b" ? "black" : "white") : nil
+            return true
+        }
+        // Digits then ↩ go to that slide, as in Keynote; ↩ alone still steps (M42).
+        if chord.modifiers.isEmpty, let ch = characters, ch.count == 1, ch.first?.isNumber == true {
+            present?.typed.append(ch)
+            return true
+        }
+        if !p.typed.isEmpty {
+            present?.typed = ""
+            switch chord.key {
+            case .return:
+                if let n = Int(p.typed), n >= 1 { goToSlide(n - 1) }
+                return true
+            case .escape:
+                return true
+            case .delete:
+                present?.typed = String(p.typed.dropLast())
+                return true
+            default: break
+            }
+        }
+        // The overview (O) steps back to the slide first (M42).
+        if p.overview {
+            switch chord.key {
+            case .escape:
+                present?.overview = false
+                showSlide()
+                return true
+            case .right, .space, .return, .down, .left, .up:
+                present?.overview = false
+            default: break
+            }
+        }
         switch (chord.key, characters?.lowercased()) {
-        case (.escape, _): endPresent()
+        case (.escape, _): endPresentOnSlide()
         case (.right, _), (.space, _), (.return, _), (.down, _): stepSlide(1)
         case (.left, _), (.up, _): stepSlide(-1)
+        case (_, "b"?):
+            present?.blank = "black"
+        case (_, "w"?):
+            present?.blank = "white"
+        case (_, "o"?):
+            present?.overview.toggle()
+            if present?.overview == true {
+                refreshView(frame: Array(canvas.nodes.keys), aspect: canvas.presentation.aspectRatio)
+            } else {
+                showSlide()
+            }
         case (_, "s"?):
             if let slide {
                 perform(slide.skipped ? Loc.t("Include Slide") : Loc.t("Skip Slide")) { $0.toggleSkip(slide.id) }

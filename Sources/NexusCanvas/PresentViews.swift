@@ -76,6 +76,25 @@ struct PresentOverlayView: View {
                 if !p.stageOnly { SlideStripView(controller: controller, state: p, slides: slides) }
             }
             if p.showKeys { PresentKeysView().frame(maxWidth: .infinity, maxHeight: .infinity) }
+            if p.overview {
+                Text("OVERVIEW · O RETURNS TO THE SLIDE").font(.chrome(12, weight: .semibold, design: .monospaced))
+                    .kerning(1.2).foregroundStyle(ink.opacity(0.6))
+                    .frame(maxWidth: .infinity, alignment: .topTrailing).padding(.top, 40).padding(.trailing, 56)
+                    .allowsHitTesting(false)
+            }
+            if !p.typed.isEmpty {
+                Text(Loc.f("Go to slide %@ ↩", p.typed)).font(.chrome(22, weight: .semibold, design: .monospaced))
+                    .padding(.horizontal, 18).padding(.vertical, 10)
+                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .allowsHitTesting(false)
+                    .accessibilityLabel(Loc.f("Go to slide %@", p.typed))
+            }
+            // B and W: the screen goes black or white until the next key (M42).
+            if let b = p.blank {
+                (b == "white" ? Color.white : Color.black).ignoresSafeArea()
+                    .accessibilityLabel(b == "white" ? Loc.t("White screen") : Loc.t("Black screen"))
+            }
         }
     }
 }
@@ -197,17 +216,11 @@ struct SlideStripView: View {
         .accessibilityAddTraits(c.on ? .isSelected : [])
     }
 
-    /// Aspect and theme: a pop-up for the mouse; ↩ steps to the next choice.
+    /// Style, depth, aspect and theme: a pop-up for the mouse; ↩ steps to the next choice.
     func menu(_ c: StripControl) -> some View {
         Menu(c.title) {
-            ForEach(c.id == "aspect" ? CanvasController.slideAspects : CanvasController.slideThemes, id: \.self) { v in
-                Button(c.id == "aspect" ? v : v.capitalized) {
-                    if c.id == "aspect" {
-                        controller.setPresentation(Loc.t("Aspect")) { $0.aspect = v }
-                    } else {
-                        controller.setPresentation(Loc.t("Slide Theme")) { $0.theme = v }
-                    }
-                }
+            ForEach(controller.stripMenuChoices(c.id), id: \.0) { v, title in
+                Button(title) { controller.chooseStripMenu(c.id, v) }
             }
         }
         .fixedSize()
@@ -297,14 +310,18 @@ struct PresentKeysView: View {
             Grid(alignment: .leading, horizontalSpacing: 16, verticalSpacing: 8) {
                 ForEach(
                     [
-                        (Loc.t("→ / Space"), Loc.t("Next step")), ("←", Loc.t("Previous step")),
+                        (Loc.t("→ / Space / click"), Loc.t("Next step")), ("←", Loc.t("Previous step")),
+                        (Loc.t("1 2 3 … ↩"), Loc.t("Go to that slide")),
+                        ("O", Loc.t("Overview of the whole map")),
+                        (Loc.t("B / W"), Loc.t("Black or white screen")),
+                        (Loc.t("hold ⇧"), Loc.t("Laser pointer")),
                         ("S", Loc.t("Skip this slide")),
                         ("M", Loc.t("Merge with the next slide")), ("H", Loc.t("Hide the topic from slides")),
                         ("F", Loc.t("Stage only (hide the strip)")), ("P", Loc.t("Presenter view")),
                         ("L", Loc.t("Legend on slides")), ("T", Loc.t("Timeline slides")),
                         (Loc.t("⇥ / ⇧⇥"), Loc.t("The strip's controls (↩ or Space uses one)")),
                         ("?", Loc.t("This list")),
-                        ("esc", Loc.t("End")),
+                        ("esc", Loc.t("End on this slide's topic")),
                     ], id: \.0
                 ) { k, v in
                     GridRow {
@@ -320,9 +337,13 @@ struct PresentKeysView: View {
     }
 }
 
-/// Presenter view (display 2): timer, next slide and the topic's note.
+/// Presenter view (display 2, full screen there; M42): the current and next slides as they
+/// play, the topic's note in large type, the time since Present began, and the clock.
 public struct PresenterView: View {
     var controller: CanvasController
+    /// Slides drawn so far. An observable object, not `@State`: the cards read it inside
+    /// the TimelineView's content, where a state change wouldn't redraw them.
+    @State private var drawn = PresenterSlides()
     public init(controller: CanvasController) { self.controller = controller }
 
     public var body: some View {
@@ -330,47 +351,88 @@ public struct PresenterView: View {
             let p = controller.present
             let slides = controller.slides
             let index = p?.index ?? 0
-            let next = slides.indices.contains(index + 1) ? slides[index + 1] : nil
+            let nextIndex = slides.indices.dropFirst(index + 1).first { !slides[$0].skipped }
+            let next = nextIndex.map { slides[$0] }
             let current = slides.indices.contains(index) ? slides[index] : nil
             let elapsed = Int(ctx.date.timeIntervalSince(p?.started ?? ctx.date))
-            VStack(alignment: .leading, spacing: 14) {
-                HStack {
+            VStack(alignment: .leading, spacing: 16) {
+                HStack(alignment: .firstTextBaseline) {
                     Text("PRESENTER VIEW").font(.chrome(12, weight: .semibold, design: .monospaced)).kerning(1.4)
                         .foregroundStyle(.secondary)
                     Spacer()
+                    Text(ctx.date.formatted(date: .omitted, time: .shortened))
+                        .font(.chrome(22, weight: .medium, design: .monospaced)).foregroundStyle(.secondary)
+                        .accessibilityLabel(Loc.f("Time: %@", ctx.date.formatted(date: .omitted, time: .shortened)))
                     Text(String(format: "%02d:%02d", elapsed / 60, elapsed % 60))
-                        .font(.chrome(30, weight: .semibold, design: .monospaced))
+                        .font(.chrome(34, weight: .semibold, design: .monospaced))
                         .foregroundStyle(Color.accentColor)
+                        .padding(.leading, 16)
+                        .accessibilityLabel(Loc.f("Elapsed: %lld minutes %lld seconds", elapsed / 60, elapsed % 60))
                 }
-                Text(current.map(controller.slideTitle) ?? "").font(.chrome(20, weight: .semibold))
-                HStack(alignment: .top, spacing: 14) {
-                    if let next {
-                        SlideWireframe(scene: controller.scene, slide: next)
-                            .frame(width: 200, height: 112)
-                            .background(RoundedRectangle(cornerRadius: 8).stroke(.separator))
-                    }
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Next").foregroundStyle(.secondary)
-                        Text(next.map(controller.slideTitle) ?? Loc.t("End of deck")).font(.chrome(15))
-                    }
+                HStack(alignment: .top, spacing: 18) {
+                    slideCard(current, index: index, label: Loc.f("Slide %lld of %lld", index + 1, slides.count))
+                        .frame(maxWidth: .infinity)
+                    slideCard(next, index: nextIndex, label: next == nil ? Loc.t("End of deck") : Loc.t("Next"))
+                        .frame(maxWidth: .infinity)
+                        .opacity(0.85)
                 }
                 ScrollView {
                     Text(current?.note ?? Loc.t("No note on this slide's topic."))
-                        .font(.chrome(16))
+                        .font(.chrome(24))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
                 .accessibilityLabel(Loc.t("Speaker note"))
-                .padding(14)
-                .background(RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.08)))
+                .padding(16)
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color.secondary.opacity(0.08)))
                 HStack {
-                    Text(Loc.f("Slide %lld of %lld", index + 1, slides.count)).foregroundStyle(.secondary)
                     Spacer()
-                    Button("◀︎") { controller.stepSlide(-1) }
-                    Button("▶︎") { controller.stepSlide(1) }
+                    Button("◀︎") { controller.stepSlide(-1) }.accessibilityLabel(Loc.t("Previous step"))
+                    Button("▶︎") { controller.stepSlide(1) }.accessibilityLabel(Loc.t("Next step"))
                 }
             }
-            .padding(22)
-            .frame(minWidth: 520, minHeight: 420)
+            .padding(24)
+            .frame(minWidth: 720, minHeight: 520)
         }
     }
+
+    /// A slide drawn as it plays, its title under it; a placeholder until it's drawn.
+    func slideCard(_ slide: Slide?, index: Int?, label: String) -> some View {
+        let key = slide.map { "\(controller.store.revision)|\(controller.canvasID.rawValue)|\($0.id)" }
+        return VStack(alignment: .leading, spacing: 8) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.08))
+                if let key, let img = drawn.images[key] {
+                    Image(decorative: img, scale: 1).resizable().aspectRatio(contentMode: .fit)
+                        .clipShape(RoundedRectangle(cornerRadius: 10))
+                } else if let slide {
+                    SlideWireframe(scene: controller.scene, slide: slide).padding(10)
+                }
+            }
+            .aspectRatio(16.0 / 9, contentMode: .fit)
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(.separator))
+            .accessibilityHidden(true)
+            Text(label).font(.chrome(13)).foregroundStyle(.secondary)
+            Text(slide.map(controller.slideTitle) ?? "").font(.chrome(19, weight: .semibold)).lineLimit(2)
+        }
+        .task(id: key) {
+            guard let key, let index, drawn.images[key] == nil else { return }
+            await Task.yield()
+            if let img = SlideExporter.renderSlide(
+                controller.store.model, canvas: controller.canvasID, index: index,
+                size: CGSize(width: 960, height: 540),
+                prefs: controller.prefs)
+            {
+                // Keep the deck's current pair, not every revision's.
+                if drawn.images.count > 8 { drawn.images = [:] }
+                drawn.images[key] = img
+            }
+        }
+    }
+}
+
+/// The presenter view's drawn slides, by revision, canvas and slide.
+@MainActor
+@Observable
+final class PresenterSlides {
+    var images: [String: CGImage] = [:]
 }

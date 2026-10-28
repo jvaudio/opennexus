@@ -987,6 +987,13 @@
           "description": "16:9 (default), 4:3, 16:10 or 1:1.",
           "type": "string"
         },
+        "depth": {
+          "description": "main: a slide per main topic (the default); all: a slide per topic with children (M42).",
+          "enum": [
+            "main",
+            "all"
+          ]
+        },
         "legend": {
           "description": "Each slide shows its legend card. Default true.",
           "type": "boolean"
@@ -1005,6 +1012,10 @@
           },
           "type": "array"
         },
+        "overview": {
+          "description": "An overview of the whole map between branches (M42).",
+          "type": "boolean"
+        },
         "skipped": {
           "description": "Slides left out of the show (S).",
           "items": {
@@ -1015,6 +1026,14 @@
         "stepThroughFlow": {
           "description": "Technical diagrams get a slide per flow. Default true.",
           "type": "boolean"
+        },
+        "style": {
+          "description": "calm (Glide and dimming, as before M42), dynamic (the default: fly-to, builds, spotlight) or showtime.",
+          "enum": [
+            "calm",
+            "dynamic",
+            "showtime"
+          ]
         },
         "theme": {
           "description": "canvas (default), dark or light.",

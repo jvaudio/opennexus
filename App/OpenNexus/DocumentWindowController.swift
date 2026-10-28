@@ -218,6 +218,12 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         w.level = force ? .floating : .normal
         w.orderFront(nil)
         presenterWindow = w
+        // On its own display it fills the screen (M42); asked for on one display, it floats.
+        if other != window?.screen, NSScreen.screens.count > 1 {
+            w.collectionBehavior.insert(.fullScreenPrimary)
+            w.setFrame(other.frame, display: true)
+            w.toggleFullScreen(nil)
+        }
     }
 
     /// Export: PDF · PowerPoint · Keynote · Video (artboard 32).
@@ -239,6 +245,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         let model = document_.store.model
         let canvasID = controller.canvasID
         let titles = controller.slides.filter { !$0.skipped }.map(\.title)
+        let notes = controller.slides.filter { !$0.skipped }.map(\.note)
         panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
             MainActor.assumeIsolated {
@@ -255,7 +262,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
                         }
                     }
                     return
-                default: try? SlideExporter.pptx(images, titles: titles).write(to: url, options: .atomic)
+                default: try? SlideExporter.pptx(images, titles: titles, notes: notes).write(to: url, options: .atomic)
                 }
                 self?.controller.showToast(Loc.n("Exported %lld slide", "Exported %lld slides", images.count))
             }

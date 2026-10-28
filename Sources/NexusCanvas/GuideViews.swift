@@ -204,13 +204,13 @@ struct GuidePanelView: View {
     }
 
     func tipText(_ tip: String) -> Text {
-        controller.guideTipParts(tip).reduce(Text("")) { t, part in
+        controller.guideTipParts(tip).reduce(Text(verbatim: "")) { t, part in
             switch part {
-            case .text(let s): t + Text(s)
+            case .text(let s): Text("\(t)\(Text(verbatim: s))")
             case .key(let k):
-                t
-                    + Text(k).font(.chrome(12.5, weight: .semibold, design: .monospaced))
-                    .foregroundStyle(Self.accent)
+                Text(
+                    "\(t)\(Text(verbatim: k).font(.chrome(12.5, weight: .semibold, design: .monospaced)).foregroundStyle(Self.accent))"
+                )
             }
         }
     }
