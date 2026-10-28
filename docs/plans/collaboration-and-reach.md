@@ -1,6 +1,6 @@
 # OpenNexus Plan: Collaboration, Reach and Smaller Gaps (M43–M50)
 
-Oct 28, 2026 · Jerry Voelker · written against the code at `66ed075` (0.3, after M42) · **Status: draft.** The rows in "Decisions for Jerry" are pending until Jerry confirms them.
+Oct 28, 2026 · Jerry Voelker · written against the code at `66ed075` (0.3, after M42) · **Status: in progress.** Decisions #1–#3 were confirmed on Oct 28, 2026; the other rows in "Decisions for Jerry" stay pending until Jerry confirms them. Corrections from checking the plan against the code were folded in the same day.
 
 This plan closes the eight gaps chosen from the [feature review](https://claude.ai/artifact/P9XpE1ituB1UgL9WXsZGjT) in eight milestones, M43–M50. Each phase is one milestone that Claude Code can plan, build, test and accept on its own, in the repo's existing style.
 
@@ -107,14 +107,14 @@ The app keeps its sandbox without network access. Only the new service connects,
 3. **Allow-listed.** The service talks only to hosts the user configured (a bucket endpoint, a server URL, `api.github.com`) and refuses everything else.
 4. **Logged.** Every request is appended to an app-group log (time, host, method, purpose, bytes up and down), shown on the Privacy card with Export Log….
 5. **Sealed.** Everything that leaves a device is sealed with AES-256-GCM (CryptoKit) under keys no server sees. Keys live in the Keychain (an access group shared with the service) or in a link's `#fragment`. The one opt-out is Git sync, where readable diffs are the point.
-6. **Tested.** `NetworkPrivacyTests` changes from "no networking API anywhere" to "networking APIs only in `Sources/NexusNet` and `server/`". It also checks that `OpenNexusNet.xpc` is the only target with a network entitlement, that every network setting defaults off, and that the service refuses a host that isn't on the list.
+6. **Tested.** `NetworkPrivacyTests` changes from "no networking API anywhere" to "networking APIs only in `Sources/NexusNet`, `server/` and `web/viewer-app`" (the viewer site fetches sealed objects from M44). `web/viewer-core`, the viewer bundle the app embeds, and the Obsidian plugin stay free of them; M43 extends the test to cover the built viewer and `web/viewer-core`, which it didn't scan before. It also checks that `OpenNexusNet.xpc` is the only target with a network entitlement, that every network setting defaults off, and that the service refuses a host that isn't on the list.
 
 ### Shared pieces
 
 | Piece | What it is | Built in | Used by |
 | --- | --- | --- | --- |
 | Viewer runtime (`web/viewer-core`) and `schema/viewer.schema.json` | A TypeScript viewer that draws an exported map bundle with pan, zoom, search, outline and topic details | M43 | Phases 1, 2, 5, 7 |
-| Viewer copy in documents (`render/`) | The viewer bundle saved inside `.nexus` and `.nexusjson` files, so a browser or Obsidian can show a map without the app | M43 | Phases 5, 7 |
+| Viewer copy in documents (`render/`) | The viewer bundle saved inside `.nexus` packages (and `.nexusjson` files behind their own switch), so a browser or Obsidian can show a map without the app | M43 | Phases 5, 7 |
 | `NexusNet` and `OpenNexusNet.xpc` | Out-of-process HTTP and WebSocket, SigV4, allow-list, request log | M44 | Phases 2, 3, 4, 5, 8 |
 | `Sealed` format (in `NexusFormat`) | Versioned AES-256-GCM envelope, PBKDF2 for passwords, key wrapping, readable from WebCrypto | M44 | Phases 2, 3, 4 |
 | OpenNexus Server (`server/`) | Self-hostable Swift (Hummingbird) server in Docker: sealed share hosting (M44), live relay rooms (M46) | M44, M46 | Phases 2, 4, 5 |
@@ -146,33 +146,37 @@ OpenNexus has no accounts and no company to run servers. Every network feature t
 
 - **Bundle format.** `ViewerBundle` JSON, published as `schema/viewer.schema.json` (version 1). Per canvas it holds: title, type and theme colours; two layouts (`saved`, `expanded`), each an SVG plus an index (topic id → frame, parent, depth, folded, hidden count; zone and relationship ids); the outline tree; per-topic details; the legend. Images and attachments are base64 assets keyed by content hash.
 - **Drawing.** Each layout's SVG comes from the existing `SVGExporter` with `metadata` and `outlineText` on, so topics carry `data-nexus-id` and look identical without Apple's fonts. An invisible text layer, placed from the index, keeps text selectable and searchable. The viewer never lays a map out itself (decision below).
+- **SVG parity (found when checking the plan against `66ed075`).** Today's `SVGExporter` draws shapes, lines, relationships, zones, boundaries, summaries, markers, labels and text, but not structure decor (braces, matrix and tree-table cells, swimlane bands, sequence lifelines and activation bars), callouts, topic images, stickers, pinned fields, technical decor (icons, kickers, captions, badges, accents, tints) or the +N fold badge. M43 brings it level with the canvas layers so A2 can hold for technical canvases. Outlined text is also made fast and compact: a number writer without `String(format:)` and regexes, and each glyph outline written once per SVG as a `<symbol>`, then placed with `<use>`. This changes the bytes of outlined SVG exports (no golden pins them).
 - **Swift side.** `ViewerBundleBuilder` and `HTMLExporter` in `NexusCanvas` (they move to `NexusScene` in M47). The HTML is one file: inline CSS, inline viewer script, and the bundle in a `<script type="application/json">` block with `</` escaped. A `Content-Security-Policy` meta tag allows only that script (by its SHA-256 hash), inline styles and `data:` images, so the page cannot fetch anything.
 - **Web side.** `web/viewer-core` (TypeScript, no framework) builds to one `opennexus-viewer.js` and one CSS file. The built copy is committed under `Sources/NexusCanvas/Resources/viewer/`, and `scripts/lint.sh` fails when it is stale.
 - **Where you export.** In the export sheet's Document group, **Interactive HTML (.html)** has these options: Scope (document, canvas, branch, zone), Include notes / comments / attachments (with the size shown), Layouts (both, or as saved only), plus the existing Masking, Strip AI provenance and Theme override. It is also available as `nexus export --to html` (with `--branch` / `--zone`) and through the MCP `export` tool.
-- **Viewer copy in documents.** On save, `render/viewer.json` is written inside `.nexus` packages, and a `render` key inside `.nexusjson` files, off the main thread and coalesced. Like `preview.png`, it is never written for encrypted documents and is listed in the generated `.gitignore`. It is controlled by Settings › Files & Backup › "Save a viewer copy for browsers and Obsidian". `nexus validate` checks it against the schema.
+- **Viewer copy in documents.** On save, `render/viewer.json` is written inside `.nexus` packages, controlled by Settings › Files & Backup › "Save a viewer copy for browsers and Obsidian" (on). A `render` key inside `.nexusjson` files has its own switch, "Also in single-file documents" (off), because a single file can't git-ignore it and the copy would multiply its size and churn its diffs (decision #3). The exporters are `@MainActor` and build an offscreen canvas until M47 splits out `NexusScene`, so the copy is built on the main thread, coalesced and cached per document revision, within a measured budget; `preview.png` is built the same way today. `NexusPackage` knows only fixed paths, so the copy is added at both save sites (`NexusDocument`, `MapFiles.write`) as `preview.png` is. Like `preview.png`, it is never written for encrypted documents and is listed in the generated `.gitignore`. `nexus validate` checks it against the schema.
 
 **Untrusted content.** A bundle can come from anyone once share links and Obsidian exist, so the viewer sanitises every SVG and text field with an allow-list before inserting it. That means no `script`, no event attributes, no `foreignObject`, no external references, and links only to `http(s)`, `mailto`, `obsidian` and `opennexus`. A crafted malicious bundle is part of the Playwright suite.
 
 ### Steps
 
-1. Schema, `ViewerBundle` model and builder, with golden bundles for LaunchPlan, TaskPlan, Review, a flowchart and the threat model.
-2. The `web/` npm workspace: strict TypeScript, ESLint, Vitest, Playwright (Chromium, WebKit, Firefox).
-3. Viewer features, in the order listed above.
-4. `HTMLExporter`, the CSP hash, the export sheet section, the CLI and MCP formats.
-5. The viewer copy on save, its setting, schema keys and `.gitignore` line.
-6. Optional: switch the Quick Look preview extension from its static HTML to the interactive viewer.
+1. SVG parity and speed: the missing drawing listed above, the fast number writer and the glyph cache.
+2. Schema, `ViewerBundle` model and builder, with golden bundles for LaunchPlan, TaskPlan, Review, a flowchart and the threat model.
+3. The `web/` npm workspace: strict TypeScript, ESLint, Vitest, Playwright (Chromium, WebKit, Firefox).
+4. Viewer features, in the order listed above.
+5. `HTMLExporter`, the CSP hash, the export sheet section, the CLI and MCP formats.
+6. The viewer copy on save, its settings, schema keys and `.gitignore` line.
+7. `NetworkPrivacyTests` covers the built viewer and `web/viewer-core`.
+
+Not planned: an interactive Quick Look preview. Quick Look's HTML previews don't run JavaScript, so the extension keeps its static `preview.png` page.
 
 ### Accept when
 
 | # | Criterion |
 | --- | --- |
 | A1 | An export of LaunchPlan opens from disk in Chromium, WebKit and Firefox (Playwright) with an empty request log and no console errors. |
-| A2 | Each canvas's As saved layout, rasterised in the browser, matches the app's PNG export within the golden tolerance (mean delta < 2%). |
+| A2 | Each canvas's As saved layout, rasterised in the browser, matches the app's PNG export within the golden tolerance (mean delta < 2%). Needs the SVG parity step; checked for the five golden documents, technical canvases included. |
 | A3 | Playwright covers tabs, pan, zoom, Fit, both layouts, outline fly-to, details content, keyboard navigation, and search, whose match count equals the app's Find for the same query. |
 | A4 | Branch and zone scopes export only their topics; masked strings and excluded comments are absent from the file's bytes; attachments are embedded only when chosen. |
-| A5 | A 1,000-topic map exports in under 1 s (debug build) and is interactive in under 1.5 s in Chromium; the viewer script and CSS together are at most 150 KB gzipped. |
+| A5 | A 1,000-topic map exports in under 1 s (debug build) and is interactive in under 1.5 s in Chromium; the viewer script and CSS together are at most 150 KB gzipped. The export time depends on the SVG writer's speedups (fast numbers, glyph cache). |
 | A6 | axe-core reports no serious or critical issues; the outline is an ARIA tree; every topic is focusable with the app's spoken description as its label. |
-| A7 | Saved packages carry a valid `render/viewer.json`; encrypted documents never do; with the setting off there is none; everything else in the file round-trips byte for byte. |
+| A7 | Saved packages carry a valid `render/viewer.json`; encrypted documents never do; with the setting off there is none; a `.nexusjson` carries a `render` key only when its own switch is on; everything else in the file round-trips byte for byte. |
 | A8 | `nexus export --to html` produces the same bytes as the export sheet for the same options. |
 | A9 | The quality bars in "How Claude Code should run this plan". |
 
@@ -180,7 +184,7 @@ OpenNexus has no accounts and no company to run servers. Every network feature t
 
 - Text is drawn as outlines with an invisible text layer, because Apple's system fonts can't be embedded or redistributed and other platforms lack them.
 - No layout engine in the browser for now: two precomputed layouts per canvas plus the outline. Running the Swift layout engine as WebAssembly is evaluated in M47.
-- The default for the viewer copy in documents is your call (see Decisions for Jerry).
+- The viewer copy in documents is on for packages and off for single-file documents (decision #3, confirmed).
 
 **Out of scope:** editing in the browser, presenting in the browser (M47), live updates (M46/M47).
 
@@ -327,7 +331,7 @@ A new module on top of `NexusCore`. The `.nexus` file stays canonical JSON. The 
 - **Ops from patches:** every committed `Patch` is diffed into field-level ops: create topic, set field, move, delete; the same for each element kind, canvas settings (by key path), canvases and tab order, custom themes, and comments. Remote ops are turned back into a `Patch`, so drawing, VoiceOver, autosave and the outline need no new paths.
 - **Fields:** last-writer-wins per field (text, note, style, markers, labels, task fields, links, image…).
 - **Tree:** Kleppmann's move operation (undo, apply, redo in timestamp order), so concurrent moves can never form a cycle. Sibling order uses fractional index keys with the replica id as tie-break. Delete is a move under a trash root, so undoing a delete is a move back.
-- **Ids:** topic ids are sequential per canvas today (D5) and would collide. During a session new ids carry a replica suffix. Check the schema's id pattern and widen it, as an addition.
+- **Ids:** topic ids are sequential per canvas today (D5) and would collide. During a session new ids carry a replica suffix. The schema's id pattern (`^[A-Za-z0-9_-]+$`) already admits a suffix such as `n12-r3`; check that every reader of ids does too.
 - **Topic text:** last writer wins, plus a soft lock. While someone types, others see "Ana is editing" and get a gentle hint if they start typing there too. A character-level text CRDT for notes is a follow-up, not this phase.
 - **Undo:** remote patches never enter your undo stack. Undo becomes selective: it emits inverse ops only for fields that still hold the value you set, so it never reverts someone else's later change.
 - **Everything else rides along:** accepted AI ghosts (with ✦), MCP agent edits (through the M9 external-change path), comments, tasks and Gantt edits, Present settings.
@@ -371,7 +375,7 @@ A new module on top of `NexusCore`. The `.nexus` file stays canonical JSON. The 
 
 ### M47a · Platform split
 
-`NexusCore`, `NexusLayout`, `NexusFormat`, `NexusTheme` and `NexusKeys` already import only Foundation and CoreGraphics. `NexusCanvas` imports AppKit in 67 of its 86 files, including the scene, the measurer and the exporters. So:
+`NexusCore`, `NexusLayout`, `NexusFormat`, `NexusTheme` and `NexusKeys` already import only Foundation and CoreGraphics. `NexusCanvas` imports AppKit in 67 of its 83 files (at `66ed075`), including the scene, the measurer and the exporters. So:
 
 - **`NexusScene`** (new, no AppKit or UIKit): `Scene`, `SceneTechnical`, `NodeMeasurer`, `RichFormats` (math and code), `SVGExporter`, `ImageExporter`, `SlideExporter`, print layout, Gantt layout and renderer, legend and decor drawing, `ViewerBundleBuilder`, `HTMLExporter`. Swap NSColor for CGColor, NSFont for CTFont, NSBezierPath for CGPath, NSImage for CGImage, and AppKit attribute keys for CoreText's. Layers that use only QuartzCore (topic, element and legend layers) move here too.
 - **Editing logic:** split `CanvasController` behind a small `CanvasHost` protocol for what is platform UI (menus, popovers, panels, first responder), so commands, selection, Connect, Present and AI flows are shared.
@@ -484,7 +488,7 @@ If the WebAssembly spike succeeds, a read-only live view of a co-editing session
 
 ### Features
 
-1. **Map view.** `registerView` plus `registerExtensions(['nexusjson'])` opens `.nexusjson` files in a read-only view drawn by `viewer-core` from the file's viewer copy. It reloads when OpenNexus saves the file (vault `modify` events). Obsidian treats `.nexus` packages as folders, so the folder menu gains "Open as OpenNexus map" for folders ending in `.nexus`, which reads `render/viewer.json`.
+1. **Map view.** `registerView` plus `registerExtensions(['nexusjson'])` opens `.nexusjson` files in a read-only view drawn by `viewer-core` from the file's viewer copy. Single-file documents carry one only when "Also in single-file documents" is on (decision #3); otherwise the view renders through the `nexus` tool on macOS or shows the outline, and says how to turn the copy on. It reloads when OpenNexus saves the file (vault `modify` events). Obsidian treats `.nexus` packages as folders, so the folder menu gains "Open as OpenNexus map" for folders ending in `.nexus`, which reads `render/viewer.json`.
 2. **Embeds.** A ```` ```nexus ```` code block takes `file:`, plus optional `canvas:`, `topic:` (zoom to a branch), `layout:` and `height:`. It shows an interactive map in Reading view and Live Preview. Embeds start only when scrolled into view, so long notes stay smooth. Obsidian's internal embed registry isn't used, because it isn't public API.
 3. **Links.** Wikilinks and `obsidian://` links in topic notes and hyperlinks open vault notes through the workspace API. "Copy link to topic" gives a link that reopens the map at that topic.
 4. **Edit in OpenNexus.** A button and command open the file in the Mac app (desktop only), and the view refreshes when the app saves.
@@ -538,7 +542,7 @@ A map can come from anyone: a share link, a vault from a friend. The viewer trea
 | Personal and life | 6 | Goal setting, weekly planner, habit tracker, moving checklist, budget plan, reading list |
 | Meetings and teams | 5 | One-on-one agenda, team charter, start/stop/continue retro, workshop agenda, decision log |
 
-The examples are a starting list; Claude Code may swap items as long as the counts per shelf and per type hold. New shelves are schema additions mapped to the existing six categories and to Home's role filter.
+The examples are a starting list; Claude Code may swap items as long as the counts per shelf and per type hold. New shelves are schema additions mapped to the existing six categories and to Home's role filter. Note: `schema/starter.schema.json` already has two fields, `shelf` (Home's five role shelves) and `category` (the picker's six), and these ten shelves are neither. M50 must decide whether they become a third field or new categories, and record it.
 
 ### Content rules (a lint script enforces what it can)
 
@@ -576,9 +580,9 @@ Each row has a recommendation. Every row starts Pending; before the milestone in
 
 | # | Decision | Options | Recommendation | Needed by | Status |
 | --- | --- | --- | --- | --- | --- |
-| 1 | Phase order | Dependency order (HTML export first) · the review's order (share links first, building the viewer inside it) | Dependency order: same work, smaller milestones, and the HTML export ships on its own | M43 | Pending |
-| 2 | Amend the "no network calls" rule | Keep it (drops Phases 2–4 and the network parts of 5) · replace it with the opt-in, out-of-process, sealed rule | Replace it, recorded as M43's first decision | M43 | Pending |
-| 3 | Viewer copy in saved documents | On by default · off by default | On, and git-ignored like `preview.png`; Obsidian and the web viewer need it | M43 | Pending |
+| 1 | Phase order | Dependency order (HTML export first) · the review's order (share links first, building the viewer inside it) | Dependency order: same work, smaller milestones, and the HTML export ships on its own | M43 | Confirmed: dependency order (2026-10-28) |
+| 2 | Amend the "no network calls" rule | Keep it (drops Phases 2–4 and the network parts of 5) · replace it with the opt-in, out-of-process, sealed rule | Replace it, recorded as M43's first decision | M43 | Confirmed: replace it with the opt-in rule (2026-10-28) |
+| 3 | Viewer copy in saved documents | On by default · off by default · on for packages only | On for packages, git-ignored like `preview.png`; in `.nexusjson` only behind its own switch, since a single file can't git-ignore it | M43 | Confirmed: on for packages only (2026-10-28) |
 | 4 | Viewer site address | `jvaudio.github.io/opennexus` · a custom domain on GitHub Pages | A custom domain if you'll keep it: nicer links, and it enables universal links (#10) | M44 | Pending |
 | 5 | A public share and relay instance run by you | None, bring your own only · run one | None for now; revisit after M46 | M44 | Pending |
 | 6 | Server stack | Swift (Hummingbird) in Docker · TypeScript on Cloudflare Workers with Durable Objects | Swift in Docker: one language, and it runs on your ZimaOS box or any VPS | M44 | Pending |
