@@ -17,7 +17,7 @@ public final class StarterGallery {
             case .all: Loc.t("All")
             case .recent: Loc.t("Recent")
             case .forYou: Loc.t("For You")
-            case .category(let c): c.title
+            case .category(let c): Loc.t(c.title)
             }
         }
     }
@@ -79,7 +79,7 @@ public final class StarterGallery {
         let scored: [(score: Int, index: Int, starter: Starter)] = starters.enumerated().compactMap { i, s in
             let fields: [[String]] = [
                 [Loc.t(s.name), s.name],
-                s.aliases + [Loc.t(s.kicker), s.kicker, s.category.title, s.category.rawValue]
+                s.aliases + [Loc.t(s.kicker), s.kicker, Loc.t(s.category.title), s.category.title, s.category.rawValue]
                     + [Loc.t(DiagramDescriptor[s.type].name), DiagramDescriptor[s.type].name],
                 [Loc.t(s.summary), s.summary],
             ].map { $0.map(fold) }

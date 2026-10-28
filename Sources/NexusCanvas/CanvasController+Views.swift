@@ -775,6 +775,14 @@ extension CanvasController {
             present = p
             return true
         }
+        // B or W blanks the screen; any key brings the slide back, without stepping or
+        // using the strip's controls (M42).
+        if let b = p.blank {
+            // The other letter switches colour; the same one, or any other key, brings it back.
+            let other = b == "black" ? "w" : "b"
+            present?.blank = characters?.lowercased() == other ? (other == "b" ? "black" : "white") : nil
+            return true
+        }
         // The strip's controls from the keyboard (D266): ⇥ / ⇧⇥ move, ↩ or Space use the
         // control in focus, Esc gives the keys back to the slides. Other keys work as usual.
         if chord.key == .tab, chord.modifiers.subtracting(.shift).isEmpty {
@@ -793,28 +801,24 @@ extension CanvasController {
             default: break
             }
         }
-        // B or W blanks the screen; any key brings the slide back, without stepping (M42).
-        if let b = p.blank {
-            // The other letter switches colour; the same one, or any other key, brings it back.
-            let other = b == "black" ? "w" : "b"
-            present?.blank = characters?.lowercased() == other ? (other == "b" ? "black" : "white") : nil
-            return true
-        }
         // Digits then ↩ go to that slide, as in Keynote; ↩ alone still steps (M42).
         if chord.modifiers.isEmpty, let ch = characters, ch.count == 1, ch.first?.isNumber == true {
             present?.typed.append(ch)
             return true
         }
         if !p.typed.isEmpty {
+            // Cleared on the copy too, so F or ? (which write it back) don't restore it.
+            let typed = p.typed
+            p.typed = ""
             present?.typed = ""
             switch chord.key {
             case .return:
-                if let n = Int(p.typed), n >= 1 { goToSlide(n - 1) }
+                if let n = Int(typed), n >= 1 { goToSlide(n - 1) }
                 return true
             case .escape:
                 return true
             case .delete:
-                present?.typed = String(p.typed.dropLast())
+                present?.typed = String(typed.dropLast())
                 return true
             default: break
             }

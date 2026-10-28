@@ -206,6 +206,21 @@ import Testing
         #expect(h.controller.guideCache?.key != key, "an edit evaluates again")
     }
 
+    /// Selecting a relationship or another element refocuses the guide too, as the topic
+    /// selection does.
+    @Test func selectingAnElementRefocuses() throws {
+        let h = CanvasHarness(model: bigDocument(mains: 4, subs: 3, leaves: 2))
+        h.controller.guideVisible = true
+        h.press("right")
+        h.controller.updateGuide()
+        #expect(h.controller.guideProgress?.current == 1)
+        h.controller.selectElement(.relationship("r1"))
+        #expect(h.controller.guideUpdatePending)
+        h.controller.updateGuide()
+        let unfocused = try #require(h.controller.guideCache?.progress.focused(on: nil))
+        #expect(h.controller.guideProgress == unfocused && unfocused.current != 1)
+    }
+
     /// For review (NEXUS_SNAPSHOT_DIR): the panel on a half-made data flow, light, dark and in
     /// the pseudo-language, and the Format panel's Type control.
     @Test(.enabled(if: ProcessInfo.processInfo.environment["NEXUS_SNAPSHOT_DIR"] != nil))

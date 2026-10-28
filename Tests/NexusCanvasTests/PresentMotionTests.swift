@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import NexusCore
+import NexusFormat
 import NexusKeys
 import NexusTheme
 import SwiftUI
@@ -114,6 +115,25 @@ import Testing
         #expect(h.controller.present?.index == 5, "a click steps")
     }
 
+    /// A blank screen takes the next key before the strip's focused control does; F or ?
+    /// drop digits typed for a jump.
+    @Test func blankComesFirstAndTypedDigitsDrop() {
+        let h = presenting("dynamic")
+        h.press("tab")
+        #expect(h.controller.focusedStripControl != nil)
+        let deck = h.canvas.presentation
+        h.press("b")
+        h.press("return")
+        #expect(h.controller.present?.blank == nil && h.canvas.presentation == deck, "↩ only brings the slide back")
+        h.press("esc")
+        h.press("4")
+        h.press("f")
+        #expect(h.controller.present?.typed == "" && h.controller.present?.stageOnly == true)
+        let index = h.controller.present?.index ?? 0
+        h.press("return")
+        #expect(h.controller.present?.index == index + 1, "↩ steps; the 4 is gone")
+    }
+
     /// Esc ends on the slide's topic, selected; ⌥⌘P starts from the selection.
     @Test func escEndsOnTheTopicAndOptCmdPStartsThere() {
         let h = presenting("calm")
@@ -162,6 +182,30 @@ import Testing
         #expect(
             names.filter { $0.hasPrefix("ppt/notesSlides/notesSlide") }.sorted() == ["ppt/notesSlides/notesSlide2.xml"])
         #expect(names.contains("ppt/notesSlides/_rels/notesSlide2.xml.rels"))
+    }
+
+    /// A masked PowerPoint export masks the slides' titles and speaker notes, as it does
+    /// the slides.
+    @Test func maskedPptxMasksTitlesAndNotes() throws {
+        let h = CanvasHarness(model: launchPlanDocument())
+        let pricing = node(h, "Pricing")
+        h.controller.perform("Owner") { e in
+            e.update(pricing) {
+                $0.text = "Pricing for dana.ruiz@example.com"
+                $0.note = Note(text: "Ask dana.ruiz@example.com")
+            }
+        }
+        var s = ExportState.remembered(.powerpoint)
+        s.format = .powerpoint
+        func text(_ s: ExportState) throws -> String {
+            let files = try Zip.read(try #require(h.controller.exportData(s)))
+            return files.filter { $0.key.hasSuffix(".xml") }.values.map { String(decoding: $0, as: UTF8.self) }
+                .joined()
+        }
+        s.mask = false
+        #expect(try text(s).contains("dana.ruiz@example.com"), "the test has something to mask")
+        s.mask = true
+        #expect(try !text(s).contains("dana.ruiz@example.com"))
     }
 
     // MARK: Fly-to frame times

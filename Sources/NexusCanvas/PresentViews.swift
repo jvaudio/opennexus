@@ -369,12 +369,17 @@ public struct PresenterView: View {
                         .padding(.leading, 16)
                         .accessibilityLabel(Loc.f("Elapsed: %lld minutes %lld seconds", elapsed / 60, elapsed % 60))
                 }
+                let pair = Set([current, next].compactMap { $0.map(cardKey) })
                 HStack(alignment: .top, spacing: 18) {
-                    slideCard(current, index: index, label: Loc.f("Slide %lld of %lld", index + 1, slides.count))
-                        .frame(maxWidth: .infinity)
-                    slideCard(next, index: nextIndex, label: next == nil ? Loc.t("End of deck") : Loc.t("Next"))
-                        .frame(maxWidth: .infinity)
-                        .opacity(0.85)
+                    slideCard(
+                        current, index: index, label: Loc.f("Slide %lld of %lld", index + 1, slides.count), keep: pair
+                    )
+                    .frame(maxWidth: .infinity)
+                    slideCard(
+                        next, index: nextIndex, label: next == nil ? Loc.t("End of deck") : Loc.t("Next"), keep: pair
+                    )
+                    .frame(maxWidth: .infinity)
+                    .opacity(0.85)
                 }
                 ScrollView {
                     Text(current?.note ?? Loc.t("No note on this slide's topic."))
@@ -395,9 +400,15 @@ public struct PresenterView: View {
         }
     }
 
+    /// A drawn slide's cache key: the document revision, canvas and slide.
+    func cardKey(_ slide: Slide) -> String {
+        "\(controller.store.revision)|\(controller.canvasID.rawValue)|\(slide.id)"
+    }
+
     /// A slide drawn as it plays, its title under it; a placeholder until it's drawn.
-    func slideCard(_ slide: Slide?, index: Int?, label: String) -> some View {
-        let key = slide.map { "\(controller.store.revision)|\(controller.canvasID.rawValue)|\($0.id)" }
+    /// `keep`: the current pair's keys, which the cache never drops.
+    func slideCard(_ slide: Slide?, index: Int?, label: String, keep: Set<String>) -> some View {
+        let key = slide.map(cardKey)
         return VStack(alignment: .leading, spacing: 8) {
             ZStack {
                 RoundedRectangle(cornerRadius: 10).fill(Color.secondary.opacity(0.08))
@@ -423,7 +434,7 @@ public struct PresenterView: View {
                 prefs: controller.prefs)
             {
                 // Keep the deck's current pair, not every revision's.
-                if drawn.images.count > 8 { drawn.images = [:] }
+                if drawn.images.count > 8 { drawn.images = drawn.images.filter { keep.contains($0.key) } }
                 drawn.images[key] = img
             }
         }

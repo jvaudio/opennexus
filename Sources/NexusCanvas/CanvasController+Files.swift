@@ -375,7 +375,8 @@ extension CanvasController {
         case .ganttPDF: return GanttExporter.pdf(self, exportCanvas(s), s.gantt)
         case .powerpoint, .keynote:
             let slides = SlideExporter.renderSlides(m, canvas: canvasID)
-            let playing = self.slides.filter { !$0.skipped }
+            // From the export model, so a masked export masks the titles and notes too.
+            let playing = m.canvases[canvasID].map { Deck.slides($0).filter { !$0.skipped } } ?? []
             return SlideExporter.pptx(slides, titles: playing.map(\.title), notes: playing.map(\.note))
         case .excel: return ExcelFormat.export(m)
         case .xmind: return xmindExport(m, xmind8: s.xmind8).data

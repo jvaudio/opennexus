@@ -97,6 +97,19 @@ import Testing
         #expect(p.done == 3)
     }
 
+    /// Depths count from the central topic: a named floating topic doesn't name it, and its
+    /// children aren't main topics or hosts for subtopics.
+    @Test func floatingTopicsAreOutsideTheTree() throws {
+        var c = Canvas(id: "c1", title: "", rootText: "Central Topic")
+        var undo = UndoStack()
+        c.edit("x", undo: &undo) { e in
+            let f = e.addFloating(at: CanvasPoint(x: 400, y: 0), text: "Parking lot")
+            for t in ["Later", "Maybe", "Never"] { _ = try! e.addChild(of: f, text: t) }
+        }
+        let p = GuideMatcher.progress(c, Self.mindmap)
+        #expect(!p.steps[0].met && p.steps[1].count == 0 && p.steps[2].needed == 0)
+    }
+
     /// Untyped data flows: inference makes processes, entities and stores; flows count only
     /// labelled; the rules step reads DFDRules.
     @Test func dfdOnAnUntypedMap() throws {

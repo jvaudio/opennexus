@@ -176,7 +176,7 @@ public struct StarterGalleryView: View {
             if let s = model.selected {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(Loc.t(s.name)).font(.chrome(13.5, weight: .semibold))
-                    Text("\(s.isBlank ? Loc.t("Blank") : HomeView.typeName(s.type)) · \(s.category.title)")
+                    Text("\(s.isBlank ? Loc.t("Blank") : HomeView.typeName(s.type)) · \(Loc.t(s.category.title))")
                         .font(.chrome(12)).foregroundStyle(.secondary)
                 }
             }
@@ -275,7 +275,7 @@ struct StarterCard: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Loc.t(starter.name))
         .accessibilityValue(
-            [Loc.t(starter.summary), starter.category.title, guided ? Loc.t("Guided") : nil].compactMap { $0 }
+            [Loc.t(starter.summary), Loc.t(starter.category.title), guided ? Loc.t("Guided") : nil].compactMap { $0 }
                 .joined(separator: ", ")
         )
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)

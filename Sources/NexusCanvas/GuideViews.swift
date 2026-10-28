@@ -33,7 +33,8 @@ struct GuidePanelView: View {
         VStack(alignment: .leading, spacing: 0) {
             header
             Divider()
-            if let g = controller.guide, let p = controller.guideProgress {
+            // A Convert changes the guide a turn before its progress is matched.
+            if let g = controller.guide, let p = controller.guideProgress, p.steps.count == g.steps.count {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 14) {
                         if !g.example.isEmpty { example(g) }
@@ -183,7 +184,7 @@ struct GuidePanelView: View {
 
     /// The current step's tip (or the clicked one's), keys in the active profile, and Skip.
     func tipCard(_ g: Guide, _ p: GuideProgress) -> some View {
-        let i = focused ?? p.current ?? 0
+        let i = focused.flatMap { g.steps.indices.contains($0) ? $0 : nil } ?? p.current ?? 0
         let step = g.steps[i]
         let skipped = p.steps[i].state == .skipped
         return VStack(alignment: .leading, spacing: 10) {

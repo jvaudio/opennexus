@@ -50,7 +50,9 @@ public final class CanvasController {
         didSet { scheduleGuideUpdate() }
     }
     /// A selected non-topic element (relationship, boundary, summary, callout, zone).
-    public internal(set) var selectedElement: ElementRef?
+    public internal(set) var selectedElement: ElementRef? {
+        didSet { scheduleGuideUpdate() }
+    }
     /// The zones selected together with the selected zone (⇧- or ⌘-click, Select All
     /// Zones; D228). Only meaningful while it holds the selected element: see
     /// `selectedZones`.
