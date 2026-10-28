@@ -583,6 +583,37 @@ struct ThemeSwatch: View {
 struct DataTab: View {
     var controller: CanvasController
 
+    /// The selected topic's semantic type, from the canvas's palette (M41): what guides,
+    /// rule checks and STRIDE read. Automatic shows what inference makes of it.
+    @ViewBuilder var typeSection: some View {
+        let c = controller.canvas
+        let palette = DiagramCatalog.nodeTypes(for: c.type)
+        let id = controller.selection.primary
+        if !palette.isEmpty, let node = c.nodes[id] {
+            PanelSection(Loc.t("Type"), key: "nodeType") {
+                let inferred = node.nodeType == nil ? DiagramCatalog.effectiveType(id, in: c) : nil
+                let auto = inferred.flatMap { t in palette.first { $0.id == t } }.map {
+                    Loc.f("Automatic · %@", Loc.t($0.name))
+                }
+                Picker(
+                    "Type",
+                    selection: Binding(
+                        get: { node.nodeType?.rawValue ?? "" },
+                        set: { controller.setNodeType($0.isEmpty ? nil : NodeType(rawValue: $0)) })
+                ) {
+                    Text(auto ?? Loc.t("Automatic")).tag("")
+                    ForEach(palette, id: \.id) { Text(Loc.t($0.name)).tag($0.id.rawValue) }
+                    if let t = node.nodeType, !palette.contains(where: { $0.id == t }) {
+                        Text(t.rawValue).tag(t.rawValue)
+                    }
+                }
+                .labelsHidden()
+                .accessibilityLabel("Node type")
+            }
+            Divider()
+        }
+    }
+
     var fields: [MetadataField] { controller.canvas.nodes[controller.selection.primary]?.metadata ?? [] }
 
     func update(_ body: @escaping (inout [MetadataField]) -> Void) {
@@ -591,6 +622,7 @@ struct DataTab: View {
     }
 
     var body: some View {
+        typeSection
         PanelSection(Loc.t("Task"), key: "task") {
             let id = controller.selection.primary
             let c = controller.canvas

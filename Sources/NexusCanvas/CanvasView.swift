@@ -27,6 +27,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     private var nodeLayers: [NodeID: NodeLayer] = [:]
     private var edgeLayers: [NodeID: CAShapeLayer] = [:]
+    /// Present (M42): the slide whose builds have run, and the topic Showtime enlarged.
+    private var builtSlide: String?
+    private var showtimeFocus: NodeID?
+    /// Present's laser pointer (hold ⇧, M42).
+    private var laser: CALayer?
     private var springs: [NodeID: SpringValue] = [:]
     private var scales: [NodeID: SpringScalar] = [:]
     private var moving = Set<NodeID>()
@@ -662,11 +667,12 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     /// How many topic layers the last cull left on screen.
     private(set) var visibleNodeLayers = 0
 
-    func setCamera(_ c: Camera, animated: Bool, via: Camera? = nil) {
+    func setCamera(_ c: Camera, animated: Bool, via: Camera? = nil, fly: Bool = false) {
         if animated && !reduceMotion && window != nil {
             cameraTween = CameraTween(
-                from: camera, to: c, start: CACurrentMediaTime(), duration: Motion.focus * (via == nil ? 1 : 2.5),
-                via: via)
+                from: camera, to: c, start: CACurrentMediaTime(),
+                duration: fly ? Motion.fly : Motion.focus * (via == nil ? 1 : 2.5), via: via,
+                fly: fly ? (FlyPath(from: camera, to: c, in: bounds), bounds) : nil)
             startTicking()
             return
         }
@@ -780,10 +786,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
                 b, topics: rects + outlines, lines: lines, stage: target, legend: presentLegendRect(),
                 chart: presentChartRect())
         }
-        let transition = controller.present == nil ? "glide" : controller.canvas.presentation.transition
-        // Zoom pulls out to show both slides, then pushes in; Glide flies straight; Cut jumps.
-        let via = transition == "zoom" ? CameraTween.overview(from: camera, to: cam, in: bounds) : nil
-        setCamera(cam, animated: transition != "cut", via: via)
+        // Glide moves straight; the fly-to rises over the map as far as the move needs
+        // (Dynamic, Showtime and Zoom, M42); Cut jumps. Reduce Motion cuts.
+        let move = controller.present == nil ? "glide" : controller.canvas.presentation.cameraMove
+        setCamera(cam, animated: move != "cut", fly: move == "fly")
+        if controller.present != nil { slideDidFrame() } else { endSlideMotion() }
     }
 
     /// Zooms to `z` around the view's centre (Settings › Editing › Default zoom).
@@ -1145,6 +1152,14 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     public override func flagsChanged(with event: NSEvent) {
         if handleHyperFlags(event) { return }
+        // Present: hold ⇧ for a laser pointer (M42).
+        if controller.present != nil {
+            if event.modifierFlags.contains(.shift), let w = window {
+                showLaser(at: convert(w.mouseLocationOutsideOfEventStream, from: nil))
+            } else {
+                hideLaser()
+            }
+        }
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         if flags == .command {
             cheatTimer?.invalidate()
@@ -1360,6 +1375,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     public override func mouseMoved(with event: NSEvent) {
         super.mouseMoved(with: event)
+        if controller.present != nil, event.modifierFlags.contains(.shift) {
+            showLaser(at: convert(event.locationInWindow, from: nil))
+        }
         updateFoldHover(convert(event.locationInWindow, from: nil))
         guard controller.prefs.string("editing.floatingToolbar") == "rest", controller.mode == .select else { return }
         let p = convert(event.locationInWindow, from: nil)
@@ -1523,6 +1541,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         let p = convert(event.locationInWindow, from: nil)
         let w = camera.toWorld(p)
         window?.makeFirstResponder(self)
+        // Present: a click advances, as in Keynote (M42); with the laser out it only points.
+        if controller.present != nil {
+            if !event.modifierFlags.contains(.shift) { controller.presentClick() }
+            return
+        }
         // Control-click opens the context menu, as a right-click does.
         if event.modifierFlags.intersection(.deviceIndependentFlagsMask).subtracting(.capsLock) == .control,
             let menu = menu(for: event)
@@ -2279,4 +2302,150 @@ final class GridLayer: CALayer {
             ctx.fill(rects)
         }
     }
+}
+
+// MARK: Present motion (M42)
+
+extension CanvasView {
+    /// After a slide is framed: Dynamic and Showtime build its topics in (each scales and
+    /// fades in a stagger after the one before, its branch line drawing on) as the camera
+    /// lands, and a flow slide draws its flow on. Showtime is quicker, enlarges and lights the
+    /// focus topic, and sparkles one with a marker. Calm builds nothing; Reduce Motion
+    /// cross-fades the same topics in.
+    func slideDidFrame() {
+        guard let p = controller.present else { return }
+        let slides = controller.slides
+        guard p.index < slides.count, !p.overview else { return }
+        let slide = slides[p.index]
+        guard slide.id != builtSlide else { return }
+        builtSlide = slide.id
+        clearShowtime()
+        let style = controller.canvas.presentation.style
+        guard style != "calm", !exportMode, window != nil else { return }
+        let showtime = style == "showtime"
+        let builds = Deck.builds(slide, in: controller.canvas)
+        let start = CACurrentMediaTime() + (reduceMotion ? 0 : Motion.fly * 0.55)
+        // A long list still builds in about a second.
+        let stagger = min(showtime ? Motion.showtimeStagger : Motion.buildStagger, 1.0 / Double(max(builds.count, 1)))
+        for (i, id) in builds.enumerated() {
+            guard let l = nodeLayers[id] else { continue }
+            let begin = start + (reduceMotion ? 0 : Double(i) * stagger)
+            let fade = CABasicAnimation(keyPath: "opacity")
+            fade.fromValue = 0
+            fade.toValue = l.opacity
+            fade.beginTime = begin
+            fade.fillMode = .backwards
+            fade.duration = reduceMotion ? Motion.reducedCrossFade : Motion.presentStep * 0.5
+            l.add(fade, forKey: "present.fade")
+            guard !reduceMotion else { continue }
+            let pop = CASpringAnimation(keyPath: "transform.scale")
+            pop.fromValue = 0.6
+            pop.toValue = 1
+            pop.stiffness = Motion.snap.stiffness
+            pop.damping = Motion.snap.damping
+            pop.beginTime = begin
+            pop.fillMode = .backwards
+            pop.duration = pop.settlingDuration
+            l.add(pop, forKey: "present.pop")
+            if let e = edgeLayers[id] {
+                let draw = CABasicAnimation(keyPath: "strokeEnd")
+                draw.fromValue = 0
+                draw.toValue = 1
+                draw.beginTime = begin
+                draw.fillMode = .backwards
+                draw.duration = Motion.connectDraw
+                e.add(draw, forKey: "present.draw")
+            }
+        }
+        if let flow = slide.flow, !reduceMotion {
+            if flow.hasPrefix("t:"), let e = edgeLayers[NodeID(String(flow.dropFirst(2)))] {
+                let draw = CABasicAnimation(keyPath: "strokeEnd")
+                draw.fromValue = 0
+                draw.toValue = 1
+                draw.beginTime = start
+                draw.fillMode = .backwards
+                draw.duration = Motion.connectDraw
+                e.add(draw, forKey: "present.draw")
+            } else {
+                elements.drawOn(relationship: flow, at: start)
+            }
+        }
+        if showtime, slide.flow == nil, slide.id.hasPrefix("branch:"), let focus = slide.highlight.last,
+            let l = nodeLayers[focus]
+        {
+            showtimeFocus = focus
+            if !reduceMotion {
+                let grow = CASpringAnimation(keyPath: "transform.scale")
+                grow.fromValue = 1
+                grow.toValue = Motion.showtimeFocusScale
+                grow.stiffness = Motion.settle.stiffness
+                grow.damping = Motion.settle.damping
+                grow.beginTime = start
+                grow.duration = grow.settlingDuration
+                grow.fillMode = .both
+                grow.isRemovedOnCompletion = false
+                l.add(grow, forKey: "present.showtime")
+                if controller.prefs.bool("appearance.sparkle"), controller.canvas.nodes[focus]?.markers.isEmpty == false
+                {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + Motion.fly * 0.8) { [weak self] in
+                        MainActor.assumeIsolated { self?.sparkle(at: focus) }
+                    }
+                }
+            } else {
+                l.transform = CATransform3DMakeScale(Motion.showtimeFocusScale, Motion.showtimeFocusScale, 1)
+            }
+        }
+    }
+
+    /// Present ended: no builds pending, and the Showtime focus back to size.
+    func endSlideMotion() {
+        builtSlide = nil
+        clearShowtime()
+        hideLaser()
+    }
+
+    private func clearShowtime() {
+        guard let id = showtimeFocus else { return }
+        showtimeFocus = nil
+        nodeLayers[id]?.removeAnimation(forKey: "present.showtime")
+        nodeLayers[id]?.transform = CATransform3DIdentity
+    }
+
+    /// The slide a build last ran for, and a topic's layer (tests).
+    var builtSlideID: String? { builtSlide }
+    func nodeLayer(_ id: NodeID) -> NodeLayer? { nodeLayers[id] }
+    var showtimeFocusID: NodeID? { showtimeFocus }
+
+    // MARK: Laser pointer (hold ⇧)
+
+    /// A red dot with a glow that follows the pointer while ⇧ is held in Present.
+    func showLaser(at viewPoint: CGPoint) {
+        let l =
+            laser
+            ?? {
+                let d = CALayer()
+                d.bounds = CGRect(x: 0, y: 0, width: 14, height: 14)
+                d.cornerRadius = 7
+                d.backgroundColor = NSColor(red: 1, green: 0.17, blue: 0.2, alpha: 0.95).cgColor
+                d.shadowColor = d.backgroundColor
+                d.shadowOpacity = 0.9
+                d.shadowRadius = 8
+                d.shadowOffset = .zero
+                d.zPosition = 10_000
+                layer?.addSublayer(d)
+                laser = d
+                return d
+            }()
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        l.position = viewPoint
+        l.isHidden = false
+        CATransaction.commit()
+    }
+
+    func hideLaser() {
+        laser?.isHidden = true
+    }
+
+    var laserVisible: Bool { laser.map { !$0.isHidden } ?? false }
 }

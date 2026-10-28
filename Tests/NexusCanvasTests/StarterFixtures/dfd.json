@@ -1,0 +1,56 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "graph.right"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2"
+      ],
+      "kind": "root",
+      "text": "Login"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "nodeType": "entity",
+      "text": "User"
+    },
+    "n3": {
+      "children": [
+        "n4",
+        "n5"
+      ],
+      "kind": "topic",
+      "nodeType": "process",
+      "text": "Authenticate"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "store",
+      "text": "Credentials"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "store",
+      "text": "Session store"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Login data flow",
+  "type": "dfd"
+}

@@ -218,6 +218,12 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         w.level = force ? .floating : .normal
         w.orderFront(nil)
         presenterWindow = w
+        // On its own display it fills the screen (M42); asked for on one display, it floats.
+        if other != window?.screen, NSScreen.screens.count > 1 {
+            w.collectionBehavior.insert(.fullScreenPrimary)
+            w.setFrame(other.frame, display: true)
+            w.toggleFullScreen(nil)
+        }
     }
 
     /// Export: PDF · PowerPoint · Keynote · Video (artboard 32).
@@ -239,6 +245,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         let model = document_.store.model
         let canvasID = controller.canvasID
         let titles = controller.slides.filter { !$0.skipped }.map(\.title)
+        let notes = controller.slides.filter { !$0.skipped }.map(\.note)
         panel.beginSheetModal(for: window) { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
             MainActor.assumeIsolated {
@@ -255,7 +262,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
                         }
                     }
                     return
-                default: try? SlideExporter.pptx(images, titles: titles).write(to: url, options: .atomic)
+                default: try? SlideExporter.pptx(images, titles: titles, notes: notes).write(to: url, options: .atomic)
                 }
                 self?.controller.showToast(Loc.n("Exported %lld slide", "Exported %lld slides", images.count))
             }
@@ -326,17 +333,27 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         window?.makeFirstResponder(host.canvasView)
     }
 
+    /// ⌘T, the tab bar's + and New Canvas (M40): the starter picker, unless Settings ›
+    /// Editing turns it off or ⌥ is held, which use the starter picked last.
     func addCanvas() {
-        let store = document_.store
-        let id = store.model.makeCanvasID()
-        store.commitDocument(Loc.t("New Canvas"), focus: id) { d in
-            var c = NexusCore.Canvas(id: id, title: "Map \(d.canvases.count + 1)")
-            CanvasController.applyDefaults(&c, prefs: .shared)
-            d.canvases[id] = c
-            d.canvasOrder.append(id)
+        if NSEvent.modifierFlags.contains(.option) || !Preferences.shared.bool("editing.starterPicker") {
+            controller.addCanvas(from: StarterLibrary.lastUsed(prefs: .shared))
+            return
         }
-        controller.switchCanvas(to: id)
-        controller.beginEditing(replacingWith: "")
+        guard let window, window.attachedSheet == nil else { return }
+        let gallery = StarterGallery(purpose: .canvas)
+        let sheet = NSWindow(contentViewController: NSHostingController(rootView: StarterGalleryView(model: gallery)))
+        sheet.title = Loc.t("New Canvas")
+        gallery.onCancel = { [weak window, weak sheet] in
+            if let sheet { window?.endSheet(sheet) }
+        }
+        gallery.onChoose = { [weak self, weak window, weak sheet] starter in
+            if let sheet { window?.endSheet(sheet) }
+            self?.controller.addCanvas(from: starter)
+            if StarterGallery.startsWithGuide(starter, prefs: .shared) { self?.controller.guideVisible = true }
+            if let v = self?.host.canvasView { window?.makeFirstResponder(v) }
+        }
+        window.beginSheet(sheet)
     }
 
     // MARK: Toolbar
@@ -526,7 +543,8 @@ struct CanvasTabsView: View {
                 Image(systemName: "plus").frame(width: 28, height: 28)
             }
             .buttonStyle(.plain)
-            .help("New Canvas (⌘T)")
+            .help("New Canvas (⌘T) · ⌥-click repeats the last starter")
+            .accessibilityLabel("New Canvas")
             Spacer()
         }
         .padding(.horizontal, 16)
@@ -540,13 +558,6 @@ struct CanvasTabsView: View {
         return item
     }()
 
-    func color(for type: DiagramType) -> Color {
-        switch type {
-        case .flowchart, .swimlane: RGBA(hex: "#9B51E0").swiftUIColor
-        case .threatModel: RGBA(hex: "#D93A3F").swiftUIColor
-        case .dfd: RGBA(hex: "#0F9F9A").swiftUIColor
-        case .architecture: RGBA(hex: "#1E8BE0").swiftUIColor
-        default: Tokens.Signal.irisLight.swiftUIColor
-        }
-    }
+    /// The tab's square: the type's colour, as on Home (D287).
+    func color(for type: DiagramType) -> Color { RGBA(hex: DiagramDescriptor[type].tint).swiftUIColor }
 }

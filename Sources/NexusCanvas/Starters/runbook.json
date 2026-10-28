@@ -1,0 +1,26 @@
+{
+  "aliases": [
+    "runbook",
+    "incident response",
+    "ir"
+  ],
+  "category": "security",
+  "id": "runbook",
+  "kicker": "FLOW",
+  "name": "Incident response runbook",
+  "order": 14,
+  "outline": [
+    "Alert received >start",
+    "  Triage severity",
+    "    Sev 1? >decision",
+    "      Page on-call",
+    "        Contain",
+    "          Recover",
+    "            Post-incident review >end",
+    "      Ticket and monitor >end"
+  ],
+  "shelf": "security",
+  "summary": "Triage, contain, recover",
+  "title": "IR runbook",
+  "type": "flowchart"
+}

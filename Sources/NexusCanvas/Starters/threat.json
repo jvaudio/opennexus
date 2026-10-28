@@ -1,0 +1,23 @@
+{
+  "aliases": [
+    "threat",
+    "stride",
+    "payments"
+  ],
+  "category": "security",
+  "id": "threat",
+  "kicker": "THREAT MODEL",
+  "name": "Threat model",
+  "order": 11,
+  "outline": [
+    "Payments",
+    "  Customer >entity",
+    "    Checkout >process",
+    "      Card vault >store",
+    "      Payment provider >entity"
+  ],
+  "shelf": "security",
+  "summary": "Data flow with STRIDE per element",
+  "title": "Payments threat model",
+  "type": "threatModel"
+}

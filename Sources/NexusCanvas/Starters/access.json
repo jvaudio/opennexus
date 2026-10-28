@@ -1,0 +1,25 @@
+{
+  "aliases": [
+    "access",
+    "permissions",
+    "review"
+  ],
+  "category": "security",
+  "id": "access",
+  "kicker": "MATRIX",
+  "name": "Access review",
+  "order": 15,
+  "outline": [
+    "Access review",
+    "  Admins",
+    "    Prod console",
+    "  Engineers",
+    "    Staging",
+    "  Support",
+    "    Read-only CRM"
+  ],
+  "shelf": "security",
+  "summary": "Roles, systems and owners",
+  "title": "Access review",
+  "type": "matrix"
+}

@@ -1,0 +1,26 @@
+{
+  "aliases": [
+    "swot",
+    "strategy"
+  ],
+  "category": "planning",
+  "id": "swot",
+  "kicker": "MATRIX",
+  "name": "SWOT",
+  "order": 17,
+  "outline": [
+    "SWOT",
+    "  Strengths",
+    "    Loyal users",
+    "  Weaknesses",
+    "    Small team",
+    "  Opportunities",
+    "    New market",
+    "  Threats",
+    "    Competitor pricing"
+  ],
+  "shelf": "planning",
+  "summary": "Strengths, weaknesses, opportunities, threats",
+  "title": "SWOT",
+  "type": "matrix"
+}

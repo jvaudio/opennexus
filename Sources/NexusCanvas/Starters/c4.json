@@ -1,0 +1,26 @@
+{
+  "aliases": [
+    "c4",
+    "context",
+    "containers"
+  ],
+  "category": "architecture",
+  "id": "c4",
+  "kicker": "C4 · L1–L2",
+  "name": "System context",
+  "order": 1,
+  "outline": [
+    "Online shop",
+    "  Customer >actor",
+    "    Web app >client",
+    "      API gateway >gateway",
+    "        Orders service >service",
+    "          Orders DB >db",
+    "        Payments service >service",
+    "          Payment provider >external"
+  ],
+  "shelf": "engineering",
+  "summary": "People, systems and containers",
+  "title": "System context",
+  "type": "architecture"
+}

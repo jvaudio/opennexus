@@ -25,6 +25,39 @@ extension CanvasController {
     static let slideAspects = ["16:9", "16:10", "4:3", "1:1"]
     static let slideThemes = ["canvas", "dark", "light"]
     static let slideExports = ["PDF", "PowerPoint", "Keynote", "Video"]
+    static let slideDepths = ["main", "all"]
+
+    static func styleTitle(_ s: String) -> String {
+        switch s {
+        case "calm": Loc.t("Calm")
+        case "showtime": Loc.t("Showtime")
+        default: Loc.t("Dynamic")
+        }
+    }
+
+    static func depthTitle(_ d: String) -> String { d == "all" ? Loc.t("Every branch") : Loc.t("Main topics") }
+
+    /// A strip pop-up's choices: (value, title).
+    public func stripMenuChoices(_ id: String) -> [(String, String)] {
+        switch id {
+        case "aspect": Self.slideAspects.map { ($0, $0) }
+        case "theme": Self.slideThemes.map { ($0, $0.capitalized) }
+        case "style": PresentationSettings.styles.map { ($0, Self.styleTitle($0)) }
+        case "depth": Self.slideDepths.map { ($0, Self.depthTitle($0)) }
+        default: []
+        }
+    }
+
+    /// Picks a strip pop-up's choice.
+    public func chooseStripMenu(_ id: String, _ value: String) {
+        switch id {
+        case "aspect": setPresentation(Loc.t("Aspect")) { $0.aspect = value }
+        case "theme": setPresentation(Loc.t("Slide Theme")) { $0.theme = value }
+        case "style": setPresentation(Loc.t("Presentation Style")) { $0.style = value }
+        case "depth": setPresentation(Loc.t("Slide Depth")) { $0.depth = value }
+        default: break
+        }
+    }
 
     /// The strip's controls in the order ⇥ visits them: the header's chips and pop-ups, then
     /// the export buttons. Chips that don't apply (Step through flow on a mind map, Legend
@@ -59,6 +92,19 @@ extension CanvasController {
                 StripControl(
                     id: "timeline", title: Loc.t("Timeline slides") + (s.timeline ? " ✓" : ""),
                     label: Loc.t("Timeline slides"), on: s.timeline, kind: .chip))
+        }
+        // The deck's style (M42), and for hierarchies how deep the slides go and whether an
+        // overview comes between branches.
+        let style = Self.styleTitle(s.style)
+        out.append(StripControl(id: "style", title: style, label: Loc.t("Style"), value: style, on: false, kind: .menu))
+        if !DiagramCatalog.isTechnical(canvas.type) {
+            let depth = Self.depthTitle(s.depth)
+            out.append(
+                StripControl(id: "depth", title: depth, label: Loc.t("Depth"), value: depth, on: false, kind: .menu))
+            out.append(
+                StripControl(
+                    id: "overview", title: Loc.t("Overviews") + (s.overview ? " ✓" : ""),
+                    label: Loc.t("Overview between branches"), on: s.overview, kind: .chip))
         }
         out.append(
             StripControl(id: "aspect", title: s.aspect, label: Loc.t("Aspect"), value: s.aspect, on: false, kind: .menu)
@@ -100,6 +146,11 @@ extension CanvasController {
             let all = Self.slideThemes
             let next = all[((all.firstIndex(of: s.theme) ?? -1) + 1) % all.count]
             setPresentation(Loc.t("Slide Theme")) { $0.theme = next }
+        case "style", "depth":
+            let all = stripMenuChoices(id).map(\.0)
+            let current = id == "style" ? s.style : s.depth
+            chooseStripMenu(id, all[((all.firstIndex(of: current) ?? -1) + 1) % all.count])
+        case "overview": setPresentation(Loc.t("Overviews")) { $0.overview.toggle() }
         case "keys": present?.showKeys.toggle()
         default:
             if id.hasPrefix("export.") { onExportSlides?(String(id.dropFirst("export.".count))) }

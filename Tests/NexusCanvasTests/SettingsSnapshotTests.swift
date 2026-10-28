@@ -30,6 +30,14 @@ import Testing
         p.arguments = ["-x", "-o", "-l", "\(w.windowNumber)", Self.dir!.appendingPathComponent("m8-\(name).png").path]
         try? p.run()
         p.waitUntilExit()
+        // Without Screen Recording, draw the window's view instead.
+        let url = Self.dir!.appendingPathComponent("m8-\(name).png")
+        if !FileManager.default.fileExists(atPath: url.path), let v = w.contentView,
+            let rep = v.bitmapImageRepForCachingDisplay(in: v.bounds)
+        {
+            v.cacheDisplay(in: v.bounds, to: rep)
+            try? rep.representation(using: .png, properties: [:])?.write(to: url)
+        }
         w.orderOut(nil)
     }
 
@@ -59,7 +67,7 @@ import Testing
             ("threat", "Payments threat model"), ("c4", "Checkout system context"), ("bookNotes", "Reading notes"),
             ("retro", "Sprint 42 retro"),
         ] {
-            guard let t = TemplateLibrary.all.first(where: { $0.id == id }) else { continue }
+            guard let t = StarterLibrary.starter(id) else { continue }
             let u = tmp.appending(path: "\(name).nexus")
             try NexusPackage.write(t.document(), to: u)
             urls.append(u)
@@ -68,12 +76,25 @@ import Testing
         m.load(urls)
         m.inboxCount = 3
         try await shoot(HomeView(model: m), "16-home")
-        m.choosingType = true
-        try await shoot(HomeView(model: m), "16-home-choose")
+        m.choosingStarter = true
+        try await shoot(HomeView(model: m), "16-home-starters")
+    }
+
+    /// The starter picker (M40): the ⌘T sheet, light and dark, and a search.
+    @Test(.enabled(if: dir != nil)) func starterPicker() async throws {
+        let size = CGSize(width: 900, height: 600)
+        let g = StarterGallery(purpose: .canvas, prefs: .isolated(), role: .security)
+        try await shoot(StarterGalleryView(model: g), "m40-picker", size: size)
+        try await shoot(StarterGalleryView(model: g), "m40-picker-dark", size: size, dark: true)
+        g.section = .forYou
+        try await shoot(StarterGalleryView(model: g), "m40-picker-foryou", size: size)
+        g.section = .all
+        g.query = "flow"
+        try await shoot(StarterGalleryView(model: g), "m40-picker-search", size: size)
     }
 
     @Test(.enabled(if: dir != nil)) func tutorial() async throws {
-        let h = CanvasHarness(model: TemplateLibrary.tourDocument(.engineer))
+        let h = CanvasHarness(model: StarterLibrary.tourDocument(.engineer))
         let tour = TourController(role: .engineer)
         tour.attach(h.controller)
         h.type("Checkout")

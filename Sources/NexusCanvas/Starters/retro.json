@@ -1,0 +1,25 @@
+{
+  "aliases": [
+    "retro",
+    "retrospective",
+    "sprint"
+  ],
+  "category": "planning",
+  "id": "retro",
+  "kicker": "MATRIX",
+  "name": "Sprint retro",
+  "order": 4,
+  "outline": [
+    "Sprint 42 retro",
+    "  Went well",
+    "    Shipped search",
+    "  To improve",
+    "    Flaky CI",
+    "  Actions",
+    "    Quarantine flaky tests"
+  ],
+  "shelf": "engineering",
+  "summary": "Went well · to improve · actions",
+  "title": "Sprint retro",
+  "type": "matrix"
+}

@@ -398,6 +398,132 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         #expect(outlineText(ImageOutline.build(photo, title: "x").canvas.root) == outlineText(geometric))
     }
 
+    /// A line with its width in ems set so its width implies `size`.
+    static func line(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double, size: Double) -> TextBox {
+        var b = box(text, x, y, w, h)
+        b.em = w / size
+        return b
+    }
+
+    @Test func sizeIsNeverMoreThanTheWidthImplies() {
+        var pricing = box("Pricing", 173, 509, 104, 38)
+        #expect(pricing.size == 38)
+        pricing.em = 104 / 29.4
+        #expect(abs(pricing.size - 29.4) < 1e-9)
+        let tall = Self.line("Pro", 211, 689, 48, 28, size: 31)
+        #expect(tall.size == 28, "a tight box keeps its height")
+        // Lines joined add up their widths and ems.
+        let wrapped = Self.line("Book a room near the", 761, 118, 278, 31, size: 25.6)
+            .union(Self.line("office for forty people", 766, 151, 276, 28, size: 24.6))
+        #expect(abs(wrapped.size - (278 + 276) / (278 / 25.6 + 276 / 24.6)) < 1e-9)
+    }
+
+    /// A tree drawn as an indented list, with the boxes Vision drew on macOS 27.2: one main
+    /// topic's ("Pricing") came back as tall as a heading, but its width says it's set like
+    /// the other main topics, so the ones after it stay its siblings (D283).
+    @Test func aBoxTallerThanItsWidthImpliesIsNoHeading() {
+        let boxes = [
+            Self.line("Launch plan", 140.8, 130.7, 231.9, 40.7, size: 37.7),
+            Self.line("Positioning", 173.8, 247.6, 158.8, 33.4, size: 28.1),
+            Self.line("Developers", 209.4, 341.5, 144.3, 27.6, size: 25.3),
+            Self.line("Teams", 209.4, 425.4, 82.9, 25.1, size: 25.5),
+            Self.line("Pricing", 172.8, 509.3, 104.3, 38.2, size: 29.4),
+            Self.line("Free tier", 209.6, 604.9, 106.1, 26.3, size: 24.8),
+            Self.line("Pro", 210.9, 688.7, 47.5, 28.0, size: 27.7),
+            Self.line("Annual discount", 207.3, 774.7, 207.3, 26.3, size: 25.4),
+            Self.line("Channels", 174.0, 860.4, 134.8, 31.0, size: 28.7),
+            Self.line("Product Hunt", 209.7, 953.6, 169.6, 26.4, size: 25.1),
+            Self.line("Newsletter", 209.6, 1038.0, 139.1, 26.7, size: 25.3),
+            Self.line("Timeline", 174.3, 1125.5, 122.5, 28.3, size: 28.6),
+            Self.line("Beta · Nov", 209.5, 1216.6, 132.2, 27.3, size: 24.3),
+            Self.line("GA · Jan", 209.7, 1302.0, 106.0, 26.0, size: 23.9),
+            Self.line("Risks", 174.0, 1388.2, 78.4, 30.3, size: 29.4),
+            Self.line("Competitor response", 209.7, 1481.0, 266.2, 31.0, size: 24.9),
+        ]
+        let expected = """
+            Launch plan
+              Positioning
+                Developers
+                Teams
+              Pricing
+                Free tier
+                Pro
+                Annual discount
+              Channels
+                Product Hunt
+                Newsletter
+              Timeline
+                Beta · Nov
+                GA · Jan
+              Risks
+                Competitor response
+
+            """
+        var image = RecognisedImage(width: 596, height: 1620, boxes: boxes)
+        #expect(outlineText(ImageOutline.build(image, title: "x").canvas.root) == expected)
+        // By their heights alone, "Pricing" is a heading over the main topics after it.
+        for i in image.boxes.indices { image.boxes[i].em = nil }
+        let heights = ImageOutline.build(image, title: "x").canvas.root
+        #expect(heights.children.map(\.text) == ["Positioning", "Pricing"])
+    }
+
+    /// Vision can start a box well before its text ("Trains", 17 px early): indents are
+    /// read from where the text's ink starts (D285).
+    @Test func indentsStartWhereTheTextsInkDoes() {
+        var trains = box("Trains", 1272.9, 234.4, 96.8, 27.5)
+        trains.inked = 1289...1362
+        var hotel = box("Hotel for the team", 1288.0, 318.9, 230.9, 27.0)
+        hotel.inked = 1290...1513
+        var nights = box("Two nights", 1330.5, 402.8, 141.2, 27.7)
+        nights.inked = 1333...1466
+        var image = RecognisedImage(width: 1638, height: 714, boxes: [trains, hotel, nights])
+        #expect(
+            outlineText(ImageOutline.build(image, title: "Travel").canvas.root) == """
+                Travel
+                  Trains
+                  Hotel for the team
+                    Two nights
+
+                """)
+        // From the boxes' edges, "Hotel for the team" is indented under "Trains".
+        for i in image.boxes.indices { image.boxes[i].inked = nil }
+        #expect(
+            outlineText(ImageOutline.build(image, title: "Travel").canvas.root) == """
+                Trains
+                  Hotel for the team
+                    Two nights
+
+                """)
+    }
+
+    /// A lone mark at either end of a line is a connector read as a character when its ink
+    /// runs out of the line's box: a line carrying on, or a fork's curves (D284).
+    @Test func connectorMarksRunOutOfTheirLine() throws {
+        let line = CGRect(x: 100, y: 100, width: 260, height: 24)
+        let mark = CGRect(x: 346, y: 100, width: 14, height: 24)
+        var connector = InkMap(imageWidth: 600, imageHeight: 300)
+        connector.line(from: (348, 112), to: (440, 112))
+        #expect(connector.runsOut(of: line, from: mark))
+        var dash = InkMap(imageWidth: 600, imageHeight: 300)
+        dash.line(from: (348, 112), to: (357, 112))
+        #expect(!dash.runsOut(of: line, from: mark), "a dash inside the box is text")
+        var fork = InkMap(imageWidth: 600, imageHeight: 300)
+        fork.line(from: (346, 112), to: (359, 95))
+        fork.line(from: (346, 112), to: (359, 129))
+        #expect(fork.runsOut(of: line, from: mark))
+
+        let hotel: Substring = "Hotel for the team -"
+        let (m, rest) = try #require(ImageText.endMark(hotel, last: true))
+        #expect(hotel[m] == "-" && hotel[rest] == "Hotel for the team")
+        let morning: Substring = "< Morning"
+        #expect(ImageText.endMark(morning, last: false).map { morning[$0.rest] } == "Morning")
+        #expect(ImageText.endMark(morning, last: true) == nil)
+        #expect(ImageText.endMark("team-", last: true) == nil, "a mark set off by a space")
+        #expect(ImageText.endMark("Pros and cons", last: true) == nil)
+        #expect(ImageText.endMark("Why ?", last: true) == nil, "only marks a stroke can look like")
+        #expect(ImageText.endMark("-", last: true) == nil)
+    }
+
     /// Boxes as Vision reads `ImageVisionTests.fishboneWithSubCauses` (head on the right),
     /// with one sub-cause of a sub-cause ("Agency staff") set back again under "New hires".
     static let fishboneWithSubCauses = RecognisedImage(

@@ -149,17 +149,17 @@ import Testing
 @MainActor
 @Suite struct TemplateTests {
     @Test func everyTemplateIsAValidDocumentAndRolesFilterTheShelf() {
-        #expect(TemplateLibrary.all.count == 25)
-        for t in TemplateLibrary.all {
+        #expect(StarterLibrary.templates.count == 25)
+        for t in StarterLibrary.templates {
             let d = t.document()
             let c = d.orderedCanvases[0]
-            #expect(c.validate().isEmpty, "\(t.title): \(c.validate())")
-            #expect(c.nodes.count >= 4, "\(t.title)")
-            #expect(c.type == t.type, "\(t.title)")
+            #expect(c.validate().isEmpty, "\(t.id): \(c.validate())")
+            #expect(c.nodes.count >= 4, "\(t.id)")
+            #expect(c.type == t.type, "\(t.id)")
         }
-        for cat in MapTemplate.Category.allCases { #expect(TemplateLibrary.shelf(cat).count == 5) }
+        for shelf in Starter.Shelf.allCases { #expect(StarterLibrary.shelf(shelf).count == 5) }
         #expect(Role.engineer.shelf == .engineering && Role.security.tourConversion == .dfd)
-        #expect(TemplateLibrary.shelf(.engineering).map(\.title).prefix(2) == ["System context", "API request flow"])
+        #expect(StarterLibrary.shelf(.engineering).map(\.name).prefix(2) == ["System context", "API request flow"])
     }
 }
 
@@ -169,12 +169,12 @@ import Testing
         let dir = FileManager.default.temporaryDirectory.appending(path: "home-\(UUID().uuidString)")
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         defer { try? FileManager.default.removeItem(at: dir) }
-        var a = TemplateLibrary.all.first { $0.id == "threat" }!.document()
+        var a = StarterLibrary.starter("threat")!.document()
         a.canvases["c1"]!.filters = [NodeFilter(name: "Open threats · High")]
         let ua = dir.appending(path: "Payments threat model.nexus")
         try NexusPackage.write(a, to: ua)
         let ub = dir.appending(path: "Reading.nexus")
-        try NexusPackage.write(TemplateLibrary.all.first { $0.id == "bookNotes" }!.document(), to: ub)
+        try NexusPackage.write(StarterLibrary.starter("bookNotes")!.document(), to: ub)
         let m = HomeModel()
         m.load([ua, ub, dir.appending(path: "missing.nexus")])
         #expect(m.recents.map(\.title) == ["Payments threat model", "Reading"])

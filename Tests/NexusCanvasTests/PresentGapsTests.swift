@@ -251,8 +251,8 @@ private func d(_ s: String) -> TaskDate { TaskDate(s)! }
         let ids = h.controller.stripControls.map(\.id)
         #expect(
             ids == [
-                "transition.glide", "transition.zoom", "transition.cut", "legend", "timeline", "aspect", "theme",
-                "keys",
+                "transition.glide", "transition.zoom", "transition.cut", "legend", "timeline", "style", "depth",
+                "overview", "aspect", "theme", "keys",
                 "export.PDF", "export.PowerPoint", "export.Keynote", "export.Video",
             ])
         // VoiceOver labels name the control without the ✓; the state is a trait or value.
@@ -278,8 +278,9 @@ private func d(_ s: String) -> TaskDate { TaskDate(s)! }
         while h.controller.present?.stripFocus != "aspect" { h.press("tab") }
         h.press("space")
         #expect(h.canvas.presentation.aspect == "16:10")
-        // ⇧⇥ goes back; L and T keep working while a control has focus.
-        h.press("shift+tab")
+        // ⇧⇥ goes back (past M42's Style, Depth and Overviews); L and T keep working while a
+        // control has focus.
+        for _ in 0..<4 { h.press("shift+tab") }
         #expect(h.controller.present?.stripFocus == "timeline")
         h.press("l")
         #expect(h.canvas.presentation.legend == false)

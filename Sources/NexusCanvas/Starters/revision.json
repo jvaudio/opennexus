@@ -1,0 +1,22 @@
+{
+  "aliases": [
+    "revision",
+    "exam",
+    "study"
+  ],
+  "category": "thinking",
+  "id": "revision",
+  "kicker": "TREE TABLE",
+  "name": "Revision tracker",
+  "order": 25,
+  "outline": [
+    "Revision",
+    "  Algebra",
+    "  Geometry",
+    "  Statistics"
+  ],
+  "shelf": "learning",
+  "summary": "Topics, confidence and dates",
+  "title": "Revision",
+  "type": "treeTable"
+}

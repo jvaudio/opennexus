@@ -1,0 +1,77 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "flow.down"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2"
+      ],
+      "kind": "root",
+      "nodeType": "start",
+      "text": "Alert received"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "Triage severity"
+    },
+    "n3": {
+      "children": [
+        "n4",
+        "n8"
+      ],
+      "kind": "topic",
+      "nodeType": "decision",
+      "text": "Sev 1?"
+    },
+    "n4": {
+      "children": [
+        "n5"
+      ],
+      "kind": "topic",
+      "text": "Page on-call"
+    },
+    "n5": {
+      "children": [
+        "n6"
+      ],
+      "kind": "topic",
+      "text": "Contain"
+    },
+    "n6": {
+      "children": [
+        "n7"
+      ],
+      "kind": "topic",
+      "text": "Recover"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "end",
+      "text": "Post-incident review"
+    },
+    "n8": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "end",
+      "text": "Ticket and monitor"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "IR runbook",
+  "type": "flowchart"
+}

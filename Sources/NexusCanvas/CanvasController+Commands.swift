@@ -45,6 +45,7 @@ extension CanvasController {
             .findPrevious: { $0.stepSearch(-1) },
             .zen: { $0.toggleZen() },
             .present: { c in c.present == nil ? c.startPresent() : c.endPresent() },
+            .presentFromTopic: { c in if c.present == nil { c.presentFromSelection() } },
             .showCanvas: { $0.viewMode = .canvas },
             .showOutline: { $0.viewMode = .outline },
             .showSplit: { $0.viewMode = .split },
@@ -54,6 +55,8 @@ extension CanvasController {
             .aiGhosts: { $0.requestGhosts() },
             .aiPrompt: { $0.openPromptBar() },
             .aiPanel: { $0.toggleAIPanel() },
+            .guide: { $0.toggleGuide() },
+            .setNodeType: { $0.showNodeTypeControl() },
             .export: { $0.openExport() },
             .mapShot: { $0.openMapShot() },
             .copyAsImage: { $0.copyAsImage() },
@@ -373,19 +376,7 @@ extension CanvasController {
         }
     }
 
-    static func diagramType(for s: LayoutStructure) -> DiagramType {
-        switch s.family {
-        case "logic": .logic
-        case "org": .org
-        case "timeline": .timeline
-        case "fishbone": .fishbone
-        case "matrix": .matrix
-        case "brace": .brace
-        case "treeTable": .treeTable
-        case "tree": .tree
-        default: .mindmap
-        }
-    }
+    static func diagramType(for s: LayoutStructure) -> DiagramType { DiagramDescriptor.hierarchyType(for: s) }
 
     // MARK: Select helpers
 

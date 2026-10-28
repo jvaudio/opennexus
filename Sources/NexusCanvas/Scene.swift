@@ -101,6 +101,8 @@ public struct SceneViewState: Equatable {
     public var matches: [NodeID: [NSRange]] = [:]
     /// A flow drawn as the present step.
     public var flowGlow: String?
+    /// Present's spotlight (Dynamic, Showtime; M42): dimmed topics blur too, as Focus does.
+    public var blurDimmed = false
     /// AI ghosts: temporary children laid out with the map but never in the document.
     public var ghosts: [Ghost] = []
     public var ghostHighlight: Int?
@@ -248,6 +250,8 @@ public struct Scene {
     /// The marker legend, when the canvas shows one and the whole canvas is drawn (M14).
     public var legend: SceneLegend?
     public var decor: [SceneDecor] = []
+    /// Each topic's effective node type on a technical canvas (Guide mode reuses them).
+    public var nodeTypes: [NodeID: NodeType] = [:]
     /// DFD rule checks for this canvas.
     public var violations: [DFDRules.Violation] = []
     public var theme: Theme = .classic
@@ -427,6 +431,7 @@ public struct SceneBuilder {
                 if let t = DiagramCatalog.effectiveType(id, in: canvas, parents: parents) { nodeTypes[id] = t }
             }
         }
+        scene.nodeTypes = nodeTypes
         let isDFD = diagramType == .dfd || diagramType == .threatModel
         let dfdNumbers = isDFD ? DFDRules.numbers(canvas) : [:]
         let threatList = diagramType == .threatModel ? Stride.threats(canvas) : []
@@ -1132,7 +1137,12 @@ public struct SceneBuilder {
         let focusing = !focusSet.isEmpty
         for id in scene.nodes.keys {
             var o = 1.0
-            if view.hidden.contains(id) { o = 0.05 } else if view.dimmed.contains(id) { o = view.dimOpacity }
+            if view.hidden.contains(id) {
+                o = 0.05
+            } else if view.dimmed.contains(id) {
+                o = view.dimOpacity
+                if view.blurDimmed { scene.nodes[id]?.blurred = true }
+            }
             if focusing && !focusSet.contains(id) {
                 o = min(o, 0.22)
                 scene.nodes[id]?.blurred = true

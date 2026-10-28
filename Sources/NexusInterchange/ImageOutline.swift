@@ -14,6 +14,13 @@ public struct TextBox: Sendable, Equatable {
     public var confidence: Double
     /// Lines of text in the box (a wrapped topic has several).
     var lineCount = 1
+    /// How wide the text sets in the system font per point of size (its width in ems), when
+    /// it was measured; nil for boxes made by hand and for turned vertical text (D283).
+    var em: Double?
+    /// The widths of the text's lines added up, without the gaps between pieces of a line.
+    var textWidth: Double
+    /// Where the text's ink runs across the box, when the picture's ink is known (D285).
+    var inked: ClosedRange<Double>?
 
     public init(_ text: String, x: Double, y: Double, width: Double, height: Double, confidence: Double = 1) {
         self.text = text
@@ -22,6 +29,7 @@ public struct TextBox: Sendable, Equatable {
         self.width = width
         self.height = height
         self.confidence = confidence
+        textWidth = width
     }
 
     var minX: Double { x }
@@ -30,8 +38,17 @@ public struct TextBox: Sendable, Equatable {
     var maxY: Double { y + height }
     var midX: Double { x + width / 2 }
     var midY: Double { y + height / 2 }
-    /// The height of one line: the font size, give or take ascenders and descenders.
-    var size: Double { height / Double(lineCount) }
+    /// Where the text starts: its ink's left edge when that's known, since Vision sometimes
+    /// starts a box a good way before the text (D285).
+    var indent: Double { inked?.lowerBound ?? minX }
+    /// The height of one line: the font size, give or take ascenders and descenders. Never
+    /// more than the size the text's width implies, when its width in ems is known: Vision
+    /// can draw a box a third taller than the same text elsewhere, but hardly ever wider (D283).
+    var size: Double {
+        let tall = height / Double(lineCount)
+        guard let em, em > 0 else { return tall }
+        return min(tall, textWidth / em)
+    }
 
     /// The smallest box holding both; the text joins in reading order.
     func union(_ o: TextBox, separator: String = " ") -> TextBox {
@@ -43,6 +60,11 @@ public struct TextBox: Sendable, Equatable {
             first.text + separator + second.text, x: x0, y: y0, width: max(maxX, o.maxX) - x0,
             height: max(maxY, o.maxY) - y0, confidence: min(confidence, o.confidence))
         u.lineCount = verticalOverlap(o) >= 0.5 ? max(lineCount, o.lineCount) : lineCount + o.lineCount
+        u.em = em.flatMap { a in o.em.map { a + $0 } }
+        u.textWidth = textWidth + o.textWidth
+        u.inked = inked.flatMap { a in
+            o.inked.map { min(a.lowerBound, $0.lowerBound)...max(a.upperBound, $0.upperBound) }
+        }
         return u
     }
 
@@ -612,9 +634,9 @@ struct Builder {
             }
             items.append(line)
         }
-        // Indent levels: left edges within half a line height are one level.
+        // Indent levels: where the text starts, within half a line height, is one level.
         var indents: [Double] = []
-        for x in items.map(\.box.minX).sorted() where indents.last.map({ x - $0 > 0.5 * body }) ?? true {
+        for x in items.map(\.box.indent).sorted() where indents.last.map({ x - $0 > 0.5 * body }) ?? true {
             indents.append(x)
         }
         func indent(_ x: Double) -> Int { indents.lastIndex { x >= $0 - 0.5 * body } ?? 0 }
@@ -622,7 +644,7 @@ struct Builder {
         for k in items.compactMap(\.marker.kind) where !kinds.contains(k) { kinds.append(k) }
         func key(_ l: Line) -> [Int] {
             [
-                l.box.size >= 1.5 * body ? l.tier : tiers.count, indent(l.box.minX), l.tier,
+                l.box.size >= 1.5 * body ? l.tier : tiers.count, indent(l.box.indent), l.tier,
                 l.marker.kind.flatMap { kinds.firstIndex(of: $0) }.map { $0 + 1 } ?? 0, l.marker.numbers,
             ]
         }

@@ -1,0 +1,27 @@
+{
+  "aliases": [
+    "capability",
+    "business",
+    "map"
+  ],
+  "category": "architecture",
+  "id": "capability",
+  "kicker": "TREE",
+  "name": "Capability map",
+  "order": 8,
+  "outline": [
+    "Retail",
+    "  Sell",
+    "    Catalogue",
+    "    Checkout",
+    "  Fulfil",
+    "    Warehouse",
+    "    Delivery",
+    "  Support",
+    "    Returns"
+  ],
+  "shelf": "architecture",
+  "summary": "Business capabilities by level",
+  "title": "Capability map",
+  "type": "org"
+}

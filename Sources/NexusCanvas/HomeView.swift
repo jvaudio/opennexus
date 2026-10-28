@@ -25,23 +25,32 @@ public struct RecentItem: Identifiable, Sendable, Equatable {
 public final class HomeModel {
     public var recents: [RecentItem] = []
     public var role: Role = .engineer
-    public var shelf: MapTemplate.Category = .engineering
+    public var shelf: Starter.Shelf = .engineering
     public var query = ""
     public var section = "home"
     public var inboxCount = 0
     public var tourMap: URL?
     public var aiStatus: AIAvailability = .ready
-    /// Focus the type picker (⇧⌘N).
-    public var choosingType = false
+    /// ⇧⌘N, File › New Document from Starter…: the Templates section's starter picker.
+    public var choosingStarter = false {
+        didSet { if choosingStarter { section = "templates" } }
+    }
 
     public var onNew: (DiagramType) -> Void = { _ in }
     public var onOpen: (URL) -> Void = { _ in }
     public var onImport: () -> Void = {}
     /// Files dropped on Home: maps open or import; pictures become maps.
     public var onDropFiles: ([URL]) -> Void = { _ in }
-    public var onTemplate: (MapTemplate) -> Void = { _ in }
+    public var onTemplate: (Starter) -> Void = { _ in }
     public var onInbox: () -> Void = {}
     public var onFilter: (URL, String) -> Void = { _, _ in }
+
+    /// Home's Templates section: the starter picker, making documents (M40).
+    @ObservationIgnored public lazy var gallery: StarterGallery = {
+        let g = StarterGallery(purpose: .document, role: role)
+        g.onChoose = { [weak self] s in self?.onTemplate(s) }
+        return g
+    }()
 
     public init() {}
 
@@ -99,7 +108,6 @@ public final class HomeModel {
 
 public struct HomeView: View {
     @Bindable var model: HomeModel
-    @State private var showMore = false
 
     public init(model: HomeModel) { self.model = model }
 
@@ -110,37 +118,9 @@ public struct HomeView: View {
         (.threatModel, Loc.t("Threat Model")), (.sequence, Loc.t("Sequence")), (.whiteboard, Loc.t("Whiteboard")),
     ]
 
-    public static func typeName(_ t: DiagramType) -> String {
-        switch t {
-        case .mindmap: Loc.t("Mind Map")
-        case .flowchart: Loc.t("Flowchart")
-        case .dfd: Loc.t("Data Flow")
-        case .architecture: Loc.t("Architecture")
-        case .threatModel: Loc.t("Threat Model")
-        case .sequence: Loc.t("Sequence")
-        case .whiteboard: Loc.t("Whiteboard")
-        case .timeline: Loc.t("Timeline")
-        case .org: Loc.t("Org Chart")
-        case .logic: Loc.t("Logic Chart")
-        case .fishbone: Loc.t("Fishbone")
-        case .matrix: Loc.t("Matrix")
-        case .treeTable: Loc.t("Tree Table")
-        case .tree: Loc.t("Tree")
-        case .brace: Loc.t("Brace")
-        case .swimlane: Loc.t("Swimlane")
-        default: t.rawValue.capitalized
-        }
-    }
+    public static func typeName(_ t: DiagramType) -> String { Loc.t(DiagramDescriptor[t].name) }
 
-    static func tint(_ t: DiagramType) -> Color {
-        switch t {
-        case .dfd, .flowchart, .swimlane: Color(hex: "#9B51E0")
-        case .timeline, .treeTable: Color(hex: "#E0A300")
-        case .threatModel: Color(hex: "#D93A3F")
-        case .architecture: Color(hex: "#1E8BE0")
-        default: Color(hex: "#0F9F9A")
-        }
-    }
+    static func tint(_ t: DiagramType) -> Color { Color(hex: DiagramDescriptor[t].tint) }
 
     var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
@@ -151,35 +131,10 @@ public struct HomeView: View {
         HStack(spacing: 0) {
             sidebar
             Divider()
-            ScrollView {
-                VStack(alignment: .leading, spacing: 26) {
-                    header
-                    if !model.query.isEmpty {
-                        searchResults
-                    } else if model.section == "recents" {
-                        recents(Array(model.recents))
-                    } else if model.section == "templates" {
-                        ForEach(MapTemplate.Category.allCases, id: \.self) { cat in
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text(cat.title).font(.chrome(16, weight: .semibold))
-                                templateRow(TemplateLibrary.shelf(cat))
-                            }
-                        }
-                    } else {
-                        newRow
-                        if !model.recents.isEmpty { recents(Array(model.recents.prefix(4))) }
-                        shelf
-                    }
-                }
-                .padding(.horizontal, 34)
-                .padding(.vertical, 26)
-            }
-            .accessibilityLabel(
-                model.section == "recents"
-                    ? Loc.t("Recents") : model.section == "templates" ? Loc.t("Templates") : Loc.t("Home")
-            )
-            .overlay(alignment: .bottomTrailing) {
-                if model.tourMap != nil && model.section == "home" { emptyState.padding(24) }
+            if model.section == "templates" {
+                StarterGalleryView(model: model.gallery, embedded: true)
+            } else {
+                main
             }
         }
         .frame(minWidth: 1100, minHeight: 760)
@@ -190,16 +145,33 @@ public struct HomeView: View {
             return !urls.isEmpty
         }
         .background {
-            // ⌘N a blank mind map; ⇧⌘N jumps to the type cards; 1–7 pick a type there.
+            // ⌘N a blank mind map; ⇧⌘N the starter picker.
             Button("") { model.onNew(.mindmap) }.keyboardShortcut("n", modifiers: .command).opacity(0)
-            Button("") {
-                model.section = "home"; model.choosingType = true
-            }.keyboardShortcut("n", modifiers: [.command, .shift]).opacity(0)
-            ForEach(Array(Self.newTypes.enumerated()), id: \.offset) { i, t in
-                Button("") { model.onNew(t.0) }.keyboardShortcut(KeyEquivalent(Character("\(i + 1)")), modifiers: [])
-                    .opacity(0)
-                    .disabled(!model.choosingType)
+            Button("") { model.choosingStarter = true }.keyboardShortcut("n", modifiers: [.command, .shift])
+                .opacity(0)
+        }
+    }
+
+    var main: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 26) {
+                header
+                if !model.query.isEmpty {
+                    searchResults
+                } else if model.section == "recents" {
+                    recents(Array(model.recents))
+                } else {
+                    newRow
+                    if !model.recents.isEmpty { recents(Array(model.recents.prefix(4))) }
+                    shelf
+                }
             }
+            .padding(.horizontal, 34)
+            .padding(.vertical, 26)
+        }
+        .accessibilityLabel(model.section == "recents" ? Loc.t("Recents") : Loc.t("Home"))
+        .overlay(alignment: .bottomTrailing) {
+            if model.tourMap != nil && model.section == "home" { emptyState.padding(24) }
         }
     }
 
@@ -269,6 +241,7 @@ public struct HomeView: View {
         Button {
             model.section = id
             model.query = ""
+            model.choosingStarter = false
         } label: {
             Text(title).font(.chrome(13.5, weight: model.section == id ? .semibold : .regular))
                 .foregroundStyle(model.section == id ? Self.accent : .primary)
@@ -291,11 +264,8 @@ public struct HomeView: View {
 
     var header: some View {
         HStack {
-            Text(
-                model.section == "recents"
-                    ? Loc.t("Recents") : model.section == "templates" ? Loc.t("Templates") : greeting
-            )
-            .font(.chrome(27, weight: .bold))
+            Text(model.section == "recents" ? Loc.t("Recents") : greeting)
+                .font(.chrome(27, weight: .bold))
             Spacer()
             TextField("Search maps and nodes", text: $model.query).textFieldStyle(.roundedBorder).controlSize(.large)
                 .font(.chrome(13))
@@ -313,56 +283,21 @@ public struct HomeView: View {
                 keycap("⌘N")
                 Text("blank mind map ·").foregroundStyle(.secondary)
                 keycap("⇧⌘N")
-                Text("choose type").foregroundStyle(.secondary)
+                Text("choose a starter").foregroundStyle(.secondary)
             }
             .font(.chrome(12.5))
-            if model.choosingType {
-                Text("Press 1–7 to choose a type, or click one.").font(.chrome(13.5)).foregroundStyle(Self.accent)
-            }
             HStack(spacing: 14) {
                 ForEach(Array(Self.newTypes.enumerated()), id: \.offset) { i, item in
                     newCard(item.0, item.1, highlighted: i == 0)
-                        .overlay(alignment: .topTrailing) {
-                            if model.choosingType {
-                                Text("\(i + 1)").font(.chrome(11, weight: .semibold, design: .monospaced))
-                                    .padding(.horizontal, 6).frame(height: 20)
-                                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(.separator)).padding(8)
-                            }
-                        }
                 }
-                // The eighth card lists the other types (a borderless Menu would drop the card label).
+                // The eighth card opens the starter picker: every type and template (M40).
                 Button {
-                    showMore = true
+                    model.choosingStarter = true
                 } label: {
                     cardBody(.treeTable, "More…", highlighted: false)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("More diagram types")
-                .popover(isPresented: $showMore, arrowEdge: .bottom) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        ForEach(
-                            [
-                                DiagramType.timeline, .org, .logic, .fishbone, .matrix, .treeTable, .tree, .brace,
-                                .swimlane,
-                            ],
-                            id: \.self
-                        ) { t in
-                            Button {
-                                showMore = false
-                                model.onNew(t)
-                            } label: {
-                                HStack(spacing: 10) {
-                                    TypeGlyph(type: t, color: .primary).frame(width: 28, height: 18)
-                                    Text(Self.typeName(t)).font(.chrome(13))
-                                    Spacer()
-                                }
-                                .padding(.horizontal, 10).frame(height: 28).contentShape(Rectangle())
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                    .padding(6).frame(width: 220)
-                }
+                .accessibilityLabel("More diagram types and templates")
             }
         }
     }
@@ -438,7 +373,7 @@ public struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Text(model.role.shelfTitle).font(.chrome(16, weight: .semibold)).padding(.trailing, 8)
-                ForEach(MapTemplate.Category.allCases, id: \.self) { cat in
+                ForEach(Starter.Shelf.allCases, id: \.self) { cat in
                     Button(cat.title) { model.shelf = cat }
                         .buttonStyle(.plain)
                         .font(.chrome(13, weight: model.shelf == cat ? .semibold : .regular))
@@ -447,22 +382,24 @@ public struct HomeView: View {
                         .background(Capsule().fill(model.shelf == cat ? Color.black : Color.secondary.opacity(0.1)))
                 }
             }
-            templateRow(TemplateLibrary.shelf(model.shelf))
+            templateRow(StarterLibrary.shelf(model.shelf))
+            Button("All templates and blank diagrams…") { model.choosingStarter = true }
+                .buttonStyle(.link).font(.chrome(13))
         }
     }
 
-    func templateRow(_ ts: [MapTemplate]) -> some View {
+    func templateRow(_ ts: [Starter]) -> some View {
         HStack(alignment: .top, spacing: 16) {
             ForEach(ts) { t in
                 Button {
                     model.onTemplate(t)
                 } label: {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(t.kicker).font(.chrome(10.5, weight: .semibold, design: .monospaced))
+                        Text(Loc.t(t.kicker)).font(.chrome(10.5, weight: .semibold, design: .monospaced))
                             .foregroundStyle(
                                 Self.tint(t.type))
-                        Text(t.title).font(.chrome(14, weight: .semibold))
-                        Text(t.detail).font(.chrome(12.5)).foregroundStyle(.secondary).lineLimit(2)
+                        Text(Loc.t(t.name)).font(.chrome(14, weight: .semibold))
+                        Text(Loc.t(t.summary)).font(.chrome(12.5)).foregroundStyle(.secondary).lineLimit(2)
                     }
                     .frame(maxWidth: .infinity, minHeight: 90, maxHeight: .infinity, alignment: .topLeading)
                     .padding(16)
@@ -564,7 +501,40 @@ struct TypeGlyph: View {
                 p.addLine(to: CGPoint(x: b.0 * w, y: b.1 * h))
             }
             switch type {
-            case .flowchart, .swimlane:
+            case .logic:
+                box(0.0, 0.4, 0.22, 0.2)
+                for y in [0.08, 0.4, 0.72] {
+                    line((0.22, 0.5), (0.36, 0.5)); line((0.36, 0.5), (0.36, y + 0.1));
+                    line((0.36, y + 0.1), (0.5, y + 0.1))
+                    box(0.5, y, 0.24, 0.2)
+                }
+            case .brace:
+                box(0.0, 0.4, 0.22, 0.2)
+                p.move(to: CGPoint(x: w * 0.42, y: h * 0.06))
+                p.addQuadCurve(to: CGPoint(x: w * 0.34, y: h * 0.5), control: CGPoint(x: w * 0.32, y: h * 0.1))
+                p.addQuadCurve(to: CGPoint(x: w * 0.42, y: h * 0.94), control: CGPoint(x: w * 0.32, y: h * 0.9))
+                for y in [0.04, 0.4, 0.76] { box(0.5, y, 0.3, 0.2) }
+            case .org:
+                box(0.36, 0.0, 0.28, 0.24)
+                line((0.5, 0.24), (0.5, 0.42)); line((0.14, 0.42), (0.86, 0.42))
+                for x in [0.02, 0.38, 0.74] { line((x + 0.12, 0.42), (x + 0.12, 0.6)); box(x, 0.6, 0.24, 0.24) }
+            case .tree:
+                box(0.0, 0.0, 0.3, 0.2)
+                line((0.1, 0.2), (0.1, 0.9))
+                for y in [0.26, 0.52, 0.78] { line((0.1, y + 0.1), (0.24, y + 0.1)); box(0.24, y, 0.36, 0.2) }
+            case .fishbone:
+                line((0.0, 0.5), (0.78, 0.5)); box(0.78, 0.38, 0.22, 0.24)
+                for x in [0.12, 0.42] {
+                    line((x, 0.08), (x + 0.16, 0.5)); line((x, 0.92), (x + 0.16, 0.5))
+                }
+            case .matrix:
+                box(0.06, 0.04, 0.88, 0.92)
+                line((0.5, 0.04), (0.5, 0.96)); line((0.06, 0.5), (0.94, 0.5))
+            case .swimlane:
+                for y in [0.0, 0.5] { box(0.0, y, 1.0, 0.48) }
+                box(0.14, 0.12, 0.22, 0.24); line((0.36, 0.24), (0.5, 0.24)); line((0.5, 0.24), (0.5, 0.62))
+                box(0.5, 0.62, 0.22, 0.24)
+            case .flowchart:
                 p.addRoundedRect(
                     in: CGRect(x: w * 0.36, y: 0, width: w * 0.28, height: h * 0.2),
                     cornerSize: CGSize(width: h * 0.1, height: h * 0.1))
@@ -603,7 +573,12 @@ struct TypeGlyph: View {
                 p.addCurve(
                     to: CGPoint(x: w * 0.96, y: h * 0.7), control1: CGPoint(x: w * 0.78, y: h * 0.5),
                     control2: CGPoint(x: w * 0.88, y: h * 0.9))
-            case .timeline, .treeTable:
+            case .treeTable:
+                box(0.0, 0.0, 1.0, 0.96)
+                line((0.0, 0.24), (1.0, 0.24)); line((0.0, 0.48), (1.0, 0.48)); line((0.0, 0.72), (1.0, 0.72))
+                line((0.34, 0.0), (0.34, 0.96))
+                line((0.08, 0.36), (0.2, 0.36)); line((0.14, 0.6), (0.26, 0.6)); line((0.14, 0.84), (0.26, 0.84))
+            case .timeline:
                 line((0.0, 0.25), (1.0, 0.25))
                 for x in [0.12, 0.42, 0.72] { box(x, 0.12, 0.18, 0.26) }
                 line((0.21, 0.38), (0.21, 0.92)); line((0.21, 0.92), (0.32, 0.92))

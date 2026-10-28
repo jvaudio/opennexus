@@ -78,6 +78,60 @@ public struct InkMap: Sendable, Equatable {
 
     /// Fraction of cells that are ink.
     var coverage: Double { Double(cells.lazy.filter { $0 }.count) / Double(max(1, cells.count)) }
+
+    /// `box` (in image pixels) narrowed to the columns where its middle rows have ink: where
+    /// its text is, when Vision drew the box wider than the text (D285). The box as it is
+    /// when that would take away half its width or more, or there's no ink. The middle
+    /// rows leave out a border or an underline.
+    func inked(_ box: CGRect) -> CGRect {
+        func cell(_ v: Double) -> Int { Int((v / scale).rounded(.down)) }
+        let top = cell(box.minY + 0.2 * box.height)
+        let rows = top...max(top, cell(box.maxY - 0.2 * box.height))
+        let left = cell(box.minX)
+        let inked = (left...max(left, cell(box.maxX))).filter { x in rows.contains { self[x, $0] } }
+        guard let first = inked.first, let last = inked.last else { return box }
+        let minX = max(box.minX, Double(first) * scale)
+        let maxX = min(box.maxX, Double(last + 1) * scale)
+        guard maxX - minX > 0.5 * box.width else { return box }
+        return CGRect(x: minX, y: box.minY, width: maxX - minX, height: box.height)
+    }
+
+    /// Whether the ink in `mark` runs out of `box` (both in image pixels): a walk over ink
+    /// from inside `mark` gets at least 3 px and two cells past the box's edge. A character
+    /// keeps inside the box Vision drew around its line; a connector read as one carries
+    /// on past it (D284).
+    func runsOut(of box: CGRect, from mark: CGRect) -> Bool {
+        func cell(_ v: Double) -> Int { Int((v / scale).rounded(.down)) }
+        let out = max(2, Int((3 / scale).rounded(.up)))
+        let (bx0, by0, bx1, by1) = (cell(box.minX), cell(box.minY), cell(box.maxX), cell(box.maxY))
+        let (wx0, wy0) = (max(0, bx0 - out), max(0, by0 - out))
+        let (wx1, wy1) = (min(width - 1, bx1 + out), min(height - 1, by1 + out))
+        let seeds = mark.intersection(box)
+        guard !seeds.isNull else { return false }
+        let (sx0, sy0) = (max(wx0, cell(seeds.minX)), max(wy0, cell(seeds.minY)))
+        let (sx1, sy1) = (min(wx1, cell(seeds.maxX)), min(wy1, cell(seeds.maxY)))
+        guard sx0 <= sx1, sy0 <= sy1 else { return false }
+        var queue: [(Int, Int)] = []
+        var seen = Set<Int>()
+        for y in sy0...sy1 {
+            for x in sx0...sx1 where self[x, y] && seen.insert(y * width + x).inserted { queue.append((x, y)) }
+        }
+        var head = 0
+        while head < queue.count {
+            let (x, y) = queue[head]
+            head += 1
+            if x <= bx0 - out || x >= bx1 + out || y <= by0 - out || y >= by1 + out { return true }
+            for (dx, dy) in [(1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)] {
+                let nx = x + dx
+                let ny = y + dy
+                guard nx >= wx0, nx <= wx1, ny >= wy0, ny <= wy1, self[nx, ny],
+                    seen.insert(ny * width + nx).inserted
+                else { continue }
+                queue.append((nx, ny))
+            }
+        }
+        return false
+    }
 }
 
 /// Follows connector lines over a page's ink (D193).

@@ -1,0 +1,25 @@
+{
+  "aliases": [
+    "api",
+    "request",
+    "flow"
+  ],
+  "category": "software",
+  "id": "apiFlow",
+  "kicker": "FLOW",
+  "name": "API request flow",
+  "order": 2,
+  "outline": [
+    "Client request >start",
+    "  Gateway authenticates",
+    "    Token valid? >decision",
+    "      Route to service",
+    "        Service responds",
+    "          Return 200 >end",
+    "      Return 401 >end"
+  ],
+  "shelf": "engineering",
+  "summary": "Client → gateway → services",
+  "title": "API request flow",
+  "type": "flowchart"
+}

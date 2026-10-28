@@ -166,7 +166,7 @@ public final class TourController {
         case .rootNamed?:
             let name = c.canvas.nodes[c.canvas.root]?.text ?? ""
             // An empty commit brings back the central topic's default text: not a name.
-            let placeholder = CanvasController.defaultRootText(c.canvas.type)
+            let placeholder = DiagramDescriptor[c.canvas.type].rootText
             if c.mode == .select, !name.isEmpty, name != initialRootText, name != placeholder { advance() }
         case .edgeDrawn?:
             if c.canvas.relationships.count > edgesAtStart { advance() }

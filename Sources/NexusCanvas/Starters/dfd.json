@@ -1,0 +1,23 @@
+{
+  "aliases": [
+    "dfd",
+    "data flow",
+    "login"
+  ],
+  "category": "security",
+  "id": "dfd",
+  "kicker": "DATA FLOW",
+  "name": "Data flow diagram",
+  "order": 12,
+  "outline": [
+    "Login",
+    "  User >entity",
+    "    Authenticate >process",
+    "      Credentials >store",
+    "      Session store >store"
+  ],
+  "shelf": "security",
+  "summary": "Entities, processes and stores",
+  "title": "Login data flow",
+  "type": "dfd"
+}

@@ -74,6 +74,14 @@ public enum Motion {
     public static let connectHintStagger = 0.040
     public static let focus = 0.400
     public static let presentStep = 0.500
+    /// Present's fly-to between slides (M42): van Wijk and Nuij's smooth zoom-and-pan.
+    public static let fly = 0.700
+    /// Present builds (M42): each topic on a slide pops in this long after the one before;
+    /// Showtime's quicker stagger.
+    public static let buildStagger = 0.060
+    public static let showtimeStagger = 0.035
+    /// Showtime enlarges the slide's focus topic.
+    public static let showtimeFocusScale = 1.15
     public static let aiGhostEach = 0.250
     public static let nodeStyleCycle = 0.300
     public static let errorShake = 0.200

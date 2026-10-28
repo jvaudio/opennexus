@@ -69,6 +69,10 @@ extension DocumentWindowController {
     }
 
     func wireFileHooks() {
+        // Set Node Type… (M41) opens the Format panel; it never closes it.
+        controller.onShowFormatPanel = { [weak self] in
+            if self?.panel.isHidden == true { self?.toggleFormatPanel() }
+        }
         controller.onSaveFile = { [weak self] data, name in self?.save(data, suggested: name) }
         controller.onSaveFolder = { [weak self] files in self?.saveFolder(files) }
         controller.onSaveMapShot = { [weak self] data, name in self?.saveMapShot(data, name: name) }

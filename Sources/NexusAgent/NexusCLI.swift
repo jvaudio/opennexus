@@ -55,8 +55,10 @@ public enum NexusCLI {
                  [--zones each|pages]         Every zone, a file each in the --out folder (default
                                               "<map> – Zones"), or one PDF with a page per zone.
                                               Formats: \(CLIFormat.names())
-          new "<title>" [--type <type>]       Create a map (mindmap, flowchart, dfd, architecture, …).
+          new "<title>" [--type <type>]       Create a map (mindmap, flowchart, dfd, architecture, …),
+                 [--starter <id>]             or one from a starter: its topics, titled "<title>".
                  [--out <path>]
+          starters                            List the starters: id, diagram type and name.
           import <file> [--out <path>]        Convert Xmind, OPML, Markdown, Mermaid, … to .nexus.
           mcp [--config <agent.json>]         Run the MCP server on stdio (enable it in OpenNexus ›
                                               Settings › Integrations).
@@ -82,6 +84,7 @@ public enum NexusCLI {
             case "read": return try read(&rest, io: io, env: env)
             case "export": return try export(&rest, io: io, env: env)
             case "new": return try new(&rest, io: io, env: env)
+            case "starters": return starters(io: io)
             case "import": return try importFile(&rest, io: io, env: env)
             case "mcp": return try mcp(&rest, io: io, env: env)
             default:
@@ -288,15 +291,30 @@ public enum NexusCLI {
     // MARK: new and import
 
     static func new(_ args: inout [String], io: IO, env: Environment) throws -> Int32 {
-        let type = DiagramType(rawValue: try option("--type", &args) ?? "mindmap")
-        guard MapTools.types.contains(type) else {
-            throw UsageError(message: "unknown type; use \(MapTools.types.map(\.rawValue).joined(separator: ", "))")
+        let typeName = try option("--type", &args)
+        let starterID = try option("--starter", &args)
+        guard typeName == nil || starterID == nil else {
+            throw UsageError(message: "use --type or --starter, not both")
+        }
+        let starter: Starter
+        if let starterID {
+            guard let s = StarterLibrary.starter(starterID) else {
+                throw UsageError(message: "unknown starter “\(starterID)”; nexus starters lists them")
+            }
+            starter = s
+        } else {
+            let type = DiagramType(rawValue: typeName ?? "mindmap")
+            guard MapTools.types.contains(type), let s = StarterLibrary.starter("blank.\(type.rawValue)") else {
+                throw UsageError(message: "unknown type; use \(MapTools.types.map(\.rawValue).joined(separator: ", "))")
+            }
+            starter = s
         }
         let out = try option("--out", &args)
         let title = try positional(args, "title")
-        var doc = CanvasController.newDocumentModel(prefs: .isolated(), type: type)
+        var doc = starter.document(prefs: .isolated())
         if let id = doc.canvasOrder.first, let root = doc.canvases[id]?.root {
-            doc.canvases[id]?.nodes[root]?.text = title
+            // A template keeps its own topics; a blank map's central topic is the title.
+            if starter.isBlank { doc.canvases[id]?.nodes[root]?.text = title }
             doc.canvases[id]?.title = title
         }
         let safe = title.replacingOccurrences(of: "/", with: "-").replacingOccurrences(of: ":", with: "-")
@@ -307,6 +325,19 @@ public enum NexusCLI {
         }
         try MapFiles.write(doc, to: target)
         io.print(target.path)
+        return 0
+    }
+
+    /// One starter per line: id, diagram type and name, in columns. Blank starters first.
+    static func starters(io: IO) -> Int32 {
+        let all = StarterLibrary.all
+        let idWidth = (all.map(\.id.count).max() ?? 0) + 2
+        let typeWidth = (all.map(\.type.rawValue.count).max() ?? 0) + 2
+        for s in all {
+            io.print(
+                s.id.padding(toLength: idWidth, withPad: " ", startingAt: 0)
+                    + s.type.rawValue.padding(toLength: typeWidth, withPad: " ", startingAt: 0) + s.name)
+        }
         return 0
     }
 

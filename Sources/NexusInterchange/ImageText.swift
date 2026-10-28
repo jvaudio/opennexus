@@ -1,4 +1,5 @@
 import CoreGraphics
+import CoreText
 import Foundation
 import ImageIO
 import UniformTypeIdentifiers
@@ -42,15 +43,24 @@ public enum ImageText {
     static func recognize(_ image: CGImage, name: String) throws -> RecognisedImage {
         let w = Double(image.width)
         let h = Double(image.height)
-        var boxes = try read(image, name: name, width: w, height: h)
+        let ink = InkMap(image)
+        // A photo's ink isn't lines (as for tracing in `Builder`): its marks all stay.
+        let lines = ink.flatMap { $0.coverage < 0.3 ? $0 : nil }
+        var boxes = try read(image, name: name, width: w, height: h, ink: lines)
         if !boxes.isEmpty, Builder.median(boxes.map(\.height)) <= smallText, let big = doubled(image) {
-            boxes = try read(big, name: name, width: w, height: h)
+            boxes = try read(big, name: name, width: w, height: h, ink: lines)
         }
-        return RecognisedImage(width: w, height: h, boxes: boxes, ink: InkMap(image))
+        return RecognisedImage(width: w, height: h, boxes: boxes, ink: ink)
     }
 
-    /// Vision's lines, in the pixels of a `width` × `height` picture.
-    static func read(_ image: CGImage, name: String, width w: Double, height h: Double) throws -> [TextBox] {
+    /// Vision's lines, in the pixels of a `width` × `height` picture, each with its width
+    /// in ems (D283). With the picture's `ink`, a lone mark at either end of a line whose
+    /// ink runs out of the line's box is a connector read as a character: it's dropped, and
+    /// the line takes Vision's box for the rest (D284). Each line also notes where its
+    /// text's ink runs across it (D285).
+    static func read(
+        _ image: CGImage, name: String, width w: Double, height h: Double, ink: InkMap? = nil
+    ) throws -> [TextBox] {
         let request = VNRecognizeTextRequest()
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = true
@@ -61,14 +71,66 @@ public enum ImageText {
         } catch {
             throw ImportError.invalid(name, "text recognition failed (\(error.localizedDescription))")
         }
+        // Vision's boxes are normalised with the origin at the bottom left.
+        func pixels(_ r: CGRect) -> CGRect {
+            CGRect(x: r.minX * w, y: (1 - r.maxY) * h, width: r.width * w, height: r.height * h)
+        }
+        let font = CTFontCreateUIFontForLanguage(.system, 12, nil)
         return (request.results ?? []).compactMap { obs in
             guard let best = obs.topCandidates(1).first else { return nil }
-            // Vision's boxes are normalised with the origin at the bottom left.
-            let r = obs.boundingBox
-            return TextBox(
-                best.string, x: r.minX * w, y: (1 - r.maxY) * h, width: r.width * w, height: r.height * h,
+            let line = pixels(obs.boundingBox)
+            var text = best.string[...]
+            func connector(_ mark: Range<String.Index>) -> Bool {
+                guard let ink, let m = try? best.boundingBox(for: mark) else { return false }
+                return ink.runsOut(of: line, from: pixels(m.boundingBox))
+            }
+            for last in [true, false] {
+                if let (mark, rest) = endMark(text, last: last), connector(mark) { text = best.string[rest] }
+            }
+            var r = line
+            if text.count < best.string.count, let kept = try? best.boundingBox(for: text.startIndex..<text.endIndex) {
+                r = pixels(kept.boundingBox)
+            }
+            var b = TextBox(
+                String(text), x: r.minX, y: r.minY, width: r.width, height: r.height,
                 confidence: Double(best.confidence))
+            b.em = font.flatMap { ems(text, in: $0) }
+            b.inked = ink.map { $0.inked(r) }.map { $0.minX...$0.maxX }
+            return b
         }
+    }
+
+    /// What a connector's line, fork or curve can be read as.
+    static let strokeMarks: Set<Character> = [
+        "-", "–", "—", "_", "~", "=", "|", "/", "\\", "<", ">", "‹", "›", "(", ")", "[", "]", "{", "}",
+        // A connector's end dot.
+        "•", "·", "∙", "●",
+    ]
+
+    /// A lone stroke-like mark set off by a space at the end of `text` (or, with `last`
+    /// false, its start): the mark's range and the rest's. Nil when there's none, or
+    /// nothing else.
+    static func endMark(_ text: Substring, last: Bool) -> (mark: Range<String.Index>, rest: Range<String.Index>)? {
+        let words = text.split(whereSeparator: \.isWhitespace)
+        guard words.count >= 2 else { return nil }
+        let mark = last ? words[words.count - 1] : words[0]
+        guard mark.count == 1, let c = mark.first, strokeMarks.contains(c) else { return nil }
+        let rest =
+            last
+            ? words[0].startIndex..<words[words.count - 2].endIndex
+            : words[1].startIndex..<words[words.count - 1].endIndex
+        return (mark.startIndex..<mark.endIndex, rest)
+    }
+
+    /// How wide `text` sets in `font`, per point of its size.
+    static func ems(_ text: Substring, in font: CTFont) -> Double? {
+        guard
+            let s = CFAttributedStringCreate(
+                nil, String(text) as CFString, [kCTFontAttributeName as String: font] as CFDictionary)
+        else { return nil }
+        let line = CTLineCreateWithAttributedString(s)
+        let width = CTLineGetTypographicBounds(line, nil, nil, nil) - CTLineGetTrailingWhitespaceWidth(line)
+        return width > 0 ? width / CTFontGetSize(font) : nil
     }
 
     /// The picture at twice its size, smoothly scaled, on white.

@@ -405,6 +405,19 @@ final class ElementRenderer {
     let overlayLayer = CALayer()
 
     private var relLayers: [String: RelationshipLayer] = [:]
+
+    /// Present's flow slides draw their relationship on (M42), as a new one does.
+    func drawOn(relationship id: String, at begin: CFTimeInterval) {
+        guard let l = relLayers[id]?.line else { return }
+        let draw = CABasicAnimation(keyPath: "strokeEnd")
+        draw.fromValue = 0
+        draw.toValue = 1
+        draw.beginTime = begin
+        draw.fillMode = .backwards
+        draw.duration = Motion.connectDraw
+        draw.timingFunction = CAMediaTimingFunction(controlPoints: 0.65, 0, 0.35, 1)
+        l.add(draw, forKey: "present.draw")
+    }
     private var flaggedFlows = Set<String>()
     private var boundaryLayers: [String: CALayer] = [:]
     private var summaryLayers: [String: CAShapeLayer] = [:]

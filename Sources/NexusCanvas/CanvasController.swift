@@ -46,9 +46,13 @@ public final class CanvasController {
     public let store: DocumentStore
     public private(set) var canvasID: CanvasID
     public internal(set) var mode: CanvasMode = .select
-    public internal(set) var selection: Selection
+    public internal(set) var selection: Selection {
+        didSet { scheduleGuideUpdate() }
+    }
     /// A selected non-topic element (relationship, boundary, summary, callout, zone).
-    public internal(set) var selectedElement: ElementRef?
+    public internal(set) var selectedElement: ElementRef? {
+        didSet { scheduleGuideUpdate() }
+    }
     /// The zones selected together with the selected zone (⇧- or ⌘-click, Select All
     /// Zones; D228). Only meaningful while it holds the selected element: see
     /// `selectedZones`.
@@ -75,7 +79,26 @@ public final class CanvasController {
     public internal(set) var ghosts: GhostState?
     /// The prompt bar (⇧⌘Space), anchored to a topic.
     public internal(set) var promptBar: PromptBarState?
-    public var aiPanelVisible = false
+    /// The AI panel and the guide share the trailing slot: opening one closes the other.
+    public var aiPanelVisible = false {
+        didSet { if aiPanelVisible { guideVisible = false } }
+    }
+    /// Guide mode's panel (⌃⌘G, M41). Window state: never stored.
+    public var guideVisible = false {
+        didSet {
+            guard guideVisible != oldValue else { return }
+            if guideVisible { aiPanelVisible = false }
+            updateGuide()
+        }
+    }
+    /// The guide's progress, recomputed the run-loop turn after an edit or a selection change.
+    public internal(set) var guideProgress: GuideProgress?
+    @ObservationIgnored var guideUpdatePending = false
+    /// The last evaluation and what it was of (revision, canvas, guide, skips): selection
+    /// changes reuse it.
+    @ObservationIgnored var guideCache: (key: String, progress: GuideProgress)?
+    /// Shows the Format panel (the window owns it); Set Node Type… uses it.
+    @ObservationIgnored public var onShowFormatPanel: (() -> Void)?
     public internal(set) var activeChat: String?
     public internal(set) var aiBusy: String?
     /// An answer streaming into the panel.
@@ -367,7 +390,10 @@ public final class CanvasController {
     }
 
     private func storeDidApply(_ patch: Patch) {
-        defer { tour?.didChange() }
+        defer {
+            tour?.didChange()
+            scheduleGuideUpdate()
+        }
         // Canvas added or removed (merge, import, delete, or their undo): stay on a canvas
         // that exists, preferring the one the change is about.
         if patch.changesCanvasSet {

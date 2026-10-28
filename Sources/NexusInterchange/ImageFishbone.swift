@@ -288,8 +288,9 @@ extension Builder {
         let causes = bones.causes.values.reduce(0) { $0 + $1.count }
         guard bones.labels.count >= 2, bones.labels.contains(where: up), bones.labels.contains(where: { !up($0) }),
             causes >= 2, bones.causes.count * 2 >= bones.labels.count,
-            // Causes sit the same distance behind their bones.
-            bones.spread.squareRoot() <= 1.5 * tol
+            // Causes sit the same distance behind their bones, give or take most of a line:
+            // a bone leaves its label's box, not its text, so Vision's boxes skew the gaps (D290).
+            bones.spread.squareRoot() <= 1.75 * tol
         else { return nil }
         // The bones lean: a bone's causes shift toward the head as they near the spine, where
         // a map's children stay in one column.

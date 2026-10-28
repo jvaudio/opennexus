@@ -1,0 +1,44 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "treeTable.rows"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n3",
+        "n4"
+      ],
+      "kind": "root",
+      "text": "Revision"
+    },
+    "n2": {
+      "children": [],
+      "kind": "topic",
+      "text": "Algebra"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Geometry"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "Statistics"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Revision",
+  "type": "treeTable"
+}

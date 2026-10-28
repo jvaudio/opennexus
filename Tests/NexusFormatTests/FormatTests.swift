@@ -305,6 +305,29 @@ func reviewDocument() -> DocumentModel {
                 .isEmpty)
     }
 
+    /// What Swift writes for Present and saved filters is in the published schema (M39 A6),
+    /// and typed: a wrong value is an issue, not an unknown key passed through.
+    @Test func schemaDeclaresPresentationFiltersAndHiddenTopics() throws {
+        var c = Canvas(id: "c1", title: "Deck", rootText: "Plan")
+        c.presentation.order = ["title", "branch:n2"]
+        c.presentation.skipped = ["branch:n3"]
+        c.presentation.transition = "zoom"
+        c.presentation.legend = false
+        c.filters = [NodeFilter(name: "Risky", clauses: [try #require(NodeFilter.parse("risk: high"))], hide: true)]
+        c.nodes[c.root]?.presentHidden = true
+        let files = NexusPackage.files(for: DocumentModel(canvases: [c]))
+        let canvas = try CanonicalJSON.parse(try #require(files["canvases/c1.json"]))
+        #expect(canvas["presentation"] != nil && canvas["filters"] != nil, "the canvas writes both")
+        #expect(SchemaValidator.bundled.validate(package: files).isEmpty)
+        let v = SchemaValidator.bundled
+        #expect(!v.validate(["legend": "yes"], definition: "presentation").isEmpty)
+        #expect(!v.validate(["clauses": "risk: high"], definition: "filter").isEmpty)
+        #expect(!v.validate(["text": "x", "children": [], "presentHidden": 1], definition: "node").isEmpty)
+        // M41: a canvas's skipped guide steps.
+        #expect(v.validate(["id": "dfd", "skipped": ["stores"]], definition: "guide").isEmpty)
+        #expect(!v.validate(["id": "dfd", "skipped": "stores"], definition: "guide").isEmpty)
+    }
+
     @Test func publishedSchemaMatchesBundledCopy() throws {
         let published = URL(fileURLWithPath: #filePath)
             .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()

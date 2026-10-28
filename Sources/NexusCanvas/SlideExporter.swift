@@ -51,6 +51,36 @@ public enum SlideExporter {
         return out
     }
 
+    /// One slide as it plays (the presenter view's current and next, M42), drawn offscreen
+    /// like an exported one. Nil past the deck's end.
+    public static func renderSlide(
+        _ model: DocumentModel, canvas id: CanvasID, index: Int, size: CGSize, prefs: Preferences? = nil
+    ) -> CGImage? {
+        let store = DocumentStore(model: model)
+        let controller = CanvasController(store: store)
+        if let prefs { controller.prefs = prefs }
+        controller.rendersThemeAsNamed = true
+        controller.switchCanvas(to: id)
+        let slides = controller.slides
+        guard slides.indices.contains(index) else { return nil }
+        let view = CanvasView(controller: controller)
+        view.reduceMotionOverride = true
+        view.slideExportSize = size
+        let window = NSWindow(
+            contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
+        window.contentView = view
+        view.frame = CGRect(origin: .zero, size: size)
+        window.layoutIfNeeded()
+        controller.startPresent(at: index)
+        controller.present?.stageOnly = true
+        controller.showSlide()
+        view.layoutSubtreeIfNeeded()
+        let img = render(view, controller, size: size, slide: slides[index])
+        controller.endPresent()
+        window.contentView = nil
+        return img
+    }
+
     static func render(_ view: CanvasView, _ controller: CanvasController, size: CGSize, slide: Slide) -> CGImage? {
         let theme = controller.scene.theme
         let canvas = controller.scene.canvasColor
@@ -127,8 +157,9 @@ public enum SlideExporter {
         NSBitmapImageRep(cgImage: img).representation(using: .png, properties: [:]) ?? Data()
     }
 
-    /// A minimal Office Open XML deck: one full-bleed picture per slide, notes as alt text.
-    public static func pptx(_ images: [CGImage], titles: [String]) -> Data {
+    /// A minimal Office Open XML deck: one full-bleed picture per slide, its title as alt
+    /// text, and each topic's note as the slide's speaker notes (M42).
+    public static func pptx(_ images: [CGImage], titles: [String], notes: [String?] = []) -> Data {
         let cx = 12_192_000
         let cy = 6_858_000
         var z = ZipWriter()
@@ -147,6 +178,22 @@ public enum SlideExporter {
             types +=
                 #"<Override PartName="/ppt/slides/slide\#(i).xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.slide+xml"/>"#
         }
+        // Speaker notes: a notes master (with its own theme) and a notes slide per slide that
+        // has a note. Decks without notes stay as they were.
+        func note(_ i: Int) -> String? {
+            guard i < notes.count, let t = notes[i]?.trimmingCharacters(in: .whitespacesAndNewlines), !t.isEmpty
+            else { return nil }
+            return t
+        }
+        let noted = (0..<n).filter { note($0) != nil }
+        if !noted.isEmpty {
+            types +=
+                #"<Override PartName="/ppt/notesMasters/notesMaster1.xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.notesMaster+xml"/><Override PartName="/ppt/theme/theme2.xml" ContentType="application/vnd.openxmlformats-officedocument.theme+xml"/>"#
+            for i in noted {
+                types +=
+                    #"<Override PartName="/ppt/notesSlides/notesSlide\#(i + 1).xml" ContentType="application/vnd.openxmlformats-officedocument.presentationml.notesSlide+xml"/>"#
+            }
+        }
         types += "</Types>"
         z.add("[Content_Types].xml", types)
         z.add(
@@ -162,10 +209,16 @@ public enum SlideExporter {
             presRels +=
                 #"<Relationship Id="rId\#(i + 10)" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="slides/slide\#(i + 1).xml"/>"#
         }
+        var notesMasterList = ""
+        if !noted.isEmpty {
+            presRels +=
+                #"<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesMaster" Target="notesMasters/notesMaster1.xml"/>"#
+            notesMasterList = #"<p:notesMasterIdLst><p:notesMasterId r:id="rId3"/></p:notesMasterIdLst>"#
+        }
         z.add(
             "ppt/presentation.xml",
             xml
-                + #"<p:presentation \#(ns)><p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst><p:sldIdLst>\#(sldIds)</p:sldIdLst><p:sldSz cx="\#(cx)" cy="\#(cy)"/><p:notesSz cx="6858000" cy="9144000"/></p:presentation>"#
+                + #"<p:presentation \#(ns)><p:sldMasterIdLst><p:sldMasterId id="2147483648" r:id="rId1"/></p:sldMasterIdLst>\#(notesMasterList)<p:sldIdLst>\#(sldIds)</p:sldIdLst><p:sldSz cx="\#(cx)" cy="\#(cy)"/><p:notesSz cx="6858000" cy="9144000"/></p:presentation>"#
         )
         z.add(
             "ppt/_rels/presentation.xml.rels",
@@ -193,9 +246,45 @@ public enum SlideExporter {
                 + #"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideMaster" Target="../slideMasters/slideMaster1.xml"/></Relationships>"#
         )
         z.add("ppt/theme/theme1.xml", xml + themeXML)
+        if !noted.isEmpty {
+            let clrMap =
+                #"<p:clrMap bg1="lt1" tx1="dk1" bg2="lt2" tx2="dk2" accent1="accent1" accent2="accent2" accent3="accent3" accent4="accent4" accent5="accent5" accent6="accent6" hlink="hlink" folHlink="folHlink"/>"#
+            z.add(
+                "ppt/notesMasters/notesMaster1.xml",
+                xml
+                    + #"<p:notesMaster \#(ns)><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/><p:sp><p:nvSpPr><p:cNvPr id="2" name="Notes Placeholder"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="body" idx="1"/></p:nvPr></p:nvSpPr><p:spPr><a:xfrm><a:off x="685800" y="4343400"/><a:ext cx="5486400" cy="4114800"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></p:spPr><p:txBody><a:bodyPr/><a:lstStyle/><a:p><a:endParaRPr lang="en-US"/></a:p></p:txBody></p:sp></p:spTree></p:cSld>\#(clrMap)</p:notesMaster>"#
+            )
+            z.add(
+                "ppt/notesMasters/_rels/notesMaster1.xml.rels",
+                xml
+                    + #"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme" Target="../theme/theme2.xml"/></Relationships>"#
+            )
+            z.add("ppt/theme/theme2.xml", xml + themeXML)
+        }
         for (i, img) in images.enumerated() {
             let k = i + 1
             z.add("ppt/media/image\(k).png", png(img))
+            let notesRel =
+                note(i) == nil
+                ? ""
+                : #"<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide" Target="../notesSlides/notesSlide\#(k).xml"/>"#
+            if let text = note(i) {
+                let paras = text.components(separatedBy: .newlines).map {
+                    $0.isEmpty
+                        ? #"<a:p><a:endParaRPr lang="en-US"/></a:p>"#
+                        : #"<a:p><a:r><a:rPr lang="en-US"/><a:t>\#(esc($0))</a:t></a:r></a:p>"#
+                }
+                z.add(
+                    "ppt/notesSlides/notesSlide\(k).xml",
+                    xml
+                        + #"<p:notes \#(ns)><p:cSld><p:spTree><p:nvGrpSpPr><p:cNvPr id="1" name=""/><p:cNvGrpSpPr/><p:nvPr/></p:nvGrpSpPr><p:grpSpPr/><p:sp><p:nvSpPr><p:cNvPr id="2" name="Notes"/><p:cNvSpPr><a:spLocks noGrp="1"/></p:cNvSpPr><p:nvPr><p:ph type="body" idx="1"/></p:nvPr></p:nvSpPr><p:spPr/><p:txBody><a:bodyPr/><a:lstStyle/>\#(paras.joined())</p:txBody></p:sp></p:spTree></p:cSld></p:notes>"#
+                )
+                z.add(
+                    "ppt/notesSlides/_rels/notesSlide\(k).xml.rels",
+                    xml
+                        + #"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesMaster" Target="../notesMasters/notesMaster1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide" Target="../slides/slide\#(k).xml"/></Relationships>"#
+                )
+            }
             let title = i < titles.count ? esc(titles[i]) : ""
             z.add(
                 "ppt/slides/slide\(k).xml",
@@ -205,7 +294,7 @@ public enum SlideExporter {
             z.add(
                 "ppt/slides/_rels/slide\(k).xml.rels",
                 xml
-                    + #"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image\#(k).png"/></Relationships>"#
+                    + #"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout" Target="../slideLayouts/slideLayout1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/image\#(k).png"/>\#(notesRel)</Relationships>"#
             )
         }
         return z.finish()

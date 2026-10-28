@@ -1,0 +1,64 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "tree.indented"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n5"
+      ],
+      "kind": "root",
+      "text": "Intro to Swift"
+    },
+    "n2": {
+      "children": [
+        "n3",
+        "n4"
+      ],
+      "kind": "topic",
+      "text": "Basics"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Values"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "Functions"
+    },
+    "n5": {
+      "children": [
+        "n6",
+        "n7"
+      ],
+      "kind": "topic",
+      "text": "Types"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "Structs"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "text": "Enums"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Course outline",
+  "type": "tree"
+}

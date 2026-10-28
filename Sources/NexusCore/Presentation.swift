@@ -19,11 +19,28 @@ public struct PresentationSettings: Hashable, Sendable, JSONRepresentable {
     public var legend: Bool = true
     /// A Timeline slide (a compact Gantt) after each branch that has dated tasks (M21).
     public var timeline: Bool = false
+    /// calm (Glide and dimming, as before M42), dynamic (the default: fly-to, builds,
+    /// spotlight) or showtime (as dynamic, quicker, with the focus enlarged) (M42).
+    public var style: String = "dynamic"
+    /// main: a slide per main topic; all: a slide per topic with children, walked in
+    /// outline order (M42). Flow and message decks ignore it.
+    public var depth: String = "main"
+    /// An overview of the whole map between branches (M42).
+    public var overview: Bool = false
     public var extra: [String: JSONValue] = [:]
 
     public init() {}
 
     public var isDefault: Bool { self == PresentationSettings() }
+
+    public static let styles = ["calm", "dynamic", "showtime"]
+
+    /// How the camera moves between slides (M42): an explicit Cut always cuts; Calm keeps
+    /// the deck's Glide, and Zoom and the other styles fly (van Wijk and Nuij's path).
+    public var cameraMove: String {
+        if transition == "cut" { return "cut" }
+        return style == "calm" && transition == "glide" ? "glide" : "fly"
+    }
 
     public var aspectRatio: Double {
         switch aspect {
@@ -45,6 +62,9 @@ public struct PresentationSettings: Hashable, Sendable, JSONRepresentable {
         stepThroughFlow = try r.bool("stepThroughFlow", default: true)
         legend = try r.bool("legend", default: true)
         timeline = try r.bool("timeline", default: false)
+        style = try r.optionalString("style") ?? "dynamic"
+        depth = try r.optionalString("depth") ?? "main"
+        overview = try r.bool("overview", default: false)
         extra = r.leftovers
     }
 
@@ -59,6 +79,9 @@ public struct PresentationSettings: Hashable, Sendable, JSONRepresentable {
         w.set("stepThroughFlow", stepThroughFlow, omitting: true)
         w.set("legend", legend, omitting: true)
         w.set("timeline", timeline, omitting: false)
+        if style != "dynamic" { w.set("style", style) }
+        if depth != "main" { w.set("depth", depth) }
+        w.set("overview", overview, omitting: false)
         return w.value
     }
 }
@@ -178,13 +201,28 @@ public enum Deck {
             }
             return out + diagramTimeline(c, kicker: kicker, title: rootText, focus: all)
         }
-        // Hierarchies: one slide per main topic, framed on its branch.
-        for m in (c.nodes[c.root]?.children ?? []) where visible(m) {
+        // Hierarchies: one slide per main topic, framed on its branch; with Depth › Every
+        // branch, then one per topic under it that has children, framed with its parent (M42).
+        let mains = (c.nodes[c.root]?.children ?? []).filter(visible)
+        for (k, m) in mains.enumerated() {
             let branch = c.subtree(m, includeFolded: false).filter(visible)
             out.append(
                 Slide(
                     id: "branch:\(m.rawValue)", kicker: kicker, title: c.nodes[m]?.text ?? "", focus: [c.root] + branch,
                     highlight: [m], flow: nil, note: c.nodes[m]?.note?.text))
+            if s.depth == "all" {
+                let parents = c.parentMap()
+                for id in branch.dropFirst() {
+                    guard let n = c.nodes[id], !n.folded, n.children.contains(where: visible), let p = parents[id]
+                    else { continue }
+                    out.append(
+                        Slide(
+                            id: "branch:\(id.rawValue)", kicker: kicker, title: n.text,
+                            focus: [p] + c.subtree(id, includeFolded: false).filter(visible), highlight: [id],
+                            flow: nil,
+                            note: n.note?.text))
+                }
+            }
             if s.timeline, branch.contains(where: { c.nodes[$0]?.todo?.isScheduled == true }) {
                 var t = Slide(
                     id: "timeline:\(m.rawValue)", kicker: kicker, title: c.nodes[m]?.text ?? "",
@@ -192,8 +230,35 @@ public enum Deck {
                 t.timeline = m
                 out.append(t)
             }
+            if s.overview, k < mains.count - 1 {
+                out.append(
+                    Slide(
+                        id: "overview:\(m.rawValue)", kicker: kicker, title: rootText, focus: all, highlight: [],
+                        flow: nil, note: nil))
+            }
         }
         return out
+    }
+
+    /// What a slide builds in on arrival (Dynamic, Showtime; M42): a branch slide's topics
+    /// under its focus topic, in outline order. Title, overview, flow and message slides
+    /// build nothing (a flow slide draws its flow on instead).
+    public static func builds(_ slide: Slide, in c: Canvas) -> [NodeID] {
+        guard slide.flow == nil, slide.id.hasPrefix("branch:"), let h = slide.highlight.last else { return [] }
+        let focus = Set(slide.focus)
+        return c.subtree(h, includeFolded: false).dropFirst().filter(focus.contains)
+    }
+
+    /// Present from Selected Topic (⌥⌘P): the playing slide about `id` (its own, or its
+    /// nearest ancestor's), else the first flow or message slide that involves it, else 0.
+    public static func index(for id: NodeID, in slides: [Slide], canvas c: Canvas) -> Int {
+        let parents = c.parentMap()
+        var cur: NodeID? = id
+        while let x = cur {
+            if let i = slides.firstIndex(where: { !$0.skipped && $0.id == "branch:\(x.rawValue)" }) { return i }
+            cur = parents[x]
+        }
+        return slides.firstIndex { !$0.skipped && $0.flow != nil && $0.highlight.contains(id) } ?? 0
     }
 
     /// Flow and message decks have no branches, so with Timeline slides on they close

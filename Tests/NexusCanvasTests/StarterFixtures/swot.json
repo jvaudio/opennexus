@@ -1,0 +1,78 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "matrix.grid"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n4",
+        "n6",
+        "n8"
+      ],
+      "kind": "root",
+      "text": "SWOT"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "Strengths"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Loyal users"
+    },
+    "n4": {
+      "children": [
+        "n5"
+      ],
+      "kind": "topic",
+      "text": "Weaknesses"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Small team"
+    },
+    "n6": {
+      "children": [
+        "n7"
+      ],
+      "kind": "topic",
+      "text": "Opportunities"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "text": "New market"
+    },
+    "n8": {
+      "children": [
+        "n9"
+      ],
+      "kind": "topic",
+      "text": "Threats"
+    },
+    "n9": {
+      "children": [],
+      "kind": "topic",
+      "text": "Competitor pricing"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "SWOT",
+  "type": "matrix"
+}

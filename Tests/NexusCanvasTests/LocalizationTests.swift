@@ -44,13 +44,26 @@ import Testing
             }
         }
         // Names that live in NexusCore's data and are looked up where they're shown.
-        let types: [DiagramType] = [
-            .mindmap, .logic, .brace, .org, .tree, .treeTable, .timeline, .fishbone, .matrix, .flowchart, .swimlane,
-            .dfd, .threatModel, .architecture, .sequence, .whiteboard,
-        ]
-        for t in types {
-            out[t.displayName] = out[t.displayName] ?? "Diagram type"
-            for i in DiagramCatalog.nodeTypes(for: t) { out[i.name] = out[i.name] ?? "Node type (\(t.displayName))" }
+        for d in DiagramDescriptor.all {
+            out[d.name] = out[d.name] ?? "Diagram type"
+            out[d.summary] = out[d.summary] ?? "Diagram type summary (starter picker)"
+            for i in DiagramCatalog.nodeTypes(for: d.type) { out[i.name] = out[i.name] ?? "Node type (\(d.name))" }
+        }
+        for c in StarterCategory.allCases { out[c.title] = out[c.title] ?? "Starter category (starter picker)" }
+        for s in StarterLibrary.all {
+            out[s.name] = out[s.name] ?? "Starter name (Home's template shelf, starter picker)"
+            out[s.summary] = out[s.summary] ?? "Starter summary (Home's template shelf, starter picker)"
+            out[s.kicker] = out[s.kicker] ?? "Starter kicker, small capitals over its name"
+        }
+        for g in GuideLibrary.all {
+            for st in g.steps {
+                out[st.title] = out[st.title] ?? "Guide step (Guide mode, \(g.id))"
+                if !st.tip.isEmpty {
+                    out[st.tip] =
+                        out[st.tip]
+                        ?? "Guide tip (\(g.id)). Keep each {command.id} as it is: it shows the command's keys."
+                }
+            }
         }
         for i in DiagramCatalog.icons { out[i.name] = out[i.name] ?? "Icon name" }
         for c in Stride.allCases { out[c.name] = out[c.name] ?? "STRIDE category" }
@@ -170,6 +183,7 @@ import Testing
         let p = Loc.t("Add Child Topic")
         #expect(p.hasPrefix("⟦Ådd Çhíld Töpíç") && p.count >= Int(Double("Add Child Topic".count) * 1.4))
         #expect(Loc.pseudolocalize("%d topics").contains("%d"), "placeholders survive")
+        #expect(Loc.pseudolocalize("Press {topic.addChild} now").contains("{topic.addChild}"), "guide tokens survive")
     }
 
     @Test func countPhrasesUseTheCatalogsPluralVariants() {

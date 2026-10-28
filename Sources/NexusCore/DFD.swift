@@ -19,14 +19,18 @@ public struct FlowGraph: Sendable {
 
     public static func treeFlowID(_ child: NodeID) -> String { "t:\(child.rawValue)" }
 
-    public init(_ canvas: Canvas) {
+    /// `known`: each topic's effective type, when the caller has them (the scene does), so
+    /// they aren't inferred again.
+    public init(_ canvas: Canvas, types known: [NodeID: NodeType]? = nil) {
         let parents = canvas.parentMap()
         let titleRoot = DiagramCatalog.rootIsTitle(canvas.type)
         for top in canvas.tops where !(canvas.summaries.contains { $0.topic == top }) {
             for id in canvas.subtree(top) {
                 if titleRoot && id == canvas.root { continue }
                 elements.append(id)
-                if let t = DiagramCatalog.effectiveType(id, in: canvas, parents: parents) { types[id] = t }
+                if let t = known.map({ $0[id] }) ?? DiagramCatalog.effectiveType(id, in: canvas, parents: parents) {
+                    types[id] = t
+                }
                 if let p = parents[id], !(titleRoot && p == canvas.root) {
                     flows.append(
                         Flow(
@@ -77,13 +81,22 @@ public enum DFDRules {
     }
 
     /// `level(canvas)` resolves a process's drilled-down canvas, for the balance rule.
-    public static func check(_ canvas: Canvas, level: (CanvasID) -> Canvas? = { _ in nil }) -> [Violation] {
+    public static func check(
+        _ canvas: Canvas, level: (CanvasID) -> Canvas? = { _ in nil }, graph: FlowGraph? = nil
+    ) -> [Violation] {
         guard canvas.type == .dfd || canvas.type == .threatModel else { return [] }
-        let g = FlowGraph(canvas)
+        let g = graph ?? FlowGraph(canvas)
         let names = numberedNames(canvas, graph: g)
         func name(_ id: NodeID) -> String { names[id] ?? canvas.nodes[id]?.text ?? id.rawValue }
         let dataTypes: Set<NodeType> = [.entity, .process, .store]
         var out: [Violation] = []
+        // Each element's flows in and out, so the checks below stay linear.
+        var into: [NodeID: [FlowGraph.Flow]] = [:]
+        var outOf: [NodeID: [FlowGraph.Flow]] = [:]
+        for f in g.flows {
+            into[f.to, default: []].append(f)
+            outOf[f.from, default: []].append(f)
+        }
 
         for f in g.flows {
             guard let ta = g.types[f.from], let tb = g.types[f.to], dataTypes.contains(ta), dataTypes.contains(tb)
@@ -100,8 +113,8 @@ public enum DFDRules {
                 var fixes: [Fix] = [.insertProcess(flow: f.id)]
                 // A process the source already feeds (or the target already reads from).
                 let via =
-                    g.flows.first { $0.from == f.from && g.isProcess($0.to) }?.to
-                    ?? g.flows.first { $0.to == f.to && g.isProcess($0.from) }?.from
+                    outOf[f.from]?.first { g.isProcess($0.to) }?.to
+                    ?? into[f.to]?.first { g.isProcess($0.from) }?.from
                 if let via { fixes.append(.rerouteVia(flow: f.id, process: via)) }
                 fixes.append(.ignore)
                 out.append(
@@ -123,7 +136,7 @@ public enum DFDRules {
         for id in g.elements {
             switch g.types[id] {
             case .store?:
-                if !g.flows.contains(where: { $0.to == id }) {
+                if into[id] == nil {
                     out.append(
                         Violation(
                             id: "storeWritten:\(id.rawValue)", rule: .storeWritten, severity: .error,
@@ -134,8 +147,8 @@ public enum DFDRules {
             case .process?:
                 // Only data flows count (threat, mitigation and asset links don't).
                 func data(_ n: NodeID) -> Bool { g.types[n].map(dataTypes.contains) ?? false }
-                let ins = g.flows.contains { $0.to == id && data($0.from) }
-                let outs = g.flows.contains { $0.from == id && data($0.to) }
+                let ins = into[id]?.contains { data($0.from) } ?? false
+                let outs = outOf[id]?.contains { data($0.to) } ?? false
                 if !ins || !outs {
                     out.append(
                         Violation(
@@ -147,7 +160,7 @@ public enum DFDRules {
                             fixes: [.ignore]))
                 }
                 if let sub = canvas.nodes[id]?.subCanvas, let child = level(sub) {
-                    let mine = Set(g.flows.filter { $0.from == id || $0.to == id }.map(\.label).filter { !$0.isEmpty })
+                    let mine = Set(((into[id] ?? []) + (outOf[id] ?? [])).map(\.label).filter { !$0.isEmpty })
                     let cg = FlowGraph(child)
                     let theirs = Set(
                         cg.flows.filter { f in

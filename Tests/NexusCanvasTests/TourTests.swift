@@ -11,7 +11,7 @@ import Testing
 @MainActor
 @Suite(.serialized) struct TourTests {
     func start(_ role: Role = .engineer) -> (CanvasHarness, TourController) {
-        let h = CanvasHarness(model: TemplateLibrary.tourDocument(role))
+        let h = CanvasHarness(model: StarterLibrary.tourDocument(role))
         let tour = TourController(role: role)
         tour.attach(h.controller)
         return (h, tour)
@@ -124,7 +124,7 @@ import Testing
 @Suite struct TourLessonOneTests {
     /// Committing without typing (the placeholder comes back) doesn't count as naming it.
     @Test func lessonOneNeedsARealName() {
-        let h = CanvasHarness(model: TemplateLibrary.tourDocument(.engineer))
+        let h = CanvasHarness(model: StarterLibrary.tourDocument(.engineer))
         let tour = TourController(role: .engineer)
         tour.attach(h.controller)
         h.press("return")

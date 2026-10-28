@@ -1,0 +1,52 @@
+{
+  "example": [
+    "Launch plan",
+    "  Goals",
+    "    Revenue",
+    "  Channels",
+    "    Partners",
+    "  Risks",
+    "    Timing"
+  ],
+  "id": "mindmap",
+  "steps": [
+    {
+      "id": "root",
+      "match": {
+        "depth": 0,
+        "named": true
+      },
+      "tip": "Say what the map is about. {topic.edit} edits the selected topic.",
+      "title": "Name the central topic"
+    },
+    {
+      "id": "main",
+      "match": {
+        "depth": 1,
+        "named": true
+      },
+      "min": 3,
+      "tip": "Select the central topic and press {topic.addChild}; {topic.addSiblingAfter} adds the next one beside it.",
+      "title": "Add three or more main topics"
+    },
+    {
+      "id": "sub",
+      "match": {
+        "depth": 2,
+        "each": true
+      },
+      "tip": "Select a main topic and press {topic.addChild} to say more about it.",
+      "title": "Give each main topic a subtopic"
+    },
+    {
+      "id": "link",
+      "match": {
+        "edge": {}
+      },
+      "optional": true,
+      "tip": "{element.connect} draws a relationship between two topics on different branches.",
+      "title": "Connect related ideas"
+    }
+  ],
+  "type": "mindmap"
+}

@@ -1,0 +1,90 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n4",
+        "n8",
+        "n10"
+      ],
+      "kind": "root",
+      "text": "ADR-012 · Event bus"
+    },
+    "n10": {
+      "children": [
+        "n11"
+      ],
+      "kind": "topic",
+      "text": "Consequences"
+    },
+    "n11": {
+      "children": [],
+      "kind": "topic",
+      "text": "At-least-once delivery"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "Context"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Services poll each other"
+    },
+    "n4": {
+      "children": [
+        "n5",
+        "n6",
+        "n7"
+      ],
+      "kind": "topic",
+      "text": "Options"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Kafka"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "SNS + SQS"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "text": "Stay with polling"
+    },
+    "n8": {
+      "children": [
+        "n9"
+      ],
+      "kind": "topic",
+      "text": "Decision"
+    },
+    "n9": {
+      "children": [],
+      "kind": "topic",
+      "text": "SNS + SQS"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "ADR-012 · Event bus",
+  "type": "mindmap"
+}

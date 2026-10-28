@@ -124,6 +124,12 @@
         "diagram": {
           "$ref": "#/$defs/diagram"
         },
+        "filters": {
+          "items": {
+            "$ref": "#/$defs/filter"
+          },
+          "type": "array"
+        },
         "floating": {
           "description": "Ids of floating topics (not attached to the root tree), in z-order.",
           "items": {
@@ -131,6 +137,9 @@
           },
           "type": "array",
           "uniqueItems": true
+        },
+        "guide": {
+          "$ref": "#/$defs/guide"
         },
         "id": {
           "$ref": "#/$defs/id"
@@ -185,6 +194,9 @@
             }
           },
           "type": "object"
+        },
+        "presentation": {
+          "$ref": "#/$defs/presentation"
         },
         "relationships": {
           "items": {
@@ -660,6 +672,43 @@
       },
       "type": "object"
     },
+    "filter": {
+      "description": "A saved filter (filter bar › Save as…).",
+      "properties": {
+        "clauses": {
+          "description": "Chips such as \"type: process\", \"risk ≠ low\" or plain text, which matches topic text.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "hide": {
+          "description": "Hide non-matching topics instead of dimming them.",
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "guide": {
+      "additionalProperties": true,
+      "description": "Guide mode's saved state for this canvas (M41): the steps skipped, in the guide named by id. Written only when a step is skipped; progress and the panel's visibility are never stored.",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "skipped": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "type": "object"
+    },
     "id": {
       "minLength": 1,
       "pattern": "^[A-Za-z0-9_-]+$",
@@ -823,6 +872,10 @@
         "position": {
           "$ref": "#/$defs/point"
         },
+        "presentHidden": {
+          "description": "Left out of Present's slides (H while presenting).",
+          "type": "boolean"
+        },
         "quickStyle": {
           "type": "string"
         },
@@ -925,6 +978,76 @@
         "x",
         "y"
       ],
+      "type": "object"
+    },
+    "presentation": {
+      "description": "Present's deck for this canvas (M5, M21, M28, M35). Slides are generated; these lists refer to slide ids such as title or branch:<node id>. The current slide is view state and is never stored.",
+      "properties": {
+        "aspect": {
+          "description": "16:9 (default), 4:3, 16:10 or 1:1.",
+          "type": "string"
+        },
+        "depth": {
+          "description": "main: a slide per main topic (the default); all: a slide per topic with children (M42).",
+          "enum": [
+            "main",
+            "all"
+          ]
+        },
+        "legend": {
+          "description": "Each slide shows its legend card. Default true.",
+          "type": "boolean"
+        },
+        "merged": {
+          "description": "Slides shown together with the slide after them (M).",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "order": {
+          "description": "Slide ids in the order the user dragged them to.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "overview": {
+          "description": "An overview of the whole map between branches (M42).",
+          "type": "boolean"
+        },
+        "skipped": {
+          "description": "Slides left out of the show (S).",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "stepThroughFlow": {
+          "description": "Technical diagrams get a slide per flow. Default true.",
+          "type": "boolean"
+        },
+        "style": {
+          "description": "calm (Glide and dimming, as before M42), dynamic (the default: fly-to, builds, spotlight) or showtime.",
+          "enum": [
+            "calm",
+            "dynamic",
+            "showtime"
+          ]
+        },
+        "theme": {
+          "description": "canvas (default), dark or light.",
+          "type": "string"
+        },
+        "timeline": {
+          "description": "Timeline slides for branches with dated tasks. Default false.",
+          "type": "boolean"
+        },
+        "transition": {
+          "description": "glide (default), zoom or cut.",
+          "type": "string"
+        }
+      },
       "type": "object"
     },
     "relationship": {
