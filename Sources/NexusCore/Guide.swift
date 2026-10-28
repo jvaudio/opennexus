@@ -226,17 +226,17 @@ public enum GuideMatcher {
         _ canvas: Canvas, _ guide: Guide, skipped: Set<String> = [], types known: [NodeID: NodeType]? = nil
     ) -> GuideProgress {
         let parents = canvas.parentMap()
-        // Every attached topic in tree order, with its depth. Depths count from the root:
-        // a floating or summary topic isn't the central topic, nor its children main topics.
-        var order: [(id: NodeID, depth: Int)] = []
-        var rootTree = Set<NodeID>()
+        // Every attached topic in tree order, with its depth and whether it hangs from the
+        // root. Depths count from the root: a floating or summary topic isn't the central
+        // topic, nor its children main topics.
+        var order: [(id: NodeID, depth: Int, rooted: Bool)] = []
         order.reserveCapacity(canvas.nodes.count)
         for top in canvas.tops {
+            let rooted = top == canvas.root
             var stack = [(top, 0)]
             while let (id, d) = stack.popLast() {
                 guard let n = canvas.nodes[id] else { continue }
-                order.append((id, d))
-                if top == canvas.root { rootTree.insert(id) }
+                order.append((id, d, rooted))
                 stack.append(contentsOf: n.children.reversed().map { ($0, d + 1) })
             }
         }
@@ -257,8 +257,8 @@ public enum GuideMatcher {
                 : ["Floating Topic", defaultTopicText(type: canvas.type, depth: depth)]
             return !placeholders.contains(text)
         }
-        func topicMatches(_ m: Guide.Match, _ id: NodeID, _ depth: Int) -> Bool {
-            if let d = m.depth, d != depth || !rootTree.contains(id) { return false }
+        func topicMatches(_ m: Guide.Match, _ id: NodeID, _ depth: Int, rooted: Bool) -> Bool {
+            if let d = m.depth, d != depth || !rooted { return false }
             if let k = m.kind, canvas.nodes[id]?.kind != k { return false }
             if !m.nodeTypes.isEmpty, !(type(id).map(m.nodeTypes.contains) ?? false) { return false }
             if m.named, !named(id, depth: depth) { return false }
@@ -311,16 +311,16 @@ public enum GuideMatcher {
                 met = count >= s.min
             } else if m.each, let d = m.depth, d > 0 {
                 // Every topic a level up has `min` matching children.
-                let hosts = order.filter { $0.depth == d - 1 && rootTree.contains($0.id) }
+                let hosts = order.filter { $0.depth == d - 1 && $0.rooted }
                 needed = hosts.count
                 for h in hosts {
-                    let kids = (canvas.nodes[h.id]?.children ?? []).filter { topicMatches(m, $0, d) }
+                    let kids = (canvas.nodes[h.id]?.children ?? []).filter { topicMatches(m, $0, d, rooted: true) }
                     if kids.count >= s.min { count += 1 }
                     nodes += kids
                 }
                 met = needed > 0 && count == needed
             } else {
-                for (id, d) in order where topicMatches(m, id, d) {
+                for (id, d, rooted) in order where topicMatches(m, id, d, rooted: rooted) {
                     count += 1
                     nodes.append(id)
                 }
