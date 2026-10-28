@@ -103,6 +103,8 @@ public enum ImageText {
     /// What a connector's line, fork or curve can be read as.
     static let strokeMarks: Set<Character> = [
         "-", "–", "—", "_", "~", "=", "|", "/", "\\", "<", ">", "‹", "›", "(", ")", "[", "]", "{", "}",
+        // A connector's end dot.
+        "•", "·", "∙", "●",
     ]
 
     /// A lone stroke-like mark set off by a space at the end of `text` (or, with `last`

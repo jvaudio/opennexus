@@ -135,9 +135,9 @@ final class HomeWindow {
     let model = HomeModel()
     private var window: NSWindow?
 
-    func show(choosingType: Bool = false) {
+    func show(choosingStarter: Bool = false) {
         reload()
-        model.choosingType = choosingType
+        model.choosingStarter = choosingStarter
         if window == nil {
             let w = NSWindow(
                 contentRect: CGRect(x: 0, y: 0, width: 1440, height: 900),
@@ -160,6 +160,7 @@ final class HomeWindow {
     func reload() {
         model.role = Role(rawValue: Preferences.shared.string("general.role")) ?? .engineer
         model.shelf = model.role.shelf
+        model.gallery.role = model.role
         model.aiStatus = AppleEngine().availability
         model.load(NSDocumentController.shared.recentDocumentURLs)
         model.inboxCount =
@@ -192,9 +193,12 @@ final class HomeWindow {
             }
             if opened { self?.window?.orderOut(nil) }
         }
+        // A starter from the shelf or the picker; a Blank one is what ⌘N makes for its type.
         model.onTemplate = { [weak self] t in
             self?.window?.orderOut(nil)
-            NewDocument.make(model: t.document())
+            NewDocument.make(
+                model: t.document(prefs: .shared), editRoot: t.isBlank && Preferences.shared.bool("editing.startInEdit")
+            )
         }
         model.onInbox = { [weak self] in
             Inbox.ensure()

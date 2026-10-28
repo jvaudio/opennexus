@@ -316,6 +316,9 @@ public enum SettingsSchema {
                         "editing.defaultZoom", "Default zoom",
                         [("fit", "Fit"), ("75", "75%"), ("100", "100%"), ("125", "125%"), ("150", "150%")], "100"),
                     T("editing.startInEdit", "Start in Edit mode on the root", true),
+                    T(
+                        "editing.starterPicker", "Choose a starter for new canvases", true,
+                        "⌘T and + open the starter picker; ⌥-click + repeats the last starter", ["template", "picker"]),
                 ]),
             sec("Preview · mouse aids", 1, [G("editing.preview", "", "mouseAids")]),
         ])

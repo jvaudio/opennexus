@@ -530,7 +530,7 @@ public enum DefaultCommands {
         C(.copyAsMarkdown, "Copy as Markdown", .file, menu: .edit),
         C(.home, "Home", .app, scope: .global, keys: [k("shift+cmd+h")], menu: .file, standardAction: "showHome:"),
         C(
-            .newChooseType, "New Document of Type…", .file, scope: .global, menu: .file, note: "⇧⌘N on Home",
+            .newChooseType, "New Document from Starter…", .file, scope: .global, menu: .file, note: "⇧⌘N on Home",
             standardAction: "newDocumentChooseType:"),
         C(.printDocument, "Print…", .file, scope: .global, keys: [k("cmd+p")], menu: .file, xmind: true),
         C(.printBranch, "Print Branch…", .file, menu: .file),

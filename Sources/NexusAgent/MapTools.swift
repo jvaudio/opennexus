@@ -217,6 +217,17 @@ public struct MapTools {
                             "Every zone: each writes a file per zone, named after it, into the \"out\" folder; pages writes one pdf with a page per zone.",
                     ],
                 ], required: ["path", "format"]), readOnly: true),
+        tool(
+            "list_starters", "List starters",
+            "Lists the starters a new map can begin from (M40): a Blank one for every diagram type, and the built-in templates, with id, type, category and summary. `nexus new \"<title>\" --starter <id>` creates a map from one.",
+            schema(
+                [
+                    "query": [
+                        "type": "string",
+                        "description":
+                            "Only starters whose name, aliases, type, category or summary contain these words.",
+                    ]
+                ], required: []), readOnly: true),
     ]
 
     static let types: [DiagramType] = DiagramDescriptor.all.map(\.type)
@@ -245,6 +256,7 @@ public struct MapTools {
         case "set_style": return try setStyle(args)
         case "convert_type": return try convertType(args)
         case "export": return try export(args)
+        case "list_starters": return listStarters(args)
         default: throw ToolError("Unknown tool \(name).")
         }
     }
@@ -720,6 +732,18 @@ public struct MapTools {
         doc.canvases[cid] = e.canvas
         try save(doc, url)
         return Output(text: "Set \(changed.joined(separator: ", ")).")
+    }
+
+    /// Built-in data only, so no folder or permission applies.
+    func listStarters(_ args: [String: JSONValue]) -> Output {
+        let q = args["query"]?.stringValue ?? ""
+        let lines = StarterGallery.search(q, in: StarterLibrary.all).map {
+            "\($0.id) — \($0.name) (\($0.type.rawValue), \($0.category.rawValue)): \($0.summary)"
+        }
+        guard !lines.isEmpty else { return Output(text: "No starter matches “\(q)”.") }
+        return Output(
+            text: lines.joined(separator: "\n") + "\n\nCreate a map from one with: nexus new \"<title>\" --starter <id>"
+        )
     }
 
     func convertType(_ args: [String: JSONValue]) throws -> Output {

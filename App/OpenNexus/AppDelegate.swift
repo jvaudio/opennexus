@@ -66,8 +66,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func showWelcome(_ sender: Any?) { Onboarding.showWelcome() }
     @objc func showHome(_ sender: Any?) { HomeWindow.shared.show() }
-    /// ⇧⌘N: Home's New row, to choose the type.
-    @objc func newDocumentChooseType(_ sender: Any?) { HomeWindow.shared.show(choosingType: true) }
+    /// File › New Document from Starter… (⇧⌘N on Home): Home's starter picker (M40).
+    @objc func newDocumentChooseType(_ sender: Any?) { HomeWindow.shared.show(choosingStarter: true) }
     /// ⌘N: a new document with the default look (Settings › New documents).
     @objc func newDocument(_ sender: Any?) { NewDocument.make() }
 

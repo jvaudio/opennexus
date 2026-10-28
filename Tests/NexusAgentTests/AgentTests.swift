@@ -96,7 +96,7 @@ final class Session {
             tools == [
                 "list_maps", "read_map", "add_topic", "add_edge", "set_task", "add_comment", "set_style",
                 "convert_type",
-                "export",
+                "export", "list_starters",
             ])
         for t in s.response(2)?["result"]?["tools"]?.arrayValue ?? [] {
             #expect(t["inputSchema"]?["type"] == "object" && t["description"]?.stringValue?.isEmpty == false)
@@ -105,6 +105,19 @@ final class Session {
         #expect(s.response(4)?["error"]?["code"] == -32601)
         #expect(out.contains { $0["error"]?["code"] == -32700 })
         #expect(s.response(5)?["result"]?["protocolVersion"] == "2025-06-18", "unknown versions get our newest")
+    }
+
+    /// M40: list_starters lists the built-in starters, filtered by a query, with no folder needed.
+    @Test func listStartersNeedsNoFolder() throws {
+        let tools = MapTools(policy: AgentPolicy(enabled: true))
+        let all = try tools.call("list_starters", [:]).text
+        #expect(all.contains("blank.mindmap — Mind Map (mindmap, thinking)"))
+        #expect(all.contains("nexus new \"<title>\" --starter <id>"))
+        let threat = try tools.call("list_starters", ["query": "stride"]).text
+        #expect(
+            threat.hasPrefix("blank.threatModel — Threat Model (threatModel, security)")
+                && threat.contains("\nthreat — Threat model (threatModel, security)"))
+        #expect(try tools.call("list_starters", ["query": "zzz"]).text == "No starter matches “zzz”.")
     }
 
     /// D170: add_edge takes "zone:" ends, and read_map lists zones and zone ends.

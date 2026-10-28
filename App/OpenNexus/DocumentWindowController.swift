@@ -326,17 +326,26 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         window?.makeFirstResponder(host.canvasView)
     }
 
+    /// ⌘T, the tab bar's + and New Canvas (M40): the starter picker, unless Settings ›
+    /// Editing turns it off or ⌥ is held, which use the starter picked last.
     func addCanvas() {
-        let store = document_.store
-        let id = store.model.makeCanvasID()
-        store.commitDocument(Loc.t("New Canvas"), focus: id) { d in
-            var c = NexusCore.Canvas(id: id, title: "Map \(d.canvases.count + 1)")
-            CanvasController.applyDefaults(&c, prefs: .shared)
-            d.canvases[id] = c
-            d.canvasOrder.append(id)
+        if NSEvent.modifierFlags.contains(.option) || !Preferences.shared.bool("editing.starterPicker") {
+            controller.addCanvas(from: StarterLibrary.lastUsed(prefs: .shared))
+            return
         }
-        controller.switchCanvas(to: id)
-        controller.beginEditing(replacingWith: "")
+        guard let window, window.attachedSheet == nil else { return }
+        let gallery = StarterGallery(purpose: .canvas)
+        let sheet = NSWindow(contentViewController: NSHostingController(rootView: StarterGalleryView(model: gallery)))
+        sheet.title = Loc.t("New Canvas")
+        gallery.onCancel = { [weak window, weak sheet] in
+            if let sheet { window?.endSheet(sheet) }
+        }
+        gallery.onChoose = { [weak self, weak window, weak sheet] starter in
+            if let sheet { window?.endSheet(sheet) }
+            self?.controller.addCanvas(from: starter)
+            if let v = self?.host.canvasView { window?.makeFirstResponder(v) }
+        }
+        window.beginSheet(sheet)
     }
 
     // MARK: Toolbar
@@ -526,7 +535,8 @@ struct CanvasTabsView: View {
                 Image(systemName: "plus").frame(width: 28, height: 28)
             }
             .buttonStyle(.plain)
-            .help("New Canvas (⌘T)")
+            .help("New Canvas (⌘T) · ⌥-click repeats the last starter")
+            .accessibilityLabel("New Canvas")
             Spacer()
         }
         .padding(.horizontal, 16)

@@ -1409,6 +1409,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "⌘T and + open the starter picker; ⌥-click + repeats the last starter" : {
+      "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
     "⌥⌘T" : {
       "comment" : "UI text (DocumentWindowController.swift)",
       "extractionState" : "migrated"
@@ -2061,6 +2065,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "All templates and blank diagrams…" : {
+      "comment" : "UI text (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
     "Allow" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -2441,6 +2449,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Blank" : {
+      "comment" : "UI text (StarterGalleryView.swift)",
+      "extractionState" : "migrated"
+    },
     "BLANK" : {
       "comment" : "Starter kicker, small capitals over its name",
       "extractionState" : "migrated"
@@ -2781,6 +2793,10 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "CATEGORIES" : {
+      "comment" : "UI text (StarterGalleryView.swift)",
+      "extractionState" : "migrated"
+    },
     "Central topic" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -2865,6 +2881,14 @@
       "comment" : "UI text (DocumentFiles.swift)",
       "extractionState" : "migrated"
     },
+    "choose a starter" : {
+      "comment" : "UI text (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Choose a starter for new canvases" : {
+      "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
     "Choose File…" : {
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
@@ -2875,10 +2899,6 @@
     },
     "Choose model folder…" : {
       "comment" : "UI text (AISettingsView.swift)",
-      "extractionState" : "migrated"
-    },
-    "choose type" : {
-      "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
     "Choose…" : {
@@ -4713,6 +4733,10 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "For You" : {
+      "comment" : "UI text (StarterGallery.swift)",
+      "extractionState" : "migrated"
+    },
     "Format" : {
       "comment" : "UI text (DocumentWindowController.swift)",
       "extractionState" : "migrated"
@@ -6269,7 +6293,7 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
-    "More diagram types" : {
+    "More diagram types and templates" : {
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
@@ -6529,7 +6553,7 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
-    "New Canvas (⌘T)" : {
+    "New Canvas (⌘T) · ⌥-click repeats the last starter" : {
       "comment" : "UI text (DocumentWindowController.swift)",
       "extractionState" : "migrated"
     },
@@ -6557,7 +6581,7 @@
       "comment" : "UI text (CommentViews.swift)",
       "extractionState" : "migrated"
     },
-    "New Document of Type…" : {
+    "New Document from Starter…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
@@ -6683,6 +6707,10 @@
     },
     "No snapshots yet. They appear as you edit." : {
       "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "No starter matches “%@”" : {
+      "comment" : "Text with values filled in (StarterGalleryView.swift)",
       "extractionState" : "migrated"
     },
     "No tasks yet. Select a topic and press ⌃⌘T to give it dates, or ⌃0 to make it a to-do." : {
@@ -7333,10 +7361,6 @@
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
-    "Press 1–7 to choose a type, or click one." : {
-      "comment" : "UI text (HomeView.swift)",
-      "extractionState" : "migrated"
-    },
     "Press Hyper, release, then the key" : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
@@ -7671,6 +7695,10 @@
     },
     "Rebind" : {
       "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Recent" : {
+      "comment" : "UI text (StarterGallery.swift)",
       "extractionState" : "migrated"
     },
     "Recent first, then fuzzy match" : {
@@ -8319,6 +8347,10 @@
     },
     "Search shortcuts" : {
       "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
+    "Search starters" : {
+      "comment" : "UI text (StarterGalleryView.swift)",
       "extractionState" : "migrated"
     },
     "Search topics" : {
