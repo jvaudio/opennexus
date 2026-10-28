@@ -373,19 +373,7 @@ extension CanvasController {
         }
     }
 
-    static func diagramType(for s: LayoutStructure) -> DiagramType {
-        switch s.family {
-        case "logic": .logic
-        case "org": .org
-        case "timeline": .timeline
-        case "fishbone": .fishbone
-        case "matrix": .matrix
-        case "brace": .brace
-        case "treeTable": .treeTable
-        case "tree": .tree
-        default: .mindmap
-        }
-    }
+    static func diagramType(for s: LayoutStructure) -> DiagramType { DiagramDescriptor.hierarchyType(for: s) }
 
     // MARK: Select helpers
 

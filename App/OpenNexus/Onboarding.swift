@@ -92,7 +92,7 @@ enum Onboarding {
             let nx = try? NSDocumentController.shared.makeUntitledDocument(ofType: "com.opennexus.document")
                 as? NexusDocument
         else { return }
-        nx.store.replace(with: TemplateLibrary.tourDocument(role))
+        nx.store.replace(with: StarterLibrary.tourDocument(role))
         nx.markImported()
         NSDocumentController.shared.addDocument(nx)
         nx.makeWindowControllers()

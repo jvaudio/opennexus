@@ -1,0 +1,24 @@
+{
+  "aliases": [
+    "book",
+    "reading",
+    "notes"
+  ],
+  "category": "thinking",
+  "id": "bookNotes",
+  "kicker": "MIND MAP",
+  "name": "Book notes",
+  "order": 21,
+  "outline": [
+    "Thinking in Systems",
+    "  Ideas",
+    "    Stocks and flows",
+    "    Feedback loops",
+    "  Quotes",
+    "  Questions"
+  ],
+  "shelf": "learning",
+  "summary": "Ideas, quotes and questions",
+  "title": "Thinking in Systems",
+  "type": "mindmap"
+}

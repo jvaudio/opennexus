@@ -51,7 +51,8 @@ let package = Package(
         .target(
             name: "NexusCanvas",
             dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI", "NexusFormat", "NexusInterchange"],
-            resources: [.process("Resources")],
+            // Starters/ is copied as a folder: one JSON file per built-in starter (M39).
+            resources: [.process("Resources"), .copy("Starters")],
             swiftSettings: strict
         ),
         // The `nexus` CLI and MCP server (M9): commands, map tools, permissions. Uses the

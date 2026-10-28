@@ -237,13 +237,13 @@ public enum DiagramCatalog {
 
     /// Node types a diagram offers in pickers and the slash menu.
     public static func nodeTypes(for type: DiagramType) -> [NodeTypeInfo] {
-        switch type {
-        case .flowchart, .swimlane: flowTypes
+        switch DiagramDescriptor[type].palette {
+        case .flow: flowTypes
         case .dfd: dfdTypes
-        case .threatModel: threatTypes
-        case .architecture: icons
+        case .threat: threatTypes
+        case .icons: icons
         case .sequence: sequenceTypes + icons.filter { ["actor", "client", "service", "db"].contains($0.slug) }
-        default: []
+        case .none: []
         }
     }
 
@@ -256,19 +256,13 @@ public enum DiagramCatalog {
 
     /// Hierarchy types convert losslessly with no questions; technical ones carry node
     /// types and graph layouts.
-    public static func isTechnical(_ t: DiagramType) -> Bool {
-        [.flowchart, .swimlane, .dfd, .threatModel, .architecture, .sequence].contains(t)
-    }
+    public static func isTechnical(_ t: DiagramType) -> Bool { DiagramDescriptor[t].technical }
 
     /// Converting to these asks the user to confirm first-level node types (artboard 10).
-    public static func asksForNodeTypes(_ t: DiagramType) -> Bool {
-        [.dfd, .threatModel, .architecture].contains(t)
-    }
+    public static func asksForNodeTypes(_ t: DiagramType) -> Bool { DiagramDescriptor[t].asksForNodeTypes }
 
     /// In these the central topic is the diagram's title, not a node in the graph.
-    public static func rootIsTitle(_ t: DiagramType) -> Bool {
-        [.dfd, .threatModel, .architecture, .sequence].contains(t)
-    }
+    public static func rootIsTitle(_ t: DiagramType) -> Bool { DiagramDescriptor[t].rootIsTitle }
 
     /// The structure a type lays out with.
     public static func structure(for t: DiagramType) -> LayoutStructure { t.defaultStructure }
@@ -277,17 +271,15 @@ public enum DiagramCatalog {
     public static func effectiveType(_ id: NodeID, in canvas: Canvas, parents: [NodeID: NodeID]? = nil) -> NodeType? {
         guard let node = canvas.nodes[id] else { return nil }
         if let t = node.nodeType { return t }
-        let type = canvas.type
-        guard isTechnical(type) else { return nil }
         let isRoot = id == canvas.root
-        switch type {
-        case .flowchart, .swimlane:
+        switch DiagramDescriptor[canvas.type].inference {
+        case .flow:
             if isRoot { return .start }
             let text = node.text.trimmingCharacters(in: .whitespaces)
             if text.hasSuffix("?") { return .decision }
             if node.children.isEmpty, NodeTypeSuggester.looksTerminal(text) { return .end }
             return .process
-        case .dfd, .threatModel:
+        case .dfd:
             return isRoot ? nil : NodeTypeSuggester.dfd(node.text)
         case .architecture:
             return isRoot ? nil : NodeTypeSuggester.architecture(node.text)
@@ -295,7 +287,7 @@ public enum DiagramCatalog {
             guard !isRoot else { return nil }
             let p = parents ?? canvas.parentMap()
             return p[id] == canvas.root ? .participant : nil
-        default:
+        case .none:
             return nil
         }
     }

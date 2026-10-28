@@ -1,0 +1,65 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "matrix.grid"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n4",
+        "n6"
+      ],
+      "kind": "root",
+      "text": "Access review"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "Admins"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Prod console"
+    },
+    "n4": {
+      "children": [
+        "n5"
+      ],
+      "kind": "topic",
+      "text": "Engineers"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Staging"
+    },
+    "n6": {
+      "children": [
+        "n7"
+      ],
+      "kind": "topic",
+      "text": "Support"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "text": "Read-only CRM"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Access review",
+  "type": "matrix"
+}

@@ -1,0 +1,62 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n3",
+        "n4",
+        "n5"
+      ],
+      "kind": "root",
+      "text": "Photosynthesis"
+    },
+    "n2": {
+      "children": [],
+      "kind": "topic",
+      "text": "Light"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Water"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "Carbon dioxide"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Glucose"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n2",
+      "id": "r1",
+      "label": "powers",
+      "line": "curved",
+      "to": "n5"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Photosynthesis",
+  "type": "mindmap"
+}

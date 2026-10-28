@@ -59,7 +59,7 @@ import Testing
             ("threat", "Payments threat model"), ("c4", "Checkout system context"), ("bookNotes", "Reading notes"),
             ("retro", "Sprint 42 retro"),
         ] {
-            guard let t = TemplateLibrary.all.first(where: { $0.id == id }) else { continue }
+            guard let t = StarterLibrary.starter(id) else { continue }
             let u = tmp.appending(path: "\(name).nexus")
             try NexusPackage.write(t.document(), to: u)
             urls.append(u)
@@ -73,7 +73,7 @@ import Testing
     }
 
     @Test(.enabled(if: dir != nil)) func tutorial() async throws {
-        let h = CanvasHarness(model: TemplateLibrary.tourDocument(.engineer))
+        let h = CanvasHarness(model: StarterLibrary.tourDocument(.engineer))
         let tour = TourController(role: .engineer)
         tour.attach(h.controller)
         h.type("Checkout")

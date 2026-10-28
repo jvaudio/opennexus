@@ -1,0 +1,105 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "sequence.lifelines"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n3",
+        "n4"
+      ],
+      "kind": "root",
+      "text": "OAuth handshake"
+    },
+    "n2": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "actor",
+      "text": "User"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "participant",
+      "text": "App"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "participant",
+      "text": "Auth server"
+    }
+  },
+  "relationships": [
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n2",
+      "id": "r1",
+      "label": "Sign in",
+      "line": "curved",
+      "to": "n3"
+    },
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n3",
+      "id": "r2",
+      "label": "Authorize",
+      "line": "curved",
+      "to": "n4"
+    },
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n4",
+      "id": "r3",
+      "kind": "return",
+      "label": "Code",
+      "line": "curved",
+      "to": "n3"
+    },
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n3",
+      "id": "r4",
+      "label": "Exchange code",
+      "line": "curved",
+      "to": "n4"
+    },
+    {
+      "ends": [
+        "none",
+        "arrow"
+      ],
+      "from": "n4",
+      "id": "r5",
+      "kind": "return",
+      "label": "Access token",
+      "line": "curved",
+      "to": "n3"
+    }
+  ],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "OAuth handshake",
+  "type": "sequence"
+}

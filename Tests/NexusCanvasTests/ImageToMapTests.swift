@@ -295,7 +295,7 @@ import Testing
     /// categories at the ends of the bones, nearest the head first, with their causes.
     @Test(arguments: [LayoutStructure.fishboneLeft, .fishboneRight])
     func exportedFishboneReadsBack(_ structure: LayoutStructure) throws {
-        let template = try #require(TemplateLibrary.all.first { $0.id == "fishbone" }).document()
+        let template = try #require(StarterLibrary.starter("fishbone")).document()
         for doc in [launchPlanDocument(), template] {
             var m = doc
             m.canvases["c1"]!.type = .fishbone

@@ -1,0 +1,27 @@
+{
+  "aliases": [
+    "reference",
+    "platform",
+    "services"
+  ],
+  "category": "architecture",
+  "id": "refArch",
+  "kicker": "ARCHITECTURE",
+  "name": "Reference architecture",
+  "order": 6,
+  "outline": [
+    "Platform",
+    "  CDN >cdn",
+    "    Load balancer >lb",
+    "      Service A >service",
+    "        Primary DB >db",
+    "      Service B >service",
+    "        Cache >cache",
+    "      Queue >queue",
+    "  Monitoring >monitor"
+  ],
+  "shelf": "architecture",
+  "summary": "Edge, services, data, observability",
+  "title": "Reference architecture",
+  "type": "architecture"
+}

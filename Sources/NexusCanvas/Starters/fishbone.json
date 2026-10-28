@@ -1,0 +1,27 @@
+{
+  "aliases": [
+    "root cause",
+    "rca",
+    "ishikawa"
+  ],
+  "category": "process",
+  "id": "fishbone",
+  "kicker": "FISHBONE",
+  "name": "Root cause analysis",
+  "order": 10,
+  "outline": [
+    "Slow deploys",
+    "  People",
+    "    Manual approvals",
+    "  Process",
+    "    Big batches",
+    "  Tools",
+    "    Serial test runs",
+    "  Environment",
+    "    Shared staging"
+  ],
+  "shelf": "architecture",
+  "summary": "People, process, tools, environment",
+  "title": "Slow deploys",
+  "type": "fishbone"
+}

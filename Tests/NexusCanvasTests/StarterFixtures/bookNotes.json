@@ -1,0 +1,57 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n5",
+        "n6"
+      ],
+      "kind": "root",
+      "text": "Thinking in Systems"
+    },
+    "n2": {
+      "children": [
+        "n3",
+        "n4"
+      ],
+      "kind": "topic",
+      "text": "Ideas"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Stocks and flows"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "Feedback loops"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Quotes"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "Questions"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Thinking in Systems",
+  "type": "mindmap"
+}

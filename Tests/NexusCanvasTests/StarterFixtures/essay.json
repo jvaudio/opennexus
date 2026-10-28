@@ -1,0 +1,58 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "logic.right"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n4",
+        "n6"
+      ],
+      "kind": "root",
+      "text": "Thesis"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "Argument 1"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Evidence"
+    },
+    "n4": {
+      "children": [
+        "n5"
+      ],
+      "kind": "topic",
+      "text": "Argument 2"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Evidence"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "Counter-argument"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Essay plan",
+  "type": "logic"
+}

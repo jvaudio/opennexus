@@ -383,6 +383,18 @@ final class Session {
             made.orderedCanvases[0].type == .dfd
                 && made.orderedCanvases[0].nodes[made.orderedCanvases[0].root]?.text == "Q3 plan")
         #expect(run(["new", "Q3 plan"], in: box.root).0 == 1, "never overwrites")
+        // new from a starter: the template's topics, titled as asked (M39)
+        let (s5, threat, _, _) = run(["new", "Payments review", "--starter", "threat"], in: box.root)
+        #expect(s5 == 0)
+        let fromStarter = try MapFiles.read(URL(fileURLWithPath: threat.trimmingCharacters(in: .newlines)))
+        let tc = fromStarter.orderedCanvases[0]
+        #expect(tc.type == .threatModel && tc.title == "Payments review" && tc.nodes[tc.root]?.text == "Payments")
+        #expect(run(["new", "X", "--starter", "nope"], in: box.root).0 == 64)
+        #expect(run(["new", "X", "--starter", "dfd", "--type", "dfd"], in: box.root).0 == 64)
+        let (s6, list, _, _) = run(["starters"], in: box.root)
+        let rows = list.split(separator: "\n")
+        #expect(s6 == 0 && rows.count == 41, "16 blank starters and 25 templates")
+        #expect(rows.first?.hasPrefix("blank.mindmap") == true && rows.contains { $0.hasPrefix("threat ") })
         // import
         try "# Trip\n## Packing\n- Passport\n- Charger\n## Trains\n".write(
             to: box.root.appending(path: "trip.md"), atomically: true, encoding: .utf8)

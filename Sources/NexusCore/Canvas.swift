@@ -305,43 +305,7 @@ extension Canvas: JSONRepresentable {
 }
 
 extension DiagramType {
-    public var defaultStructure: LayoutStructure {
-        switch self {
-        case .logic: .logicRight
-        case .brace: .braceRight
-        case .org: .orgDown
-        case .tree: .treeIndented
-        case .treeTable: .treeTable
-        case .timeline: .timelineHorizontal
-        case .fishbone: .fishboneLeft
-        case .matrix: .matrix
-        case .flowchart: .flowDown
-        case .swimlane: .swimlanes
-        case .sequence: .sequence
-        case .dfd, .threatModel, .architecture: .graphRight
-        default: .mindmapBalanced
-        }
-    }
+    public var defaultStructure: LayoutStructure { DiagramDescriptor[self].structure }
 
-    public var displayName: String {
-        switch self {
-        case .mindmap: "Mind Map"
-        case .logic: "Logic Chart"
-        case .brace: "Brace Map"
-        case .org: "Org Chart"
-        case .tree: "Tree Chart"
-        case .treeTable: "Tree Table"
-        case .timeline: "Timeline"
-        case .fishbone: "Fishbone"
-        case .matrix: "Matrix"
-        case .flowchart: "Flowchart"
-        case .swimlane: "Swimlane"
-        case .dfd: "Data Flow"
-        case .threatModel: "Threat Model"
-        case .architecture: "Architecture"
-        case .sequence: "Sequence"
-        case .whiteboard: "Whiteboard"
-        default: rawValue
-        }
-    }
+    public var displayName: String { DiagramDescriptor[self].name }
 }

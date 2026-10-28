@@ -1,0 +1,80 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "graph.right"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2"
+      ],
+      "kind": "root",
+      "text": "Online shop"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "nodeType": "actor",
+      "text": "Customer"
+    },
+    "n3": {
+      "children": [
+        "n4"
+      ],
+      "kind": "topic",
+      "nodeType": "client",
+      "text": "Web app"
+    },
+    "n4": {
+      "children": [
+        "n5",
+        "n7"
+      ],
+      "kind": "topic",
+      "nodeType": "gateway",
+      "text": "API gateway"
+    },
+    "n5": {
+      "children": [
+        "n6"
+      ],
+      "kind": "topic",
+      "nodeType": "service",
+      "text": "Orders service"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "db",
+      "text": "Orders DB"
+    },
+    "n7": {
+      "children": [
+        "n8"
+      ],
+      "kind": "topic",
+      "nodeType": "service",
+      "text": "Payments service"
+    },
+    "n8": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "external",
+      "text": "Payment provider"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "System context",
+  "type": "architecture"
+}

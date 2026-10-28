@@ -25,7 +25,7 @@ public struct RecentItem: Identifiable, Sendable, Equatable {
 public final class HomeModel {
     public var recents: [RecentItem] = []
     public var role: Role = .engineer
-    public var shelf: MapTemplate.Category = .engineering
+    public var shelf: Starter.Shelf = .engineering
     public var query = ""
     public var section = "home"
     public var inboxCount = 0
@@ -39,7 +39,7 @@ public final class HomeModel {
     public var onImport: () -> Void = {}
     /// Files dropped on Home: maps open or import; pictures become maps.
     public var onDropFiles: ([URL]) -> Void = { _ in }
-    public var onTemplate: (MapTemplate) -> Void = { _ in }
+    public var onTemplate: (Starter) -> Void = { _ in }
     public var onInbox: () -> Void = {}
     public var onFilter: (URL, String) -> Void = { _, _ in }
 
@@ -110,37 +110,9 @@ public struct HomeView: View {
         (.threatModel, Loc.t("Threat Model")), (.sequence, Loc.t("Sequence")), (.whiteboard, Loc.t("Whiteboard")),
     ]
 
-    public static func typeName(_ t: DiagramType) -> String {
-        switch t {
-        case .mindmap: Loc.t("Mind Map")
-        case .flowchart: Loc.t("Flowchart")
-        case .dfd: Loc.t("Data Flow")
-        case .architecture: Loc.t("Architecture")
-        case .threatModel: Loc.t("Threat Model")
-        case .sequence: Loc.t("Sequence")
-        case .whiteboard: Loc.t("Whiteboard")
-        case .timeline: Loc.t("Timeline")
-        case .org: Loc.t("Org Chart")
-        case .logic: Loc.t("Logic Chart")
-        case .fishbone: Loc.t("Fishbone")
-        case .matrix: Loc.t("Matrix")
-        case .treeTable: Loc.t("Tree Table")
-        case .tree: Loc.t("Tree")
-        case .brace: Loc.t("Brace")
-        case .swimlane: Loc.t("Swimlane")
-        default: t.rawValue.capitalized
-        }
-    }
+    public static func typeName(_ t: DiagramType) -> String { Loc.t(DiagramDescriptor[t].name) }
 
-    static func tint(_ t: DiagramType) -> Color {
-        switch t {
-        case .dfd, .flowchart, .swimlane: Color(hex: "#9B51E0")
-        case .timeline, .treeTable: Color(hex: "#E0A300")
-        case .threatModel: Color(hex: "#D93A3F")
-        case .architecture: Color(hex: "#1E8BE0")
-        default: Color(hex: "#0F9F9A")
-        }
-    }
+    static func tint(_ t: DiagramType) -> Color { Color(hex: DiagramDescriptor[t].tint) }
 
     var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
@@ -159,10 +131,10 @@ public struct HomeView: View {
                     } else if model.section == "recents" {
                         recents(Array(model.recents))
                     } else if model.section == "templates" {
-                        ForEach(MapTemplate.Category.allCases, id: \.self) { cat in
+                        ForEach(Starter.Shelf.allCases, id: \.self) { cat in
                             VStack(alignment: .leading, spacing: 10) {
                                 Text(cat.title).font(.chrome(16, weight: .semibold))
-                                templateRow(TemplateLibrary.shelf(cat))
+                                templateRow(StarterLibrary.shelf(cat))
                             }
                         }
                     } else {
@@ -438,7 +410,7 @@ public struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 8) {
                 Text(model.role.shelfTitle).font(.chrome(16, weight: .semibold)).padding(.trailing, 8)
-                ForEach(MapTemplate.Category.allCases, id: \.self) { cat in
+                ForEach(Starter.Shelf.allCases, id: \.self) { cat in
                     Button(cat.title) { model.shelf = cat }
                         .buttonStyle(.plain)
                         .font(.chrome(13, weight: model.shelf == cat ? .semibold : .regular))
@@ -447,22 +419,22 @@ public struct HomeView: View {
                         .background(Capsule().fill(model.shelf == cat ? Color.black : Color.secondary.opacity(0.1)))
                 }
             }
-            templateRow(TemplateLibrary.shelf(model.shelf))
+            templateRow(StarterLibrary.shelf(model.shelf))
         }
     }
 
-    func templateRow(_ ts: [MapTemplate]) -> some View {
+    func templateRow(_ ts: [Starter]) -> some View {
         HStack(alignment: .top, spacing: 16) {
             ForEach(ts) { t in
                 Button {
                     model.onTemplate(t)
                 } label: {
                     VStack(alignment: .leading, spacing: 6) {
-                        Text(t.kicker).font(.chrome(10.5, weight: .semibold, design: .monospaced))
+                        Text(Loc.t(t.kicker)).font(.chrome(10.5, weight: .semibold, design: .monospaced))
                             .foregroundStyle(
                                 Self.tint(t.type))
-                        Text(t.title).font(.chrome(14, weight: .semibold))
-                        Text(t.detail).font(.chrome(12.5)).foregroundStyle(.secondary).lineLimit(2)
+                        Text(Loc.t(t.name)).font(.chrome(14, weight: .semibold))
+                        Text(Loc.t(t.summary)).font(.chrome(12.5)).foregroundStyle(.secondary).lineLimit(2)
                     }
                     .frame(maxWidth: .infinity, minHeight: 90, maxHeight: .infinity, alignment: .topLeading)
                     .padding(16)

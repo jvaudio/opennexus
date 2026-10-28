@@ -1,0 +1,25 @@
+{
+  "aliases": [
+    "course",
+    "syllabus",
+    "lessons"
+  ],
+  "category": "thinking",
+  "id": "course",
+  "kicker": "TREE",
+  "name": "Course outline",
+  "order": 22,
+  "outline": [
+    "Intro to Swift",
+    "  Basics",
+    "    Values",
+    "    Functions",
+    "  Types",
+    "    Structs",
+    "    Enums"
+  ],
+  "shelf": "learning",
+  "summary": "Modules and lessons",
+  "title": "Course outline",
+  "type": "tree"
+}

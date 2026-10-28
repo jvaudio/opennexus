@@ -1,0 +1,24 @@
+{
+  "aliases": [
+    "migration",
+    "cloud",
+    "waves"
+  ],
+  "category": "planning",
+  "id": "migration",
+  "kicker": "TIMELINE",
+  "name": "Cloud migration",
+  "order": 9,
+  "outline": [
+    "Cloud migration",
+    "  Assess",
+    "  Wave 1 · stateless",
+    "  Wave 2 · data",
+    "  Cut over",
+    "  Decommission"
+  ],
+  "shelf": "architecture",
+  "summary": "Waves from assess to decommission",
+  "title": "Cloud migration",
+  "type": "timeline"
+}

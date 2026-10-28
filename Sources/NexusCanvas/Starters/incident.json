@@ -1,0 +1,27 @@
+{
+  "aliases": [
+    "incident",
+    "postmortem",
+    "outage"
+  ],
+  "category": "process",
+  "id": "incident",
+  "kicker": "TIMELINE",
+  "name": "Incident timeline",
+  "order": 3,
+  "outline": [
+    "Incident · checkout errors",
+    "  Detect · 09:12",
+    "    Alert fires on error rate",
+    "  Mitigate · 09:30",
+    "    Roll back release",
+    "  Resolve · 10:05",
+    "    Error rate back to baseline",
+    "  Review · next day",
+    "    Blameless retro"
+  ],
+  "shelf": "engineering",
+  "summary": "Detect, mitigate, resolve",
+  "title": "Incident timeline",
+  "type": "timeline"
+}

@@ -540,13 +540,6 @@ struct CanvasTabsView: View {
         return item
     }()
 
-    func color(for type: DiagramType) -> Color {
-        switch type {
-        case .flowchart, .swimlane: RGBA(hex: "#9B51E0").swiftUIColor
-        case .threatModel: RGBA(hex: "#D93A3F").swiftUIColor
-        case .dfd: RGBA(hex: "#0F9F9A").swiftUIColor
-        case .architecture: RGBA(hex: "#1E8BE0").swiftUIColor
-        default: Tokens.Signal.irisLight.swiftUIColor
-        }
-    }
+    /// The tab's square: the type's colour, as on Home (D287).
+    func color(for type: DiagramType) -> Color { RGBA(hex: DiagramDescriptor[type].tint).swiftUIColor }
 }

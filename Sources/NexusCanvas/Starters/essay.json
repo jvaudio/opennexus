@@ -1,0 +1,24 @@
+{
+  "aliases": [
+    "essay",
+    "argument",
+    "writing"
+  ],
+  "category": "thinking",
+  "id": "essay",
+  "kicker": "LOGIC",
+  "name": "Essay plan",
+  "order": 24,
+  "outline": [
+    "Thesis",
+    "  Argument 1",
+    "    Evidence",
+    "  Argument 2",
+    "    Evidence",
+    "  Counter-argument"
+  ],
+  "shelf": "learning",
+  "summary": "Thesis, arguments, evidence",
+  "title": "Essay plan",
+  "type": "logic"
+}

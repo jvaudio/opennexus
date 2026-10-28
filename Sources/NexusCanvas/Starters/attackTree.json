@@ -1,0 +1,26 @@
+{
+  "aliases": [
+    "attack tree",
+    "attack",
+    "risk"
+  ],
+  "category": "security",
+  "id": "attackTree",
+  "kicker": "TREE",
+  "name": "Attack tree",
+  "order": 13,
+  "outline": [
+    "Steal session",
+    "  Phish credentials",
+    "    Fake login page",
+    "  Hijack token",
+    "    XSS on profile page",
+    "    Token in logs",
+    "  Brute force",
+    "    No rate limit"
+  ],
+  "shelf": "security",
+  "summary": "Goals, paths and mitigations",
+  "title": "Steal session",
+  "type": "logic"
+}

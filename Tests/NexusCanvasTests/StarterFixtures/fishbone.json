@@ -1,0 +1,78 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "fishbone.left"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n4",
+        "n6",
+        "n8"
+      ],
+      "kind": "root",
+      "text": "Slow deploys"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "People"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Manual approvals"
+    },
+    "n4": {
+      "children": [
+        "n5"
+      ],
+      "kind": "topic",
+      "text": "Process"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Big batches"
+    },
+    "n6": {
+      "children": [
+        "n7"
+      ],
+      "kind": "topic",
+      "text": "Tools"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "text": "Serial test runs"
+    },
+    "n8": {
+      "children": [
+        "n9"
+      ],
+      "kind": "topic",
+      "text": "Environment"
+    },
+    "n9": {
+      "children": [],
+      "kind": "topic",
+      "text": "Shared staging"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Slow deploys",
+  "type": "fishbone"
+}

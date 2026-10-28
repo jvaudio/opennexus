@@ -1,0 +1,29 @@
+{
+  "aliases": [
+    "adr",
+    "decision",
+    "record"
+  ],
+  "category": "architecture",
+  "id": "adr",
+  "kicker": "DECISION",
+  "name": "Architecture decision record",
+  "order": 7,
+  "outline": [
+    "ADR-012 · Event bus",
+    "  Context",
+    "    Services poll each other",
+    "  Options",
+    "    Kafka",
+    "    SNS + SQS",
+    "    Stay with polling",
+    "  Decision",
+    "    SNS + SQS",
+    "  Consequences",
+    "    At-least-once delivery"
+  ],
+  "shelf": "architecture",
+  "summary": "Context, options, decision, consequences",
+  "title": "ADR-012 · Event bus",
+  "type": "mindmap"
+}

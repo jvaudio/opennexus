@@ -1,0 +1,83 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n5",
+        "n8"
+      ],
+      "kind": "root",
+      "text": "Weekend trip"
+    },
+    "n10": {
+      "children": [],
+      "kind": "topic",
+      "text": "Train"
+    },
+    "n2": {
+      "children": [
+        "n3",
+        "n4"
+      ],
+      "kind": "topic",
+      "text": "Plan"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Route"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "Budget"
+    },
+    "n5": {
+      "children": [
+        "n6",
+        "n7"
+      ],
+      "kind": "topic",
+      "text": "Pack"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "Passport"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "text": "Charger"
+    },
+    "n8": {
+      "children": [
+        "n9",
+        "n10"
+      ],
+      "kind": "topic",
+      "text": "Book"
+    },
+    "n9": {
+      "children": [],
+      "kind": "topic",
+      "text": "Hotel"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Weekend trip",
+  "type": "mindmap"
+}

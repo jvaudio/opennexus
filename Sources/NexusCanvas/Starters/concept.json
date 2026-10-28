@@ -1,0 +1,30 @@
+{
+  "aliases": [
+    "concept",
+    "terms",
+    "study"
+  ],
+  "category": "thinking",
+  "id": "concept",
+  "kicker": "MIND MAP",
+  "name": "Concept map",
+  "order": 23,
+  "outline": [
+    "Photosynthesis",
+    "  Light",
+    "  Water",
+    "  Carbon dioxide",
+    "  Glucose"
+  ],
+  "relationships": [
+    {
+      "from": "Light",
+      "label": "powers",
+      "to": "Glucose"
+    }
+  ],
+  "shelf": "learning",
+  "summary": "Terms and how they relate",
+  "title": "Photosynthesis",
+  "type": "mindmap"
+}

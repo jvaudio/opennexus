@@ -1,0 +1,70 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "flow.down"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2"
+      ],
+      "kind": "root",
+      "nodeType": "start",
+      "text": "Client request"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "Gateway authenticates"
+    },
+    "n3": {
+      "children": [
+        "n4",
+        "n7"
+      ],
+      "kind": "topic",
+      "nodeType": "decision",
+      "text": "Token valid?"
+    },
+    "n4": {
+      "children": [
+        "n5"
+      ],
+      "kind": "topic",
+      "text": "Route to service"
+    },
+    "n5": {
+      "children": [
+        "n6"
+      ],
+      "kind": "topic",
+      "text": "Service responds"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "end",
+      "text": "Return 200"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "end",
+      "text": "Return 401"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "API request flow",
+  "type": "flowchart"
+}

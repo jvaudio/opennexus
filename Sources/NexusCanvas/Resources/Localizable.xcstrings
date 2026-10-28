@@ -1677,6 +1677,10 @@
       "comment" : "UI text (DFD.swift)",
       "extractionState" : "migrated"
     },
+    "A data flow with STRIDE threats for each element" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
     "A data store is never written" : {
       "comment" : "UI text (DFD.swift)",
       "extractionState" : "migrated"
@@ -1693,6 +1697,14 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "A hierarchy laid out as the rows of a table" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
+    "A hierarchy that reads from left to right" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
     "A new canvas; the original stays" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
@@ -1705,12 +1717,20 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "A plain canvas for loose ideas" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
     "A plan of renames to review" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
     "A PowerPoint deck Keynote opens directly, one slide per step." : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "A process split into lanes by who does each step" : {
+      "comment" : "Diagram type summary (starter picker)",
       "extractionState" : "migrated"
     },
     "A process with no input" : {
@@ -1731,6 +1751,10 @@
     },
     "a topic" : {
       "comment" : "UI text (CanvasController+Connect.swift)",
+      "extractionState" : "migrated"
+    },
+    "A whole and its parts, grouped by braces" : {
+      "comment" : "Diagram type summary (starter picker)",
       "extractionState" : "migrated"
     },
     "a zone" : {
@@ -1798,7 +1822,7 @@
       "extractionState" : "migrated"
     },
     "Access review" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Accessibility" : {
@@ -1950,7 +1974,7 @@
       "extractionState" : "migrated"
     },
     "Agenda, decisions, actions" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Agents · MCP & CLI" : {
@@ -2085,6 +2109,10 @@
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
+    "An indented hierarchy, like folders in a file tree" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
     "An OpenAI-compatible endpoint on localhost, such as Ollama or LM Studio. Needs a network permission OpenNexus doesn’t request in v1." : {
       "comment" : "UI text (AISettingsView.swift)",
       "extractionState" : "migrated"
@@ -2122,7 +2150,7 @@
       "extractionState" : "migrated"
     },
     "API request flow" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "App" : {
@@ -2201,8 +2229,12 @@
       "comment" : "Diagram type",
       "extractionState" : "migrated"
     },
+    "ARCHITECTURE" : {
+      "comment" : "Starter kicker, small capitals over its name",
+      "extractionState" : "migrated"
+    },
     "Architecture decision record" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Architecture icons; ↩ inserts a child" : {
@@ -2294,7 +2326,7 @@
       "extractionState" : "migrated"
     },
     "Attack tree" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Audio note" : {
@@ -2409,6 +2441,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "BLANK" : {
+      "comment" : "Starter kicker, small capitals over its name",
+      "extractionState" : "migrated"
+    },
     "blank mind map ·" : {
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
@@ -2430,7 +2466,7 @@
       "extractionState" : "migrated"
     },
     "Book notes" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Border" : {
@@ -2479,10 +2515,6 @@
     },
     "Boxed" : {
       "comment" : "UI text (FormatPanelElements.swift)",
-      "extractionState" : "migrated"
-    },
-    "Brace" : {
-      "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
     "Brace Map" : {
@@ -2630,15 +2662,19 @@
       "extractionState" : "migrated"
     },
     "Business capabilities by level" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "By type" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "C4 · L1–L2" : {
+      "comment" : "Starter kicker, small capitals over its name",
+      "extractionState" : "migrated"
+    },
     "C4, API flow, retro" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Cache" : {
@@ -2718,7 +2754,7 @@
       "extractionState" : "migrated"
     },
     "Capability map" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Caps Lock" : {
@@ -2910,7 +2946,7 @@
       "extractionState" : "migrated"
     },
     "Client → gateway → services" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Clients" : {
@@ -2938,7 +2974,7 @@
       "extractionState" : "migrated"
     },
     "Cloud migration" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Cluster" : {
@@ -3126,7 +3162,7 @@
       "extractionState" : "migrated"
     },
     "Concept map" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Confirm" : {
@@ -3206,7 +3242,7 @@
       "extractionState" : "migrated"
     },
     "Context, options, decision, consequences" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Continue as %@" : {
@@ -3382,7 +3418,7 @@
       "extractionState" : "migrated"
     },
     "Course outline" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Crash recovery · %lld topics" : {
@@ -3546,7 +3582,7 @@
       "extractionState" : "migrated"
     },
     "DATA FLOW" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter kicker, small capitals over its name",
       "extractionState" : "migrated"
     },
     "Data Flow · %lld canvases" : {
@@ -3574,11 +3610,11 @@
       }
     },
     "Data Flow + STRIDE" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Data flow diagram" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Data flow levels" : {
@@ -3590,7 +3626,7 @@
       "extractionState" : "migrated"
     },
     "Data flow with STRIDE per element" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Data masking" : {
@@ -3623,6 +3659,10 @@
     },
     "Decision" : {
       "comment" : "Node type (Flowchart)",
+      "extractionState" : "migrated"
+    },
+    "DECISION" : {
+      "comment" : "Starter kicker, small capitals over its name",
       "extractionState" : "migrated"
     },
     "Deep" : {
@@ -3738,7 +3778,7 @@
       "extractionState" : "migrated"
     },
     "Detect, mitigate, resolve" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Detected on-device with the Natural Language framework plus your patterns. Masking applies to the export copy; your document is unchanged." : {
@@ -3918,7 +3958,7 @@
       "extractionState" : "migrated"
     },
     "Edge, services, data, observability" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Edges" : {
@@ -4102,7 +4142,7 @@
       "extractionState" : "migrated"
     },
     "Engineering" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "English" : {
@@ -4130,7 +4170,7 @@
       "extractionState" : "migrated"
     },
     "Entities, processes and stores" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Equation" : {
@@ -4150,11 +4190,15 @@
       "extractionState" : "migrated"
     },
     "Essay plan" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Event Stream" : {
       "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Events in order along a line" : {
+      "comment" : "Diagram type summary (starter picker)",
       "extractionState" : "migrated"
     },
     "Every action, with its key" : {
@@ -4517,6 +4561,10 @@
       "comment" : "Diagram type",
       "extractionState" : "migrated"
     },
+    "FISHBONE" : {
+      "comment" : "Starter kicker, small capitals over its name",
+      "extractionState" : "migrated"
+    },
     "Fishbone · Brutal" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
@@ -4575,6 +4623,10 @@
     },
     "Floating topic" : {
       "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "FLOW" : {
+      "comment" : "Starter kicker, small capitals over its name",
       "extractionState" : "migrated"
     },
     "Flow dots in Present mode" : {
@@ -4826,7 +4878,7 @@
       "extractionState" : "migrated"
     },
     "Goals, paths and mitigations" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Gold star" : {
@@ -5081,8 +5133,12 @@
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "Ideas branching out from one central topic" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
     "Ideas, quotes and questions" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Ignore" : {
@@ -5202,11 +5258,11 @@
       "extractionState" : "migrated"
     },
     "Incident response runbook" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Incident timeline" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Include metadata (types, fields)" : {
@@ -5478,7 +5534,7 @@
       "extractionState" : "migrated"
     },
     "Learning" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Left" : {
@@ -5574,7 +5630,7 @@
       "extractionState" : "migrated"
     },
     "Lifelines with return messages" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Light" : {
@@ -5715,6 +5771,10 @@
     },
     "Locked" : {
       "comment" : "UI text (Integrations.swift)",
+      "extractionState" : "migrated"
+    },
+    "LOGIC" : {
+      "comment" : "Starter kicker, small capitals over its name",
       "extractionState" : "migrated"
     },
     "Logic · Brutal" : {
@@ -5949,6 +6009,10 @@
       "comment" : "Diagram type",
       "extractionState" : "migrated"
     },
+    "MATRIX" : {
+      "comment" : "Starter kicker, small capitals over its name",
+      "extractionState" : "migrated"
+    },
     "MCP tools" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -5970,7 +6034,7 @@
       "extractionState" : "migrated"
     },
     "Meeting notes" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Merge · one undo" : {
@@ -6065,6 +6129,10 @@
       "comment" : "Undo action name (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
+    "Messages between participants, in order" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
     "Metadata · pin to show on node" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
@@ -6082,7 +6150,7 @@
       "extractionState" : "migrated"
     },
     "MIND MAP" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter kicker, small capitals over its name",
       "extractionState" : "migrated"
     },
     "Mind Map · balanced" : {
@@ -6178,7 +6246,7 @@
       "extractionState" : "migrated"
     },
     "Modules and lessons" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Monitoring" : {
@@ -6730,7 +6798,7 @@
       "extractionState" : "migrated"
     },
     "Now, next, later" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Numbering" : {
@@ -6738,7 +6806,7 @@
       "extractionState" : "migrated"
     },
     "OAuth handshake" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Object Storage" : {
@@ -7130,11 +7198,11 @@
       "extractionState" : "migrated"
     },
     "People, process, tools, environment" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "People, systems and containers" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Per diagram type" : {
@@ -7210,7 +7278,7 @@
       "extractionState" : "migrated"
     },
     "Plan, pack, book" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Planner · Student" : {
@@ -7218,11 +7286,11 @@
       "extractionState" : "migrated"
     },
     "Planning" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter category (starter picker)",
       "extractionState" : "migrated"
     },
     "Platforms, migrations and decisions" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Playing audio note · %lld s" : {
@@ -7393,6 +7461,10 @@
       "comment" : "UI text (DFD.swift)",
       "extractionState" : "migrated"
     },
+    "Processes, data stores and the data that moves between them" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
     "Profile" : {
       "comment" : "Settings section",
       "extractionState" : "migrated"
@@ -7446,11 +7518,11 @@
       "extractionState" : "migrated"
     },
     "Project plan" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Projects, notes and ideas" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Promote" : {
@@ -7678,11 +7750,11 @@
       "extractionState" : "migrated"
     },
     "Reference arch, ADR, capability map" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Reference architecture" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Regex, e.g. ticket or account IDs (one per line)" : {
@@ -8006,7 +8078,7 @@
       "extractionState" : "migrated"
     },
     "Revision tracker" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Rewrite" : {
@@ -8054,15 +8126,15 @@
       "extractionState" : "migrated"
     },
     "Roadmap" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Roadmap, SWOT, book notes" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Roles, systems and owners" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Root" : {
@@ -8070,7 +8142,7 @@
       "extractionState" : "migrated"
     },
     "Root cause analysis" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Root colour" : {
@@ -8385,6 +8457,10 @@
       "comment" : "Diagram type",
       "extractionState" : "migrated"
     },
+    "SEQUENCE" : {
+      "comment" : "Starter kicker, small capitals over its name",
+      "extractionState" : "migrated"
+    },
     "Sequence and flowchart" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
@@ -8415,6 +8491,10 @@
     },
     "Services menu: New Map from Selection" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Services, data stores and networks, drawn as icons" : {
+      "comment" : "Diagram type summary (starter picker)",
       "extractionState" : "migrated"
     },
     "Set Password…" : {
@@ -8673,6 +8753,10 @@
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "Software" : {
+      "comment" : "Starter category (starter picker)",
+      "extractionState" : "migrated"
+    },
     "Solid" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -8722,7 +8806,7 @@
       "extractionState" : "migrated"
     },
     "Sprint retro" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Square" : {
@@ -8817,6 +8901,10 @@
       "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
+    "Steps and decisions from start to finish" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
     "Sticker" : {
       "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
@@ -8858,7 +8946,7 @@
       "extractionState" : "migrated"
     },
     "Strengths, weaknesses, opportunities, threats" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "STRIDE" : {
@@ -8997,6 +9085,10 @@
       "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
     },
+    "SWOT" : {
+      "comment" : "Starter name (Home's template shelf, starter picker)",
+      "extractionState" : "migrated"
+    },
     "Symbols" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
@@ -9010,7 +9102,7 @@
       "extractionState" : "migrated"
     },
     "System context" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "System-wide" : {
@@ -9018,7 +9110,7 @@
       "extractionState" : "migrated"
     },
     "Systems, APIs, incidents and sprints" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Tab · Return · \/ fade after the first keystroke" : {
@@ -9081,6 +9173,10 @@
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
+    "Teams and who reports to whom, top down" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
     "Tech" : {
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
@@ -9098,23 +9194,23 @@
       "extractionState" : "migrated"
     },
     "Templates for architects" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Templates for engineers" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Templates for planners" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Templates for security" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Terms and how they relate" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Test connection" : {
@@ -9147,6 +9243,10 @@
     },
     "The canvas's tasks on a timeline" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "The causes behind one effect" : {
+      "comment" : "Diagram type summary (starter picker)",
       "extractionState" : "migrated"
     },
     "The central topic can’t be deleted" : {
@@ -9230,7 +9330,7 @@
       "extractionState" : "migrated"
     },
     "Thesis, arguments, evidence" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Thin" : {
@@ -9242,7 +9342,7 @@
       "extractionState" : "migrated"
     },
     "Thinking" : {
-      "comment" : "UI text (CanvasController+AI.swift)",
+      "comment" : "Starter category (starter picker)",
       "extractionState" : "migrated"
     },
     "This build doesn't include the tool. Build it with:\n\nswift build -c release --product nexus" : {
@@ -9306,7 +9406,7 @@
       "extractionState" : "migrated"
     },
     "Threat model" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Threat Model" : {
@@ -9314,7 +9414,7 @@
       "extractionState" : "migrated"
     },
     "THREAT MODEL" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter kicker, small capitals over its name",
       "extractionState" : "migrated"
     },
     "Threat Model · %lld open threats" : {
@@ -9342,7 +9442,7 @@
       }
     },
     "Threat model, attack tree, IR runbook" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Threat models" : {
@@ -9366,7 +9466,7 @@
       "extractionState" : "migrated"
     },
     "Threats, data and access" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "UI text (Starters.swift)",
       "extractionState" : "migrated"
     },
     "Three eighths done" : {
@@ -9387,6 +9487,10 @@
     },
     "Timeline" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "TIMELINE" : {
+      "comment" : "Starter kicker, small capitals over its name",
       "extractionState" : "migrated"
     },
     "Timeline · Solid" : {
@@ -9513,8 +9617,12 @@
       "comment" : "Text with values filled in (TreeOperations.swift)",
       "extractionState" : "migrated"
     },
+    "Topics in a grid of rows and columns" : {
+      "comment" : "Diagram type summary (starter picker)",
+      "extractionState" : "migrated"
+    },
     "Topics, confidence and dates" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Tour example" : {
@@ -9573,6 +9681,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "TREE" : {
+      "comment" : "Starter kicker, small capitals over its name",
+      "extractionState" : "migrated"
+    },
     "Tree · Minimal" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
@@ -9590,11 +9702,11 @@
       "extractionState" : "migrated"
     },
     "TREE TABLE" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter kicker, small capitals over its name",
       "extractionState" : "migrated"
     },
     "Triage, contain, recover" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Trust" : {
@@ -9838,7 +9950,7 @@
       "extractionState" : "migrated"
     },
     "Waves from assess to decommission" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Ways in and out of OpenNexus without leaving the Mac." : {
@@ -9854,7 +9966,7 @@
       "extractionState" : "migrated"
     },
     "Weekend trip" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Weeks" : {
@@ -9870,7 +9982,7 @@
       "extractionState" : "migrated"
     },
     "Went well · to improve · actions" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "What will you map first?" : {
@@ -9938,7 +10050,7 @@
       "extractionState" : "migrated"
     },
     "Workstreams and tasks" : {
-      "comment" : "UI text (Templates.swift)",
+      "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
     "Writes a new canvas, structure and styles untouched; the original stays." : {

@@ -1,0 +1,65 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "matrix.grid"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n4",
+        "n6"
+      ],
+      "kind": "root",
+      "text": "Sprint 42 retro"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "Went well"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Shipped search"
+    },
+    "n4": {
+      "children": [
+        "n5"
+      ],
+      "kind": "topic",
+      "text": "To improve"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "Flaky CI"
+    },
+    "n6": {
+      "children": [
+        "n7"
+      ],
+      "kind": "topic",
+      "text": "Actions"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "text": "Quarantine flaky tests"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Sprint retro",
+  "type": "matrix"
+}

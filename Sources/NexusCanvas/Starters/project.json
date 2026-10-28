@@ -1,0 +1,26 @@
+{
+  "aliases": [
+    "project",
+    "plan",
+    "tasks",
+    "wbs"
+  ],
+  "category": "planning",
+  "id": "project",
+  "kicker": "TREE TABLE",
+  "name": "Project plan",
+  "order": 19,
+  "outline": [
+    "Project plan",
+    "  Discovery",
+    "    Interviews",
+    "  Build",
+    "    Prototype",
+    "  Launch",
+    "    Announcement"
+  ],
+  "shelf": "planning",
+  "summary": "Workstreams and tasks",
+  "title": "Project plan",
+  "type": "treeTable"
+}

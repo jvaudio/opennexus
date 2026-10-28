@@ -1,0 +1,28 @@
+{
+  "aliases": [
+    "trip",
+    "travel",
+    "packing"
+  ],
+  "category": "planning",
+  "id": "trip",
+  "kicker": "MIND MAP",
+  "name": "Weekend trip",
+  "order": 18,
+  "outline": [
+    "Weekend trip",
+    "  Plan",
+    "    Route",
+    "    Budget",
+    "  Pack",
+    "    Passport",
+    "    Charger",
+    "  Book",
+    "    Hotel",
+    "    Train"
+  ],
+  "shelf": "planning",
+  "summary": "Plan, pack, book",
+  "title": "Weekend trip",
+  "type": "mindmap"
+}

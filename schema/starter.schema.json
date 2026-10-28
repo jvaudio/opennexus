@@ -1,0 +1,124 @@
+{
+  "$id": "https://opennexus.app/schema/starter.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "One starter: a card in the starter picker that makes a new canvas, as one JSON file (M39). The built-ins live in Sources/NexusCanvas/Starters/.",
+  "properties": {
+    "aliases": {
+      "description": "Search terms, in English.",
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "category": {
+      "description": "The starter picker's category.",
+      "enum": [
+        "thinking",
+        "planning",
+        "process",
+        "architecture",
+        "security",
+        "software"
+      ]
+    },
+    "id": {
+      "description": "Unique id, letters, digits and hyphens. Blank starters are generated as blank.<type>, so ids never start with blank.",
+      "pattern": "^(?!blank)[A-Za-z][A-Za-z0-9-]*$",
+      "type": "string"
+    },
+    "kicker": {
+      "description": "Small capitals over the title, in English.",
+      "minLength": 1,
+      "type": "string"
+    },
+    "name": {
+      "description": "The card's title, in English (looked up in the string catalog).",
+      "minLength": 1,
+      "type": "string"
+    },
+    "order": {
+      "description": "Position among the built-ins; Home's shelves keep this order.",
+      "minimum": 1,
+      "type": "integer"
+    },
+    "outline": {
+      "description": "Topics, one per line: the root first, then each topic indented two spaces a level deeper than its parent. \"Text >nodeType\" sets a node type.",
+      "items": {
+        "pattern": "^(  )*[^ ]",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "relationships": {
+      "description": "Relationships between outline topics, found by their text (the first in outline order).",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "from": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "kind": {
+            "description": "A relationship kind, such as a sequence diagram's return message.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "to": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "from",
+          "to"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "shelf": {
+      "description": "Home's template shelf for a role.",
+      "enum": [
+        "engineering",
+        "architecture",
+        "security",
+        "planning",
+        "learning"
+      ]
+    },
+    "summary": {
+      "description": "One line under the title, in English.",
+      "minLength": 1,
+      "type": "string"
+    },
+    "title": {
+      "description": "The canvas title.",
+      "type": "string"
+    },
+    "type": {
+      "description": "The canvas's diagram type (a canvas type id, such as mindmap or dfd).",
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "category",
+    "id",
+    "kicker",
+    "name",
+    "order",
+    "outline",
+    "summary",
+    "title",
+    "type"
+  ],
+  "title": "OpenNexus starter",
+  "type": "object"
+}

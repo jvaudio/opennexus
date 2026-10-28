@@ -1,0 +1,86 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "graph.right"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n9"
+      ],
+      "kind": "root",
+      "text": "Platform"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "nodeType": "cdn",
+      "text": "CDN"
+    },
+    "n3": {
+      "children": [
+        "n4",
+        "n6",
+        "n8"
+      ],
+      "kind": "topic",
+      "nodeType": "lb",
+      "text": "Load balancer"
+    },
+    "n4": {
+      "children": [
+        "n5"
+      ],
+      "kind": "topic",
+      "nodeType": "service",
+      "text": "Service A"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "db",
+      "text": "Primary DB"
+    },
+    "n6": {
+      "children": [
+        "n7"
+      ],
+      "kind": "topic",
+      "nodeType": "service",
+      "text": "Service B"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "cache",
+      "text": "Cache"
+    },
+    "n8": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "queue",
+      "text": "Queue"
+    },
+    "n9": {
+      "children": [],
+      "kind": "topic",
+      "nodeType": "monitor",
+      "text": "Monitoring"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Reference architecture",
+  "type": "architecture"
+}

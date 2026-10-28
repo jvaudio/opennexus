@@ -1,0 +1,22 @@
+{
+  "aliases": [
+    "meeting",
+    "notes",
+    "agenda"
+  ],
+  "category": "planning",
+  "id": "meeting",
+  "kicker": "MIND MAP",
+  "name": "Meeting notes",
+  "order": 20,
+  "outline": [
+    "Weekly sync",
+    "  Agenda",
+    "  Decisions",
+    "  Actions"
+  ],
+  "shelf": "planning",
+  "summary": "Agenda, decisions, actions",
+  "title": "Weekly sync",
+  "type": "mindmap"
+}

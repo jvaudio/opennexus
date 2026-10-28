@@ -29,13 +29,7 @@ public enum TreeOperationRefusal: Error, Equatable, Sendable, CustomStringConver
 
 /// Default text for a new topic, by diagram type and depth (matches P0).
 public func defaultTopicText(type: DiagramType, depth: Int) -> String {
-    switch type {
-    case .flowchart, .swimlane: "Step"
-    case .dfd: depth == 1 ? "Process" : "Data"
-    case .timeline where depth == 1: "Event"
-    case .org: depth == 1 ? "Lead" : "Member"
-    default: depth <= 1 ? "Main Topic" : "Subtopic"
-    }
+    DiagramDescriptor[type].topicText(depth: depth)
 }
 
 /// Xmind's restructuring vocabulary, as reversible edits.

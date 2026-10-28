@@ -1,0 +1,71 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "logic.right"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n4",
+        "n7"
+      ],
+      "kind": "root",
+      "text": "Steal session"
+    },
+    "n2": {
+      "children": [
+        "n3"
+      ],
+      "kind": "topic",
+      "text": "Phish credentials"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "Fake login page"
+    },
+    "n4": {
+      "children": [
+        "n5",
+        "n6"
+      ],
+      "kind": "topic",
+      "text": "Hijack token"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "XSS on profile page"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "Token in logs"
+    },
+    "n7": {
+      "children": [
+        "n8"
+      ],
+      "kind": "topic",
+      "text": "Brute force"
+    },
+    "n8": {
+      "children": [],
+      "kind": "topic",
+      "text": "No rate limit"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Steal session",
+  "type": "logic"
+}

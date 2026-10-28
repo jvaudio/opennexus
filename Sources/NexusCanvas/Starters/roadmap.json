@@ -1,0 +1,24 @@
+{
+  "aliases": [
+    "roadmap",
+    "now next later"
+  ],
+  "category": "planning",
+  "id": "roadmap",
+  "kicker": "TIMELINE",
+  "name": "Roadmap",
+  "order": 16,
+  "outline": [
+    "Product roadmap",
+    "  Now · Q1",
+    "    Onboarding revamp",
+    "  Next · Q2",
+    "    Team plans",
+    "  Later · H2",
+    "    Integrations"
+  ],
+  "shelf": "planning",
+  "summary": "Now, next, later",
+  "title": "Product roadmap",
+  "type": "timeline"
+}

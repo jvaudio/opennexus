@@ -219,10 +219,7 @@ public struct MapTools {
                 ], required: ["path", "format"]), readOnly: true),
     ]
 
-    static let types: [DiagramType] = [
-        .mindmap, .logic, .brace, .org, .tree, .treeTable, .timeline, .fishbone, .matrix, .flowchart, .swimlane, .dfd,
-        .threatModel, .architecture, .sequence, .whiteboard,
-    ]
+    static let types: [DiagramType] = DiagramDescriptor.all.map(\.type)
 
     static func tool(_ name: String, _ title: String, _ desc: String, _ schema: JSONValue, readOnly: Bool) -> JSONValue
     {

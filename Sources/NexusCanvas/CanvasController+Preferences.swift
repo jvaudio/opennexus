@@ -156,22 +156,9 @@ extension CanvasController {
     /// A new document's first canvas, from Settings › Editing › New documents and
     /// Appearance › Default look (or the last document's look).
     public static func newDocumentModel(prefs: Preferences, type: DiagramType = .mindmap) -> DocumentModel {
-        var c = Canvas(
-            id: "c1", title: "", type: type, rootText: type == .mindmap ? "Central Topic" : defaultRootText(type))
+        var c = Canvas(id: "c1", title: "", type: type, rootText: DiagramDescriptor[type].rootText)
         applyDefaults(&c, prefs: prefs)
         return DocumentModel(canvases: [c])
-    }
-
-    static func defaultRootText(_ t: DiagramType) -> String {
-        switch t {
-        case .flowchart: "Start"
-        case .dfd: "Context"
-        case .threatModel: "System"
-        case .architecture: "Platform"
-        case .sequence: "Sequence"
-        case .timeline: "Timeline"
-        default: "Central Topic"
-        }
     }
 
     public static func applyDefaults(_ c: inout Canvas, prefs: Preferences) {

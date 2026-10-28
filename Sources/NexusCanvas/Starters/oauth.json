@@ -1,0 +1,52 @@
+{
+  "aliases": [
+    "oauth",
+    "login",
+    "auth",
+    "handshake"
+  ],
+  "category": "software",
+  "id": "oauth",
+  "kicker": "SEQUENCE",
+  "name": "OAuth handshake",
+  "order": 5,
+  "outline": [
+    "OAuth handshake",
+    "  User >actor",
+    "  App >participant",
+    "  Auth server >participant"
+  ],
+  "relationships": [
+    {
+      "from": "User",
+      "label": "Sign in",
+      "to": "App"
+    },
+    {
+      "from": "App",
+      "label": "Authorize",
+      "to": "Auth server"
+    },
+    {
+      "from": "Auth server",
+      "kind": "return",
+      "label": "Code",
+      "to": "App"
+    },
+    {
+      "from": "App",
+      "label": "Exchange code",
+      "to": "Auth server"
+    },
+    {
+      "from": "Auth server",
+      "kind": "return",
+      "label": "Access token",
+      "to": "App"
+    }
+  ],
+  "shelf": "engineering",
+  "summary": "Lifelines with return messages",
+  "title": "OAuth handshake",
+  "type": "sequence"
+}
