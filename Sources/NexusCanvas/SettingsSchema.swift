@@ -179,7 +179,7 @@ public enum SettingsSchema {
                         ], "system", "Restart applies the change"),
                     M(
                         "general.launch", "At launch, open",
-                        [("last", "Last documents"), ("home", "Home"), ("new", "A new document")], "last"),
+                        [("last", "Last documents"), ("home", "Home"), ("new", "A new document")], "home"),
                     S("general.openIn", "Open documents in", [("tabs", "Tabs"), ("windows", "Windows")], "tabs"),
                     T("general.restoreWindows", "Restore windows when reopening", true),
                 ]),

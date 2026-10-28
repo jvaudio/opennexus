@@ -90,6 +90,15 @@ import Testing
         #expect(rows.contains { $0.key == "general.updatesCheckNow" && $0.kind == .button("Check Now") })
     }
 
+    /// A launch with nothing to reopen opens Home, with its starters, rather than no window
+    /// (D310).
+    @Test func launchOpensHomeByDefault() {
+        let prefs = Preferences.isolated()
+        #expect(prefs.string("general.launch") == "home")
+        prefs.set("general.launch", "last")
+        #expect(prefs.string("general.launch") == "last")
+    }
+
     @Test func preferencesPersistNotifyAndReset() {
         let prefs = Preferences.isolated()
         #expect(prefs.string("editing.typing") == "replace" && prefs.isDefault("editing.typing"))
