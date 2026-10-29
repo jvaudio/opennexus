@@ -1,6 +1,6 @@
 # OpenNexus Plan: Collaboration, Reach and Smaller Gaps (M43–M50)
 
-Oct 28, 2026 · Jerry Voelker · written against the code at `66ed075` (0.3, after M42) · **Status: in progress.** Decisions #1–#3 were confirmed on Oct 28, 2026; the other rows in "Decisions for Jerry" stay pending until Jerry confirms them. Corrections from checking the plan against the code were folded in the same day.
+Oct 28, 2026 · Jerry Voelker · written against the code at `66ed075` (0.3, after M42) · **Status: in progress.** Decisions #1–#3 were confirmed on Oct 28, 2026 and #4–#7 on Oct 29; the other rows in "Decisions for Jerry" stay pending until Jerry confirms them. Corrections from checking the plan against the code were folded in the same day.
 
 This plan closes the eight gaps chosen from the [feature review](https://claude.ai/artifact/P9XpE1ituB1UgL9WXsZGjT) in eight milestones, M43–M50. Each phase is one milestone that Claude Code can plan, build, test and accept on its own, in the repo's existing style.
 
@@ -583,10 +583,10 @@ Each row has a recommendation. Every row starts Pending; before the milestone in
 | 1 | Phase order | Dependency order (HTML export first) · the review's order (share links first, building the viewer inside it) | Dependency order: same work, smaller milestones, and the HTML export ships on its own | M43 | Confirmed: dependency order (2026-10-28) |
 | 2 | Amend the "no network calls" rule | Keep it (drops Phases 2–4 and the network parts of 5) · replace it with the opt-in, out-of-process, sealed rule | Replace it, recorded as M43's first decision | M43 | Confirmed: replace it with the opt-in rule (2026-10-28) |
 | 3 | Viewer copy in saved documents | On by default · off by default · on for packages only | On for packages, git-ignored like `preview.png`; in `.nexusjson` only behind its own switch, since a single file can't git-ignore it | M43 | Confirmed: on for packages only (2026-10-28) |
-| 4 | Viewer site address | `jvaudio.github.io/opennexus` · a custom domain on GitHub Pages | A custom domain if you'll keep it: nicer links, and it enables universal links (#10) | M44 | Pending |
-| 5 | A public share and relay instance run by you | None, bring your own only · run one | None for now; revisit after M46 | M44 | Pending |
-| 6 | Server stack | Swift (Hummingbird) in Docker · TypeScript on Cloudflare Workers with Durable Objects | Swift in Docker: one language, and it runs on your ZimaOS box or any VPS | M44 | Pending |
-| 7 | GitHub Gist as a share destination | Include · skip | Include: no server or bucket needed | M44 | Pending |
+| 4 | Viewer site address | `jvaudio.github.io/opennexus` · a custom domain on GitHub Pages | A custom domain if you'll keep it: nicer links, and it enables universal links (#10) | M44 | Confirmed: a custom domain on GitHub Pages; the domain is still to be named (2026-10-29) |
+| 5 | A public share and relay instance run by you | None, bring your own only · run one | None for now; revisit after M46 | M44 | Confirmed: none, bring your own only (2026-10-29) |
+| 6 | Server stack | Swift (Hummingbird) in Docker · TypeScript on Cloudflare Workers with Durable Objects | Swift in Docker: one language, and it runs on your ZimaOS box or any VPS | M44 | Confirmed: Swift (Hummingbird) in Docker (2026-10-29) |
+| 7 | GitHub Gist as a share destination | Include · skip | Include: no server or bucket needed | M44 | Confirmed: include (2026-10-29) |
 | 8 | S3 sync encryption default | On · off (readable bucket, as Mind Elixir) | On, with off available | M45 | Pending |
 | 9 | In-app Git (libgit2) | Now in M45 · after M47 · never | After M47; the merge driver covers people who already use Git | M45 | Pending |
 | 10 | Invite and share links open the app | Universal links (custom domain + associated-domains entitlement) · `opennexus://` links via a landing page | Universal links if #4 is a custom domain | M46 | Pending |
