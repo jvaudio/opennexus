@@ -785,6 +785,10 @@ public enum SettingsSchema {
                     T(
                         "network.sync", "Sync libraries", false,
                         "Keeps library folders in step through your bucket in Settings › Sync", ["sync", "bucket"]),
+                    T(
+                        "network.collab", "Live co-editing (Labs)", false,
+                        "Edit a document with others at the same time through your OpenNexus Server in Settings › Sharing",
+                        ["collaborate", "co-edit", "live", "session", "realtime", "together", "invite"]),
                 ], footnote: "A separate service makes every request; OpenNexus itself still has no network permission."
             ),
             sec(

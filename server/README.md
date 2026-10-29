@@ -26,6 +26,29 @@ never sees a key, a password or a map.
 - **Storage.** Files on disk (a Docker volume), or a private S3-compatible bucket.
 - **Nothing readable in its logs.** It logs that a share was stored and its size, never its bytes.
 
+### Live sessions
+
+The same server relays live sessions (File › Collaborate… in the app). Everyone in a
+session holds the room key from the invite link; the server passes sealed messages
+between them and can't read any of them.
+
+| Request | Who may make it | What it does |
+| --- | --- | --- |
+| `POST /v1/rooms` | the upload token | Makes a room from the SHA-256 of its read, write and end secrets; answers `{"id"}` |
+| `GET /v1/rooms/{id}` (WebSocket) | the read or write capability | Joins the room |
+| `GET /v1/rooms/{id}/view` | the read capability (`Authorization: Bearer`) | Returns the host's last sealed view, for the join page |
+| `DELETE /v1/rooms/{id}` | the end secret | Ends the session and deletes everything kept for it |
+
+- **Capabilities.** An invite carries the read capability, and the write one when it lets
+  people edit. The server keeps only their SHA-256, and refuses edits from a reader.
+- **What it keeps.** Each room's numbered op batches since the last snapshot, the latest
+  snapshot and the host's view: sealed bytes, on disk under `OPENNEXUS_ROOMS_DIR`. When the
+  batches since the last snapshot pass 200, it asks a member for a new snapshot.
+- **Rooms go away.** When the host ends the session, or when nobody has joined for
+  `OPENNEXUS_ROOM_IDLE_DAYS`.
+- **Limits.** Message size, room size, members per room, rooms, and messages per second
+  from one connection.
+
 ## Settings
 
 All settings are environment variables.
@@ -42,6 +65,13 @@ All settings are environment variables.
 | `OPENNEXUS_WRITES_PER_MINUTE` | `30` | Creates, updates and deletes per minute from one address |
 | `OPENNEXUS_READS_PER_MINUTE` | `600` | Reads per minute from one address |
 | `OPENNEXUS_TRUST_PROXY` | off | Set to `1` behind a reverse proxy, so limits use `X-Forwarded-For` |
+| `OPENNEXUS_ROOMS_DIR` | `$OPENNEXUS_DATA_DIR/rooms` | Where live sessions' rooms are kept (set it empty to keep them in memory only) |
+| `OPENNEXUS_ROOM_IDLE_DAYS` | `7` | Rooms nobody has joined for this many days are deleted |
+| `OPENNEXUS_ROOM_MAX_MESSAGE` | `33554432` | Largest message in a session, in bytes (32 MB: a snapshot with images) |
+| `OPENNEXUS_ROOM_MAX_BYTES` | `268435456` | Most a room may keep, in bytes (256 MB) |
+| `OPENNEXUS_ROOM_MAX_MEMBERS` | `50` | People in one session at once |
+| `OPENNEXUS_MAX_ROOMS` | `1000` | Rooms at once (`0` turns live sessions off) |
+| `OPENNEXUS_ROOM_MESSAGES_PER_SECOND` | `50` | Messages per second from one connection (twice that in a burst) |
 
 For `s3` storage, also set:
 

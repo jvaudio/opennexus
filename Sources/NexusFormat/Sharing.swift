@@ -116,6 +116,14 @@ public struct NetJob: Codable, Equatable, Sendable {
         case list
         /// Check the bucket works for sync, and whether it honours conditional writes.
         case syncTest
+        // A live session's room on an OpenNexus Server (M46).
+        /// Create a room: the body is the capabilities' SHA-256 (JSON); the reply's `object`
+        /// is the room's id.
+        case createRoom
+        /// End `object`'s room (`writeSecret`: the end secret); the server deletes its data.
+        case endRoom
+        /// A live session's WebSocket, opened with `openSocket`: `object` is its address.
+        case socket
     }
 
     public var action: Action
@@ -225,8 +233,22 @@ public struct NetLogEntry: Codable, Equatable, Hashable, Sendable {
 
 /// The service's XPC interface: a JSON `NetJob` and the body; a JSON `NetReply` and a
 /// body (what `get` read) back.
+///
+/// A live session's socket (M46) is a connection of its own: `openSocket` with a `.socket`
+/// job, then `sendText` and `closeSocket`; what comes back arrives through the app's
+/// `NetSocketEvents` on the same connection.
 @objc public protocol NetServiceProtocol {
     func perform(_ job: Data, body: Data, reply: @escaping @Sendable (Data, Data) -> Void)
+    func openSocket(_ job: Data)
+    func sendText(_ text: String)
+    func closeSocket()
+}
+
+/// The app's side of a socket connection. `log` is a JSON `NetLogEntry`.
+@objc public protocol NetSocketEvents {
+    func socketOpened(_ log: Data)
+    func socketReceived(_ text: String)
+    func socketClosed(_ reason: String?, log: Data)
 }
 
 public enum NetXPC {

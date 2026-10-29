@@ -273,7 +273,7 @@ struct LocalTransport: ShareTransport {
     @Test func theNetworkIsOffUntilTurnedOn() async throws {
         let fresh = Preferences.isolated()
         let rows = SettingsSchema.allRows.map(\.2).filter { $0.key.hasPrefix("network.") }
-        #expect(rows.map(\.key).sorted() == ["network.enabled", "network.sharing", "network.sync"])
+        #expect(rows.map(\.key).sorted() == ["network.collab", "network.enabled", "network.sharing", "network.sync"])
         for r in rows { #expect(r.defaultValue == .bool(false), "\(r.key)") }
         center.prefs = fresh
         controller.prefs = fresh

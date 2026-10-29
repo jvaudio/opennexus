@@ -43,6 +43,17 @@ public struct NetService: Sendable {
                     throw NetError.unexpected("only buckets have CORS rules")
                 }
                 try await s3.setUpCORS(origin: origin, client: client)
+            case .createRoom, .endRoom:
+                guard let server = target as? ServerTarget else {
+                    throw NetError.unexpected("live sessions need an OpenNexus Server")
+                }
+                if job.action == .createRoom {
+                    reply = try await server.createRoom(body, client: client)
+                } else {
+                    try await server.endRoom(try object(job), endSecret: job.writeSecret, client: client)
+                }
+            case .socket:
+                throw NetError.unexpected("a socket is opened with openSocket")
             case .get, .put, .list, .syncTest:
                 guard let s3 = target as? S3Target else { throw NetError.unexpected("only buckets sync libraries") }
                 switch job.action {

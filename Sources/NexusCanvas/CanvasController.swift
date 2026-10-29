@@ -44,10 +44,15 @@ let signposter = OSSignposter(subsystem: "com.opennexus.canvas", category: .poin
 @Observable
 public final class CanvasController {
     public let store: DocumentStore
-    public private(set) var canvasID: CanvasID
+    public private(set) var canvasID: CanvasID {
+        didSet { if canvasID != oldValue { presenceDidChange() } }
+    }
     public internal(set) var mode: CanvasMode = .select
     public internal(set) var selection: Selection {
-        didSet { scheduleGuideUpdate() }
+        didSet {
+            scheduleGuideUpdate()
+            if selection != oldValue { presenceDidChange() }
+        }
     }
     /// A selected non-topic element (relationship, boundary, summary, callout, zone).
     public internal(set) var selectedElement: ElementRef? {
@@ -59,7 +64,9 @@ public final class CanvasController {
     var zoneGroup: [String] = []
     /// Connect mode state (⇧⌘L).
     public internal(set) var connect: ConnectState?
-    public internal(set) var edit: EditSession?
+    public internal(set) var edit: EditSession? {
+        didSet { if edit?.node != oldValue?.node { editingDidChange() } }
+    }
     /// The slash menu (`/`), in Select mode or at the start of an empty topic.
     public internal(set) var slash: SlashState?
     /// The Convert picker (⌥⌘T).
@@ -142,6 +149,30 @@ public final class CanvasController {
     public internal(set) var syncHistory: SyncHistoryState?
     public internal(set) var conflictCopies: [ConflictCopy] = []
     @ObservationIgnored public var syncCenter: SyncCenter = .shared
+    /// Live co-editing (M46): File › Collaborate… and Join Session…, why they can't open,
+    /// and whose view this person follows.
+    public internal(set) var collabSheet: CollabSheetState?
+    public internal(set) var joinSheet: JoinSheetState?
+    public var collabNotice: CollabCenter.Failure?
+    public internal(set) var following: String?
+    /// Bumped when someone's presence changes (the toolbar's avatars follow it).
+    public internal(set) var presenceSerial = 0
+    @ObservationIgnored public var collabCenter: CollabCenter = .shared
+    /// The document's id, which sessions are kept by (the app sets it).
+    @ObservationIgnored public var documentIDProvider: (() -> String)?
+    /// The app opens a session's copy from an invite link.
+    @ObservationIgnored public var onJoinSession: ((String) -> Void)?
+    /// The app's part of a session starting (undo history) and ending.
+    @ObservationIgnored public var onCollabAttached: ((CollabSession) -> Void)?
+    @ObservationIgnored public var onCollabEnded: (() -> Void)?
+    /// The canvas redraws other people's marks; VoiceOver hears announcements.
+    @ObservationIgnored public var onPresence: (() -> Void)?
+    @ObservationIgnored public var onAnnounce: ((String) -> Void)?
+    /// The part of the canvas in view, in canvas coordinates (the view keeps it current).
+    @ObservationIgnored public var viewport: CGRect? {
+        didSet { if viewport != oldValue { presenceDidChange() } }
+    }
+    @ObservationIgnored var announcedEditors: [String] = []
     /// Reads a conflict copy (tests replace it).
     @ObservationIgnored public var readCopy: (ConflictCopy) throws -> DocumentModel = ConflictCopies.read
     /// Merged copies are done with: the app resolves iCloud's versions and trashes the files.
@@ -417,8 +448,12 @@ public final class CanvasController {
         }
         // Canvas added or removed (merge, import, delete, or their undo): stay on a canvas
         // that exists, preferring the one the change is about.
+        // Someone else's edit in a live session (M46) never moves this person to its canvas.
+        let remote = store.applyingRemote
         if patch.changesCanvasSet {
-            if store.canvas(canvasID) == nil || (patch.canvases[patch.canvasID]?.after != nil && !committingOwnPatch) {
+            if store.canvas(canvasID) == nil
+                || (patch.canvases[patch.canvasID]?.after != nil && !committingOwnPatch && !remote)
+            {
                 let target = store.canvas(patch.canvasID) != nil ? patch.canvasID : store.model.canvasOrder.first
                 if let target, target != canvasID {
                     canvasID = target
@@ -431,8 +466,9 @@ public final class CanvasController {
                 }
             }
         }
-        guard patch.canvasID == canvasID, !committingOwnPatch else { return }
-        if let s = patch.selectionAfter {
+        guard patch.canvasID == canvasID || (remote && patch.canvases[canvasID] != nil), !committingOwnPatch
+        else { return }
+        if !remote, let s = patch.selectionAfter {
             let c = canvas
             let valid = s.nodes.filter { c.nodes[$0] != nil }
             if c.nodes[s.primary] != nil {
@@ -454,7 +490,7 @@ public final class CanvasController {
         }
         rebuildScene()
         onSceneChange?(true)
-        onReveal?(selection.primary)
+        if !remote { onReveal?(selection.primary) }
     }
 
     func rebuildScene() {

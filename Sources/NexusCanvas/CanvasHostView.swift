@@ -85,9 +85,13 @@ public final class CanvasHostView: NSView {
         let resolveSheet = NSHostingView(rootView: ResolveConflictsView(controller: controller))
         let historySheet = NSHostingView(rootView: SyncHistoryView(controller: controller))
         let copiesNotice = NSHostingView(rootView: ConflictCopiesNotice(controller: controller))
+        // Live co-editing (M46).
+        let collabSheet = NSHostingView(rootView: CollabSheetView(controller: controller))
+        let joinSheet = NSHostingView(rootView: JoinSheetView(controller: controller))
+        let collabNotice = NSHostingView(rootView: CollabNoticeView(controller: controller))
         let fileSheets: [NSView] = [
             exportSheet, printSheet, mergeSheet, passwordSheet, reportSheet, snapshotSheet, taskSheet, shareSheet,
-            shareNotice, linksSheet, resolveSheet, historySheet, copiesNotice,
+            shareNotice, linksSheet, resolveSheet, historySheet, copiesNotice, collabSheet, joinSheet, collabNotice,
         ]
         // Onboarding (M8).
         let tourBar = NSHostingView(rootView: TourOverlay(controller: controller, part: .bar))
@@ -113,7 +117,8 @@ public final class CanvasHostView: NSView {
             (snapshotSheet, Loc.t("Recovery snapshots")), (taskSheet, Loc.t("Task")),
             (shareSheet, Loc.t("Share Link")), (shareNotice, Loc.t("Share Link")), (linksSheet, Loc.t("Share Links")),
             (resolveSheet, Loc.t("Resolve Conflicts")), (historySheet, Loc.t("Sync History")),
-            (copiesNotice, Loc.t("Merge Conflicting Copies")),
+            (copiesNotice, Loc.t("Merge Conflicting Copies")), (collabSheet, Loc.t("Collaborate")),
+            (joinSheet, Loc.t("Join Session")), (collabNotice, Loc.t("Collaborate")),
             (shotBar, Loc.t("Map Shot")), (shotHint, Loc.t("Map Shot hint")), (tourBar, Loc.t("Tutorial")),
             (tourPill, Loc.t("Tutorial paused")),
             (tourFinish, Loc.t("Tutorial finished")), (tipHost, Loc.t("Tip")),
@@ -197,6 +202,9 @@ public final class CanvasHostView: NSView {
             if let h = v as? NSHostingView<ResolveConflictsView> { h.sizingOptions = [.intrinsicContentSize] }
             if let h = v as? NSHostingView<SyncHistoryView> { h.sizingOptions = [.intrinsicContentSize] }
             if let h = v as? NSHostingView<ConflictCopiesNotice> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<CollabSheetView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<JoinSheetView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<CollabNoticeView> { h.sizingOptions = [.intrinsicContentSize] }
             NSLayoutConstraint.activate([
                 v.centerXAnchor.constraint(equalTo: centerXAnchor),
                 v.centerYAnchor.constraint(equalTo: centerYAnchor),

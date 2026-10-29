@@ -2,6 +2,7 @@ import Crypto
 import Foundation
 import HTTPTypes
 import Hummingbird
+import HummingbirdWebSocket
 import NIOCore
 
 /// The request context: the client's address, for rate limits.
@@ -23,17 +24,24 @@ public struct ShareContext: RequestContext {
 /// - `PUT` and `DELETE /v1/shares/{id}` with `Authorization: Bearer <write secret>`
 ///
 /// `X-OpenNexus-Expires` (ISO 8601) on POST or PUT sets when the share stops being served.
+///
+/// Live sessions' rooms (M46) are `Rooms.swift`.
 public struct ShareAPI: Sendable {
     public let config: ServerConfig
     public let storage: any ShareStorage
+    public let rooms: RoomHub
     let writes: RateLimiter
     let reads: RateLimiter
     let sweeper: Sweeper
     let now: @Sendable () -> Date
 
-    public init(config: ServerConfig, storage: any ShareStorage, now: @escaping @Sendable () -> Date = Date.init) {
+    public init(
+        config: ServerConfig, storage: any ShareStorage, rooms: RoomHub? = nil,
+        now: @escaping @Sendable () -> Date = Date.init
+    ) {
         self.config = config
         self.storage = storage
+        self.rooms = rooms ?? RoomHub(memory: config, now: now)
         self.now = now
         writes = RateLimiter(perMinute: config.writesPerMinute)
         reads = RateLimiter(perMinute: config.readsPerMinute)
@@ -62,6 +70,7 @@ public struct ShareAPI: Sendable {
         }
         router.put("v1/shares/:id") { request, context in try await replace(request, context) }
         router.delete("v1/shares/:id") { request, context in try await remove(request, context) }
+        addRoomRoutes(router)
         return router
     }
 
@@ -279,8 +288,11 @@ public func buildApplication(_ config: ServerConfig) throws -> some ApplicationP
         case .disk(let dir): try DiskStorage(directory: dir)
         case .s3(let s): S3Storage(s)
         }
-    let api = ShareAPI(config: config, storage: storage)
+    let api = ShareAPI(config: config, storage: storage, rooms: try RoomHub(config: config))
     return Application(
         router: api.router(),
+        server: .http1WebSocketUpgrade(
+            webSocketRouter: api.socketRouter(),
+            configuration: .init(ws: .init(maxFrameSize: config.roomMaxMessage, closeTimeout: .seconds(5)))),
         configuration: .init(address: .hostname(config.host, port: config.port), serverName: "opennexus-server"))
 }

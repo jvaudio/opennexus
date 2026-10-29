@@ -113,6 +113,10 @@
       "comment" : "Text with values filled in (CanvasController+Views.swift)",
       "extractionState" : "migrated"
     },
+    "%@ (you)" : {
+      "comment" : "Text with values filled in (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "%@ acts as ⌃⌥⇧⌘ pressed together, giving OpenNexus a clash-free namespace. Tap alone: %@." : {
       "comment" : "Text with values filled in (ShortcutsPane.swift)",
       "extractionState" : "migrated"
@@ -149,12 +153,32 @@
       "comment" : "Text with values filled in (DFD.swift)",
       "extractionState" : "migrated"
     },
+    "%@ has no upload token saved. Edit it in Settings › Sharing." : {
+      "comment" : "Text with values filled in (Collab.swift)",
+      "extractionState" : "migrated"
+    },
     "%@ is a macOS shortcut (%@); choose another." : {
       "comment" : "Text with values filled in (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "%@ is editing the focused topic" : {
+      "comment" : "Text with values filled in (CanvasController+Collab.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ is editing this topic too" : {
+      "comment" : "Text with values filled in (CanvasController+Collab.swift)",
+      "extractionState" : "migrated"
+    },
     "%@ is larger than %@ MB, so it’s linked, not copied" : {
       "comment" : "Text with values filled in (CanvasController+Elements.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ joined" : {
+      "comment" : "Text with values filled in (Collab.swift)",
+      "extractionState" : "migrated"
+    },
+    "%@ left" : {
+      "comment" : "Text with values filled in (Collab.swift)",
       "extractionState" : "migrated"
     },
     "%@ mode" : {
@@ -886,6 +910,30 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld pages · cut marks on"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld people" : {
+      "comment" : "Count phrase with plural variants (Collab.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld person"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld people"
                 }
               }
             }
@@ -2469,6 +2517,14 @@
       "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
+    "Anyone with this link can edit while the session lasts." : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Anyone with this link can watch while the session lasts." : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "API Gateway" : {
       "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
@@ -3085,6 +3141,14 @@
       "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
+    "Can edit" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Can view" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Can’t read the due date “%@”" : {
       "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
@@ -3413,6 +3477,14 @@
       "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
+    "Collaborate" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Collaborate…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Collapse \/ Parent" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -3665,6 +3737,10 @@
       "comment" : "Text with values filled in (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "Connecting…" : {
+      "comment" : "UI text (Collab.swift)",
+      "extractionState" : "migrated"
+    },
     "Container" : {
       "comment" : "Node type (Architecture)",
       "extractionState" : "migrated"
@@ -3753,6 +3829,14 @@
       "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
+    "Copied the invite link" : {
+      "comment" : "UI text (CanvasController+Collab.swift)",
+      "extractionState" : "migrated"
+    },
+    "Copied the view-only invite link" : {
+      "comment" : "UI text (CanvasController+Collab.swift)",
+      "extractionState" : "migrated"
+    },
     "Copied threat table as Markdown" : {
       "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
@@ -3802,7 +3886,7 @@
       "extractionState" : "migrated"
     },
     "Copy Link" : {
-      "comment" : "UI text (ShareViews.swift)",
+      "comment" : "UI text (CollabViews.swift)",
       "extractionState" : "migrated"
     },
     "Copy style" : {
@@ -3837,8 +3921,16 @@
       "comment" : "Text with values filled in (ImageToMap.swift)",
       "extractionState" : "migrated"
     },
+    "Couldn’t join the live session" : {
+      "comment" : "UI text (Collaboration.swift)",
+      "extractionState" : "migrated"
+    },
     "Couldn’t make the link: %@" : {
       "comment" : "Text with values filled in (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Couldn’t open the live session" : {
+      "comment" : "UI text (Collaboration.swift)",
       "extractionState" : "migrated"
     },
     "Couldn’t open the snapshot" : {
@@ -4497,6 +4589,10 @@
       "comment" : "Text with values filled in (ShareViews.swift)",
       "extractionState" : "migrated"
     },
+    "Edit a document with others at the same time through your OpenNexus Server in Settings › Sharing" : {
+      "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
     "Edit colour theme" : {
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
@@ -4563,6 +4659,14 @@
     },
     "Edit Theme" : {
       "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Edit this document with others at the same time (Labs)" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Edit this document with others at the same time. Changes travel sealed through your OpenNexus Server, which can’t read them." : {
+      "comment" : "UI text (CollabViews.swift)",
       "extractionState" : "migrated"
     },
     "Edit Title" : {
@@ -4673,12 +4777,24 @@
       "comment" : "Text with values filled in (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
+    "End live session" : {
+      "comment" : "UI text (Collab.swift)",
+      "extractionState" : "migrated"
+    },
     "End of deck" : {
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "End on this slide's topic" : {
       "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "End Session" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Ended the live session · this document is yours alone again" : {
+      "comment" : "UI text (CanvasController+Collab.swift)",
       "extractionState" : "migrated"
     },
     "Endpoint" : {
@@ -5069,6 +5185,10 @@
       "comment" : "Command category",
       "extractionState" : "migrated"
     },
+    "File › Collaborate… ⌃⌘L" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "File › Manage Share Links…" : {
       "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
@@ -5317,6 +5437,10 @@
       "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
+    "Follow %@" : {
+      "comment" : "Text with values filled in (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Follow branch" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
@@ -5331,6 +5455,10 @@
     },
     "Follow system text size in chrome" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Following %@ · scroll or click to stop" : {
+      "comment" : "Text with values filled in (CanvasController+Collab.swift)",
       "extractionState" : "migrated"
     },
     "Follows your region" : {
@@ -5673,6 +5801,10 @@
       "comment" : "Settings section",
       "extractionState" : "migrated"
     },
+    "Here now" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Hidden while typing and with multiple selection" : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
@@ -5795,6 +5927,10 @@
     },
     "https:\/\/" : {
       "comment" : "UI text (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
+    "https:\/\/…\/join\/#2.…" : {
+      "comment" : "UI text (CollabViews.swift)",
       "extractionState" : "migrated"
     },
     "Hyper" : {
@@ -6113,6 +6249,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Invite link" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "is already taken" : {
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
@@ -6123,6 +6263,22 @@
     },
     "Italic" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Join" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Join Session" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Join Session…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Joining…" : {
+      "comment" : "UI text (Collab.swift)",
       "extractionState" : "migrated"
     },
     "Jot an idea" : {
@@ -6285,6 +6441,10 @@
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
+    "Labs" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Lag %lld days" : {
       "comment" : "Count phrase with plural variants (TaskViews.swift)",
       "extractionState" : "migrated",
@@ -6369,8 +6529,20 @@
       "comment" : "UI text (SyncViews.swift)",
       "extractionState" : "migrated"
     },
+    "Leave Session" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Left" : {
       "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Left the live session · this copy stays as it is" : {
+      "comment" : "UI text (CanvasController+Collab.swift)",
+      "extractionState" : "migrated"
+    },
+    "Left the session" : {
+      "comment" : "UI text (Collab.swift)",
       "extractionState" : "migrated"
     },
     "Legal" : {
@@ -6593,12 +6765,48 @@
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
     },
+    "Live · %@" : {
+      "comment" : "Text with values filled in (Collab.swift)",
+      "extractionState" : "migrated"
+    },
+    "Live co-editing (Labs)" : {
+      "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
     "Live preview of theme + node style + colour theme. Documents keep their own look once created." : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
     "Live previews in the picker" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Live session" : {
+      "comment" : "UI text (Collab.swift)",
+      "extractionState" : "migrated"
+    },
+    "Live Session" : {
+      "comment" : "UI text (Collaboration.swift)",
+      "extractionState" : "migrated"
+    },
+    "Live session: %@" : {
+      "comment" : "Text with values filled in (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Live sessions meet on your own OpenNexus Server. Add one in Settings › Sharing; what you edit is sealed before it leaves this Mac." : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Live sessions need an OpenNexus Server. Add one in Settings › Sharing." : {
+      "comment" : "UI text (Collab.swift)",
+      "extractionState" : "migrated"
+    },
+    "Live sessions use the network" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Live sessions use the network, which is off. Turn on “Use the network” and “Live co-editing” in Settings › Privacy & Data." : {
+      "comment" : "UI text (Collab.swift)",
       "extractionState" : "migrated"
     },
     "Live transcript; key points as ghosts" : {
@@ -7729,6 +7937,10 @@
       "comment" : "UI text (SyncViews.swift)",
       "extractionState" : "migrated"
     },
+    "No server to meet on yet" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "No settings match “%@”" : {
       "comment" : "Text with values filled in (SettingsView.swift)",
       "extractionState" : "migrated"
@@ -7945,6 +8157,10 @@
       "comment" : "UI text (Sync.swift)",
       "extractionState" : "migrated"
     },
+    "Offline · changes wait" : {
+      "comment" : "UI text (Collab.swift)",
+      "extractionState" : "migrated"
+    },
     "On" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -8049,6 +8265,10 @@
       "comment" : "UI text (AppPreferences.swift)",
       "extractionState" : "migrated"
     },
+    "Open a live session from an invite link" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
     "open an encrypted document" : {
       "comment" : "UI text (NexusDocument.swift)",
       "extractionState" : "migrated"
@@ -8086,7 +8306,7 @@
       "extractionState" : "migrated"
     },
     "Open Settings…" : {
-      "comment" : "UI text (ShareViews.swift)",
+      "comment" : "UI text (CollabViews.swift)",
       "extractionState" : "migrated"
     },
     "Open source" : {
@@ -8107,6 +8327,10 @@
     },
     "OpenNexus %@" : {
       "comment" : "Text with values filled in (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "OpenNexus doesn’t use the network unless you turn it on. Turn on “Use the network” and “Live co-editing” in Settings › Privacy & Data." : {
+      "comment" : "UI text (CollabViews.swift)",
       "extractionState" : "migrated"
     },
     "OpenNexus doesn’t use the network unless you turn it on. Turn on “Use the network” and “Share links” in Settings › Privacy & Data, then add a place to store links in Settings › Sharing." : {
@@ -8333,6 +8557,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Paste the invite link someone sent you." : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Paste Zone" : {
       "comment" : "UI text (CanvasController+Pointer.swift)",
       "extractionState" : "migrated"
@@ -8379,6 +8607,10 @@
     },
     "People or systems outside your control that send or receive data, such as “Customer” or “Bank”." : {
       "comment" : "Guide tip (dfd). Keep each {command.id} as it is: it shows the command's keys.",
+      "extractionState" : "migrated"
+    },
+    "People with the link" : {
+      "comment" : "UI text (CollabViews.swift)",
       "extractionState" : "migrated"
     },
     "People, process, tools, environment" : {
@@ -8749,6 +8981,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "QR code of the invite link" : {
+      "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
     "QR code of the link" : {
       "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
@@ -8907,6 +9143,10 @@
     },
     "Recents" : {
       "comment" : "UI text (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Reconnecting…" : {
+      "comment" : "UI text (Collab.swift)",
       "extractionState" : "migrated"
     },
     "Record" : {
@@ -9889,6 +10129,10 @@
       "comment" : "Diagram type summary (starter picker)",
       "extractionState" : "migrated"
     },
+    "Session ended" : {
+      "comment" : "UI text (Collab.swift)",
+      "extractionState" : "migrated"
+    },
     "Set Node Type…" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -9994,7 +10238,7 @@
       "extractionState" : "migrated"
     },
     "Share…" : {
-      "comment" : "UI text (ShareViews.swift)",
+      "comment" : "UI text (CollabViews.swift)",
       "extractionState" : "migrated"
     },
     "Sharing" : {
@@ -10817,6 +11061,10 @@
       "comment" : "UI text (SyncViews.swift)",
       "extractionState" : "migrated"
     },
+    "That isn’t an OpenNexus invite link." : {
+      "comment" : "UI text (Collab.swift)",
+      "extractionState" : "migrated"
+    },
     "That topic no longer exists" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
@@ -10869,12 +11117,20 @@
       "comment" : "Text with values filled in (DFD.swift)",
       "extractionState" : "migrated"
     },
+    "The host ended the live session. This copy is yours to keep." : {
+      "comment" : "UI text (Collab.swift)",
+      "extractionState" : "migrated"
+    },
     "The network is off (Privacy & Data › Network), so the network service connects to nothing." : {
       "comment" : "UI text (NetworkActivity.swift)",
       "extractionState" : "migrated"
     },
     "The network is off: links can be copied, not updated or revoked." : {
       "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "The network service stopped." : {
+      "comment" : "UI text (Collab.swift)",
       "extractionState" : "migrated"
     },
     "The outline as headings, notes as paragraphs, each canvas's diagram as an image." : {
@@ -10889,12 +11145,20 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "The request couldn’t be encoded." : {
+      "comment" : "UI text (Collab.swift)",
+      "extractionState" : "migrated"
+    },
     "The selected tasks already have dates" : {
       "comment" : "UI text (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
     },
     "The selected zone and its contents" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "The server didn’t create the session." : {
+      "comment" : "UI text (Collab.swift)",
       "extractionState" : "migrated"
     },
     "The strip's controls (↩ or Space uses one)" : {
@@ -11027,6 +11291,10 @@
     },
     "This map’s colours" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "This session is view only: your changes aren’t kept" : {
+      "comment" : "UI text (Collab.swift)",
       "extractionState" : "migrated"
     },
     "This sets the tour’s example and your template shelf. You can change it any time in Settings." : {

@@ -292,4 +292,50 @@ import Testing
         let other = await Self.service.perform(Self.job(.test, Self.server), body: Data())
         #expect(!other.ok && other.error?.contains("isn’t an OpenNexus Server") == true)
     }
+
+    /// M46: rooms on a server. Creating sends only the capabilities' hashes; ending uses the
+    /// end secret; a room that's already gone is ended.
+    @Test func rooms() async throws {
+        Stub.reset { seen in
+            switch (seen.method, seen.url.path()) {
+            case ("POST", "/v1/rooms"): (201, [:], Data(#"{"id":"Roomroomroomroomroomrr"}"#.utf8))
+            case ("DELETE", "/v1/rooms/Roomroomroomroomroomrr"): (204, [:], Data())
+            case ("DELETE", _): (404, [:], Data(#"{"error":"No such room."}"#.utf8))
+            default: (500, [:], Data())
+            }
+        }
+        let hashes = Data(#"{"read":"aa","write":"bb","end":"cc"}"#.utf8)
+        let created = await Self.service.perform(Self.job(.createRoom, Self.server), body: hashes)
+        #expect(created.ok && created.object == "Roomroomroomroomroomrr")
+        #expect(Stub.requests[0].header("Authorization") == "Bearer s3cret" && Stub.requests[0].body == hashes)
+        #expect(created.log.count == 1 && created.log[0].purpose == "Share link")
+        let ended = await Self.service.perform(
+            Self.job(.endRoom, Self.server, object: "Roomroomroomroomroomrr"), body: Data())
+        #expect(ended.ok && Stub.requests[1].header("Authorization") == "Bearer w")
+        #expect(
+            await Self.service.perform(Self.job(.endRoom, Self.server, object: "Goneroomroomroomroomrr"), body: Data())
+                .ok)
+        #expect(!(await Self.service.perform(Self.job(.endRoom, Self.server, object: "../x"), body: Data())).ok)
+        #expect(!(await Self.service.perform(Self.job(.createRoom, Self.bucket), body: hashes)).ok)
+    }
+
+    /// A socket goes only to its job's host, over TLS or to this Mac, and says so in the log.
+    @Test func socketsKeepToTheirHost() async throws {
+        let allowed: Set = ["relay.example.com", "localhost"]
+        #expect(NetSocket.isAllowed(URL(string: "wss://relay.example.com/v1/rooms/x")!, allowed: allowed))
+        #expect(NetSocket.isAllowed(URL(string: "ws://localhost:8787/v1/rooms/x")!, allowed: allowed))
+        #expect(!NetSocket.isAllowed(URL(string: "ws://relay.example.com/v1/rooms/x")!, allowed: allowed))
+        #expect(!NetSocket.isAllowed(URL(string: "wss://elsewhere.example.com/x")!, allowed: allowed))
+        #expect(!NetSocket.isAllowed(URL(string: "https://relay.example.com/x")!, allowed: allowed))
+        let closed = AsyncStream<NetSocket.Event>.makeStream()
+        let s = NetSocket(
+            url: URL(string: "wss://elsewhere.example.com/v1/rooms/x")!, allowed: ["relay.example.com"],
+            purpose: "Live session"
+        ) { closed.continuation.yield($0) }
+        s.open()
+        var it = closed.stream.makeAsyncIterator()
+        guard case .closed(let why, let log)? = await it.next() else { Issue.record("no close"); return }
+        #expect(why?.contains("isn’t the session’s server") == true)
+        #expect(log.purpose == "Live session (refused)" && log.host == "elsewhere.example.com" && log.sent == 0)
+    }
 }

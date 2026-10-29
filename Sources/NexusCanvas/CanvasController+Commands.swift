@@ -65,6 +65,8 @@ extension CanvasController {
             .syncHistory: { $0.openSyncHistory() },
             .resolveConflicts: { $0.openResolveConflicts() },
             .mergeConflictCopies: { $0.mergeConflictCopies() },
+            .collaborate: { $0.openCollaborate() },
+            .joinSession: { $0.openJoinSession() },
             .mapShot: { $0.openMapShot() },
             .copyAsImage: { $0.copyAsImage() },
             .copyAsMarkdown: { $0.copyAsMarkdown() },

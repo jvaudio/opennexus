@@ -43,9 +43,10 @@ public enum ElementRefusal: Error, Equatable, Sendable, CustomStringConvertible 
 extension CanvasEditor {
     private func freshID(_ prefix: String, used: [String]) -> String {
         let set = Set(used)
+        let suffix = canvas.idSuffix
         var i = used.count + 1
-        while set.contains("\(prefix)\(i)") { i += 1 }
-        return "\(prefix)\(i)"
+        while set.contains("\(prefix)\(i)\(suffix)") { i += 1 }
+        return "\(prefix)\(i)\(suffix)"
     }
 
     // MARK: Boundary

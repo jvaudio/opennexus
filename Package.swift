@@ -13,7 +13,7 @@ let package = Package(
         .library(
             name: "OpenNexusKit",
             targets: ["NexusCore", "NexusLayout", "NexusFormat", "NexusTheme", "NexusKeys", "NexusAI", "NexusInterchange",
-                "NexusSync", "NexusCanvas",
+                "NexusSync", "NexusReplica", "NexusCanvas",
             ]
         ),
         // For the light extensions (Share, Spotlight, Widgets): the model and file format only.
@@ -44,6 +44,10 @@ let package = Package(
         // default, merged topic by topic. Platform-neutral: the bucket is reached through a
         // transport (the network service in the app, memory in tests).
         .target(name: "NexusSync", dependencies: ["NexusCore", "NexusFormat"], swiftSettings: strict),
+        // Real-time co-editing (M46): the CRDT over `Patch` (registers, Kleppmann tree moves,
+        // ordered places), the invite link and the room client. Platform-neutral: the relay is
+        // reached through a transport (the network service in the app, memory in tests).
+        .target(name: "NexusReplica", dependencies: ["NexusCore", "NexusFormat"], swiftSettings: strict),
         // Tokens, themes, node styles, contrast checks.
         .target(name: "NexusTheme", dependencies: ["NexusCore"], swiftSettings: strict),
         // Command registry, key chords, profiles, conflict detection.
@@ -61,7 +65,7 @@ let package = Package(
             name: "NexusCanvas",
             dependencies: [
                 "NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI", "NexusFormat", "NexusInterchange",
-                "NexusSync",
+                "NexusSync", "NexusReplica",
             ],
             // Starters/ and Guides/ are copied as folders: one JSON file per built-in starter
             // (M39) and guide (M41).
@@ -95,11 +99,13 @@ let package = Package(
         .testTarget(name: "NexusKeysTests", dependencies: ["NexusKeys"]),
         // The share tests run the network service in process, against stubs and Docker (M44).
         .testTarget(
-            name: "NexusCanvasTests", dependencies: ["NexusCanvas", "NexusFormat", "NexusWidgetsUI", "NexusNet", "NexusSync"]),
+            name: "NexusCanvasTests",
+            dependencies: ["NexusCanvas", "NexusFormat", "NexusWidgetsUI", "NexusNet", "NexusSync", "NexusReplica"]),
         .testTarget(
             name: "NexusNetTests", dependencies: ["NexusNet", "NexusFormat", "NexusCore"], resources: [.copy("Fixtures")]),
         // The live run (MinIO in Docker) goes through the real network service (M45).
         .testTarget(name: "NexusSyncTests", dependencies: ["NexusSync", "NexusFormat", "NexusCore", "NexusNet"]),
+        .testTarget(name: "NexusReplicaTests", dependencies: ["NexusReplica", "NexusFormat", "NexusCore"]),
         .testTarget(name: "NexusAITests", dependencies: ["NexusAI", "NexusCore"]),
         .testTarget(name: "NexusAgentTests", dependencies: ["NexusAgent", "NexusCanvas", "NexusFormat", "NexusCore"]),
         .testTarget(

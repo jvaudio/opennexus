@@ -279,13 +279,23 @@ private struct ShareResult: View {
 }
 
 /// A QR code for a link (Core Image, drawn sharp at any size with `.interpolation(.none)`).
+@MainActor
 enum QRCode {
+    /// One context for every code: making a context costs far more than drawing a code.
+    static let context = CIContext(options: [.useSoftwareRenderer: true])
+    /// The last link's code. The Collaborate sheet redraws as people come and go (M46) while
+    /// its link stays the same.
+    static var last: (text: String, image: CGImage?)?
+
     static func image(_ text: String) -> CGImage? {
+        if let last, last.text == text { return last.image }
         guard !text.isEmpty, let f = CIFilter(name: "CIQRCodeGenerator") else { return nil }
         f.setValue(Data(text.utf8), forKey: "inputMessage")
         f.setValue("M", forKey: "inputCorrectionLevel")
         guard let out = f.outputImage?.transformed(by: CGAffineTransform(scaleX: 4, y: 4)) else { return nil }
-        return CIContext(options: [.useSoftwareRenderer: true]).createCGImage(out, from: out.extent)
+        let image = context.createCGImage(out, from: out.extent)
+        last = (text, image)
+        return image
     }
 }
 

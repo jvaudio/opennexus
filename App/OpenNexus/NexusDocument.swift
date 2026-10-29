@@ -4,6 +4,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusReplica
 import NexusSync
 
 /// A `.nexus` package document. Autosaves in place and keeps versions (File › Revert To),
@@ -56,6 +57,8 @@ final class NexusDocument: NSDocument {
         }
         // Copies other apps' sync left beside it (M45).
         wc.findConflictCopies(offer: true)
+        // A document in a live session reconnects (M46).
+        resumeSession()
     }
 
     /// A stable id for this document's recovery snapshots (kept in the manifest).
@@ -437,6 +440,7 @@ final class NexusDocument: NSDocument {
     }
 
     override func close() {
+        suspendSession()
         writeSnapshot()
         snapshotTimer?.invalidate()
         snapshotTimer = nil
@@ -451,8 +455,28 @@ final class DocumentUndoRegistrar: UndoRegistrar {
 
     func register(_ patch: Patch, store: DocumentStore) {
         guard let um = document?.undoManager else { return }
-        registerInverse(of: patch, undoManager: um, store: store)
+        if let session = store.collab as? CollabSession {
+            registerSelective(session, name: patch.actionName, undoManager: um, store: store)
+        } else {
+            registerInverse(of: patch, undoManager: um, store: store)
+        }
         um.setActionName(Loc.t(patch.actionName))
+    }
+
+    /// In a live session (M46) undo is selective: the session puts back only what still
+    /// holds this person's own change, never someone else's later one. Each registration
+    /// here is one of the session's undo steps, so the two stacks stay in step.
+    private func registerSelective(
+        _ session: CollabSession, name: String, undoManager um: UndoManager, store: DocumentStore
+    ) {
+        um.registerUndo(withTarget: store) { [weak self, weak session] store in
+            MainActor.assumeIsolated {
+                guard let session, store.collab === session else { return }
+                if um.isUndoing { session.undo() } else { session.redo() }
+                self?.registerSelective(session, name: name, undoManager: um, store: store)
+                um.setActionName(Loc.t(name))
+            }
+        }
     }
 
     private func registerInverse(of patch: Patch, undoManager um: UndoManager, store: DocumentStore) {

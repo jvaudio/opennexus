@@ -24,6 +24,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     private let world = CALayer()
     private let edgesLayer = CALayer()
     private let nodesLayer = CALayer()
+    /// Other people's marks in a live session (M46).
+    let presence = PresenceLayer()
 
     private var nodeLayers: [NodeID: NodeLayer] = [:]
     private var edgeLayers: [NodeID: CAShapeLayer] = [:]
@@ -177,6 +179,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         world.addSublayer(elements.relationshipsLayer)
         world.addSublayer(elements.pointersLayer)
         world.addSublayer(nodesLayer)
+        world.addSublayer(presence)
         world.addSublayer(legendLayer)
         world.addSublayer(rubberBand)
         world.addSublayer(elements.overlayLayer)
@@ -218,6 +221,13 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         controller.viewCommandValidator = { id in Self.viewCommands.contains(id) }
         controller.floatingPlacement = { [weak self] in self?.defaultFloatingPoint() ?? .zero }
         controller.onMorph = { [weak self] in self?.morphNextUpdate = true }
+        controller.onPresence = { [weak self] in self?.presenceChanged() }
+        controller.onAnnounce = { [weak self] text in
+            guard let self else { return }
+            NSAccessibility.post(
+                element: self, notification: .announcementRequested,
+                userInfo: [.announcement: text, .priority: NSAccessibilityPriorityLevel.medium.rawValue])
+        }
         popovers = CanvasPopovers(view: self)
         controller.onRequest = { [weak self] r in self?.popovers?.handle(r) }
         // Code files open in the editor chosen in Settings › Integrations (M9).
@@ -602,6 +612,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             if springs[id]?.isSettled ?? true, scales[id] == nil { settled.insert(id) }
         }
         applyFrames(all: false)
+        if !presence.isEmpty { refreshPresence() }
         elements.updateGeometry(
             selected: controller.selectedElement, connect: controller.connect,
             frame: { [weak self] in self?.animatedFrame($0)?.rect })
@@ -693,6 +704,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         grid.place(in: bounds)
         CATransaction.commit()
         cull()
+        if zoomChanged, !presence.isEmpty { refreshPresence() }
+        if bounds.width > 0 {
+            controller.viewport = CGRect(
+                origin: c.toWorld(.zero), size: CGSize(width: bounds.width / c.zoom, height: bounds.height / c.zoom))
+        }
         // Overlays pinned to a topic (Add Topic +, the floating toolbar) follow the camera.
         positionMouseAids()
         if controller.edit != nil { positionEditor() }
@@ -948,9 +964,30 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         anchored(&noticeHost, { AINoticeView(controller: controller) }, below: noticeRect, dx: -20)
     }
 
+    /// Other people's marks (M46), redrawn where their topics are now.
+    func refreshPresence() {
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        presence.update(
+            exportMode ? [] : controller.presenceMarks, frame: { [weak self] in self?.animatedFrame($0)?.rect },
+            zoom: camera.zoom, scale: window?.backingScaleFactor ?? 2)
+        CATransaction.commit()
+    }
+
+    /// Someone's presence changed: marks redraw, and a followed view moves with theirs.
+    func presenceChanged() {
+        refreshPresence()
+        guard let r = controller.followedViewport, bounds.width > 0 else { return }
+        let zoom = min(max(min(bounds.width / r.width, bounds.height / r.height), 0.1), 4)
+        let c = Camera(
+            offset: CGPoint(x: bounds.midX - r.midX * zoom, y: bounds.midY - r.midY * zoom), zoom: zoom)
+        setCamera(c, animated: true)
+    }
+
     /// The slash menu and protocol suggestions sit under what they belong to.
     func refreshOverlays() {
         refreshAIOverlays()
+        refreshPresence()
         if let s = controller.mapShot {
             let v =
                 mapShotView
@@ -1538,6 +1575,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     private var drag: Drag?
 
     public override func mouseDown(with event: NSEvent) {
+        controller.stopFollowing()
         let p = convert(event.locationInWindow, from: nil)
         let w = camera.toWorld(p)
         window?.makeFirstResponder(self)
@@ -2077,6 +2115,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     public override func scrollWheel(with event: NSEvent) {
         cameraTween = nil
+        controller.stopFollowing()
         noteCameraMoved()
         // Settings › Editing › Scroll wheel: zoom (⌘ or ⌥ pans), or pan (⌘ or ⌥ zooms).
         // Trackpads always pan (pinch zooms); a mouse wheel follows the setting.
@@ -2096,6 +2135,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     public override func magnify(with event: NSEvent) {
         cameraTween = nil
+        controller.stopFollowing()
         zoom(by: 1 + event.magnification, around: convert(event.locationInWindow, from: nil))
     }
 

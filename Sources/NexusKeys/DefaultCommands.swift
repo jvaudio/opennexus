@@ -164,6 +164,8 @@ extension CommandID {
     public static let syncHistory: CommandID = "file.syncHistory"
     public static let resolveConflicts: CommandID = "file.resolveConflicts"
     public static let mergeConflictCopies: CommandID = "file.mergeConflictCopies"
+    public static let collaborate: CommandID = "file.collaborate"
+    public static let joinSession: CommandID = "file.joinSession"
     public static let mapShot: CommandID = "file.mapShot"
     public static let copyAsImage: CommandID = "file.copyAsImage"
     public static let copyAsMarkdown: CommandID = "file.copyAsMarkdown"
@@ -560,6 +562,12 @@ public enum DefaultCommands {
         C(
             .mergeConflictCopies, "Merge Conflicting Copies…", .file, scope: .global, menu: .file,
             note: "Copies iCloud Drive, Dropbox or Syncthing left beside this document"),
+        C(
+            .collaborate, "Collaborate…", .file, scope: .global, keys: [k("ctrl+cmd+l")], menu: .file,
+            note: "Edit this document with others at the same time (Labs)"),
+        C(
+            .joinSession, "Join Session…", .file, scope: .global, menu: .file,
+            note: "Open a live session from an invite link"),
         C(.mapShot, "Map Shot", .file, scope: .global, keys: [k("ctrl+cmd+m")], menu: .file),
         C(.copyAsImage, "Copy as Image", .file, keys: [k("ctrl+cmd+c")], menu: .edit),
         C(.copyAsMarkdown, "Copy as Markdown", .file, menu: .edit),

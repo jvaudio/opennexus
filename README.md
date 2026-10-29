@@ -29,6 +29,7 @@ Sources/
   NexusAgent           the nexus CLI and MCP server's tools
   NexusNet             HTTP client and share destinations, linked only into OpenNexusNet.xpc
   NexusSync            library sync through your own bucket: encryption, merging, history
+  NexusReplica         live co-editing: the CRDT behind sessions, invites and the room client
   NexusCanvas          AppKit canvas and SwiftUI chrome (rendering, editing, animation)
   NexusWidgetsUI       widgets
   nexus                command-line tool
@@ -36,7 +37,7 @@ App/                   Xcode project for the macOS app and its extensions (thin 
   tools/               make_project.py, release.sh, axaudit.swift
 schema/                published JSON Schema for .nexus files
 web/                   the interactive viewer (viewer-core) and the share-link site (viewer-app)
-server/                OpenNexus Server: stores share links (Swift, Docker; see its README)
+server/                OpenNexus Server: stores share links, relays live sessions (Swift, Docker)
 brand/                 the Aperture brand kit: spec (BRAND.md), icons, marks, lockups
 scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints)
 Handoff/               design handoff package (brief, artboards, screenshots, specs)
@@ -81,6 +82,13 @@ through the real network service, then a longer property run in memory:
 
 ```bash
 scripts/test-sync.sh
+```
+
+Live sessions for real: an OpenNexus Server in Docker, four Macs' worth of windows editing
+through the real network code, then the server's files searched for anything readable:
+
+```bash
+scripts/test-collab.sh
 ```
 
 ## Install
@@ -139,6 +147,17 @@ shows diffs as outlines:
 ```bash
 nexus git setup
 ```
+
+### Live sessions (Labs)
+
+File › Collaborate… (⌃⌘L) lets several people edit a document at the same time, each on
+their own Mac. Choose an OpenNexus Server from Settings › Sharing and whether the invite
+lets people edit or only watch, then send the link. Everyone sees each other's selections
+and edits as they happen, every copy ends up the same, and ⌘Z undoes only your own changes.
+Everything is sealed with a key that's only in the invite, so the server passes along bytes
+it can't read. People without the app see the host's latest view in the browser. End
+Session deletes what the server kept; everyone keeps their copy. Turn on "Live co-editing"
+in Settings › Privacy & Data › Network first.
 
 ### Command-line tool
 

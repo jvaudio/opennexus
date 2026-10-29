@@ -16,7 +16,7 @@ extension DocumentWindowController {
         .newCanvas, .inspector, .importFile, .setPassword, .recoverySnapshots, .renameCanvas, .moveCanvasToWindow,
         .duplicateCanvas, .deleteCanvas, .copyCanvas, .pasteCanvas, .saveCanvasAsDocument, .mergeDocuments,
         .printDocument, .export, .exportHTML, .shareLink, .manageShareLinks, .mapShot, .splitByBranch, .nextPanel,
-        .previousPanel, .syncHistory, .resolveConflicts, .mergeConflictCopies,
+        .previousPanel, .syncHistory, .resolveConflicts, .mergeConflictCopies, .collaborate, .joinSession,
     ]
 
     func runWindowCommand(_ id: CommandID) {
@@ -42,6 +42,8 @@ extension DocumentWindowController {
         case .syncHistory: controller.openSyncHistory()
         case .resolveConflicts: controller.openResolveConflicts()
         case .mergeConflictCopies: findConflictCopies(offer: false)
+        case .collaborate: controller.openCollaborate()
+        case .joinSession: controller.openJoinSession()
         case .mapShot: controller.openMapShot()
         case .splitByBranch: controller.splitByBranch()
         case .nextPanel: moveFocus(forward: true)
@@ -51,7 +53,8 @@ extension DocumentWindowController {
         if let w = window, w.firstResponder !== host.canvasView, controller.passwordSheet == false,
             controller.exportState == nil, controller.shareState == nil, controller.shareNotice == nil,
             !controller.manageLinks, controller.resolveState == nil, controller.syncHistory == nil,
-            controller.conflictCopies.isEmpty
+            controller.conflictCopies.isEmpty, controller.collabSheet == nil, controller.joinSheet == nil,
+            controller.collabNotice == nil
         {
             w.makeFirstResponder(host.canvasView)
         }

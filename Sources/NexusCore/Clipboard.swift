@@ -155,7 +155,7 @@ extension CanvasEditor {
         updateMeta { c in
             for z in f.zones {
                 var x = z
-                x.id = Self.fresh("z", c.zones.map(\.id))
+                x.id = Self.fresh("z", c.zones.map(\.id), c.idSuffix)
                 x.origin = CanvasPoint(x: z.origin.x + dx, y: z.origin.y + dy)
                 x.members = z.members.compactMap { map[$0] }
                 zones[z.id] = x.id
@@ -227,7 +227,7 @@ extension CanvasEditor {
         updateMeta { c in
             for k in calls {
                 var x = k
-                x.id = Self.fresh("k", c.callouts.map(\.id))
+                x.id = Self.fresh("k", c.callouts.map(\.id), c.idSuffix)
                 x.host = map[k.host]!
                 x.topic = map[k.topic]!
                 c.callouts.append(x)
@@ -236,14 +236,14 @@ extension CanvasEditor {
             var elements: [String: [String: String]] = ["zone": zones]
             for b in bounds {
                 var x = b
-                x.id = Self.fresh("b", c.boundaries.map(\.id))
+                x.id = Self.fresh("b", c.boundaries.map(\.id), c.idSuffix)
                 x.nodes = b.nodes.compactMap { map[$0] }
                 elements["boundary", default: [:]][b.id] = x.id
                 c.boundaries.append(x)
             }
             for s in sums {
                 var x = s
-                x.id = Self.fresh("s", c.summaries.map(\.id))
+                x.id = Self.fresh("s", c.summaries.map(\.id), c.idSuffix)
                 x.parent = map[s.parent]!
                 x.from = map[s.from]!
                 x.to = map[s.to]!
@@ -255,7 +255,7 @@ extension CanvasEditor {
                 let ends = [r.from, r.to].map { Self.remap($0, nodes: map, elements: elements, in: c, sameCanvas) }
                 guard let from = ends[0], let to = ends[1] else { continue }
                 var x = r
-                x.id = Self.fresh("r", c.relationships.map(\.id))
+                x.id = Self.fresh("r", c.relationships.map(\.id), c.idSuffix)
                 x.from = from
                 x.to = to
                 c.relationships.append(x)
@@ -280,10 +280,10 @@ extension CanvasEditor {
         return sameCanvas && c.has(end) ? end : nil
     }
 
-    static func fresh(_ prefix: String, _ used: [String]) -> String {
+    static func fresh(_ prefix: String, _ used: [String], _ suffix: String = "") -> String {
         var i = used.count + 1
-        while used.contains("\(prefix)\(i)") { i += 1 }
-        return "\(prefix)\(i)"
+        while used.contains("\(prefix)\(i)\(suffix)") { i += 1 }
+        return "\(prefix)\(i)\(suffix)"
     }
 
     /// Pastes a fragment: each of its top-level topics becomes a child of `parent`.
@@ -306,10 +306,10 @@ extension DocumentModel {
         var map: [CanvasID: CanvasID] = [:]
         for c in incoming {
             var i = canvases.count + 1
-            var id = CanvasID("c\(i)")
+            var id = CanvasID("c\(i)\(idSuffix)")
             while canvases[id] != nil || map.values.contains(id) {
                 i += 1
-                id = CanvasID("c\(i)")
+                id = CanvasID("c\(i)\(idSuffix)")
             }
             map[c.id] = id
         }
@@ -325,6 +325,7 @@ extension DocumentModel {
                 if let s = n.subCanvas { c.nodes[nid]?.subCanvas = map[s] ?? s }
             }
             if let p = c.diagram.parent, let m = map[p.canvas] { c.diagram.parent?.canvas = m }
+            c.idSuffix = idSuffix
             canvases[id] = c
             canvasOrder.insert(id, at: at)
             at += 1

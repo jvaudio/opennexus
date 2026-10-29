@@ -276,6 +276,11 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         controller.onRebind = { AppPreferences.shared.showSettings(pane: "shortcuts", record: $0) }
         controller.onOpenSettings = { AppPreferences.shared.showSettings(pane: $0) }
         controller.documentPath = document_.fileURL?.path
+        // Live co-editing (M46).
+        controller.documentIDProvider = { [weak self] in self?.document_.documentID ?? UUID().uuidString }
+        controller.onJoinSession = { CollabJoin.join($0) }
+        controller.onCollabAttached = { [weak self] s in self?.document_.attachSession(s) }
+        controller.onCollabEnded = { [weak self] in self?.document_.undoManager?.removeAllActions() }
         controller.externalCommands.insert(.inspector)
         controller.onZen = { [weak self] on in self?.setImmersive(on) }
         host.onPresentChange = { [weak self] on in
@@ -361,7 +366,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     // MARK: Toolbar
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.flexibleSpace, .viewSwitcher, .flexibleSpace, .diagramType, .theme, .aiStatus, .share, .inspector]
+        [.flexibleSpace, .viewSwitcher, .flexibleSpace, .collab, .diagramType, .theme, .aiStatus, .share, .inspector]
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -388,6 +393,8 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
             return hosted(id, label: Loc.t("Theme"), ThemeButton(controller: controller))
         case .aiStatus:
             return hosted(id, label: "AI", AIStatusChip(controller: controller))
+        case .collab:
+            return hosted(id, label: Loc.t("Live session"), CollabToolbarView(controller: controller))
         case .inspector:
             let item = NSToolbarItem(itemIdentifier: id)
             item.label = Loc.t("Format")
@@ -418,6 +425,7 @@ extension NSToolbarItem.Identifier {
     static let viewSwitcher = Self("viewSwitcher")
     static let diagramType = Self("diagramType")
     static let theme = Self("theme")
+    static let collab = Self("collab")
     static let aiStatus = Self("aiStatus")
     static let share = Self("share")
     static let inspector = Self("inspector")
@@ -584,7 +592,14 @@ extension DocumentWindowController: NSSharingServicePickerToolbarItemDelegate {
         ) { [weak self] in
             MainActor.assumeIsolated { self?.controller.openShareLink() }
         }
-        return [link] + proposedServices
+        let collab = NSSharingService(
+            title: Loc.t("Collaborate…"),
+            image: NSImage(systemSymbolName: "person.2", accessibilityDescription: nil) ?? NSImage(),
+            alternateImage: nil
+        ) { [weak self] in
+            MainActor.assumeIsolated { self?.controller.openCollaborate() }
+        }
+        return [link, collab] + proposedServices
     }
 
     /// After a save: the file's path for this document's links, and "Update when I save"

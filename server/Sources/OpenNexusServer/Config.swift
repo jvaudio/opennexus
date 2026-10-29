@@ -21,6 +21,18 @@ public struct ServerConfig: Sendable {
     public var readsPerMinute = 600
     /// Behind a reverse proxy (Caddy), the client's address is the first in X-Forwarded-For.
     public var trustProxy = false
+    // Live sessions' rooms (M46).
+    /// Where rooms are written through (sealed bytes and hashes only); nil keeps them in memory.
+    public var roomsDirectory: String?
+    /// Rooms nobody has joined for this many days are deleted.
+    public var roomIdleDays = 7
+    /// The largest message (a snapshot with images in it), and the most a room may keep.
+    public var roomMaxMessage = 32 * 1024 * 1024
+    public var roomMaxBytes = 256 * 1024 * 1024
+    public var roomMaxMembers = 50
+    public var maxRooms = 1000
+    /// Messages per second from one connection (twice that in a burst).
+    public var roomMessagesPerSecond = 50
 
     public init(uploadToken: String) { self.uploadToken = uploadToken }
 
@@ -42,6 +54,20 @@ public struct ServerConfig: Sendable {
             c.readsPerMinute = try int(v, "OPENNEXUS_READS_PER_MINUTE", 1...1_000_000)
         }
         c.trustProxy = ["1", "true", "yes"].contains(env["OPENNEXUS_TRUST_PROXY"]?.lowercased() ?? "")
+        if let v = env["OPENNEXUS_ROOM_IDLE_DAYS"] { c.roomIdleDays = try int(v, "OPENNEXUS_ROOM_IDLE_DAYS", 1...3650) }
+        if let v = env["OPENNEXUS_ROOM_MAX_MESSAGE"] {
+            c.roomMaxMessage = try int(v, "OPENNEXUS_ROOM_MAX_MESSAGE", 4096...Int(Int32.max))
+        }
+        if let v = env["OPENNEXUS_ROOM_MAX_BYTES"] {
+            c.roomMaxBytes = try int(v, "OPENNEXUS_ROOM_MAX_BYTES", 65_536...Int.max)
+        }
+        if let v = env["OPENNEXUS_ROOM_MAX_MEMBERS"] {
+            c.roomMaxMembers = try int(v, "OPENNEXUS_ROOM_MAX_MEMBERS", 2...10_000)
+        }
+        if let v = env["OPENNEXUS_MAX_ROOMS"] { c.maxRooms = try int(v, "OPENNEXUS_MAX_ROOMS", 0...1_000_000) }
+        if let v = env["OPENNEXUS_ROOM_MESSAGES_PER_SECOND"] {
+            c.roomMessagesPerSecond = try int(v, "OPENNEXUS_ROOM_MESSAGES_PER_SECOND", 1...100_000)
+        }
         switch env["OPENNEXUS_STORAGE"]?.lowercased() ?? "disk" {
         case "disk": c.storage = .disk(env["OPENNEXUS_DATA_DIR"] ?? "/data")
         case "s3":
@@ -60,6 +86,10 @@ public struct ServerConfig: Sendable {
             c.storage = .s3(s)
         case let other: throw ConfigError("OPENNEXUS_STORAGE is “\(other)”; use disk or s3.")
         }
+        // Rooms beside the shares on disk; set it empty to keep rooms in memory only.
+        let dataDir = env["OPENNEXUS_DATA_DIR"] ?? "/data"
+        let rooms = env["OPENNEXUS_ROOMS_DIR"] ?? (dataDir.hasSuffix("/") ? dataDir : dataDir + "/") + "rooms"
+        c.roomsDirectory = rooms.isEmpty ? nil : rooms
         return c
     }
 

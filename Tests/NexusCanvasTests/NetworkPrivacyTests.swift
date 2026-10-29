@@ -44,15 +44,16 @@ import Testing
     @Test func onlyTheServiceLinksTheNetworkCode() throws {
         // In the package: its own product, and test targets; no other target depends on it.
         let package = try String(contentsOf: NetworkPrivacyTests.repo.appending(path: "Package.swift"), encoding: .utf8)
-        let uses = package.split(separator: "\n").filter { $0.contains("\"NexusNet\"") }.map {
-            $0.trimmingCharacters(in: .whitespaces)
+        // Each product and target declaration whole, however it's wrapped.
+        let uses = package.components(separatedBy: "\n        .").filter { $0.contains("\"NexusNet\"") }.map {
+            $0.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.joined(separator: " ")
         }
         // The product, the target, and three test targets (canvas, network, sync).
         #expect(uses.count == 5, "\(uses)")
         for u in uses {
             #expect(
-                u.hasPrefix(".library(name: \"NexusNetKit\"") || u.hasPrefix(".target(name: \"NexusNet\"")
-                    || u.contains("Tests\""), "\(u)")
+                u.hasPrefix("library(name: \"NexusNetKit\"") || u.hasPrefix("target(name: \"NexusNet\"")
+                    || (u.hasPrefix("testTarget(") && u.contains("Tests\"")), "\(u)")
         }
         // In the app's project: only the service target takes the product.
         let project = try String(

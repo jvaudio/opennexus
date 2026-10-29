@@ -9,6 +9,10 @@ public struct Patch: Sendable, Equatable {
     public struct NodeChange: Sendable, Equatable {
         public var before: Node?
         public var after: Node?
+        public init(before: Node?, after: Node?) {
+            self.before = before
+            self.after = after
+        }
     }
 
     public var canvasID: CanvasID
@@ -81,9 +85,11 @@ public struct Patch: Sendable, Equatable {
         if let metaAfter {
             let nodes = canvas.nodes
             let seq = max(canvas.nextSequence, metaAfter.nextSequence)
+            let suffix = canvas.idSuffix
             canvas = metaAfter
             canvas.nodes = nodes
             canvas.nextSequence = seq
+            canvas.idSuffix = suffix
         }
         for (id, change) in nodes {
             canvas.nodes[id] = change.after

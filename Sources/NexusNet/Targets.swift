@@ -269,6 +269,26 @@ struct ServerTarget: ShareTarget {
     }
 }
 
+extension ServerTarget {
+    /// A live session's room (M46): the body holds only the capabilities' SHA-256.
+    func createRoom(_ body: Data, client: HTTPClient) async throws -> NetReply {
+        let h = ["Authorization": "Bearer \(token)", "Content-Type": "application/json"]
+        let r = try check(await client.send(HTTPRequest("POST", try endpoint("/v1/rooms"), headers: h, body: body)))
+        guard let id = (try? CanonicalJSON.parse(r.body))?["id"]?.stringValue, ShareID.valid(id) else {
+            throw NetError.unexpected("no room id")
+        }
+        return NetReply(ok: true, object: id)
+    }
+
+    func endRoom(_ room: String, endSecret: String?, client: HTTPClient) async throws {
+        guard ShareID.valid(room) else { throw NetError.unexpected("bad room id") }
+        let h = ["Authorization": "Bearer \(endSecret ?? "")"]
+        let r = try await client.send(HTTPRequest("DELETE", try endpoint("/v1/rooms/\(room)"), headers: h))
+        // Already gone (idle too long, or ended elsewhere) is what End wants.
+        if r.status != 404 { _ = try check(r) }
+    }
+}
+
 /// The server's share ids: 16 random bytes in base64url (22 characters).
 enum ShareID {
     static func valid(_ id: String) -> Bool {

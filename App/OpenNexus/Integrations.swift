@@ -154,8 +154,14 @@ final class Integrations: NSObject {
         }
     }
 
-    /// Spotlight's "open this result".
+    /// Spotlight's "open this result", and an invite's universal link (`…/join/#…`, M46).
     func continueActivity(_ activity: NSUserActivity) -> Bool {
+        if activity.activityType == NSUserActivityTypeBrowsingWeb, let url = activity.webpageURL,
+            url.path.hasSuffix("/join/") || url.path.hasSuffix("/join")
+        {
+            CollabJoin.join(url.absoluteString)
+            return true
+        }
         guard activity.activityType == CSSearchableItemActionType,
             let id = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String
         else { return false }
@@ -222,7 +228,7 @@ final class Integrations: NSObject {
     // MARK: opennexus:// links
 
     /// `opennexus://capture` (the Share extension queued something), `quick-capture`,
-    /// `inbox`, `open/<token>` (widgets), `new`.
+    /// `inbox`, `open/<token>` (widgets), `new`, `join#<invite>` (M46).
     @objc func handleURL(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
         guard let s = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue, let url = URL(string: s) else {
             return
@@ -242,6 +248,8 @@ final class Integrations: NSObject {
                 open(URL(fileURLWithPath: path), canvas: nil, node: nil)
             }
         case "new": NewDocument.make()
+        // An invite to a live session (M46), from the join page while universal links wait.
+        case "join": CollabJoin.join(url.absoluteString)
         default: break
         }
     }
