@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -491,3 +493,4 @@ struct ZoneSection: View {
         controller.selectElement(nil)
     }
 }
+#endif

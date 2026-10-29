@@ -1,7 +1,9 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 import NexusTheme
 import UniformTypeIdentifiers
 
@@ -195,8 +197,8 @@ public enum ViewerBundle {
             if let parent = parents[id] { p["parent"] = .string(parent.rawValue) }
             if sn.hiddenCount > 0 {
                 p["hidden"] = .number(Double(sn.hiddenCount))
-                let font = NSFont.systemFont(ofSize: 11, weight: .bold)
-                let w = max(22, ceil(("+\(sn.hiddenCount)" as NSString).size(withAttributes: [.font: font]).width) + 10)
+                let label = StyledText("+\(sn.hiddenCount)", font: Fonts.system(11, .bold))
+                let w = max(22, ceil(label.lineSize.width) + 10)
                 p["badge"] = rect(SVGExporter.badgeRect(sn, width: w).offsetBy(dx: r.minX, dy: r.minY))
             }
             topics[id.rawValue] = .object(p)

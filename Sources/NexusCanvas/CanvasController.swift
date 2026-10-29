@@ -1,10 +1,12 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusAI
 import NexusCore
 import NexusFormat
 import NexusInterchange
 import NexusKeys
 import NexusLayout
+import NexusScene
 import NexusTheme
 import Observation
 import os
@@ -215,8 +217,14 @@ public final class CanvasController {
     @ObservationIgnored public var rendersThemeAsNamed = false
     /// Set by the first key press; the empty-canvas hints fade then.
     public internal(set) var hasPressedKey = false
-    /// The clipboard (tests use a private pasteboard).
-    @ObservationIgnored public var pasteboard: NSPasteboard = .general
+    /// What the controller asks of the platform: the pasteboard, appearance, names and
+    /// VoiceOver (M47a).
+    @ObservationIgnored public var host: any CanvasHost = CanvasHosts.platform()
+    /// The clipboard (tests use a memory one).
+    public var pasteboard: any CanvasPasteboard {
+        get { host.pasteboard }
+        set { host.pasteboard = newValue }
+    }
     /// The app's save panel: data and a suggested file name.
     @ObservationIgnored public var onSaveFile: ((Data, String) -> Void)?
     /// Choose a folder, then write these files (split by branch).
@@ -278,11 +286,6 @@ public final class CanvasController {
     /// The outline pane has keyboard focus (its key scope is active).
     @ObservationIgnored public var outlineFocused = false
     @ObservationIgnored public var onOutlineEditChange: ((EditSession?) -> Void)?
-    /// A topic's row in the outline, as a view and a rect in it, while the outline shows
-    /// it: popovers anchor there when the outline has focus or the canvas is hidden (D254).
-    @ObservationIgnored var outlineAnchor: ((NodeID) -> (NSView, CGRect)?)?
-    /// The same for a task's row in the Gantt, while it has focus or the canvas is hidden.
-    @ObservationIgnored var ganttAnchor: ((NodeID) -> (NSView, CGRect)?)?
     @ObservationIgnored public var onZen: ((Bool) -> Void)?
     @ObservationIgnored public var onPresent: ((Bool) -> Void)?
     /// Export the deck: "PDF", "PowerPoint", "Keynote" or "Video".

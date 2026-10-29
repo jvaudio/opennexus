@@ -1,8 +1,9 @@
-import AppKit
+import CoreGraphics
 import Foundation
 import NexusCore
 import NexusFormat
 import NexusReplica
+import NexusScene
 
 /// File › Collaborate… (M46): which server, and what the invite link lets people do.
 public struct CollabSheetState: Equatable, Sendable {
@@ -120,8 +121,8 @@ extension CanvasController {
 
     public func copyInvite(canEdit: Bool) {
         guard let link = inviteLink(canEdit: canEdit) else { return }
-        NSPasteboard.general.clearContents()
-        NSPasteboard.general.setString(link, forType: .string)
+        pasteboard.clearContents()
+        pasteboard.setString(link, forType: .string)
         showToast(canEdit ? Loc.t("Copied the invite link") : Loc.t("Copied the view-only invite link"))
     }
 

@@ -5,6 +5,7 @@ import NexusTheme
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 /// M31 on the canvas: a canvas's element defaults draw and seed new elements (D245), and
 /// progress markers in eighths draw as pies beside the quarter glyphs (D247).
@@ -114,7 +115,7 @@ import Testing
         let img = try #require(ImageExporter.image(doc, canvas: "c1", o))
         #expect(img.width > 0)
         let pie = NSImage(size: CGSize(width: 36, height: 36), flipped: true) { r in
-            LegendLayer.drawMarker("progress-38", in: r)
+            LegendLayer.drawMarker("progress-38", in: r, context: NSGraphicsContext.current!.cgContext)
             return true
         }
         let tiff = try #require(pie.tiffRepresentation)

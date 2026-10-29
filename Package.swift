@@ -8,12 +8,13 @@ let strict: [SwiftSetting] = [
 let package = Package(
     name: "OpenNexus",
     defaultLocalization: "en",
-    platforms: [.macOS(.v27)],
+    platforms: [.macOS(.v27), .iOS(.v27)],
     products: [
         .library(
             name: "OpenNexusKit",
-            targets: ["NexusCore", "NexusLayout", "NexusFormat", "NexusTheme", "NexusKeys", "NexusAI", "NexusInterchange",
-                "NexusSync", "NexusReplica", "NexusCanvas",
+            targets: [
+                "NexusCore", "NexusLayout", "NexusFormat", "NexusTheme", "NexusKeys", "NexusAI", "NexusInterchange",
+                "NexusSync", "NexusReplica", "NexusScene", "NexusCanvas",
             ]
         ),
         // For the light extensions (Share, Spotlight, Widgets): the model and file format only.
@@ -60,24 +61,35 @@ let package = Package(
         // Thin wrappers around Apple's on-device frameworks (Foundation Models, Translation,
         // NaturalLanguage, Vision, Image Playground, SpeechAnalyzer). No network.
         .target(name: "NexusAI", dependencies: ["NexusCore"], swiftSettings: strict),
-        // AppKit canvas: rendering, hit testing, editing overlay, animation.
+        // Scenes, text, layers and exports without AppKit or UIKit (M47a): what the Mac and
+        // the iPad draw with. Text is measured and drawn by the platform's engine when one
+        // is installed, CoreText otherwise.
+        .target(
+            name: "NexusScene",
+            dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusFormat", "NexusInterchange"],
+            // The String Catalog for every target's `Loc` strings.
+            resources: [.process("Resources")],
+            swiftSettings: strict
+        ),
+        // Editing logic (the controller, documents, preferences), shared with iOS, plus the
+        // Mac's AppKit canvas and panels, which compile on macOS only.
         .target(
             name: "NexusCanvas",
             dependencies: [
                 "NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI", "NexusFormat", "NexusInterchange",
-                "NexusSync", "NexusReplica",
+                "NexusSync", "NexusReplica", "NexusScene",
             ],
             // Starters/ and Guides/ are copied as folders: one JSON file per built-in starter
             // (M39) and guide (M41).
             // Viewer/ holds the built interactive viewer (web/viewer-core, M43).
-            resources: [.process("Resources"), .copy("Starters"), .copy("Guides"), .copy("Viewer")],
+            resources: [.copy("Starters"), .copy("Guides"), .copy("Viewer")],
             swiftSettings: strict
         ),
         // The `nexus` CLI and MCP server (M9): commands, map tools, permissions. Uses the
         // canvas offscreen for exports so they match the app exactly.
         .target(
             name: "NexusAgent",
-            dependencies: ["NexusCore", "NexusFormat", "NexusInterchange", "NexusCanvas"],
+            dependencies: ["NexusCore", "NexusFormat", "NexusInterchange", "NexusScene", "NexusCanvas"],
             swiftSettings: strict
         ),
         // The widgets' SwiftUI content (the extension adds WidgetKit's container).
@@ -97,17 +109,27 @@ let package = Package(
         ),
         .testTarget(name: "NexusThemeTests", dependencies: ["NexusTheme", "NexusCore"]),
         .testTarget(name: "NexusKeysTests", dependencies: ["NexusKeys"]),
+        // Titles.json is the text corpus the engines are compared over. NexusCanvas brings the
+        // Mac's TextKit engine to compare against.
+        .testTarget(
+            name: "NexusSceneTests", dependencies: ["NexusScene", "NexusCore", "NexusTheme", "NexusCanvas"],
+            exclude: ["Titles.json"]),
         // The share tests run the network service in process, against stubs and Docker (M44).
         .testTarget(
             name: "NexusCanvasTests",
-            dependencies: ["NexusCanvas", "NexusFormat", "NexusWidgetsUI", "NexusNet", "NexusSync", "NexusReplica"]),
+            dependencies: [
+                "NexusCanvas", "NexusScene", "NexusFormat", "NexusWidgetsUI", "NexusNet", "NexusSync", "NexusReplica",
+            ]),
         .testTarget(
-            name: "NexusNetTests", dependencies: ["NexusNet", "NexusFormat", "NexusCore"], resources: [.copy("Fixtures")]),
+            name: "NexusNetTests", dependencies: ["NexusNet", "NexusFormat", "NexusCore"],
+            resources: [.copy("Fixtures")]),
         // The live run (MinIO in Docker) goes through the real network service (M45).
         .testTarget(name: "NexusSyncTests", dependencies: ["NexusSync", "NexusFormat", "NexusCore", "NexusNet"]),
         .testTarget(name: "NexusReplicaTests", dependencies: ["NexusReplica", "NexusFormat", "NexusCore"]),
         .testTarget(name: "NexusAITests", dependencies: ["NexusAI", "NexusCore"]),
-        .testTarget(name: "NexusAgentTests", dependencies: ["NexusAgent", "NexusCanvas", "NexusFormat", "NexusCore"]),
+        .testTarget(
+            name: "NexusAgentTests",
+            dependencies: ["NexusAgent", "NexusCanvas", "NexusScene", "NexusFormat", "NexusCore"]),
         .testTarget(
             name: "NexusInterchangeTests",
             dependencies: ["NexusInterchange", "NexusFormat", "NexusCore", "NexusTheme"],

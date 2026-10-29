@@ -7,6 +7,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 
 /// M45 in the app: libraries synced through `SyncCenter`, Resolve Conflicts and Sync
 /// History in an open document (A2), conflict copies other apps left (A7), and typing

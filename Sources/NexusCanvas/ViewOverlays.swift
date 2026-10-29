@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -834,3 +836,4 @@ struct FlowLayout: Layout {
         }
     }
 }
+#endif

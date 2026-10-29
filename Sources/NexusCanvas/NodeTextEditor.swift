@@ -1,6 +1,8 @@
+#if os(macOS)
 import AppKit
 import NexusCore
 import NexusKeys
+import NexusScene
 
 /// The in-node text editor (Edit mode). Sits over the node, scaled with the camera, and
 /// routes Return / Esc / Tab / ⇧Tab / ⌘↩ / ⇧↩ through the command registry. Keys are
@@ -49,12 +51,12 @@ final class NodeTextView: NSTextView {
         style.format = nil
         self.style = style
         sessionUndo.removeAllActions()
-        let attrs = style.attributes(color: color)
+        let attrs = style.nsAttributes(color: color)
         typingAttributes = attrs
-        defaultParagraphStyle = style.paragraphStyle
+        defaultParagraphStyle = style.nsParagraphStyle
         insertionPointColor = color
         baseColor = color
-        textStorage?.setAttributedString(style.attributed(session.text, marks: session.marks, color: color))
+        textStorage?.setAttributedString(style.nsAttributed(session.text, marks: session.marks, color: color))
         if session.selectAll {
             setSelectedRange(NSRange(location: 0, length: (string as NSString).length))
         } else {
@@ -115,12 +117,12 @@ final class NodeTextView: NSTextView {
         let fm = NSFontManager.shared
         // Marks only add emphasis on top of the topic's style; a topic that is already
         // bold (main topics) is restyled from the Format panel instead.
-        guard !fm.traits(of: style.font).contains(trait) else {
+        guard !fm.traits(of: style.nsFont).contains(trait) else {
             NSSound.beep()
             return
         }
         if range.length == 0 {
-            let f = (typingAttributes[.font] as? NSFont) ?? style.font
+            let f = (typingAttributes[.font] as? NSFont) ?? style.nsFont
             let has = fm.traits(of: f).contains(trait)
             typingAttributes[.font] = has ? fm.convert(f, toNotHaveTrait: trait) : fm.convert(f, toHaveTrait: trait)
             return
@@ -131,7 +133,7 @@ final class NodeTextView: NSTextView {
         }
         storage.beginEditing()
         storage.enumerateAttribute(.font, in: range) { v, r, _ in
-            let f = (v as? NSFont) ?? style.font
+            let f = (v as? NSFont) ?? style.nsFont
             storage.addAttribute(
                 .font, value: allHave ? fm.convert(f, toNotHaveTrait: trait) : fm.convert(f, toHaveTrait: trait),
                 range: r)
@@ -170,7 +172,7 @@ final class NodeTextView: NSTextView {
     func currentMarks() -> [TextMark] {
         guard let storage = textStorage, let style else { return [] }
         let fm = NSFontManager.shared
-        let baseTraits = fm.traits(of: style.font)
+        let baseTraits = fm.traits(of: style.nsFont)
         var out: [TextMark] = []
         storage.enumerateAttributes(in: NSRange(location: 0, length: storage.length)) { attrs, r, _ in
             let f = attrs[.font] as? NSFont
@@ -198,3 +200,4 @@ final class NodeTextView: NSTextView {
     override func insertBacktab(_ sender: Any?) { controller?.perform(.commitAndPromote) }
     override func cancelOperation(_ sender: Any?) { controller?.perform(.commitEdit) }
 }
+#endif

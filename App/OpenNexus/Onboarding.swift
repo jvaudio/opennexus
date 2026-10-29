@@ -4,6 +4,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 import SwiftUI
 
 /// First run (F5): Welcome → role picker → the tour in a real document. Afterwards

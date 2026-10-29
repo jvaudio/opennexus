@@ -1,9 +1,11 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusAI
 import NexusCore
 import NexusFormat
 import NexusInterchange
 import NexusKeys
+import NexusScene
 import NexusTheme
 import UniformTypeIdentifiers
 
@@ -184,15 +186,6 @@ public struct MergeState: Equatable, Sendable {
 
     /// A picture is still being read.
     public var reading: Bool { sources.contains { $0.progress != nil } }
-}
-
-extension NSPasteboard.PasteboardType {
-    /// Copied topics as a canvas fragment (canonical JSON).
-    public static let nexusFragment = NSPasteboard.PasteboardType("org.opennexus.fragment")
-    /// A whole canvas (Copy canvas).
-    public static let nexusCanvas = NSPasteboard.PasteboardType("org.opennexus.canvas")
-    /// Where a zone fragment was copied: the open document and the canvas (D196).
-    public static let nexusFragmentSource = NSPasteboard.PasteboardType("org.opennexus.fragment.source")
 }
 
 extension CanvasController {
@@ -722,11 +715,9 @@ extension CanvasController {
             }
             return
         }
-        for type in [NSPasteboard.PasteboardType.png, .tiff] {
-            if let data = pb.data(forType: type), let rep = NSBitmapImageRep(data: data),
-                let png = rep.representation(using: .png, properties: [:])
-            {
-                setImage(png, ext: "png", size: CGSize(width: rep.pixelsWide, height: rep.pixelsHigh), on: parent)
+        for type in [PasteboardType.png, .tiff] {
+            if let data = pb.data(forType: type), let (png, size) = ImageExporter.png(fromImage: data) {
+                setImage(png, ext: "png", size: size, on: parent)
                 return
             }
         }

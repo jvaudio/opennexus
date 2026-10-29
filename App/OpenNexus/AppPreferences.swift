@@ -4,6 +4,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusKeys
+import NexusScene
 import SwiftUI
 import UniformTypeIdentifiers
 

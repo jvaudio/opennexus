@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusInterchange
+@testable import NexusScene
 
 /// M43: the viewer copy (A7, D314) and `nexus export --to html` (A8).
 @MainActor

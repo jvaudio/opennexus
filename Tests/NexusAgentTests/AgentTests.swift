@@ -4,6 +4,7 @@ import Testing
 @testable import NexusAgent
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// A temporary folder holding a copy of the launch-plan fixture.
 struct Sandbox {

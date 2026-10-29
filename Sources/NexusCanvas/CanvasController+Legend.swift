@@ -1,6 +1,8 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusKeys
+import NexusScene
 
 /// Moving the legend from the keyboard (M21, D203). Select Legend (View menu, palette, a
 /// click, or VoiceOver) gives it the keyboard: arrows nudge it, ⇧ moves it further, ↩ opens
@@ -69,5 +71,50 @@ extension CanvasController {
         let step = far ? Self.legendFarStep : Self.legendStep
         let o = l.rect.origin
         moveLegend(to: CanvasPoint(x: o.x + dx * step, y: o.y + dy * step))
+    }
+}
+
+@MainActor
+extension CanvasController {
+    /// View › Legend: shows or hides the legend, making one the first time.
+    public func toggleLegend() {
+        let show = !(canvas.legend?.visible ?? false)
+        perform(show ? Loc.t("Show Legend") : Loc.t("Hide Legend")) { e in
+            e.updateMeta { c in
+                if c.legend == nil { c.legend = Legend() } else { c.legend?.visible = show }
+            }
+        }
+        showToast(show ? Loc.t("Legend shown · ⌥⌘L hides it") : Loc.t("Legend hidden"))
+    }
+
+    public func setLegendVisible(_ on: Bool) {
+        guard (canvas.legend?.visible ?? false) != on else { return }
+        toggleLegend()
+    }
+
+    /// A marker's description; empty restores the marker's own name.
+    public func setLegendDescription(_ text: String, for marker: String) {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let current = canvas.legend?.markers[marker] ?? ""
+        guard t != current, !(t.isEmpty && current.isEmpty) else { return }
+        perform(Loc.t("Legend Description")) { e in
+            e.updateMeta { c in
+                var l = c.legend ?? Legend()
+                l.markers[marker] = t.isEmpty ? nil : t
+                c.legend = l
+            }
+        }
+    }
+
+    /// Where the legend's top-left corner goes (nil: back beside the map).
+    public func moveLegend(to p: CanvasPoint?) {
+        guard canvas.legend != nil, canvas.legend?.position != p else { return }
+        perform(Loc.t("Move Legend")) { e in e.updateMeta { $0.legend?.position = p } }
+    }
+
+    /// Edit Legend…: the legend's descriptions and visibility.
+    public func editLegend() {
+        if mode == .edit { commitEdit() }
+        onRequest?(.legend)
     }
 }

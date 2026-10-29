@@ -1,7 +1,8 @@
-import AppKit
+import Foundation
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 // The parts of M9's macOS integration that are logic rather than system glue, kept here
 // so they're tested headless: the agent policy from Settings, code links, and Quick
@@ -75,25 +76,6 @@ public enum CodeLinks {
             "\(scheme)://file\(t.file.path.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? t.file.path)"
         if let l = t.line { s += ":\(l)" }
         return URL(string: s)
-    }
-
-    /// Opens `url`, routing code files to the chosen editor. Everything else goes to the
-    /// system as before.
-    public static func open(_ url: URL, prefs: Preferences, workspace: NSWorkspace = .shared) {
-        let editor = prefs.string("integrations.codeLinks")
-        guard let t = target(url), editor != "default" else {
-            workspace.open(url)
-            return
-        }
-        if let u = editorURL(t, editor: editor), workspace.urlForApplication(toOpen: u) != nil {
-            workspace.open(u)
-            return
-        }
-        if let id = bundleIDs[editor], let app = workspace.urlForApplication(withBundleIdentifier: id) {
-            workspace.open([t.file], withApplicationAt: app, configuration: NSWorkspace.OpenConfiguration())
-        } else {
-            workspace.open(t.file)
-        }
     }
 }
 

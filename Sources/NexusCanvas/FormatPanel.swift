@@ -1,7 +1,9 @@
+#if os(macOS)
 import AppKit
 import NexusCore
 import NexusKeys
 import NexusLayout
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -704,3 +706,4 @@ struct QuickGlyph: View {
                             dash: quick.style.border == "dashed" ? [3, 2] : [])))
     }
 }
+#endif

@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -248,7 +250,7 @@ struct ConvertSheetView: View {
 
 /// A wireframe of a scene: outlines and connector lines, fitted to the tile.
 struct WireframePreview: View {
-    let scene: Scene
+    let scene: NexusScene.Scene
 
     var body: some View {
         Canvas { ctx, size in
@@ -581,3 +583,4 @@ struct IconLibraryView: View {
 extension Stride.Threat: Hashable {
     public func hash(into h: inout Hasher) { h.combine(id) }
 }
+#endif

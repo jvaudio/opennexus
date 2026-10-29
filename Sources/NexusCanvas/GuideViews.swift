@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -259,3 +261,4 @@ struct GuidePanelView: View {
         .padding(16)
     }
 }
+#endif

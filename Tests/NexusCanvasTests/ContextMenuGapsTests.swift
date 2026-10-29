@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M26: the context-menu gaps M17 left. Paste and Zone on empty canvas land where the menu
 /// opened, Format Panel toggles with a checkmark, and the outline and the Gantt have menus.

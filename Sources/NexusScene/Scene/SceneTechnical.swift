@@ -1,4 +1,5 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusLayout
 import NexusTheme
@@ -7,7 +8,7 @@ import NexusTheme
 /// tree edges as flows, and structure decor.
 extension SceneBuilder {
     /// The style layer a node type adds under the topic's own style.
-    static func typeLayer(_ info: NodeTypeInfo, diagram: DiagramType) -> TopicStyle {
+    package static func typeLayer(_ info: NodeTypeInfo, diagram: DiagramType) -> TopicStyle {
         var t = TopicStyle()
         t.shape = info.shape
         t.fill = "solid"
@@ -84,7 +85,7 @@ extension SceneBuilder {
     }
 
     /// The root as the diagram's title (DFD, threat model, architecture, sequence).
-    static let titleLayer: TopicStyle = {
+    package static let titleLayer: TopicStyle = {
         var t = TopicStyle()
         t.shape = "text"
         t.fill = "none"
@@ -98,7 +99,7 @@ extension SceneBuilder {
     }()
 
     /// Decorations for one typed node.
-    static func techDecor(
+    package static func techDecor(
         _ id: NodeID, info: NodeTypeInfo, canvas: Canvas, numbers: [NodeID: String],
         threats: [NodeID: Stride.Threat], env: StyleEnvironment
     ) -> TechDecor {
@@ -157,15 +158,15 @@ extension SceneBuilder {
 
     // MARK: Layout
 
-    struct TechLayout {
-        var frames: [NodeID: NodeFrame] = [:]
-        var decor: [SceneDecor] = []
+    package struct TechLayout {
+        package var frames: [NodeID: NodeFrame] = [:]
+        package var decor: [SceneDecor] = []
         /// Sequence message endpoints by relationship id.
-        var messagePoints: [String: [CGPoint]] = [:]
+        package var messagePoints: [String: [CGPoint]] = [:]
     }
 
     /// Lays out a technical canvas. `included` are the nodes in the graph, in tree order.
-    func techLayout(
+    package func techLayout(
         _ canvas: Canvas, sizes: [NodeID: CGSize], order: [NodeID], parents: [NodeID: NodeID], env: StyleEnvironment
     ) -> TechLayout {
         var out = TechLayout()
@@ -177,13 +178,13 @@ extension SceneBuilder {
         if type == .sequence {
             let ps = (canvas.nodes[canvas.root]?.children ?? []).filter { set.contains($0) }
             let msgs = canvas.relationships.filter { $0.connects(within: Set(ps)) }
-            let font = NSFont.monospacedSystemFont(ofSize: 12.5, weight: .regular)
+            let font = Fonts.mono(12.5)
             var numbered = 0
             let messages = msgs.enumerated().map { i, r -> SequenceLayout.Message in
                 let isReturn = r.kind == "return"
                 if !isReturn { numbered += 1 }
                 let text = isReturn ? r.label : "\(i + 1) · \(r.label)"
-                let w = ceil((text as NSString).size(withAttributes: [.font: font]).width)
+                let w = ceil(text.width(in: font))
                 return SequenceLayout.Message(from: r.from.topic!, to: r.to.topic!, isReturn: isReturn, labelWidth: w)
             }
             let r = SequenceLayout.layout(participants: ps, sizes: sizes, messages: messages)
@@ -266,7 +267,7 @@ extension SceneBuilder {
     // MARK: Flows
 
     /// A tree edge drawn as a flow.
-    func virtualFlow(
+    package func virtualFlow(
         parent: NodeID, child: NodeID, canvas: Canvas, types: [NodeID: NodeType], env: StyleEnvironment
     ) -> SceneRelationship {
         let node = canvas.nodes[child]
@@ -320,7 +321,7 @@ extension SceneBuilder {
 
     // MARK: Decor from structure layouts
 
-    static func structureDecor(
+    package static func structureDecor(
         families: [NodeID: String], cells: [NodeID: LayoutCell], canvas: Canvas, frames: [NodeID: NodeFrame],
         branch: (NodeID) -> RGBA, env: StyleEnvironment
     ) -> [SceneDecor] {

@@ -3,6 +3,7 @@ import Carbon.HIToolbox
 import NexusCanvas
 import NexusCore
 import NexusKeys
+import NexusScene
 import ServiceManagement
 import SwiftUI
 

@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M10: full keyboard reachability. Every command has a key, a menu item, or a row in
 /// the command palette (⇧⌘P) that runs it; panels are reached with F6.

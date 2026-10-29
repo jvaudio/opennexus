@@ -8,6 +8,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusKeys
+@testable import NexusScene
 @testable import NexusTheme
 
 /// M8: every setting takes effect live. Each test flips a preference on a real canvas

@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M33: the gaps M26 left. An image pasted from the empty-canvas menu lands at the pointer,
 /// the outline's menu offers the popover items (they open on the row), and outline rows

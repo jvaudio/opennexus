@@ -1,8 +1,10 @@
-import AppKit
+import CoreGraphics
 import CoreText
+import Foundation
 import ImageIO
 import NexusCore
 import NexusLayout
+import NexusScene
 import NexusTheme
 import UniformTypeIdentifiers
 
@@ -65,9 +67,10 @@ public enum SVGExporter {
             w.line(
                 "<rect class=\"band\" x=\"\(n(r.minX))\" y=\"\(n(r.minY))\" width=\"\(n(r.width))\" height=\"\(n(r.height))\" \(paint(color.alpha(band % 2 == 0 ? 0.05 : 0.08), "fill")) \(paint(color.alpha(0.25), "stroke"))/>"
             )
-            let font = NSFont.monospacedSystemFont(ofSize: 11.5, weight: .semibold)
+            let font = Fonts.mono(11.5, .semibold)
             w.text(
-                title, at: CGPoint(x: r.minX + 16, y: r.minY + 12 + font.ascender), font: font, color: color, kern: 1.2)
+                title, at: CGPoint(x: r.minX + 16, y: r.minY + 12 + CTFontGetAscent(font)), font: font, color: color,
+                kern: 1.2)
             band += 1
         }
         // Zones and boundaries.
@@ -77,7 +80,7 @@ public enum SVGExporter {
             )
             w.text(
                 z.zone.title, at: CGPoint(x: z.rect.minX + 14, y: z.rect.minY + 22),
-                font: .systemFont(ofSize: 12, weight: .semibold), color: z.color)
+                font: Fonts.system(12, .semibold), color: z.color)
             w.line("</g>")
         }
         for bd in scene.boundaries {
@@ -90,7 +93,7 @@ public enum SVGExporter {
             if !bd.boundary.title.isEmpty {
                 w.text(
                     bd.boundary.title, at: CGPoint(x: r.minX + 12, y: r.minY + 18),
-                    font: .systemFont(ofSize: 12, weight: .semibold), color: bd.color)
+                    font: Fonts.system(12, .semibold), color: bd.color)
             }
             w.line("</g>")
         }
@@ -206,8 +209,8 @@ public enum SVGExporter {
             }
             if !r.relationship.label.isEmpty {
                 let mid = g.point(at: 0.5)
-                let font = NSFont.systemFont(ofSize: 12, weight: .medium)
-                let size = (r.relationship.label as NSString).size(withAttributes: [.font: font])
+                let font = Fonts.system(12, .medium)
+                let size = r.relationship.label.size(in: font)
                 let pill = CGRect(x: mid.x - size.width / 2 - 8, y: mid.y - 11, width: size.width + 16, height: 22)
                 w.line(
                     "<rect x=\"\(n(pill.minX))\" y=\"\(n(pill.minY))\" width=\"\(n(pill.width))\" height=\"\(n(pill.height))\" rx=\"11\" fill=\"\(hex(scene.canvasColor))\" stroke=\"\(hex(r.color))\"/>"
@@ -233,7 +236,7 @@ public enum SVGExporter {
         for row in l.rows {
             let rr = row.rect
             if let label = row.label {
-                let width = ceil((label as NSString).size(withAttributes: [.font: SceneLegend.labelFont]).width) + 16
+                let width = ceil(label.width(in: SceneLegend.labelFont)) + 16
                 w.line(
                     "<rect x=\"\(n(rr.minX))\" y=\"\(n(rr.midY - 9))\" width=\"\(n(width))\" height=\"18\" rx=\"9\" fill=\"\(hex(theme.ink))\" fill-opacity=\"0.1\"/>"
                 )
@@ -258,12 +261,12 @@ public enum SVGExporter {
     /// priority disc, or an eighths pie (D247).
     static func marker(_ id: String, in r: CGRect, _ w: inout Writer) {
         let c = CGPoint(x: r.midX, y: r.midY)
-        let glyphFont = NSFont.systemFont(ofSize: 10.5, weight: .bold)
+        let glyphFont = Fonts.system(10.5, .bold)
         if id.hasPrefix("priority-"), let p = Int(id.dropFirst(9)) {
             let color = Tokens.priorityColors[max(0, min(8, p - 1))]
             w.line("<circle cx=\"\(n(c.x))\" cy=\"\(n(c.y))\" r=\"\(n(r.width / 2))\" fill=\"\(hex(color))\"/>")
             w.text(
-                "\(p)", at: CGPoint(x: c.x, y: r.minY + 3 + glyphFont.ascender), font: glyphFont, color: .white,
+                "\(p)", at: CGPoint(x: c.x, y: r.minY + 3 + CTFontGetAscent(glyphFont)), font: glyphFont, color: .white,
                 anchor: "middle")
             return
         }
@@ -275,7 +278,7 @@ public enum SVGExporter {
             pieMarker(pie, at: c, &w)
         } else {
             w.text(
-                mk?.glyph ?? "•", at: CGPoint(x: c.x, y: r.minY + 2 + glyphFont.ascender), font: glyphFont,
+                mk?.glyph ?? "•", at: CGPoint(x: c.x, y: r.minY + 2 + CTFontGetAscent(glyphFont)), font: glyphFont,
                 color: .white, anchor: "middle")
         }
     }
@@ -407,24 +410,27 @@ public enum SVGExporter {
                 w.image(st, in: sn.stickerRect.insetBy(dx: 1, dy: 1))
             } else {
                 let glyph = st.hasPrefix("emoji:") ? String(st.dropFirst(6)) : st.contains("/") ? "★" : st
-                let font = NSFont.systemFont(ofSize: 20)
+                let font = Fonts.system(20)
                 w.text(
-                    glyph, at: CGPoint(x: sn.stickerRect.minX + 2, y: sn.stickerRect.minY + font.ascender), font: font,
+                    glyph, at: CGPoint(x: sn.stickerRect.minX + 2, y: sn.stickerRect.minY + CTFontGetAscent(font)),
+                    font: font,
                     color: a.text)
             }
         }
         // Indicators.
-        let indicatorFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
+        let indicatorFont = Fonts.system(12, .semibold)
         for (i, ind) in sn.indicators.enumerated() where i < sn.indicatorRects.count {
             let ir = sn.indicatorRects[i]
             let color = ind == .ai ? theme.ai : a.text.alpha(0.6)
             w.text(
-                ind.glyph, at: CGPoint(x: ir.midX, y: ir.minY + 1 + indicatorFont.ascender), font: indicatorFont,
+                ind.glyph, at: CGPoint(x: ir.midX, y: ir.minY + 1 + CTFontGetAscent(indicatorFont)),
+                font: indicatorFont,
                 color: color, anchor: "middle")
             if ind == .comment, sn.commentCount > 1 {
-                let f = NSFont.systemFont(ofSize: 7.5, weight: .bold)
+                let f = Fonts.system(7.5, .bold)
                 w.text(
-                    "\(min(sn.commentCount, 99))", at: CGPoint(x: ir.maxX - 5, y: ir.minY - 2 + f.ascender), font: f,
+                    "\(min(sn.commentCount, 99))", at: CGPoint(x: ir.maxX - 5, y: ir.minY - 2 + CTFontGetAscent(f)),
+                    font: f,
                     color: color)
             }
         }
@@ -435,15 +441,15 @@ public enum SVGExporter {
                 "<rect x=\"\(n(lr.minX))\" y=\"\(n(lr.minY))\" width=\"\(n(lr.width))\" height=\"\(n(lr.height))\" rx=\"\(n(lr.height / 2))\" \(paint(sn.branchColor.alpha(0.16), "fill"))/>"
             )
             w.text(
-                l, at: CGPoint(x: lr.midX, y: lr.minY + 2 + SceneBuilder.labelFont.ascender),
+                l, at: CGPoint(x: lr.midX, y: lr.minY + 2 + CTFontGetAscent(SceneBuilder.labelFont)),
                 font: SceneBuilder.labelFont, color: a.text.alpha(0.85), anchor: "middle")
         }
         // Pinned metadata.
         if !sn.pinned.isEmpty {
-            let font = NSFont.monospacedSystemFont(ofSize: 10.5, weight: .regular)
+            let font = Fonts.mono(10.5)
             w.text(
                 sn.pinned.map { "\($0.key) \($0.value)" }.joined(separator: "  ·  "),
-                at: CGPoint(x: sn.pinnedRect.minX, y: sn.pinnedRect.minY + font.ascender), font: font,
+                at: CGPoint(x: sn.pinnedRect.minX, y: sn.pinnedRect.minY + CTFontGetAscent(font)), font: font,
                 color: a.text.alpha(0.6))
         }
         // Title, as the text layer draws it: placeholders faint, done tasks struck through.
@@ -455,9 +461,10 @@ public enum SVGExporter {
             struck: sn.todo?.done == true)
         if sn.hiddenCount > 0 { badge(sn, &w, canvas: scene.canvasColor) }
         if let c = sn.tech.caption {
-            let font = NSFont.monospacedSystemFont(ofSize: 9.5, weight: .medium)
+            let font = Fonts.mono(9.5, .medium)
             w.text(
-                c, at: CGPoint(x: r.width / 2, y: -17 + font.ascender), font: font, color: theme.ink2, anchor: "middle",
+                c, at: CGPoint(x: r.width / 2, y: -17 + CTFontGetAscent(font)), font: font, color: theme.ink2,
+                anchor: "middle",
                 kern: 1.2)
         }
         w.indent -= 1
@@ -466,15 +473,16 @@ public enum SVGExporter {
 
     /// The "+N" of a folded topic, over the edge where its branch lines leave (D250).
     static func badge(_ sn: SceneNode, _ w: inout Writer, canvas: RGBA) {
-        let font = NSFont.systemFont(ofSize: 11, weight: .bold)
+        let font = Fonts.system(11, .bold)
         let label = "+\(sn.hiddenCount)"
-        let width = max(22, ceil((label as NSString).size(withAttributes: [.font: font]).width) + 10)
+        let width = max(22, ceil(label.width(in: font)) + 10)
         let b = badgeRect(sn, width: width)
         w.line(
             "<rect class=\"badge\" x=\"\(n(b.minX + 1))\" y=\"\(n(b.minY + 1))\" width=\"\(n(b.width - 2))\" height=\"\(n(b.height - 2))\" rx=\"\(n(b.height / 2 - 1))\" fill=\"\(hex(sn.branchColor))\" stroke=\"\(hex(canvas))\" stroke-width=\"2\"/>"
         )
         w.text(
-            label, at: CGPoint(x: b.midX, y: b.minY + 4 + font.ascender), font: font, color: .white, anchor: "middle")
+            label, at: CGPoint(x: b.midX, y: b.minY + 4 + CTFontGetAscent(font)), font: font, color: .white,
+            anchor: "middle")
     }
 
     /// The +N badge's rectangle in the topic's own coordinates (as `NodeLayer` places it).
@@ -511,12 +519,13 @@ public enum SVGExporter {
         let small = SceneBuilder.kickerFont
         if let k = t.kicker {
             w.text(
-                k, at: CGPoint(x: t.kickerRect.minX, y: t.kickerRect.minY + small.ascender), font: small, color: tint,
+                k, at: CGPoint(x: t.kickerRect.minX, y: t.kickerRect.minY + CTFontGetAscent(small)), font: small,
+                color: tint,
                 kern: 0.6)
         }
         if let l = t.leadText {
             w.text(
-                l, at: CGPoint(x: t.leadTextRect.minX, y: t.leadTextRect.minY + small.ascender), font: small,
+                l, at: CGPoint(x: t.leadTextRect.minX, y: t.leadTextRect.minY + CTFontGetAscent(small)), font: small,
                 color: tint, kern: 0.6)
         }
         if let b = t.badge {
@@ -527,15 +536,17 @@ public enum SVGExporter {
                 "<rect x=\"\(n(r.minX))\" y=\"\(n(r.minY))\" width=\"\(n(r.width))\" height=\"\(n(r.height))\" rx=\"4\" \(filled ? paint(c, "fill") : "fill=\"none\" " + paint(c, "stroke") + " stroke-width=\"1\"")/>"
             )
             w.text(
-                b, at: CGPoint(x: r.midX, y: r.minY + 2 + SceneBuilder.badgeFont.ascender),
+                b, at: CGPoint(x: r.midX, y: r.minY + 2 + CTFontGetAscent(SceneBuilder.badgeFont)),
                 font: SceneBuilder.badgeFont,
                 color: filled ? .white : c, anchor: "middle")
         }
         if t.flagged {
             let r = CGRect(x: size.width - 17, y: 3, width: 14, height: 14)
             w.line("<circle cx=\"\(n(r.midX))\" cy=\"\(n(r.midY))\" r=\"7\" fill=\"\(hex(theme.critical))\"/>")
-            let f = NSFont.systemFont(ofSize: 10, weight: .heavy)
-            w.text("!", at: CGPoint(x: r.midX, y: r.minY + 1 + f.ascender), font: f, color: .white, anchor: "middle")
+            let f = Fonts.system(10, .heavy)
+            w.text(
+                "!", at: CGPoint(x: r.midX, y: r.minY + 1 + CTFontGetAscent(f)), font: f, color: .white,
+                anchor: "middle")
         }
     }
 
@@ -572,19 +583,21 @@ public enum SVGExporter {
 
         /// One line of text at a baseline.
         mutating func text(
-            _ s: String, at p: CGPoint, font: NSFont, color: RGBA, anchor: String = "start", kern: CGFloat = 0
+            _ s: String, at p: CGPoint, font: CTFont, color: RGBA, anchor: String = "start", kern: CGFloat = 0
         ) {
             guard !s.isEmpty else { return }
             if outline {
-                var attrs: [NSAttributedString.Key: Any] = [.font: font]
-                if kern != 0 { attrs[.kern] = kern }
+                var attrs: [NSAttributedString.Key: Any] = [TextKey.font: font]
+                if kern != 0 { attrs[TextKey.kern] = kern }
                 let line = CTLineCreateWithAttributedString(NSAttributedString(string: s, attributes: attrs))
                 let width = CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil))
                 let x = anchor == "middle" ? p.x - width / 2 : anchor == "end" ? p.x - width : p.x
-                glyphs(line, origin: CGPoint(x: x, y: p.y), color: color)
+                glyphs(
+                    line, origin: CGPoint(x: x, y: p.y), color: color,
+                    source: NSAttributedString(string: s, attributes: attrs))
             } else {
                 self.line(
-                    "<text x=\"\(n(p.x))\" y=\"\(n(p.y))\" font-family=\"\(SVGExporter.family(font))\" font-size=\"\(n(font.pointSize))\" font-weight=\"\(SVGExporter.weight(font))\" \(SVGExporter.paint(color, "fill"))\(anchor == "start" ? "" : " text-anchor=\"\(anchor)\"")\(kern != 0 ? " letter-spacing=\"\(n(kern))\"" : "")>\(esc(s))</text>"
+                    "<text x=\"\(n(p.x))\" y=\"\(n(p.y))\" font-family=\"\(SVGExporter.family(font))\" font-size=\"\(n(CTFontGetSize(font)))\" font-weight=\"\(SVGExporter.weight(font))\" \(SVGExporter.paint(color, "fill"))\(anchor == "start" ? "" : " text-anchor=\"\(anchor)\"")\(kern != 0 ? " letter-spacing=\"\(n(kern))\"" : "")>\(esc(s))</text>"
                 )
             }
         }
@@ -597,14 +610,12 @@ public enum SVGExporter {
             guard !s.isEmpty, r.width > 0 else { return }
             let attr = NSMutableAttributedString(
                 attributedString: style.attributed(
-                    s, marks: marks, color: NSColor(cgColor: color.cgColor) ?? .black,
-                    linkColor: link.flatMap { NSColor(cgColor: $0.cgColor) }))
+                    s, marks: marks, color: .fixed(color.cgColor), linkColor: link.map { .fixed($0.cgColor) }))
             if struck {
-                attr.addAttribute(
-                    .strikethroughStyle, value: NSUnderlineStyle.single.rawValue,
-                    range: NSRange(location: 0, length: attr.length))
+                attr.addAttribute(TextKey.strikethrough, value: 1, range: NSRange(location: 0, length: attr.length))
             }
-            let setter = CTFramesetterCreateWithAttributedString(attr)
+            // Laid out from the attributes the platform's own text system hands CoreText.
+            let setter = CTFramesetterCreateWithAttributedString(Graphics.platform.coreTextString(attr))
             let frame = CTFramesetterCreateFrame(
                 setter, CFRange(location: 0, length: 0),
                 CGPath(rect: CGRect(x: 0, y: 0, width: r.width + 1, height: r.height + 400), transform: nil), nil)
@@ -615,7 +626,7 @@ public enum SVGExporter {
             for (line, o) in zip(lines, origins) {
                 let base = CGPoint(x: r.minX + o.x, y: r.minY + (total - o.y))
                 if outline {
-                    glyphs(line, origin: base, color: color)
+                    glyphs(line, origin: base, color: color, source: attr)
                     continue
                 }
                 // The first run's position and font go on <text> itself (some renderers ignore
@@ -629,20 +640,22 @@ public enum SVGExporter {
                     )
                     .trimmingCharacters(in: .newlines)
                     guard !text.isEmpty else { continue }
-                    let attrs = CTRunGetAttributes(run) as NSDictionary
-                    let font = attrs[NSAttributedString.Key.font] as? NSFont ?? style.font
+                    // The run's style, from the source text.
+                    let attrs = attr.attributes(at: range.location, effectiveRange: nil)
+                    let font = (attrs[TextKey.font] as! CTFont?) ?? style.font
                     var pos = CGPoint.zero
                     CTRunGetPositions(run, CFRange(location: 0, length: 1), &pos)
-                    let shift = (attrs[NSAttributedString.Key.baselineOffset] as? CGFloat) ?? 0
+                    let shift = (attrs[TextKey.baselineOffset] as? NSNumber).map { CGFloat($0.doubleValue) } ?? 0
                     var deco = ""
-                    if attrs[NSAttributedString.Key.underlineStyle] != nil { deco = " text-decoration=\"underline\"" }
-                    if attrs[NSAttributedString.Key.strikethroughStyle] != nil {
+                    if attrs[TextKey.underline] != nil { deco = " text-decoration=\"underline\"" }
+                    if attrs[TextKey.strikethrough] != nil {
                         deco = " text-decoration=\"line-through\""
                     }
-                    let italic = font.fontDescriptor.symbolicTraits.contains(.italic) ? " font-style=\"italic\"" : ""
+                    let italic =
+                        SVGExporter.traits(font).contains(.traitItalic) ? " font-style=\"italic\"" : ""
                     let at = "x=\"\(n(base.x + pos.x))\" y=\"\(n(base.y - shift))\""
                     let face =
-                        "font-family=\"\(SVGExporter.family(font))\" font-size=\"\(n(font.pointSize))\" font-weight=\"\(SVGExporter.weight(font))\"\(italic)\(deco)"
+                        "font-family=\"\(SVGExporter.family(font))\" font-size=\"\(n(CTFontGetSize(font)))\" font-weight=\"\(SVGExporter.weight(font))\"\(italic)\(deco)"
                     let runColor = SVGExporter.runColor(attrs).flatMap { $0 == color ? nil : $0 }
                     if head.isEmpty {
                         head =
@@ -659,11 +672,14 @@ public enum SVGExporter {
         /// A line's glyphs as outlines in its runs' colours, with underlines and
         /// strikethroughs drawn as bars. Colour glyphs (emoji) have no outline, so they
         /// become a small image.
-        mutating func glyphs(_ line: CTLine, origin: CGPoint, color: RGBA) {
+        mutating func glyphs(_ line: CTLine, origin: CGPoint, color: RGBA, source: NSAttributedString) {
             for run in CTLineGetGlyphRuns(line) as? [CTRun] ?? [] {
-                let attrs = CTRunGetAttributes(run) as NSDictionary
-                let font = (attrs[kCTFontAttributeName] as! CTFont?) ?? (NSFont.systemFont(ofSize: 12) as CTFont)
-                let shift = (attrs[NSAttributedString.Key.baselineOffset] as? CGFloat) ?? 0
+                // The run's style, from the source text; its font from the run (fallbacks).
+                let at = CTRunGetStringRange(run).location
+                let attrs = at < source.length ? source.attributes(at: at, effectiveRange: nil) : [:]
+                let font =
+                    (CTRunGetAttributes(run) as NSDictionary)[kCTFontAttributeName] as! CTFont? ?? Fonts.system(12)
+                let shift = (attrs[TextKey.baselineOffset] as? NSNumber).map { CGFloat($0.doubleValue) } ?? 0
                 let fill = SVGExporter.runColor(attrs) ?? color
                 let count = CTRunGetGlyphCount(run)
                 guard count > 0 else { continue }
@@ -709,11 +725,11 @@ public enum SVGExporter {
                 let width = CGFloat(CTRunGetTypographicBounds(run, CFRange(location: 0, length: 0), nil, nil, nil))
                 let x0 = origin.x + pos[0].x
                 let thickness = max(1, CTFontGetUnderlineThickness(font))
-                if attrs[NSAttributedString.Key.underlineStyle] != nil {
+                if attrs[TextKey.underline] != nil {
                     let y = origin.y - shift - CTFontGetUnderlinePosition(font)
                     bar(x: x0, y: y, width: width, thickness: thickness, color: fill)
                 }
-                if attrs[NSAttributedString.Key.strikethroughStyle] != nil {
+                if attrs[TextKey.strikethrough] != nil {
                     let y = origin.y - shift - CTFontGetXHeight(font) / 2
                     bar(x: x0, y: y, width: width, thickness: thickness, color: fill)
                 }
@@ -800,10 +816,8 @@ public enum SVGExporter {
     }
 
     /// A run's own colour (links, marks), when it has one.
-    nonisolated static func runColor(_ attrs: NSDictionary) -> RGBA? {
-        let color: CGColor? =
-            (attrs[NSAttributedString.Key.foregroundColor] as? NSColor)?.cgColor
-            ?? (attrs[kCTForegroundColorAttributeName] as! CGColor?)
+    nonisolated static func runColor(_ attrs: [NSAttributedString.Key: Any]) -> RGBA? {
+        let color = TextColorValue(attribute: attrs[TextKey.color])?.cgColor
         guard
             let c = color?.converted(to: CGColorSpace(name: CGColorSpace.sRGB)!, intent: .defaultIntent, options: nil),
             let p = c.components, p.count >= 3
@@ -811,21 +825,29 @@ public enum SVGExporter {
         return RGBA(r: Double(p[0]), g: Double(p[1]), b: Double(p[2]), a: Double(p.count > 3 ? p[3] : 1))
     }
 
-    nonisolated static func family(_ f: NSFont) -> String {
-        let name = f.familyName ?? ""
+    /// The symbolic traits the font's descriptor carries (`NSFontDescriptor.symbolicTraits`).
+    nonisolated static func traits(_ f: CTFont) -> CTFontSymbolicTraits {
+        let t = CTFontDescriptorCopyAttribute(CTFontCopyFontDescriptor(f), kCTFontTraitsAttribute) as? [CFString: Any]
+        return CTFontSymbolicTraits(rawValue: (t?[kCTFontSymbolicTrait] as? NSNumber)?.uint32Value ?? 0)
+    }
+
+    nonisolated static func family(_ f: CTFont) -> String {
+        let name = CTFontCopyFamilyName(f) as String
+        let mono = traits(f).contains(.traitMonoSpace)
         if name.hasPrefix(".") || name.hasPrefix("SF Pro") || name == "System Font" {
-            return f.fontDescriptor.symbolicTraits.contains(.monoSpace)
+            return mono
                 ? "ui-monospace, 'SF Mono', Menlo, monospace"
                 : "-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif"
         }
-        if f.fontDescriptor.symbolicTraits.contains(.monoSpace) { return "'\(name)', ui-monospace, Menlo, monospace" }
+        if mono { return "'\(name)', ui-monospace, Menlo, monospace" }
         return "'\(name)', -apple-system, sans-serif"
     }
 
-    nonisolated static func weight(_ f: NSFont) -> Int {
-        let w =
-            (f.fontDescriptor.object(forKey: .traits) as? [NSFontDescriptor.TraitKey: Any])?[.weight] as? CGFloat ?? 0
-        // NSFont weights run -1…1; CSS 100…900.
+    nonisolated static func weight(_ f: CTFont) -> Int {
+        let traits =
+            CTFontDescriptorCopyAttribute(CTFontCopyFontDescriptor(f), kCTFontTraitsAttribute) as? [CFString: Any]
+        let w = (traits?[kCTFontWeightTrait] as? NSNumber).map { CGFloat($0.doubleValue) } ?? 0
+        // Font weights run -1…1; CSS 100…900.
         return Int((max(100, min(900, 400 + w * 600)) / 100).rounded()) * 100
     }
 

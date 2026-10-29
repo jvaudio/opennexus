@@ -2,6 +2,7 @@ import Foundation
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// Git, tier 1 (M45): the user's own `git` merges maps topic by topic and shows readable
 /// diffs. `nexus git setup` installs a merge driver and a diff text conversion; Git runs

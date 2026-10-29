@@ -3,6 +3,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 
 /// The minimap is for moving around a canvas: it stays hidden on slides, where it covered
 /// Present's strip (found in M35's snapshots), and comes back afterwards.

@@ -1,5 +1,6 @@
 import Foundation
 import NexusCore
+import NexusScene
 import Observation
 
 /// Records patches for undo. The app registers them with `NSUndoManager`; tests and

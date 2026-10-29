@@ -3,6 +3,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// The tools an MCP client can call (artboard 40; M22 added set_task and add_comment).
 /// Each one checks Settings › Integrations (the folders, then Read / Edit / Create & export:

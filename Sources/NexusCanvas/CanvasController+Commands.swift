@@ -2,6 +2,7 @@ import Foundation
 import NexusCore
 import NexusKeys
 import NexusLayout
+import NexusScene
 
 /// Command handlers, bound to registry ids. Anything not listed here is handled by the
 /// view (zoom, fit) or later milestones, and shows as disabled.

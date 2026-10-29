@@ -2,6 +2,7 @@ import Foundation
 import NexusCanvas
 import NexusCore
 import NexusInterchange
+import NexusScene
 
 /// `nexus export --to <format>` and the MCP `export` tool. Every format goes through the
 /// app's own exporters (the offscreen canvas for visual formats and draw.io).

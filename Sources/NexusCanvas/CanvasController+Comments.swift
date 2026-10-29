@@ -1,16 +1,17 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
+import NexusScene
 
 /// Topic comments (M14): a review thread beside a topic. Each change is one undo step.
 @MainActor
 extension CanvasController {
     /// The name on new comments: Settings › Editing › Comment author, else this Mac's
-    /// account name (D163).
+    /// account name (D163), from the host.
     public var commentAuthor: String {
         let s = prefs.string("editing.commentAuthor").trimmingCharacters(in: .whitespacesAndNewlines)
         if !s.isEmpty { return s }
-        let full = NSFullUserName()
-        return full.isEmpty ? NSUserName() : full
+        return host.userName
     }
 
     /// Adds a comment by `commentAuthor` at `now` (tests inject a time).

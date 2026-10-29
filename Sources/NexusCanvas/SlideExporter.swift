@@ -1,7 +1,9 @@
 import AVFoundation
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusFormat
+import NexusScene
 import NexusTheme
 
 /// Renders a canvas's slides offscreen and writes PDF, PowerPoint (.pptx; Keynote opens
@@ -12,10 +14,11 @@ public enum SlideExporter {
 
     /// One image per playing slide (skipped slides are left out), with kicker and title,
     /// the task line, the corner legend and Timeline charts (M21). `prefs` and `today`
-    /// default to the app's; `inspect` sees each slide's view before it's drawn (tests).
+    /// default to the app's; `inspect` sees each slide as it's framed, before it's drawn
+    /// (tests).
     public static func renderSlides(
         _ model: DocumentModel, canvas id: CanvasID, size: CGSize = size, prefs: Preferences? = nil,
-        today: TaskDate? = nil, inspect: ((CanvasView, Slide) -> Void)? = nil
+        today: TaskDate? = nil, inspect: ((SlideFrame, Slide) -> Void)? = nil
     ) -> [CGImage] {
         let store = DocumentStore(model: model)
         let controller = CanvasController(store: store)
@@ -23,16 +26,7 @@ public enum SlideExporter {
         controller.today = today
         controller.rendersThemeAsNamed = true
         controller.switchCanvas(to: id)
-        let view = CanvasView(controller: controller)
-        view.reduceMotionOverride = true
-        // Frame each slide around the legend's and the chart's places on the exported
-        // slide (D232, D264).
-        view.slideExportSize = size
-        let window = NSWindow(
-            contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
-        window.contentView = view
-        view.frame = CGRect(origin: .zero, size: size)
-        window.layoutIfNeeded()
+        let frame = SlideFrame(controller: controller, size: size)
         let slides = controller.slides
         var out: [CGImage] = []
         controller.startPresent()
@@ -40,14 +34,12 @@ public enum SlideExporter {
             controller.present?.index = i
             controller.present?.stageOnly = true
             controller.showSlide()
-            view.layoutSubtreeIfNeeded()
-            inspect?(view, s)
-            if let img = render(view, controller, size: size, slide: s) {
+            inspect?(frame, s)
+            if let img = render(frame, size: size, slide: s) {
                 out.append(img)
             }
         }
         controller.endPresent()
-        window.contentView = nil
         return out
     }
 
@@ -63,25 +55,17 @@ public enum SlideExporter {
         controller.switchCanvas(to: id)
         let slides = controller.slides
         guard slides.indices.contains(index) else { return nil }
-        let view = CanvasView(controller: controller)
-        view.reduceMotionOverride = true
-        view.slideExportSize = size
-        let window = NSWindow(
-            contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: false)
-        window.contentView = view
-        view.frame = CGRect(origin: .zero, size: size)
-        window.layoutIfNeeded()
+        let frame = SlideFrame(controller: controller, size: size)
         controller.startPresent(at: index)
         controller.present?.stageOnly = true
         controller.showSlide()
-        view.layoutSubtreeIfNeeded()
-        let img = render(view, controller, size: size, slide: slides[index])
+        let img = render(frame, size: size, slide: slides[index])
         controller.endPresent()
-        window.contentView = nil
         return img
     }
 
-    static func render(_ view: CanvasView, _ controller: CanvasController, size: CGSize, slide: Slide) -> CGImage? {
+    static func render(_ frame: SlideFrame, size: CGSize, slide: Slide) -> CGImage? {
+        let controller = frame.controller
         let theme = controller.scene.theme
         let canvas = controller.scene.canvasColor
         let w = Int(size.width)
@@ -93,43 +77,22 @@ public enum SlideExporter {
         else { return nil }
         ctx.setFillColor(canvas.cgColor)
         ctx.fill(CGRect(origin: .zero, size: size))
-        let root = view.sceneLayer
-        root.isGeometryFlipped = true
-        root.layoutIfNeeded()
-        func redraw(_ l: CALayer) {
-            if l is TextLayer || l is DecorLayer {
-                l.setNeedsDisplay()
-                l.displayIfNeeded()
-            }
-            l.sublayers?.forEach(redraw)
-        }
-        redraw(root)
+        frame.renderer.render(in: ctx)
         ctx.saveGState()
         ctx.translateBy(x: 0, y: size.height)
         ctx.scaleBy(x: 1, y: -1)
-        let ns = NSGraphicsContext(cgContext: ctx, flipped: true)
-        NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.current = ns
-        root.render(in: ctx)
         // Kicker and title, as on screen (artboard 32).
-        let ink = NSColor(cgColor: theme.ink.cgColor) ?? .labelColor
-        NSAttributedString(
-            string: slide.kicker,
-            attributes: [
-                .font: NSFont.monospacedSystemFont(ofSize: 22, weight: .medium),
-                .foregroundColor: ink.withAlphaComponent(0.6),
-                .kern: 2.4,
-            ]
-        ).draw(at: CGPoint(x: 84, y: 56))
-        let title = NSAttributedString(
-            string: controller.slideTitle(slide),
-            attributes: [.font: NSFont.systemFont(ofSize: 64, weight: .bold), .foregroundColor: ink])
+        let ink = theme.ink.cgColor
+        StyledText(
+            slide.kicker, TextAttributes(font: Fonts.mono(22, .medium), color: .fixed(ink.copy(alpha: 0.6)!), kern: 2.4)
+        ).draw(at: CGPoint(x: 84, y: 56), in: ctx)
+        let title = StyledText(
+            controller.slideTitle(slide), TextAttributes(font: Fonts.system(64, .bold), color: .fixed(ink)))
         let titleBox = SlideTitleMetrics.titleBox(size)
-        title.draw(with: titleBox, options: [.usesLineFragmentOrigin])
+        title.draw(with: titleBox, options: [.lineFragmentOrigin], in: ctx)
         let titleHeight = min(
-            ceil(title.boundingRect(with: titleBox.size, options: [.usesLineFragmentOrigin]).height), titleBox.height)
-        drawExtras(controller, slide: slide, size: size, titleBottom: titleBox.minY + titleHeight)
-        NSGraphicsContext.restoreGraphicsState()
+            ceil(title.boundingRect(size: titleBox.size, options: [.lineFragmentOrigin]).height), titleBox.height)
+        drawExtras(controller, slide: slide, size: size, titleBottom: titleBox.minY + titleHeight, in: ctx)
         ctx.restoreGState()
         return ctx.makeImage()
     }
@@ -153,9 +116,7 @@ public enum SlideExporter {
 
     // MARK: PowerPoint (.pptx)
 
-    static func png(_ img: CGImage) -> Data {
-        NSBitmapImageRep(cgImage: img).representation(using: .png, properties: [:]) ?? Data()
-    }
+    static func png(_ img: CGImage) -> Data { ImageExporter.png(img) }
 
     /// A minimal Office Open XML deck: one full-bleed picture per slide, its title as alt
     /// text, and each topic's note as the slide's speaker notes (M42).
@@ -362,5 +323,70 @@ public enum SlideExporter {
         input.markAsFinished()
         await writer.finishWriting()
         if writer.status == .failed, let e = writer.error { throw e }
+    }
+}
+
+/// A slide drawn with no view: a renderer kept in step with the controller and framed as
+/// the canvas frames slides, at an exported slide's size (D232, D264). As on the canvas
+/// under Reduce Motion, a slide's first framing enlarges Showtime's focus topic; builds
+/// and flows are motion only, so they don't show.
+@MainActor
+public final class SlideFrame {
+    public let controller: CanvasController
+    let renderer = SceneRenderer()
+    let stage: SlideStage
+    /// The slide last framed, and the topic Showtime enlarged on it.
+    private var builtSlide: String?
+    private var showtimeFocus: NodeID?
+
+    init(controller: CanvasController, size: CGSize) {
+        self.controller = controller
+        stage = SlideStage(controller: controller, bounds: CGRect(origin: .zero, size: size), exportSize: size)
+        renderer.viewSize = size
+        // One pixel per point, whatever the display.
+        renderer.backingScale = 1
+        renderer.asset = { [weak controller] in controller?.store.model.assets[$0] }
+        controller.onSceneChange = { [weak self] _ in self?.update() }
+        controller.onFrame = { [weak self] ids, aspect in self?.frame(ids, aspect: aspect) }
+        if let c = SceneRenderer.centered(controller.scene, root: controller.canvas.root, in: stage.bounds) {
+            renderer.place(c)
+        }
+        update()
+    }
+
+    public var camera: Camera { renderer.camera }
+    func stageRect(aspect: Double) -> CGRect { stage.stageRect(aspect: aspect) }
+    func presentLegendRect() -> CGRect? { stage.presentLegendRect() }
+    func presentChartRect() -> CGRect? { stage.presentChartRect() }
+
+    private func update() {
+        renderer.update(controller.scene, state: controller.renderState(reduceMotion: true), animated: false)
+    }
+
+    private func frame(_ ids: [NodeID], aspect: Double?) {
+        guard let cam = stage.camera(framing: ids, aspect: aspect) else { return }
+        renderer.place(cam)
+        guard let p = controller.present else {
+            builtSlide = nil
+            clearShowtime()
+            return
+        }
+        let slides = controller.slides
+        guard p.index < slides.count, !p.overview else { return }
+        let slide = slides[p.index]
+        guard slide.id != builtSlide else { return }
+        builtSlide = slide.id
+        clearShowtime()
+        guard controller.canvas.presentation.style != "calm", let focus = controller.showtimeFocus(slide),
+            let l = renderer.nodeLayers[focus]
+        else { return }
+        showtimeFocus = focus
+        l.transform = CATransform3DMakeScale(Motion.showtimeFocusScale, Motion.showtimeFocusScale, 1)
+    }
+
+    private func clearShowtime() {
+        guard let id = showtimeFocus else { return }
+        showtimeFocus = nil
+        renderer.nodeLayers[id]?.transform = CATransform3DIdentity
     }
 }

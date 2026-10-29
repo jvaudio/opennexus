@@ -5,6 +5,7 @@ import NexusKeys
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 /// M14: the marker and label legend: toggled from the keyboard, drawn beside the map or
 /// where it was dragged, in exports, and read by VoiceOver.

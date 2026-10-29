@@ -1,5 +1,6 @@
 import Foundation
 import NexusFormat
+import NexusScene
 
 /// What can leave this Mac, in words, for Settings › Privacy & Data (D275, D313). OpenNexus
 /// itself has no network entitlement. Two separate services may connect, each only once

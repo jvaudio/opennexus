@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 import UniformTypeIdentifiers
@@ -324,3 +326,4 @@ struct ColourThemeEditor: View {
         selected = j
     }
 }
+#endif

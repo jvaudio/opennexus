@@ -4,6 +4,7 @@ import NexusCore
 import NexusFormat
 import NexusInterchange
 import NexusKeys
+import NexusScene
 import PDFKit
 import SwiftUI
 import UniformTypeIdentifiers

@@ -1,6 +1,8 @@
 import Foundation
 import NexusCore
 
+@testable import NexusScene
+
 /// The artboards' sample canvases (18–23), built through the editor like a user would.
 enum TechSamples {
     static func canvas(

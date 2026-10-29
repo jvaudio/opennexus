@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 import SwiftUI
 
 /// A topic's comment thread (M14): oldest first, each with Edit and Delete, and a field
@@ -110,3 +112,4 @@ struct CommentsPopover: View {
         focus = .draft
     }
 }
+#endif

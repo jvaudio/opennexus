@@ -1,6 +1,7 @@
 import Foundation
 import NexusCore
 import NexusFormat
+import NexusScene
 import NexusSync
 
 /// Resolve Conflicts, Sync History… and Merge Conflicting Copies… (M45).

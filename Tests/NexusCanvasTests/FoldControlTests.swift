@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusLayout
+@testable import NexusScene
 
 /// The mouse's fold control (D215): hovering a topic with children shows a "−" where its
 /// branch leaves; clicking it folds the branch, and the folded branch's "+N" unfolds it.

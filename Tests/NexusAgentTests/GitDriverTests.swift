@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusInterchange
+@testable import NexusScene
 
 /// M45 (A8): the user's own `git` merges maps topic by topic with `nexus merge-driver`, and
 /// diffs them as outlines with `nexus git textconv`, once `nexus git setup` has run. Real

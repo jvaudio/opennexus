@@ -1,7 +1,9 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusAI
 import NexusCore
 import NexusKeys
+import NexusScene
 import Observation
 
 /// The first-run tour (F5, artboard 31): a real canvas the user builds in six lessons.

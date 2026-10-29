@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusKeys
+@testable import NexusScene
 
 @MainActor
 @Suite struct SettingsSchemaTests {

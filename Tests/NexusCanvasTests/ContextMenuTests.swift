@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M17: right-click and Control-click menus on every kind of canvas element, built from
 /// the command registry.
@@ -16,7 +17,7 @@ import Testing
     /// image and a legend, plus the app's window command for the Format panel.
     func harness() throws -> (CanvasHarness, Elements) {
         let h = CanvasHarness(model: launchPlanDocument())
-        h.controller.pasteboard = NSPasteboard(name: NSPasteboard.Name("nexus-test-\(UUID().uuidString)"))
+        h.controller.pasteboard = MemoryPasteboard()
         h.controller.externalCommands = [.inspector]
         let pricing = node(h, "Pricing")
         let kids = h.canvas.nodes[pricing]!.children

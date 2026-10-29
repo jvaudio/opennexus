@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 
 /// Map Shot's frame on the canvas (artboard 51): the rest dims, the frame has eight
 /// handles and a size badge. Drag inside to move, drag a handle to resize (⇧ or an
@@ -109,3 +111,4 @@ final class MapShotFrameView: NSView {
         for h in handles(r) { addCursorRect(h.insetBy(dx: -4, dy: -4), cursor: .crosshair) }
     }
 }
+#endif

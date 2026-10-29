@@ -2,6 +2,7 @@ import CryptoKit
 import Foundation
 import NexusCore
 import NexusFormat
+import NexusScene
 
 /// Interactive HTML (M43): one file that opens offline in any modern browser. It holds the
 /// built viewer (`web/viewer-core`, copied into `Viewer/`), its stylesheet and the bundle;

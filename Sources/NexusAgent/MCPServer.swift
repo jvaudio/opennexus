@@ -1,6 +1,7 @@
 import Foundation
 import NexusCore
 import NexusFormat
+import NexusScene
 
 /// `nexus mcp`: a Model Context Protocol server over stdio (JSON-RPC 2.0, one message per
 /// line). No network port. Off unless Settings › Integrations › Local MCP server is on.

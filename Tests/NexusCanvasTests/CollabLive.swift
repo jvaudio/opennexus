@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusNet
 @testable import NexusReplica
+@testable import NexusScene
 
 /// Every frame the live sessions' sockets sent or received: what crossed the network, and when.
 final class Wire: @unchecked Sendable {

@@ -1,6 +1,8 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusFormat
+import NexusScene
 
 /// Exports and previews without a window: the `nexus` CLI, the MCP server and the Quick
 /// Look extensions use the same offscreen canvas as the app, so every output looks
@@ -82,7 +84,9 @@ public enum HeadlessExport {
         }
         let controller = CanvasController(store: DocumentStore(model: doc), canvasID: id)
         controller.prefs = prefs
+        // The scene built with the controller followed the system's appearance.
         controller.rendersThemeAsNamed = true
+        controller.rebuildScene()
         return (controller, s)
     }
 

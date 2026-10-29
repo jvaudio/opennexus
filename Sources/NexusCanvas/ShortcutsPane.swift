@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusKeys
+import NexusScene
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -395,3 +397,4 @@ struct ShortcutsPane: View {
         save(c)
     }
 }
+#endif

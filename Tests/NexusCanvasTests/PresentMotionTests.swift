@@ -8,6 +8,7 @@ import SwiftUI
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 /// Present, part 4 (M42): the fly-to path, builds and Showtime, the new keys, Present from
 /// Selected Topic, notes in PowerPoint, and fly-to frame times.

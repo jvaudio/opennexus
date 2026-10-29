@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// M43: writes `web/fixtures/` for the viewer's browser tests (Playwright): interactive
 /// exports of the golden documents, the app's PNG of each canvas at 1×, the app's Find

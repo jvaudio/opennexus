@@ -1,7 +1,9 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusAI
 import NexusCore
 import NexusInterchange
+import NexusScene
 import Observation
 
 /// Image to mind map (M12): Vision reads the text and the layout heuristics rebuild the
@@ -72,17 +74,15 @@ public enum ImageToMap {
     }
 
     /// An image on the pasteboard: a copied picture, or a copied image file.
-    public static func image(on pb: NSPasteboard) -> (data: Data, name: String)? {
-        if let urls = pb.readObjects(forClasses: [NSURL.self], options: [.urlReadingFileURLsOnly: true]) as? [URL],
-            let url = urls.first(where: { isImage(name: $0.lastPathComponent) }),
+    @MainActor
+    public static func image(on pb: any CanvasPasteboard) -> (data: Data, name: String)? {
+        if let url = pb.fileURLs().first(where: { isImage(name: $0.lastPathComponent) }),
             let data = try? Data(contentsOf: url)
         {
             return (data, url.lastPathComponent)
         }
-        for type in [NSPasteboard.PasteboardType.png, .tiff, NSPasteboard.PasteboardType("public.heic")] {
-            if let data = pb.data(forType: type), let rep = NSBitmapImageRep(data: data),
-                let png = rep.representation(using: .png, properties: [:])
-            {
+        for type in [PasteboardType.png, .tiff, .heic] {
+            if let data = pb.data(forType: type), let (png, _) = ImageExporter.png(fromImage: data) {
                 return (png, Loc.t("Pasted Image") + ".png")
             }
         }

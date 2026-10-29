@@ -1,9 +1,9 @@
-import AppKit
 import CryptoKit
 import Foundation
 import NexusCore
 import NexusFormat
 import NexusReplica
+import NexusScene
 import Observation
 
 /// Live co-editing (M46): a document's session on an OpenNexus Server. The replica
@@ -12,89 +12,6 @@ import Observation
 /// network job (D313).
 
 // MARK: The way to the relay
-
-/// A session's socket through the network service: an XPC connection of its own.
-public struct XPCRoomConnector: RoomConnector {
-    public var purpose: String
-    public var onLog: @Sendable ([NetLogEntry]) -> Void
-
-    public init(purpose: String, onLog: @escaping @Sendable ([NetLogEntry]) -> Void) {
-        self.purpose = purpose
-        self.onLog = onLog
-    }
-
-    public func open(_ url: URL, events: @escaping @Sendable (SocketEvent) -> Void) -> any RoomSocket {
-        XPCSocket(url: url, purpose: purpose, onLog: onLog, events: events)
-    }
-}
-
-final class XPCSocket: NSObject, RoomSocket, NetSocketEvents, @unchecked Sendable {
-    let connection = NSXPCConnection(serviceName: NetXPC.serviceName)
-    let events: @Sendable (SocketEvent) -> Void
-    let onLog: @Sendable ([NetLogEntry]) -> Void
-    let lock = NSLock()
-    var finished = false
-
-    init(
-        url: URL, purpose: String, onLog: @escaping @Sendable ([NetLogEntry]) -> Void,
-        events: @escaping @Sendable (SocketEvent) -> Void
-    ) {
-        self.events = events
-        self.onLog = onLog
-        super.init()
-        connection.remoteObjectInterface = NSXPCInterface(with: NetServiceProtocol.self)
-        connection.exportedInterface = NSXPCInterface(with: NetSocketEvents.self)
-        connection.exportedObject = self
-        connection.interruptionHandler = { [weak self] in self?.finish(Loc.t("The network service stopped.")) }
-        connection.invalidationHandler = { [weak self] in self?.finish(nil) }
-        connection.resume()
-        // The socket may reach only the session's own server: the invite's.
-        var d = ShareDestination(id: "session", kind: .server, name: url.host() ?? "")
-        d.server = url.absoluteString
-        let job = NetJob(
-            action: .socket, purpose: purpose, destination: d, secret: "",
-            allowedHosts: [url.host()?.lowercased() ?? ""], object: url.absoluteString)
-        guard let data = try? JSONEncoder().encode(job) else {
-            finish(Loc.t("The request couldn’t be encoded."))
-            return
-        }
-        proxy?.openSocket(data)
-    }
-
-    var proxy: (any NetServiceProtocol)? {
-        connection.remoteObjectProxyWithErrorHandler { [weak self] e in self?.finish(e.localizedDescription) }
-            as? any NetServiceProtocol
-    }
-
-    func send(_ text: String) { proxy?.sendText(text) }
-
-    func close() {
-        proxy?.closeSocket()
-        finish(nil)
-    }
-
-    func socketOpened(_ log: Data) {
-        if let e = try? JSONDecoder().decode(NetLogEntry.self, from: log) { onLog([e]) }
-        events(.opened)
-    }
-
-    func socketReceived(_ text: String) { events(.text(text)) }
-
-    func socketClosed(_ reason: String?, log: Data) {
-        if let e = try? JSONDecoder().decode(NetLogEntry.self, from: log) { onLog([e]) }
-        finish(reason)
-    }
-
-    func finish(_ why: String?) {
-        let first = lock.withLock {
-            defer { finished = true }
-            return !finished
-        }
-        guard first else { return }
-        events(.closed(why))
-        connection.invalidate()
-    }
-}
 
 // MARK: Records
 
@@ -164,18 +81,15 @@ public final class CollabCenter {
     public var networkOn: Bool { prefs.bool("network.enabled") && prefs.bool("network.collab") }
     public var servers: [ShareDestination] { share.store.destinations.filter { $0.kind == .server } }
 
-    /// Your name: Settings › Editing › Comment author, or this Mac's account name.
+    /// Your name: Settings › Editing › Comment author, or the account name.
     public var myName: String {
         let n = prefs.string("editing.commentAuthor").trimmingCharacters(in: .whitespaces)
-        return n.isEmpty ? NSFullUserName() : n
+        return n.isEmpty ? CanvasHosts.platform().userName : n
     }
 
     func roomConnector() -> any RoomConnector {
         if let connector { return connector }
-        let log = share.log
-        return XPCRoomConnector(purpose: Loc.t("Live session")) { entries in
-            Task { @MainActor in log.append(entries) }
-        }
+        return PlatformNetwork.connector(purpose: Loc.t("Live session"), log: share.log)
     }
 
     // MARK: Starting and joining

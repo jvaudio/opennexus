@@ -1,6 +1,8 @@
+#if os(macOS)
 import AppKit
 import NexusAI
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -818,3 +820,4 @@ struct RecordSheet: View {
         }
     }
 }
+#endif

@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// Visual review of Settings (08, 29, 35–42), Welcome (14), roles (15), Home (16) and the
 /// tutorial (31) against their artboards (env-gated).

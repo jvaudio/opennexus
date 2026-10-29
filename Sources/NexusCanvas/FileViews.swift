@@ -1,7 +1,9 @@
+#if os(macOS)
 import AppKit
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 import NexusTheme
 import PDFKit
 import SwiftUI
@@ -1199,3 +1201,4 @@ struct SnapshotsSheetView: View {
         }
     }
 }
+#endif

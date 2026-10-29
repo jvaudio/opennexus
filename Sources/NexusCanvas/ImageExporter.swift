@@ -1,5 +1,8 @@
-import AppKit
+import CoreGraphics
+import Foundation
+import ImageIO
 import NexusCore
+import NexusScene
 import NexusTheme
 import UniformTypeIdentifiers
 
@@ -108,26 +111,16 @@ public enum ImageExporter {
         let k = effectiveScale(rect, o.scale)
         let size = CGSize(width: (rect.width * k).rounded(), height: (rect.height * k).rounded())
         guard size.width >= 1, size.height >= 1 else { return nil }
-        let view = CanvasView(controller: controller)
-        view.reduceMotionOverride = true
-        view.exportMode = true
-        let window = NSWindow(
-            contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: true)
-        window.contentView = view
-        view.frame = CGRect(origin: .zero, size: size)
-        window.layoutIfNeeded()
-        view.layoutSubtreeIfNeeded()
-        // The view lays itself out at zoom k, so text rasterises at the export's resolution.
-        view.setCamera(Camera(offset: CGPoint(x: -rect.minX * k, y: -rect.minY * k), zoom: k), animated: false)
-        view.layoutSubtreeIfNeeded()
+        // The layers are laid out at zoom k, so text rasterises at the export's resolution.
+        let renderer = renderer(controller, size: size)
+        renderer.place(Camera(offset: CGPoint(x: -rect.minX * k, y: -rect.minY * k), zoom: k))
         let bg: RGBA? =
             switch o.background {
             case .theme: controller.scene.canvasColor
             case .white: RGBA(r: 1, g: 1, b: 1, a: 1)
             case .transparent: nil
             }
-        let img = draw(view, size: size, background: bg, displayP3: o.displayP3)
-        window.contentView = nil
+        let img = draw(renderer, size: size, background: bg, displayP3: o.displayP3)
         guard let img, crop == nil, o.frame != "none" || o.aspect != "fit" else { return img }
         return framed(img, o, scale: k, canvas: controller.scene.canvasColor)
     }
@@ -200,46 +193,33 @@ public enum ImageExporter {
         return ctx.makeImage()
     }
 
-    static func draw(_ view: CanvasView, size: CGSize, background: RGBA?, displayP3: Bool = false) -> CGImage? {
+    /// A renderer showing the controller's scene in a view of `size`, as an export draws
+    /// it: final frames, no selection ring or grid, Reduce Motion. One pixel per point,
+    /// so text rasterises at the export's own scale, whatever the display.
+    static func renderer(_ controller: CanvasController, size: CGSize) -> SceneRenderer {
+        let renderer = SceneRenderer()
+        renderer.backingScale = 1
+        renderer.exportMode = true
+        renderer.viewSize = size
+        renderer.asset = { [weak controller] in controller?.store.model.assets[$0] }
+        renderer.update(controller.scene, state: controller.renderState(reduceMotion: true), animated: false)
+        return renderer
+    }
+
+    static func draw(_ renderer: SceneRenderer, size: CGSize, background: RGBA?, displayP3: Bool = false) -> CGImage? {
         guard
             let ctx = CGContext(
                 data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 0,
                 space: CGColorSpace(name: displayP3 ? CGColorSpace.displayP3 : CGColorSpace.sRGB)!,
                 bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
         else { return nil }
-        if let background {
-            ctx.setFillColor(background.cgColor)
-            ctx.fill(CGRect(origin: .zero, size: size))
-        }
-        let root = view.sceneLayer
-        root.isGeometryFlipped = true
-        root.layoutIfNeeded()
-        // The background is ours to paint (or leave transparent).
-        let rootBackground = root.backgroundColor
-        root.backgroundColor = nil
-        defer { root.backgroundColor = rootBackground }
-        func redraw(_ l: CALayer) {
-            if l is TextLayer || l is DecorLayer {
-                l.setNeedsDisplay()
-                l.displayIfNeeded()
-            }
-            l.sublayers?.forEach(redraw)
-        }
-        redraw(root)
-        ctx.saveGState()
-        ctx.translateBy(x: 0, y: size.height)
-        ctx.scaleBy(x: 1, y: -1)
-        NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: true)
-        root.render(in: ctx)
-        NSGraphicsContext.restoreGraphicsState()
-        ctx.restoreGState()
+        renderer.render(in: ctx, background: background)
         return ctx.makeImage()
     }
 
     // MARK: Encoders
 
-    public static func png(_ img: CGImage) -> Data {
+    nonisolated public static func png(_ img: CGImage) -> Data {
         let data = NSMutableData()
         guard let dest = CGImageDestinationCreateWithData(data, UTType.png.identifier as CFString, 1, nil) else {
             return Data()
@@ -247,6 +227,14 @@ public enum ImageExporter {
         CGImageDestinationAddImage(dest, img, nil)
         CGImageDestinationFinalize(dest)
         return data as Data
+    }
+
+    /// A pasted or dropped bitmap (PNG, TIFF, HEIC…) as PNG, with its size in pixels.
+    nonisolated public static func png(fromImage data: Data) -> (Data, CGSize)? {
+        guard let src = CGImageSourceCreateWithData(data as CFData, nil),
+            let img = CGImageSourceCreateImageAtIndex(src, 0, nil)
+        else { return nil }
+        return (png(img), CGSize(width: img.width, height: img.height))
     }
 
     /// JPEG has no alpha: transparent areas become `matte`.
@@ -367,6 +355,9 @@ public enum PrintLayout {
         }
     }
 
+    /// Print text is always dark on paper: the light appearance's label colours.
+    static let ink = CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 216.0 / 255)
+    static let inkSecondary = CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 127.0 / 255)
     static let margin: CGFloat = 36
     static let headerHeight: CGFloat = 22
 
@@ -407,31 +398,30 @@ public enum PrintLayout {
             if o.header {
                 text(
                     "\(title) · \(dateText)", at: CGPoint(x: margin, y: o.pageSize.height - margin - 12), size: 9,
-                    color: .secondaryLabelColor)
+                    color: inkSecondary)
                 if total > 1 {
                     text(
                         "\(n) / \(total)",
                         at: CGPoint(x: o.pageSize.width - margin - 40, y: o.pageSize.height - margin - 12), size: 9,
-                        color: .secondaryLabelColor)
+                        color: inkSecondary)
                 }
             }
         }
-        func text(_ s: String, at p: CGPoint, size: CGFloat, color: NSColor, bold: Bool = false, width: CGFloat? = nil)
+        func text(_ s: String, at p: CGPoint, size: CGFloat, color: CGColor, bold: Bool = false, width: CGFloat? = nil)
         {
-            NSGraphicsContext.saveGraphicsState()
-            NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: false)
-            let attr = NSAttributedString(
-                string: s,
-                attributes: [
-                    .font: NSFont.systemFont(ofSize: size, weight: bold ? .semibold : .regular),
-                    .foregroundColor: color,
-                ])
+            let attr = StyledText(
+                s, TextAttributes(font: Fonts.system(size, bold ? .semibold : .regular), color: .fixed(color)))
             if let width {
-                attr.draw(with: CGRect(x: p.x, y: p.y, width: width, height: 1000), options: [.usesLineFragmentOrigin])
+                // Unflipped, wrapped text hangs from the rect's top, so the rect is its height.
+                let h = ceil(
+                    attr.boundingRect(size: CGSize(width: width, height: 10_000), options: [.lineFragmentOrigin]).height
+                )
+                attr.draw(
+                    with: CGRect(x: p.x, y: p.y, width: width, height: h), options: [.lineFragmentOrigin], in: ctx,
+                    flipped: false)
             } else {
-                attr.draw(at: p)
+                attr.draw(at: p, in: ctx, flipped: false)
             }
-            NSGraphicsContext.restoreGraphicsState()
         }
 
         if o.content == .outline {
@@ -499,7 +489,7 @@ public enum PrintLayout {
 
     static func cutMarks(_ ctx: CGContext, _ r: CGRect) {
         ctx.saveGState()
-        ctx.setStrokeColor(NSColor.gray.cgColor)
+        ctx.setStrokeColor(CGColor.calibratedWhite(0.5))
         ctx.setLineWidth(0.5)
         let l: CGFloat = 10
         for (x, y) in [(r.minX, r.minY), (r.maxX, r.minY), (r.minX, r.maxY), (r.maxX, r.maxY)] {
@@ -516,7 +506,7 @@ public enum PrintLayout {
 
     static func outlinePages(
         _ lines: [(String, Int, String?)], title: String, begin: (Int, Int) -> Void,
-        text: (String, CGPoint, CGFloat, NSColor, Bool, CGFloat?) -> Void, o: Options, ctx: CGContext
+        text: (String, CGPoint, CGFloat, CGColor, Bool, CGFloat?) -> Void, o: Options, ctx: CGContext
     ) {
         let area = printable(o)
         var y = area.maxY
@@ -532,12 +522,12 @@ public enum PrintLayout {
                 y = area.maxY
             }
             y -= size + 6
-            text(t, CGPoint(x: area.minX + CGFloat(d) * 16, y: y), size, .labelColor, d <= 1, nil)
+            text(t, CGPoint(x: area.minX + CGFloat(d) * 16, y: y), size, ink, d <= 1, nil)
             if let note, !note.isEmpty {
                 y -= 13
                 text(
                     note.replacingOccurrences(of: "\n", with: " "), CGPoint(x: area.minX + CGFloat(d) * 16 + 8, y: y),
-                    9, .secondaryLabelColor, false, nil)
+                    9, inkSecondary, false, nil)
             }
         }
         ctx.endPDFPage()
@@ -545,27 +535,26 @@ public enum PrintLayout {
 
     static func appendix(
         _ notes: [(String, String)], begin: (Int, Int) -> Void,
-        text: (String, CGPoint, CGFloat, NSColor, Bool, CGFloat?) -> Void, o: Options, ctx: CGContext
+        text: (String, CGPoint, CGFloat, CGColor, Bool, CGFloat?) -> Void, o: Options, ctx: CGContext
     ) {
         let area = printable(o)
         begin(0, 0)
         var y = area.maxY - 20
-        text("Notes", CGPoint(x: area.minX, y: y), 16, .labelColor, true, nil)
+        text("Notes", CGPoint(x: area.minX, y: y), 16, ink, true, nil)
         y -= 12
         for (path, note) in notes {
-            let body = NSAttributedString(string: note, attributes: [.font: NSFont.systemFont(ofSize: 10)])
-            let h = body.boundingRect(
-                with: CGSize(width: area.width, height: 10_000), options: [.usesLineFragmentOrigin]
-            ).height
+            let body = StyledText(note, font: Fonts.system(10))
+            let h = body.boundingRect(size: CGSize(width: area.width, height: 10_000), options: [.lineFragmentOrigin])
+                .height
             if y - h - 30 < area.minY {
                 ctx.endPDFPage()
                 begin(0, 0)
                 y = area.maxY
             }
             y -= 16
-            text(path, CGPoint(x: area.minX, y: y), 10, .labelColor, true, nil)
+            text(path, CGPoint(x: area.minX, y: y), 10, ink, true, nil)
             y -= h + 4
-            text(note, CGPoint(x: area.minX, y: y), 10, .secondaryLabelColor, false, area.width)
+            text(note, CGPoint(x: area.minX, y: y), 10, inkSecondary, false, area.width)
             y -= 8
         }
         ctx.endPDFPage()

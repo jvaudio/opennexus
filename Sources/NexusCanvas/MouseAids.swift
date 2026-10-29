@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusKeys
+import NexusScene
 import SwiftUI
 
 /// Settings › Editing › Mouse & trackpad (artboard 36): the floating toolbar above the
@@ -64,3 +66,4 @@ struct AddTopicButton: View {
         .accessibilityLabel(child ? Loc.t("Add child topic") : Loc.t("Add sibling topic"))
     }
 }
+#endif

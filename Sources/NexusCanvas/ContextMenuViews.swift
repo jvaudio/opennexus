@@ -1,6 +1,8 @@
+#if os(macOS)
 import AppKit
 import NexusCore
 import NexusKeys
+import NexusScene
 
 /// A view that shows context menus built from `CanvasMenuEntry`: the canvas, the outline
 /// and the Gantt (M17, M26). Commands go through `performRegistryCommand`, so window
@@ -147,3 +149,4 @@ final class MenuRowElement: NSAccessibilityElement {
         return onMain { make() }
     }
 }
+#endif

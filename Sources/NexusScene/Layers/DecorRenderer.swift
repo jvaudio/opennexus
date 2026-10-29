@@ -1,29 +1,31 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusLayout
 import NexusTheme
+@preconcurrency import QuartzCore
 
 /// Draws structure decor (braces, matrix and tree-table cells, swimlane bands, sequence
 /// lifelines and activation bars) from live node frames, so it follows the spring
 /// animation like branch lines do.
 @MainActor
-final class DecorRenderer {
+package final class DecorRenderer {
     /// Swimlane bands, below everything.
-    let bandsLayer = CALayer()
+    package let bandsLayer = CALayer()
     /// Cells, braces, lifelines: above boundaries, below branch lines.
-    let layer = CALayer()
+    package let layer = CALayer()
     private var shapes: [CAShapeLayer] = []
     private var bandShapes: [CAShapeLayer] = []
     private var bandTitles: [TextLayer] = []
     private var decor: [SceneDecor] = []
-    var textScale: CGFloat = 2
+    package var textScale: CGFloat = 2
 
-    init() {
+    package init() {
         layer.actions = NodeLayer.noActions
         bandsLayer.actions = NodeLayer.noActions
     }
 
-    func update(scene: Scene, frame: (NodeID) -> CGRect?) {
+    package func update(scene: Scene, frame: (NodeID) -> CGRect?) {
         decor = scene.decor
         let bands = decor.filter { if case .band = $0 { true } else { false } }
         let rest = decor.filter { if case .band = $0 { false } else { true } }
@@ -44,12 +46,8 @@ final class DecorRenderer {
             s.strokeColor = color.alpha(0.25).cgColor
             s.lineWidth = 1
             let t = bandTitles[i]
-            t.attributed = NSAttributedString(
-                string: title,
-                attributes: [
-                    .font: NSFont.monospacedSystemFont(ofSize: 11.5, weight: .semibold),
-                    .foregroundColor: NSColor(cgColor: color.cgColor) ?? .secondaryLabelColor, .kern: 1.2,
-                ])
+            t.attributed = StyledText(
+                title, TextAttributes(font: Fonts.mono(11.5, .semibold), color: .fixed(color.cgColor), kern: 1.2))
             t.contentsScale = textScale
             t.frame = CGRect(x: rect.minX + 16, y: rect.minY + 12, width: 260, height: 16)
             t.setNeedsDisplay()
@@ -58,7 +56,7 @@ final class DecorRenderer {
         updateGeometry(frame: frame)
     }
 
-    func updateGeometry(frame: (NodeID) -> CGRect?) {
+    package func updateGeometry(frame: (NodeID) -> CGRect?) {
         let rest = decor.filter { if case .band = $0 { false } else { true } }
         for (i, d) in rest.enumerated() where i < shapes.count {
             shapes[i].path = Self.path(d, frame: frame)
@@ -86,14 +84,14 @@ final class DecorRenderer {
     }
 
     /// How a piece of decor is painted (the SVG export draws it the same way).
-    struct Paint {
-        var fill: RGBA?
-        var stroke: RGBA?
-        var width: CGFloat = 1
-        var dash: [CGFloat]?
+    package struct Paint {
+        package var fill: RGBA?
+        package var stroke: RGBA?
+        package var width: CGFloat = 1
+        package var dash: [CGFloat]?
     }
 
-    static func paint(_ d: SceneDecor, theme: Theme) -> Paint {
+    package static func paint(_ d: SceneDecor, theme: Theme) -> Paint {
         switch d {
         case .brace(_, _, let color, let width):
             return Paint(stroke: color, width: width)
@@ -113,7 +111,7 @@ final class DecorRenderer {
         }
     }
 
-    static func path(_ d: SceneDecor, frame: (NodeID) -> CGRect?) -> CGPath? {
+    package static func path(_ d: SceneDecor, frame: (NodeID) -> CGRect?) -> CGPath? {
         switch d {
         case .brace(let parent, let children, _, _):
             guard let p = frame(parent) else { return nil }

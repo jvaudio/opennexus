@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// M44: share links for the viewer's browser tests (`web/e2e/share.spec.ts`). Each case is
 /// a link, the responses its fetches get, and what the page should show. Build products

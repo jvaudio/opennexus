@@ -4,6 +4,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusKeys
+@testable import NexusScene
 
 /// The P0 sample map ("Launch plan").
 func launchPlanDocument() -> DocumentModel {

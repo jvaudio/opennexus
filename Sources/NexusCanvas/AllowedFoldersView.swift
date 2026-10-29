@@ -1,4 +1,6 @@
+#if os(macOS)
 import AppKit
+import NexusScene
 import SwiftUI
 
 /// Settings › Integrations › Allowed folders: the only places `nexus mcp` may read,
@@ -71,3 +73,4 @@ public struct AllowedFoldersView: View {
         selection = nil
     }
 }
+#endif

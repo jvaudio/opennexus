@@ -1,7 +1,9 @@
+#if os(macOS)
 import AppKit
 import CoreImage.CIFilterBuiltins
 import NexusCore
 import NexusFormat
+import NexusScene
 import NexusSync
 import SwiftUI
 
@@ -604,3 +606,4 @@ struct ConflictCopiesNotice: View {
         }
     }
 }
+#endif

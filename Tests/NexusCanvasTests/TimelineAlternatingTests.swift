@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusLayout
+@testable import NexusScene
 
 /// A roadmap with branches of different sizes, one event without details and topics
 /// two levels under an event (M32).

@@ -2,6 +2,7 @@ import AppKit
 import NexusCanvas
 import NexusCore
 import NexusKeys
+import NexusScene
 import NexusTheme
 import SwiftUI
 import UniformTypeIdentifiers

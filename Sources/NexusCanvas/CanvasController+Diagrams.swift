@@ -1,7 +1,9 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusKeys
 import NexusLayout
+import NexusScene
 import NexusTheme
 
 // MARK: Slash menu

@@ -1,6 +1,7 @@
 import Foundation
 import NexusCore
 import NexusKeys
+import NexusScene
 import NexusTheme
 
 /// Update Style scopes (FMT-1 › Update style).

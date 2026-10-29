@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusInterchange
+@testable import NexusScene
 
 /// Visual review of M7 against artboards 30, 33, 50 and 51 (env-gated).
 @MainActor
@@ -23,7 +24,7 @@ import Testing
 
     func harness() -> CanvasHarness {
         let h = CanvasHarness(model: launchPlanDocument(), width: 1440, height: 900)
-        h.controller.pasteboard = NSPasteboard(name: NSPasteboard.Name("nexus-snap-\(UUID().uuidString)"))
+        h.controller.pasteboard = MemoryPasteboard()
         h.host.canvasView.fitToWindow()
         return h
     }

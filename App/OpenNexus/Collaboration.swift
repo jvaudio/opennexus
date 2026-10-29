@@ -3,6 +3,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusReplica
+import NexusScene
 
 /// Live co-editing in the app (M46): joining from invite links (`opennexus://join#…`, the
 /// join page's universal link, File › Join Session…), a session's copy in the app

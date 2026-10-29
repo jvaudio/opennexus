@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// M43: interactive HTML, one self-contained page (A1, A4, A5).
 @MainActor

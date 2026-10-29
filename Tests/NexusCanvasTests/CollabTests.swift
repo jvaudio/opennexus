@@ -7,6 +7,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusReplica
+@testable import NexusScene
 
 /// Creates and ends rooms on the in-memory relay, as `OpenNexusNet.xpc` does on a server.
 struct RelayTransport: ShareTransport {

@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusLayout
+@testable import NexusScene
 
 /// A map with `mains × subs × leaves` topics under one root.
 func bigDocument(mains: Int, subs: Int, leaves: Int) -> DocumentModel {

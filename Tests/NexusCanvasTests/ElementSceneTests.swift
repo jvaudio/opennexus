@@ -7,6 +7,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M3 geometry: elements follow the topics they belong to.
 @MainActor

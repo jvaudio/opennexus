@@ -5,6 +5,7 @@ import NexusCore
 import NexusFormat
 import NexusInterchange
 import NexusKeys
+import NexusScene
 import UniformTypeIdentifiers
 
 // Shortcuts and Siri (artboard 33; Settings › Integrations › Shortcuts & Siri actions).

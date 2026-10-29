@@ -1,6 +1,8 @@
+#if os(macOS)
 import AVFoundation
 import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 import UniformTypeIdentifiers
@@ -80,9 +82,11 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
         guard let view else { return nil }
         let c = view.controller
         let canvasShown = view.window != nil && !view.isHiddenOrHasHiddenAncestor
-        if c.outlineFocused, let row = c.outlineAnchor?(id) { return row }
-        if c.ganttFocused, let row = c.ganttAnchor?(id) { return row }
-        if !canvasShown, let row = c.outlineAnchor?(id) ?? c.ganttAnchor?(id) { return row }
+        let outline = PopoverAnchors.outline(c)
+        let gantt = PopoverAnchors.gantt(c)
+        if c.outlineFocused, let row = outline?(id) { return row }
+        if c.ganttFocused, let row = gantt?(id) { return row }
+        if !canvasShown, let row = outline?(id) ?? gantt?(id) { return row }
         return view.viewRect(of: id).map { (view, $0) }
     }
 
@@ -501,3 +505,25 @@ struct AudioPopover: View {
         .padding(14)
     }
 }
+
+/// Where a topic's popover can hang besides the canvas (D254): its row in the outline, or
+/// a task's row in the Gantt, as a view and a rect in it, while that view shows it. The
+/// outline and the Gantt register here; the popovers ask.
+@MainActor
+enum PopoverAnchors {
+    typealias Anchor = (NodeID) -> (NSView, CGRect)?
+
+    final class Box {
+        let anchor: Anchor
+        init(_ anchor: @escaping Anchor) { self.anchor = anchor }
+    }
+
+    private static let outlines = NSMapTable<CanvasController, Box>.weakToStrongObjects()
+    private static let gantts = NSMapTable<CanvasController, Box>.weakToStrongObjects()
+
+    static func outline(_ c: CanvasController) -> Anchor? { outlines.object(forKey: c)?.anchor }
+    static func gantt(_ c: CanvasController) -> Anchor? { gantts.object(forKey: c)?.anchor }
+    static func setOutline(_ c: CanvasController, _ a: @escaping Anchor) { outlines.setObject(Box(a), forKey: c) }
+    static func setGantt(_ c: CanvasController, _ a: @escaping Anchor) { gantts.setObject(Box(a), forKey: c) }
+}
+#endif

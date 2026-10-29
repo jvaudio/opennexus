@@ -1,6 +1,11 @@
-import AppKit
+import CoreGraphics
 import Observation
+
+#if os(macOS)
+import AppKit
+import NexusScene
 import SwiftUI
+#endif
 
 /// Dynamic Type for the chrome (M10): Settings, Home, onboarding, sheets, popovers,
 /// panels, the status bar and Quick Capture use `Font.chrome(…)`, which scales by
@@ -15,7 +20,10 @@ public final class ChromeText: @unchecked Sendable {
     public var scale: CGFloat = 1
 
     public static let range: ClosedRange<CGFloat> = 0.85...1.6
+}
 
+#if os(macOS)
+extension ChromeText {
     /// Settings › Accessibility › Follow system text size in chrome: the system's preferred
     /// body size relative to the 13 pt default.
     @MainActor
@@ -105,3 +113,4 @@ public struct LabeledMenu<Content: View>: View {
         .accessibilityLabel(title)
     }
 }
+#endif

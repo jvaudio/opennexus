@@ -79,7 +79,7 @@ public enum AppGroup {
     }
 
     /// A group container path for a team, without asking the system (the CLI's view).
-    public static func container(team: String, home: URL = FileManager.default.homeDirectoryForCurrentUser) -> URL {
+    public static func container(team: String, home: URL = URL(fileURLWithPath: NSHomeDirectory())) -> URL {
         home.appending(path: "Library/Group Containers/\(team).\(suffix)")
     }
 }

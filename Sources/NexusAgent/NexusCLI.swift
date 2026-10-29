@@ -3,6 +3,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// The `nexus` command line (README §8; artboard 40). Hand-written argument parsing: no
 /// package dependencies, so builds never need the network (D89).

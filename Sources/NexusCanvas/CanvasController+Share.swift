@@ -1,7 +1,8 @@
-import AppKit
+import CoreGraphics
 import Foundation
 import NexusCore
 import NexusFormat
+import NexusScene
 
 /// The Share Link sheet's settings (M44). What the link holds is an Interactive HTML
 /// export's (`export`, format `.html`): scope, notes, comments, attachments, layouts,

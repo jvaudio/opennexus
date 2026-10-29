@@ -1,21 +1,22 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusLayout
 import NexusTheme
 @preconcurrency import QuartzCore
 
 /// Relationship geometry: a curve between two topics or zones, clipped to their edges.
-enum RelationshipGeometry {
-    struct Result {
-        var path: CGPath
-        var start: CGPoint
-        var end: CGPoint
+package enum RelationshipGeometry {
+    package struct Result {
+        package var path: CGPath
+        package var start: CGPoint
+        package var end: CGPoint
         /// Direction of travel at each end (radians): start points away from the source,
         /// end points into the target.
-        var startAngle: CGFloat
-        var endAngle: CGFloat
-        var control: CGPoint
-        func point(at t: CGFloat) -> CGPoint {
+        package var startAngle: CGFloat
+        package var endAngle: CGFloat
+        package var control: CGPoint
+        package func point(at t: CGFloat) -> CGPoint {
             let u = 1 - t
             return CGPoint(
                 x: u * u * start.x + 2 * u * t * control.x + t * t * end.x,
@@ -23,7 +24,7 @@ enum RelationshipGeometry {
         }
     }
 
-    static func clip(_ center: CGPoint, _ rect: CGRect, toward q: CGPoint, pad: CGFloat = 6) -> CGPoint {
+    package static func clip(_ center: CGPoint, _ rect: CGRect, toward q: CGPoint, pad: CGFloat = 6) -> CGPoint {
         let vx = q.x - center.x
         let vy = q.y - center.y
         let t = min(
@@ -32,7 +33,7 @@ enum RelationshipGeometry {
     }
 
     /// `obstacles` are other topics: a curve bows to whichever side crosses fewer of them.
-    static func make(_ r: Relationship, from a: CGRect, to b: CGRect, obstacles: [CGRect] = []) -> Result {
+    package static func make(_ r: Relationship, from a: CGRect, to b: CGRect, obstacles: [CGRect] = []) -> Result {
         if b.contains(a) || a.contains(b) { return nested(r, from: a, to: b) }
         let ca = CGPoint(x: a.midX, y: a.midY)
         let cb = CGPoint(x: b.midX, y: b.midY)
@@ -129,7 +130,7 @@ enum RelationshipGeometry {
 
     /// A topic and the zone around it: a short line from the topic to the zone's nearest
     /// edge, bowed by any hand-dragged bend.
-    static func nested(_ r: Relationship, from a: CGRect, to b: CGRect) -> Result {
+    package static func nested(_ r: Relationship, from a: CGRect, to b: CGRect) -> Result {
         let outerIsEnd = b.contains(a)
         let inner = outerIsEnd ? a : b
         let outer = outerIsEnd ? b : a
@@ -159,7 +160,7 @@ enum RelationshipGeometry {
     }
 
     /// How many obstacles a quadratic curve passes through (sampled).
-    static func crossings(_ s: CGPoint, _ c: CGPoint, _ e: CGPoint, _ obstacles: [CGRect]) -> Int {
+    package static func crossings(_ s: CGPoint, _ c: CGPoint, _ e: CGPoint, _ obstacles: [CGRect]) -> Int {
         var hit = Set<Int>()
         for i in 1..<24 {
             let t = CGFloat(i) / 24
@@ -171,14 +172,14 @@ enum RelationshipGeometry {
         return hit.count
     }
 
-    static func withLine(_ r: Relationship, _ line: String) -> Relationship {
+    package static func withLine(_ r: Relationship, _ line: String) -> Relationship {
         var x = r
         x.line = line
         return x
     }
 
     /// A polyline through `pts`; the label anchors at the middle segment.
-    static func polyline(_ pts: [CGPoint]) -> Result {
+    package static func polyline(_ pts: [CGPoint]) -> Result {
         let p = CGMutablePath()
         guard let first = pts.first, let last = pts.last, pts.count >= 2 else {
             return Result(path: p, start: .zero, end: .zero, startAngle: 0, endAngle: 0, control: .zero)
@@ -198,7 +199,9 @@ enum RelationshipGeometry {
 
     /// The 11 end caps (FMT-2): none, arrow, filled-arrow, triangle, diamond,
     /// filled-diamond, dot, open-dot, bar, crows-foot, square.
-    static func cap(_ kind: String, at tip: CGPoint, angle: CGFloat, width w: CGFloat) -> (CGPath?, filled: Bool) {
+    package static func cap(_ kind: String, at tip: CGPoint, angle: CGFloat, width w: CGFloat) -> (
+        CGPath?, filled: Bool
+    ) {
         guard kind != "none" else { return (nil, false) }
         let len = w * 3 + 6
         let half = w * 1.8 + 3
@@ -252,8 +255,8 @@ enum RelationshipGeometry {
 }
 
 /// Boundary outlines (FMT-2: 9 shapes).
-enum BoundaryShapes {
-    static func path(_ shape: String, in r: CGRect) -> CGPath {
+package enum BoundaryShapes {
+    package static func path(_ shape: String, in r: CGRect) -> CGPath {
         switch shape {
         case "rectangle", "corners":
             if shape == "corners" {
@@ -342,7 +345,7 @@ enum BoundaryShapes {
     }
 
     /// Diagonal hatching for medium and low trust (never colour alone).
-    static func hatch(in r: CGRect, dense: Bool) -> CGPath {
+    package static func hatch(in r: CGRect, dense: Bool) -> CGPath {
         let p = CGMutablePath()
         let step: CGFloat = dense ? 7 : 12
         var x = r.minX - r.height
@@ -356,19 +359,19 @@ enum BoundaryShapes {
 }
 
 /// One relationship: line, caps, label chip, selection halo.
-final class RelationshipLayer: CALayer {
-    let halo = CAShapeLayer()
-    let line = CAShapeLayer()
-    let startCap = CAShapeLayer()
-    let endCap = CAShapeLayer()
-    let labelBack = CAShapeLayer()
-    let label = TextLayer()
-    let flag = CAShapeLayer()
-    let flagText = TextLayer()
-    var labelRect: CGRect = .zero
-    var hitPath: CGPath?
+package final class RelationshipLayer: CALayer {
+    package let halo = CAShapeLayer()
+    package let line = CAShapeLayer()
+    package let startCap = CAShapeLayer()
+    package let endCap = CAShapeLayer()
+    package let labelBack = CAShapeLayer()
+    package let label = TextLayer()
+    package let flag = CAShapeLayer()
+    package let flagText = TextLayer()
+    package var labelRect: CGRect = .zero
+    package var hitPath: CGPath?
 
-    override init() {
+    package override init() {
         super.init()
         for l in [halo, line, startCap, endCap, labelBack] as [CAShapeLayer] {
             l.fillColor = nil
@@ -387,27 +390,27 @@ final class RelationshipLayer: CALayer {
         actions = NodeLayer.noActions
     }
 
-    override init(layer: Any) { super.init(layer: layer) }
-    required init?(coder: NSCoder) { fatalError() }
+    package override init(layer: Any) { super.init(layer: layer) }
+    package required init?(coder: NSCoder) { fatalError() }
 }
 
 /// Owns and updates every element layer on the canvas.
 @MainActor
-final class ElementRenderer {
+package final class ElementRenderer {
     /// Settings › Appearance › Glow trail on new edges, and Flow dots in Present mode.
-    var glowTrail = true
-    var flowDots = true
-    let zonesLayer = CALayer()
-    let boundariesLayer = CALayer()
-    let summariesLayer = CALayer()
-    let relationshipsLayer = CALayer()
-    let pointersLayer = CALayer()
-    let overlayLayer = CALayer()
+    package var glowTrail = true
+    package var flowDots = true
+    package let zonesLayer = CALayer()
+    package let boundariesLayer = CALayer()
+    package let summariesLayer = CALayer()
+    package let relationshipsLayer = CALayer()
+    package let pointersLayer = CALayer()
+    package let overlayLayer = CALayer()
 
     private var relLayers: [String: RelationshipLayer] = [:]
 
     /// Present's flow slides draw their relationship on (M42), as a new one does.
-    func drawOn(relationship id: String, at begin: CFTimeInterval) {
+    package func drawOn(relationship id: String, at begin: CFTimeInterval) {
         guard let l = relLayers[id]?.line else { return }
         let draw = CABasicAnimation(keyPath: "strokeEnd")
         draw.fromValue = 0
@@ -429,13 +432,13 @@ final class ElementRenderer {
     private let guideLabel = TextLayer()
     private var scene = Scene()
     /// The element whose text the editor overlay is drawing (its own text hides).
-    var editingElement: ElementRef?
+    package var editingElement: ElementRef?
     /// Zones selected with the selected one (D228), drawn selected too.
-    var selectedZones: Set<String> = []
-    var textScale: CGFloat = 2
+    package var selectedZones: Set<String> = []
+    package var textScale: CGFloat = 2
     private var drawnRelationships = Set<String>()
 
-    init() {
+    package init() {
         for l in [zonesLayer, boundariesLayer, summariesLayer, relationshipsLayer, pointersLayer, overlayLayer] {
             l.actions = NodeLayer.noActions
         }
@@ -456,7 +459,7 @@ final class ElementRenderer {
 
     // MARK: Sync
 
-    func update(
+    package func update(
         scene: Scene, selected: ElementRef?, connect: ConnectState?, frame: (NodeID) -> CGRect?,
         animated: Bool
     ) {
@@ -471,7 +474,7 @@ final class ElementRenderer {
     }
 
     /// Per-frame geometry for things tied to animated topic frames.
-    func updateGeometry(selected: ElementRef?, connect: ConnectState?, frame: (NodeID) -> CGRect?) {
+    package func updateGeometry(selected: ElementRef?, connect: ConnectState?, frame: (NodeID) -> CGRect?) {
         for r in scene.relationships {
             guard let l = relLayers[r.relationship.id], let a = rect(r.relationship.from, frame),
                 let b = rect(r.relationship.to, frame)
@@ -504,18 +507,9 @@ final class ElementRenderer {
                 z.zone.collapsed
                 ? " · " + Loc.f("%lld hidden", z.hidden) : z.zone.autoResize ? " · " + Loc.t("auto-size") : ""
             let s = NSMutableAttributedString(
-                string: t,
-                attributes: [
-                    .font: NSFont.systemFont(ofSize: 13, weight: .semibold),
-                    .foregroundColor: NSColor(cgColor: z.color.cgColor)!,
-                ])
+                t, TextAttributes(font: Fonts.system(13, .semibold), color: .fixed(z.color.cgColor)))
             s.append(
-                NSAttributedString(
-                    string: detail,
-                    attributes: [
-                        .font: NSFont.systemFont(ofSize: 13),
-                        .foregroundColor: NSColor(cgColor: z.color.alpha(0.7).cgColor)!,
-                    ]))
+                StyledText(detail, TextAttributes(font: Fonts.system(13), color: .fixed(z.color.alpha(0.7).cgColor))))
             t = s.string
             title.attributed = s
             title.contentsScale = textScale
@@ -594,12 +588,8 @@ final class ElementRenderer {
             let parts = [prefix, bd.title].filter { !$0.isEmpty }
             let text = parts.joined(separator: " · ")
             title.isHidden = text.isEmpty
-            title.attributed = NSAttributedString(
-                string: text,
-                attributes: [
-                    .font: NSFont.systemFont(ofSize: 11.5, weight: .semibold),
-                    .foregroundColor: NSColor(cgColor: b.color.cgColor)!,
-                ])
+            title.attributed = StyledText(
+                text, TextAttributes(font: Fonts.system(11.5, .semibold), color: .fixed(b.color.cgColor)))
             title.contentsScale = textScale
             title.frame = CGRect(x: b.rect.minX + 12, y: b.rect.minY + 6, width: max(10, b.rect.width - 24), height: 16)
         }
@@ -639,7 +629,7 @@ final class ElementRenderer {
     /// A curly brace opening toward the range.
     /// The summary bracket in `r`, opening toward the range. Built in (along, across)
     /// terms: along runs the length of the range, across from the range (0) to the topic.
-    static func bracket(_ r: CGRect, side: Side, shape: String = "curly") -> CGPath {
+    package static func bracket(_ r: CGRect, side: Side, shape: String = "curly") -> CGPath {
         let down = side == .down
         let length = down ? r.width : r.height
         let depth = down ? r.height : r.width
@@ -807,17 +797,15 @@ final class ElementRenderer {
             l.labelRect = CGRect(origin: g.point(at: t), size: .zero).insetBy(dx: -30, dy: -11)
             return
         }
-        let font = NSFont.systemFont(ofSize: 12, weight: rel.labelStyle == "plain" ? .medium : .semibold)
+        let font = Fonts.system(12, rel.labelStyle == "plain" ? .medium : .semibold)
         let ink = rel.labelStyle == "pill" ? Contrast.adjusted(RGBA(hex: "#17171C"), on: r.color) : r.color
-        let attr = NSAttributedString(
-            string: text.isEmpty ? " " : text,
-            attributes: [
-                .font: font,
-                .foregroundColor: NSColor(
-                    cgColor: (rel.labelStyle == "pill" ? ink : Contrast.adjusted(ink, on: scene.canvasColor)).cgColor)!,
-                .paragraphStyle: NodeLayer.centered,
-            ])
-        let size = CGSize(width: ceil(attr.size().width) + 18, height: 22)
+        let attr = StyledText(
+            text.isEmpty ? " " : text,
+            TextAttributes(
+                font: font,
+                color: .fixed((rel.labelStyle == "pill" ? ink : Contrast.adjusted(ink, on: scene.canvasColor)).cgColor),
+                paragraph: .centered))
+        let size = CGSize(width: ceil(attr.lineSize.width) + 18, height: 22)
         var center = g.point(at: t)
         // Sequence messages read like UML: the label sits above the arrow.
         if r.points != nil { center.y -= 13 }
@@ -865,12 +853,8 @@ final class ElementRenderer {
                 ellipseIn: CGRect(x: rect.maxX + 18 - 22, y: rect.midY - 8, width: 16, height: 16), transform: nil)
             l.flag.fillColor = scene.theme.critical.cgColor
             l.flagText.isHidden = false
-            l.flagText.attributed = NSAttributedString(
-                string: "!",
-                attributes: [
-                    .font: NSFont.systemFont(ofSize: 11, weight: .heavy), .foregroundColor: NSColor.white,
-                    .paragraphStyle: NodeLayer.centered,
-                ])
+            l.flagText.attributed = StyledText(
+                "!", TextAttributes(font: Fonts.system(11, .heavy), color: .system(.white), paragraph: .centered))
             l.flagText.contentsScale = textScale
             l.flagText.frame = CGRect(x: rect.maxX + 18 - 22, y: rect.midY - 7, width: 16, height: 15)
             l.flagText.setNeedsDisplay()
@@ -882,7 +866,7 @@ final class ElementRenderer {
     }
 
     /// A callout's tail, from the bubble's edge to the host's edge.
-    static func calloutTail(host: CGRect, bubble: CGRect) -> CGPath {
+    package static func calloutTail(host: CGRect, bubble: CGRect) -> CGPath {
         let hc = CGPoint(x: host.midX, y: host.midY)
         let bc = CGPoint(x: bubble.midX, y: bubble.midY)
         let tip = RelationshipGeometry.clip(hc, host, toward: bc, pad: 2)
@@ -973,16 +957,15 @@ final class ElementRenderer {
                 chip.borderColor = RGBA(hex: "#17171C").alpha(0.15).cgColor
                 chip.borderWidth = 0.5
                 let t = chip.sublayers![0] as! TextLayer
-                let attr = NSAttributedString(
-                    string: cand.hint,
-                    attributes: [
-                        .font: NSFont.monospacedSystemFont(ofSize: 11, weight: .bold),
-                        .foregroundColor: NSColor(srgbRed: 0.09, green: 0.09, blue: 0.11, alpha: 1),
-                        .paragraphStyle: NodeLayer.centered,
-                    ])
+                let attr = StyledText(
+                    cand.hint,
+                    TextAttributes(
+                        font: Fonts.mono(11, .bold),
+                        color: .fixed(CGColor(srgbRed: 0.09, green: 0.09, blue: 0.11, alpha: 1)),
+                        paragraph: .centered))
                 t.attributed = attr
                 t.contentsScale = textScale
-                let w = max(18, ceil(attr.size().width) + 8)
+                let w = max(18, ceil(attr.lineSize.width) + 8)
                 chip.bounds = CGRect(x: 0, y: 0, width: w, height: 18)
                 t.frame = CGRect(x: 0, y: 2, width: w, height: 14)
             } else if let chip = hintLayers[cand.end] {
@@ -1020,7 +1003,7 @@ final class ElementRenderer {
 
     /// Moves a zone's frame while it is dragged (members move with their springs, and
     /// relationships to the zone follow on the next `updateGeometry`).
-    func offsetZone(_ id: String, by d: CGSize) {
+    package func offsetZone(_ id: String, by d: CGSize) {
         zoneLayers[id]?.setAffineTransform(CGAffineTransform(translationX: d.width, y: d.height))
         zoneOffsets[id] = d == .zero ? nil : d
     }
@@ -1029,7 +1012,7 @@ final class ElementRenderer {
 
     /// A relationship end's rectangle: its topic's (animated) frame, its zone's frame
     /// moved by any drag in progress, or a boundary's or summary bracket's rectangle.
-    func rect(_ end: RelationshipEnd, _ frame: (NodeID) -> CGRect?) -> CGRect? {
+    package func rect(_ end: RelationshipEnd, _ frame: (NodeID) -> CGRect?) -> CGRect? {
         switch end {
         case .topic(let id): return frame(id)
         case .zone(let id):
@@ -1042,7 +1025,7 @@ final class ElementRenderer {
 
     // MARK: Smart guides
 
-    func showGuides(_ lines: [(CGPoint, CGPoint)], label: String?, at point: CGPoint?) {
+    package func showGuides(_ lines: [(CGPoint, CGPoint)], label: String?, at point: CGPoint?) {
         let p = CGMutablePath()
         for (a, b) in lines {
             p.move(to: a)
@@ -1052,17 +1035,13 @@ final class ElementRenderer {
         guides.isHidden = lines.isEmpty
         if let label, let point {
             guideLabel.isHidden = false
-            let attr = NSAttributedString(
-                string: label,
-                attributes: [
-                    .font: NSFont.monospacedSystemFont(ofSize: 10, weight: .semibold), .foregroundColor: NSColor.white,
-                    .paragraphStyle: NodeLayer.centered,
-                ])
+            let attr = StyledText(
+                label, TextAttributes(font: Fonts.mono(10, .semibold), color: .system(.white), paragraph: .centered))
             guideLabel.attributed = attr
             guideLabel.backgroundColor = RGBA(hex: "#E2408C").cgColor
             guideLabel.cornerRadius = 4
             guideLabel.contentsScale = textScale
-            let w = ceil(attr.size().width) + 10
+            let w = ceil(attr.lineSize.width) + 10
             guideLabel.frame = CGRect(x: point.x - w / 2, y: point.y - 8, width: w, height: 16)
         } else {
             guideLabel.isHidden = true
@@ -1071,7 +1050,7 @@ final class ElementRenderer {
 
     // MARK: Hit testing and editor anchors
 
-    func hitTest(_ p: CGPoint) -> ElementRef? {
+    package func hitTest(_ p: CGPoint) -> ElementRef? {
         for (id, l) in relLayers {
             if l.labelRect.contains(p) || (l.hitPath?.contains(p) ?? false) { return .relationship(id) }
         }
@@ -1090,7 +1069,7 @@ final class ElementRenderer {
     }
 
     /// Where the label / title editor sits for an element (world coordinates).
-    func editorRect(for ref: ElementRef) -> CGRect? {
+    package func editorRect(for ref: ElementRef) -> CGRect? {
         switch ref {
         case .relationship(let id):
             guard let l = relLayers[id] else { return nil }

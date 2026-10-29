@@ -4,6 +4,7 @@ import Testing
 @testable import NexusAgent
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// M22: task fields and comments through the MCP tools and the `nexus` CLI.
 @MainActor

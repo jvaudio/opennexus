@@ -1,8 +1,10 @@
+#if os(macOS)
 import AppKit
 import NexusAI
 import NexusCore
 import NexusFormat
 import NexusKeys
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -423,3 +425,4 @@ extension Color {
         self.init(.sRGB, red: c.r, green: c.g, blue: c.b, opacity: c.a)
     }
 }
+#endif

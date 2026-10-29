@@ -3,6 +3,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// What Quick Look shows for a map: `preview.png` if the package has one, otherwise a
 /// fresh rendering; a lock card for encrypted packages.

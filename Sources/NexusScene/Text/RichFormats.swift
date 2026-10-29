@@ -1,4 +1,5 @@
-import AppKit
+import CoreText
+import Foundation
 import NexusTheme
 
 /// `/math`: a LaTeX subset rendered in the node (artboard 12): Greek letters, operators,
@@ -27,21 +28,21 @@ enum MathText {
     ]
     static let blackboard: [Character: String] = ["N": "ℕ", "Z": "ℤ", "Q": "ℚ", "R": "ℝ", "C": "ℂ", "P": "ℙ"]
 
-    static func render(_ source: String, size: CGFloat, color: NSColor, paragraph: NSParagraphStyle)
+    static func render(_ source: String, size: CGFloat, color: TextColorValue, paragraph: TextParagraph)
         -> NSAttributedString
     {
         var p = Parser(chars: Array(source), i: 0)
         let out = NSMutableAttributedString()
         p.parse(into: out, size: size, offset: 0, color: color, until: nil)
-        out.addAttribute(.paragraphStyle, value: paragraph, range: NSRange(location: 0, length: out.length))
+        out.addAttribute(TextKey.paragraph, value: paragraph, range: NSRange(location: 0, length: out.length))
         return out
     }
 
-    static func font(_ size: CGFloat, italic: Bool) -> NSFont {
+    static func font(_ size: CGFloat, italic: Bool) -> CTFont {
         let base =
-            NSFont(name: italic ? "STIXTwoText-Italic" : "STIXTwoText", size: size)
-            ?? NSFont(name: italic ? "TimesNewRomanPS-ItalicMT" : "TimesNewRomanPSMT", size: size)
-            ?? .systemFont(ofSize: size)
+            Fonts.named(italic ? "STIXTwoText-Italic" : "STIXTwoText", size: size)
+            ?? Fonts.named(italic ? "TimesNewRomanPS-ItalicMT" : "TimesNewRomanPSMT", size: size)
+            ?? Fonts.system(size)
         return base
     }
 
@@ -50,14 +51,16 @@ enum MathText {
         var i: Int
 
         mutating func parse(
-            into out: NSMutableAttributedString, size: CGFloat, offset: CGFloat, color: NSColor, until end: Character?
+            into out: NSMutableAttributedString, size: CGFloat, offset: CGFloat, color: TextColorValue,
+            until end: Character?
         ) {
             func emit(_ s: String, italic: Bool, sz: CGFloat = size, off: CGFloat = offset) {
                 out.append(
                     NSAttributedString(
                         string: s,
                         attributes: [
-                            .font: MathText.font(sz, italic: italic), .foregroundColor: color, .baselineOffset: off,
+                            TextKey.font: MathText.font(sz, italic: italic), TextKey.color: color.attribute,
+                            TextKey.baselineOffset: off,
                         ]))
             }
             while i < chars.count {
@@ -143,7 +146,7 @@ enum MathText {
         }
 
         /// The next `{…}` group (or single token), rendered.
-        mutating func group(size: CGFloat, offset: CGFloat, color: NSColor) -> NSAttributedString {
+        mutating func group(size: CGFloat, offset: CGFloat, color: TextColorValue) -> NSAttributedString {
             let out = NSMutableAttributedString()
             while i < chars.count, chars[i] == " " { i += 1 }
             guard i < chars.count else { return out }
@@ -208,25 +211,24 @@ enum CodeText {
         "type", "interface", "map", "chan", "defer", "SELECT", "FROM", "WHERE", "JOIN", "INSERT", "UPDATE",
         "DELETE", "VALUES", "INTO", "ORDER", "BY", "GROUP", "LIMIT", "AND", "OR",
     ]
-    static let keyword = NSColor(red: 0.42, green: 0.71, blue: 1.0, alpha: 1)
-    static let string = NSColor(red: 0.65, green: 0.84, blue: 0.65, alpha: 1)
-    static let number = NSColor(red: 0.95, green: 0.77, blue: 0.43, alpha: 1)
-    static let comment = NSColor(red: 0.55, green: 0.55, blue: 0.62, alpha: 1)
-    static let typeName = NSColor(red: 0.88, green: 0.63, blue: 1.0, alpha: 1)
+    static let keyword = CGColor(srgbRed: 0.42, green: 0.71, blue: 1.0, alpha: 1)
+    static let string = CGColor(srgbRed: 0.65, green: 0.84, blue: 0.65, alpha: 1)
+    static let number = CGColor(srgbRed: 0.95, green: 0.77, blue: 0.43, alpha: 1)
+    static let comment = CGColor(srgbRed: 0.55, green: 0.55, blue: 0.62, alpha: 1)
+    static let typeName = CGColor(srgbRed: 0.88, green: 0.63, blue: 1.0, alpha: 1)
 
-    static func render(_ source: String, size: CGFloat, color: NSColor, paragraph: NSParagraphStyle)
+    static func render(_ source: String, size: CGFloat, color: TextColorValue, paragraph: TextParagraph)
         -> NSAttributedString
     {
-        let font = NSFont.monospacedSystemFont(ofSize: size, weight: .regular)
-        let p = (paragraph.mutableCopy() as? NSMutableParagraphStyle) ?? NSMutableParagraphStyle()
-        p.alignment = .left
+        let font = Fonts.mono(size)
+        let p = TextParagraph(alignment: .left, lineBreak: paragraph.lineBreak, lineHeight: paragraph.lineHeight)
         let out = NSMutableAttributedString(
-            string: source, attributes: [.font: font, .foregroundColor: color, .paragraphStyle: p])
+            string: source, attributes: [TextKey.font: font, TextKey.color: color.attribute, TextKey.paragraph: p])
         let ns = source as NSString
-        func paint(_ pattern: String, _ c: NSColor, options: NSRegularExpression.Options = []) {
+        func paint(_ pattern: String, _ c: CGColor, options: NSRegularExpression.Options = []) {
             guard let re = try? NSRegularExpression(pattern: pattern, options: options) else { return }
             for m in re.matches(in: source, range: NSRange(location: 0, length: ns.length)) {
-                out.addAttribute(.foregroundColor, value: c, range: m.range)
+                out.addAttribute(TextKey.color, value: c, range: m.range)
             }
         }
         paint("\\b[A-Z][A-Za-z0-9_]*\\b", typeName)
@@ -234,7 +236,7 @@ enum CodeText {
         let words = try? NSRegularExpression(pattern: "\\b[A-Za-z_][A-Za-z0-9_]*\\b")
         for m in words?.matches(in: source, range: NSRange(location: 0, length: ns.length)) ?? [] {
             if keywords.contains(ns.substring(with: m.range)) {
-                out.addAttribute(.foregroundColor, value: keyword, range: m.range)
+                out.addAttribute(TextKey.color, value: keyword, range: m.range)
             }
         }
         paint("\"([^\"\\\\]|\\\\.)*\"|'([^'\\\\]|\\\\.)*'", string)

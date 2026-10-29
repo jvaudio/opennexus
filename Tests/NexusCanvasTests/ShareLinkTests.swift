@@ -7,6 +7,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// The three kinds of destination, in memory: a bucket, GitHub's gist API and an OpenNexus
 /// Server. Requests arrive through `NetService`, exactly as the XPC service makes them.

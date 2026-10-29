@@ -5,6 +5,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 @testable import NexusTheme
 
 /// The NS artboard's sample map.

@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// M10: an accessibility audit of every key screen, in process. Every control an
 /// assistive app can act on must say what it is (a label or title), and sit inside its

@@ -1,7 +1,10 @@
-import AppKit
+import CoreGraphics
+import CoreText
+import Foundation
 import NexusCore
+import NexusLayout
+import NexusScene
 import NexusTheme
-import SwiftUI
 
 // Present's legend, task lines and Timeline slides (M21). The screen and the slide
 // exports draw the same pieces: the legend through `LegendLayer.draw`, the Timeline
@@ -129,6 +132,9 @@ struct PresentLegendPlacement: Equatable {
     var maxHeight: CGFloat
     var maxWidth: CGFloat = .infinity
 
+    /// The slide strip's height; the corner legend and the dots sit above it (D232).
+    static let stripHeight: CGFloat = 236
+
     /// On screen: 1.2×, 28 pt above the slide strip, or above the window's edge when the
     /// stage is alone. In a view `viewWidth` wide with `slides` slides, the box leaves
     /// room right of it for the progress dots' narrowest form, the counter (D265).
@@ -137,7 +143,7 @@ struct PresentLegendPlacement: Equatable {
         let room =
             viewWidth - 56 - PresentProgress.trailing - PresentProgress.gap - PresentProgress.counterWidth(slides)
         return Self(
-            leading: 56, bottom: 28 + (stageOnly ? 0 : SlideStripView.height), base: 1.2, maxHeight: 320,
+            leading: 56, bottom: 28 + (stageOnly ? 0 : stripHeight), base: 1.2, maxHeight: 320,
             maxWidth: max(room, 120))
     }
 
@@ -177,9 +183,7 @@ enum PresentProgress {
     static let full = Style.dots(size: 7, spacing: 6, current: 22)
     static let condensed = Style.dots(size: 5, spacing: 3, current: 14)
 
-    static var counterFont: NSFont {
-        .monospacedSystemFont(ofSize: (13 * ChromeText.shared.scale).rounded(.toNearestOrEven), weight: .medium)
-    }
+    static var counterFont: CTFont { Fonts.mono((13 * ChromeText.shared.scale).rounded(.toNearestOrEven), .medium) }
 
     /// "Slide 3 of 60", as the counter and VoiceOver read it.
     static func counter(_ index: Int, of count: Int) -> String { Loc.f("Slide %lld of %lld", index + 1, count) }
@@ -187,8 +191,7 @@ enum PresentProgress {
     /// The widest the counter gets for a deck of `count` slides.
     static func counterWidth(_ count: Int) -> CGFloat {
         let n = max(count, 1)
-        let s = NSAttributedString(string: counter(n - 1, of: n), attributes: [.font: counterFont])
-        return ceil(s.size().width) + 4
+        return ceil(StyledText(counter(n - 1, of: n), font: counterFont).lineSize.width) + 4
     }
 
     static func width(_ style: Style, count: Int) -> CGFloat {
@@ -218,7 +221,7 @@ enum PresentProgress {
         let h: CGFloat =
             switch s {
             case .dots(let d, _, _): d
-            case .counter: ceil(counterFont.ascender - counterFont.descender)
+            case .counter: ceil(CTFontGetAscent(counterFont) + CTFontGetDescent(counterFont))
             }
         return CGRect(x: size.width - trailing - w, y: size.height - bottom - h, width: w, height: h)
     }
@@ -231,31 +234,27 @@ enum SlideTitleMetrics {
     /// On screen: the kicker and up to two lines of title, 36 pt from the top and 56 pt in.
     static func screen(_ c: CanvasController, _ s: Slide, width: CGFloat) -> CGFloat {
         let k = ChromeText.shared.scale
-        func font(_ size: CGFloat, _ weight: NSFont.Weight, mono: Bool = false) -> NSFont {
+        func font(_ size: CGFloat, _ weight: FontWeight, mono: Bool = false) -> CTFont {
             let pt = (size * k).rounded(.toNearestOrEven)
-            return mono ? .monospacedSystemFont(ofSize: pt, weight: weight) : .systemFont(ofSize: pt, weight: weight)
+            return mono ? Fonts.mono(pt, weight) : Fonts.system(pt, weight)
         }
-        let lm = NSLayoutManager()
         let title = font(40, .bold)
-        let text = NSAttributedString(string: c.slideTitle(s), attributes: [.font: title])
-        let h = text.boundingRect(
-            with: CGSize(width: max(width - 56, 1), height: .greatestFiniteMagnitude),
-            options: [.usesLineFragmentOrigin]
+        let h = StyledText(c.slideTitle(s), font: title).boundingRect(
+            size: CGSize(width: max(width - 56, 1), height: .greatestFiniteMagnitude), options: [.lineFragmentOrigin]
         ).height
-        var y = 36 + lm.defaultLineHeight(for: font(13, .medium, mono: true)) + 6
-        y += min(ceil(h), ceil(lm.defaultLineHeight(for: title) * 2))
-        if c.slideTaskLine(s) != nil { y += 6 + lm.defaultLineHeight(for: font(16, .regular, mono: true)) }
+        var y = 36 + Fonts.lineHeight(font(13, .medium, mono: true)) + 6
+        y += min(ceil(h), ceil(Fonts.lineHeight(title) * 2))
+        if c.slideTaskLine(s) != nil { y += 6 + Fonts.lineHeight(font(16, .regular, mono: true)) }
         return y
     }
 
     /// On an exported slide: the title's text in its box from 92 pt down, then the task line.
     static func export(_ c: CanvasController, _ s: Slide, size: CGSize) -> CGFloat {
-        let title = NSAttributedString(
-            string: c.slideTitle(s), attributes: [.font: NSFont.systemFont(ofSize: 64, weight: .bold)])
+        let title = StyledText(c.slideTitle(s), font: Fonts.system(64, .bold))
         let box = titleBox(size)
-        let h = ceil(title.boundingRect(with: box.size, options: [.usesLineFragmentOrigin]).height)
+        let h = ceil(title.boundingRect(size: box.size, options: [.lineFragmentOrigin]).height)
         var y = box.minY + min(h, box.height)
-        if let line = c.slideTaskLine(s) { y += 8 + ceil(taskLine(line).size().height) }
+        if let line = c.slideTaskLine(s) { y += 8 + ceil(taskLine(line).lineSize.height) }
         return y
     }
 
@@ -263,13 +262,9 @@ enum SlideTitleMetrics {
     static func titleBox(_ size: CGSize) -> CGRect { CGRect(x: 84, y: 92, width: size.width - 168, height: 160) }
 
     /// The exported slide's task line.
-    static func taskLine(_ line: String, ink: NSColor = .labelColor) -> NSAttributedString {
-        NSAttributedString(
-            string: line,
-            attributes: [
-                .font: NSFont.monospacedSystemFont(ofSize: 26, weight: .regular),
-                .foregroundColor: ink.withAlphaComponent(0.72),
-            ])
+    static func taskLine(_ line: String, ink: CGColor? = nil) -> StyledText {
+        let color: TextColorValue = ink.map { .fixed($0.copy(alpha: 0.72)!) } ?? .system(.label)
+        return StyledText(line, TextAttributes(font: Fonts.mono(26), color: color))
     }
 }
 
@@ -376,7 +371,32 @@ enum SlideFit {
     }
 }
 
-extension CanvasView {
+/// A slide's places in a view, or on an exported slide: the stage under the title, the
+/// corner legend's box (D232) and a Timeline chart's (D264), and the camera that frames
+/// the slide's topics on the stage clear of both (D263). The canvas frames slides with
+/// it, and so do the slide exports, which have no view.
+@MainActor
+struct SlideStage {
+    let controller: CanvasController
+    /// The view's bounds, or the exported slide's.
+    var bounds: CGRect
+    /// The exported slide's size (nil: on screen).
+    var exportSize: CGSize?
+
+    /// The slide stage: the largest rect of `aspect` that fits under the title and above
+    /// the slide strip.
+    func stageRect(aspect: Double) -> CGRect {
+        let stripH: CGFloat = controller.present?.stageOnly == false ? 250 : 0
+        let area = CGRect(x: 40, y: 150, width: bounds.width - 80, height: max(100, bounds.height - 190 - stripH))
+        var w = area.width
+        var h = w / aspect
+        if h > area.height {
+            h = area.height
+            w = h * aspect
+        }
+        return CGRect(x: area.midX - w / 2, y: area.minY + (area.height - h) / 2, width: w, height: h)
+    }
+
     /// The corner legend's box on the current slide, in view coordinates, or nil when the
     /// slide has none (D232).
     func presentLegendRect() -> CGRect? {
@@ -384,7 +404,7 @@ extension CanvasView {
         let slides = controller.slides
         guard p.index < slides.count, let l = controller.presentLegend(for: slides[p.index]) else { return nil }
         let placement =
-            slideExportSize.map(PresentLegendPlacement.export)
+            exportSize.map(PresentLegendPlacement.export)
             ?? .screen(stageOnly: p.stageOnly, viewWidth: bounds.width, slides: slides.count)
         return placement.rect(l, in: bounds.size)
     }
@@ -396,9 +416,53 @@ extension CanvasView {
         guard p.index < slides.count, let chart = controller.timelineChart(for: slides[p.index]) else { return nil }
         let s = slides[p.index]
         let placement =
-            slideExportSize.map { TimelinePlacement.export(controller, s, size: $0) }
+            exportSize.map { TimelinePlacement.export(controller, s, size: $0) }
             ?? .screen(controller, s, size: bounds.size, stageOnly: p.stageOnly)
         return placement.drawn(chart)
+    }
+
+    /// The camera that fits `ids` in the bounds (or the slide stage at `aspect`), or nil
+    /// when there's nothing to frame.
+    func camera(framing ids: [NodeID], aspect: Double?) -> Camera? {
+        let scene = controller.scene
+        let rects = ids.compactMap { scene.nodes[$0]?.frame.rect }
+        guard bounds.width > 0, !rects.isEmpty else { return nil }
+        var b = rects.reduce(CGRect.null) { $0.union($1) }
+        // The outlines framed with the topics: boundaries they touch and, on a slide, zones
+        // they're in (D263).
+        let framed = Set(ids)
+        let outlines =
+            scene.boundaries.filter { bd in rects.contains { bd.rect.intersects($0) } }.map(\.rect)
+            + (aspect == nil ? [] : scene.zones.filter { $0.zone.members.contains(where: framed.contains) }.map(\.rect))
+        for r in outlines { b = b.union(r) }
+        let target = aspect.map { stageRect(aspect: $0) } ?? bounds.insetBy(dx: 60, dy: 60)
+        var cam = SlideFit.camera(b, in: target)
+        if aspect != nil {
+            // A slide keeps its topics, their outlines and the branch lines between them
+            // clear of the corner legend (D232, D263), and below a Timeline chart (D264).
+            let lines = scene.edges.filter { framed.contains($0.parent) && framed.contains($0.child) }.compactMap {
+                e -> CGPath? in
+                guard let p = scene.nodes[e.parent]?.frame, let c = scene.nodes[e.child]?.frame else { return nil }
+                return BranchLines.path(
+                    from: p, to: c, family: e.family, shape: BranchLineShape(name: e.line.shape),
+                    parentBaseline: e.parentBaseline, childBaseline: e.childBaseline)
+            }
+            cam = SlideFit.camera(
+                b, topics: rects + outlines, lines: lines, stage: target, legend: presentLegendRect(),
+                chart: presentChartRect())
+        }
+        return cam
+    }
+}
+
+extension CanvasController {
+    /// The topic Showtime enlarges on `slide` (M42): a branch slide's last highlighted
+    /// topic, when the slide draws no flow.
+    func showtimeFocus(_ slide: Slide) -> NodeID? {
+        guard canvas.presentation.style == "showtime", slide.flow == nil, slide.id.hasPrefix("branch:") else {
+            return nil
+        }
+        return slide.highlight.last
     }
 }
 
@@ -424,111 +488,24 @@ struct TimelineChart {
             x: target.minX + (target.width - s.width * k) / 2, y: target.minY, width: s.width * k, height: s.height * k)
     }
 
-    /// Scaled to fit `target` (never above `maxScale`), centred, into the current flipped
-    /// graphics context. Returns the rectangle drawn.
+    /// Scaled to fit `target` (never above `maxScale`), centred, into a flipped context.
+    /// Returns the rectangle drawn.
     @discardableResult
-    func draw(in target: CGRect, maxScale: CGFloat) -> CGRect {
-        guard let ctx = NSGraphicsContext.current?.cgContext else { return .null }
+    func draw(in target: CGRect, maxScale: CGFloat, context ctx: CGContext) -> CGRect {
         let s = size
         let drawn = rect(in: target, maxScale: maxScale)
         let k = drawn.width / s.width
         ctx.saveGState()
-        NSBezierPath(roundedRect: drawn, xRadius: 10, yRadius: 10).addClip()
+        Shapes.clip(to: Shapes.roundedRect(drawn, radius: 10), in: ctx)
         ctx.translateBy(x: drawn.minX, y: drawn.minY)
         ctx.scaleBy(x: k, y: k)
         let pin = from - renderer.layout.tableWidth
         ctx.translateBy(x: -pin, y: 0)
         let visible = CGRect(x: pin, y: 0, width: s.width, height: s.height)
         ctx.clip(to: visible)
-        renderer.draw(dirty: visible, pin: CGPoint(x: pin, y: 0))
+        renderer.draw(in: ctx, dirty: visible, pin: CGPoint(x: pin, y: 0))
         ctx.restoreGState()
         return drawn
-    }
-}
-
-// MARK: On screen
-
-/// The legend in the slide's bottom-left corner (D200).
-struct PresentLegendCorner: View {
-    let legend: SceneLegend
-    let theme: Theme
-    let canvas: RGBA
-    let placement: PresentLegendPlacement
-
-    var body: some View {
-        let k = placement.scale(legend)
-        LegendDrawing(legend: legend, theme: theme, canvas: canvas, scale: k)
-            .frame(width: legend.rect.width * k, height: legend.rect.height * k)
-            .accessibilityElement()
-            .accessibilityLabel(legend.spoken)
-            .accessibilityAddTraits(.isImage)
-    }
-
-    struct LegendDrawing: NSViewRepresentable {
-        let legend: SceneLegend
-        let theme: Theme
-        let canvas: RGBA
-        let scale: CGFloat
-        func makeNSView(context: Context) -> Surface { Surface() }
-        func updateNSView(_ v: Surface, context: Context) {
-            v.legend = legend
-            v.theme = theme
-            v.canvas = canvas
-            v.scale = scale
-            v.needsDisplay = true
-        }
-
-        final class Surface: NSView {
-            var legend: SceneLegend?
-            var theme = Theme.classic
-            var canvas = Theme.classic.canvas
-            var scale: CGFloat = 1
-            override var isFlipped: Bool { true }
-            override func draw(_ dirtyRect: NSRect) {
-                guard let l = legend, let ctx = NSGraphicsContext.current?.cgContext else { return }
-                ctx.scaleBy(x: scale, y: scale)
-                LegendLayer.draw(l, theme: theme, canvas: canvas, origin: l.rect.origin)
-            }
-        }
-    }
-}
-
-/// A Timeline slide's chart, under the title in its `TimelinePlacement` box (D202, D264).
-struct TimelineCard: View {
-    let chart: TimelineChart
-    let spoken: String
-    let maxScale: CGFloat
-
-    var body: some View {
-        Drawing(chart: chart, maxScale: maxScale)
-            .accessibilityElement()
-            .accessibilityLabel(spoken)
-            .accessibilityAddTraits(.isImage)
-    }
-
-    struct Drawing: NSViewRepresentable {
-        let chart: TimelineChart
-        let maxScale: CGFloat
-        func makeNSView(context: Context) -> Surface { Surface() }
-        func updateNSView(_ v: Surface, context: Context) {
-            v.chart = chart
-            v.maxScale = maxScale
-            v.needsDisplay = true
-        }
-
-        final class Surface: NSView {
-            var chart: TimelineChart?
-            var maxScale: CGFloat = 1.6
-            override var isFlipped: Bool { true }
-            override func draw(_ dirtyRect: NSRect) {
-                guard let chart else { return }
-                let drawn = chart.draw(in: bounds, maxScale: maxScale)
-                NSColor.separatorColor.setStroke()
-                let ring = NSBezierPath(roundedRect: drawn.insetBy(dx: 0.5, dy: 0.5), xRadius: 10, yRadius: 10)
-                ring.lineWidth = 1
-                ring.stroke()
-            }
-        }
     }
 }
 
@@ -538,22 +515,23 @@ extension SlideExporter {
     /// The task line, the corner legend and the Timeline chart, drawn into a 1920 × 1080
     /// slide below the title that ends at `titleBottom` (flipped context).
     @MainActor
-    static func drawExtras(_ c: CanvasController, slide: Slide, size: CGSize, titleBottom: CGFloat) {
+    static func drawExtras(
+        _ c: CanvasController, slide: Slide, size: CGSize, titleBottom: CGFloat, in ctx: CGContext
+    ) {
         let theme = c.scene.theme
-        let ink = NSColor(cgColor: theme.ink.cgColor) ?? .labelColor
         if let line = c.slideTaskLine(slide) {
-            SlideTitleMetrics.taskLine(line, ink: ink).draw(at: CGPoint(x: 84, y: titleBottom + 8))
+            SlideTitleMetrics.taskLine(line, ink: theme.ink.cgColor).draw(
+                at: CGPoint(x: 84, y: titleBottom + 8), in: ctx)
         }
         if let chart = c.timelineChart(for: slide) {
             // The same rectangle the framing kept the slide's topics below (D264).
             let place = TimelinePlacement.export(c, slide, size: size)
-            let drawn = chart.draw(in: place.target, maxScale: place.maxScale)
-            (NSColor(cgColor: theme.ink.alpha(0.22).cgColor) ?? .gray).setStroke()
-            let ring = NSBezierPath(roundedRect: drawn.insetBy(dx: 0.5, dy: 0.5), xRadius: 10, yRadius: 10)
-            ring.lineWidth = 1.5
-            ring.stroke()
+            let drawn = chart.draw(in: place.target, maxScale: place.maxScale, context: ctx)
+            Shapes.stroke(
+                Shapes.roundedRect(drawn.insetBy(dx: 0.5, dy: 0.5), radius: 10), theme.ink.alpha(0.22).cgColor,
+                width: 1.5, in: ctx)
         }
-        if let l = c.presentLegend(for: slide), let ctx = NSGraphicsContext.current?.cgContext {
+        if let l = c.presentLegend(for: slide) {
             // The same box the framing kept clear (D232).
             let placement = PresentLegendPlacement.export(size)
             let k = placement.scale(l)
@@ -561,7 +539,7 @@ extension SlideExporter {
             ctx.saveGState()
             ctx.translateBy(x: box.minX, y: box.minY)
             ctx.scaleBy(x: k, y: k)
-            LegendLayer.draw(l, theme: theme, canvas: c.scene.canvasColor, origin: l.rect.origin)
+            LegendLayer.draw(l, theme: theme, canvas: c.scene.canvasColor, origin: l.rect.origin, in: ctx)
             ctx.restoreGState()
         }
     }

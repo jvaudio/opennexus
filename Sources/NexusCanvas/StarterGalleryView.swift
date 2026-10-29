@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -281,3 +283,38 @@ struct StarterCard: View {
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
     }
 }
+
+/// Starter thumbnails (M40): each starter's map, drawn offscreen by the exporter and kept
+/// for the session per starter, appearance and scale.
+@MainActor
+enum StarterThumbnails {
+    /// The card's picture area, in points.
+    static let size = CGSize(width: 220, height: 124)
+    private static var cache: [String: CGImage] = [:]
+
+    static func key(_ s: Starter, dark: Bool, scale: CGFloat) -> String {
+        "\(s.id)|\(dark ? "dark" : "light")|\(scale)"
+    }
+
+    static func cached(_ s: Starter, dark: Bool, scale: CGFloat) -> CGImage? { cache[key(s, dark: dark, scale: scale)] }
+
+    /// Renders (or recalls) the thumbnail.
+    static func image(_ s: Starter, prefs: Preferences, dark: Bool, scale: CGFloat) -> CGImage? {
+        let k = key(s, dark: dark, scale: scale)
+        if let c = cache[k] { return c }
+        let doc = s.document(prefs: prefs)
+        guard let id = doc.canvasOrder.first else { return nil }
+        var o = ImageExporter.Options()
+        o.padding = 28
+        let r = ImageExporter.contentRect(doc, canvas: id, o)
+        // Fit the map in the card at the screen's scale (never enlarge a small one past 1:1).
+        o.scale = Double(min(scale, size.width * scale / r.width, size.height * scale / r.height))
+        var img: CGImage?
+        NSAppearance(named: dark ? .darkAqua : .aqua)?.performAsCurrentDrawingAppearance {
+            img = ImageExporter.image(doc, canvas: id, o)
+        }
+        cache[k] = img
+        return img
+    }
+}
+#endif

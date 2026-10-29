@@ -2,6 +2,7 @@ import Foundation
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// Copies of a document that other apps' sync left behind (M45): iCloud Drive's conflict
 /// versions (`NSFileVersion`) and the "conflicted copy" files of Dropbox, Syncthing, Google

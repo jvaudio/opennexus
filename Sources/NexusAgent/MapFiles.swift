@@ -3,6 +3,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// Reading and writing maps on disk for the CLI and the MCP server. Every access is
 /// coordinated (`NSFileCoordinator`), so a document open in OpenNexus notices the

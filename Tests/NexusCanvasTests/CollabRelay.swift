@@ -2,6 +2,7 @@ import Foundation
 import NexusFormat
 
 @testable import NexusReplica
+@testable import NexusScene
 
 /// A relay in memory with the server's rules (roles from capabilities, numbered batches, a
 /// stored snapshot and tail, fan-out, presence, End), delivering on its own queue like a

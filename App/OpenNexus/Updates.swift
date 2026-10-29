@@ -1,5 +1,6 @@
 import AppKit
 import NexusCanvas
+import NexusScene
 import Sparkle
 
 /// Software updates (M38, D275): Sparkle, off until the user agrees. Nothing is fetched

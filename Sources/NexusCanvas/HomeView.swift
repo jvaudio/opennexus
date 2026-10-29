@@ -1,8 +1,10 @@
+#if os(macOS)
 import AppKit
 import NexusAI
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 import Observation
 import SwiftUI
 
@@ -639,3 +641,4 @@ struct TypeGlyph: View {
         .accessibilityHidden(true)
     }
 }
+#endif

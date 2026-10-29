@@ -1,4 +1,6 @@
+#if os(macOS)
 import AppKit
+import NexusScene
 import SwiftUI
 
 // MARK: Welcome (artboard 14)
@@ -313,3 +315,4 @@ public struct XmindSwitcherCard: View {
         .shadow(color: .black.opacity(0.15), radius: 24, y: 10)
     }
 }
+#endif

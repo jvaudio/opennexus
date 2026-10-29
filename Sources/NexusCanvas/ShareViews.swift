@@ -1,7 +1,9 @@
+#if os(macOS)
 import AppKit
 import CoreImage
 import NexusCore
 import NexusFormat
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -705,3 +707,4 @@ struct ShareLinksCard: View {
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(.separator.opacity(0.6)))
     }
 }
+#endif

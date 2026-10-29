@@ -2,8 +2,9 @@ import CryptoKit
 import Foundation
 import NexusCore
 import NexusFormat
+import NexusReplica
+import NexusScene
 import Observation
-import Security
 
 /// Share links (M44): the app seals a viewer bundle, then hands the sealed bytes to
 /// `OpenNexusNet.xpc`, the one process allowed to use the network (D313). Destinations and
@@ -24,52 +25,53 @@ extension ShareTransport {
     }
 }
 
-/// `OpenNexusNet.xpc`, over a private XPC connection (only the app can open it).
-public struct XPCShareTransport: ShareTransport {
-    public init() {}
-
-    public func perform(_ job: NetJob, body: Data) async -> NetReply {
-        await exchange(job, body: body).reply
+/// What the network centres are built with on this platform (M47a): on the Mac, the
+/// `OpenNexusNet.xpc` service and the login Keychain. Elsewhere nothing reaches the network
+/// until the app supplies its own (M47b): requests fail, sockets close at once, and
+/// secrets stay in memory.
+@MainActor
+enum PlatformNetwork {
+    static func transport() -> any ShareTransport {
+        #if os(macOS)
+        XPCShareTransport()
+        #else
+        NoNetwork()
+        #endif
     }
 
-    public func exchange(_ job: NetJob, body: Data) async -> (reply: NetReply, body: Data) {
-        guard let data = try? JSONEncoder().encode(job) else {
-            return (.failed("The request couldn’t be encoded."), Data())
+    static func secrets(service: String = "org.opennexus.sharing") -> any SecretStore {
+        #if os(macOS)
+        KeychainSecrets(service: service)
+        #else
+        MemorySecrets()
+        #endif
+    }
+
+    static func connector(purpose: String, log: NetworkLog) -> any RoomConnector {
+        #if os(macOS)
+        XPCRoomConnector(purpose: purpose) { entries in
+            Task { @MainActor in log.append(entries) }
         }
-        return await withCheckedContinuation { cont in
-            let call = XPCCall(cont)
-            let proxy =
-                call.connection.remoteObjectProxyWithErrorHandler { error in
-                    call.finish(.failed("The network service didn’t answer (\(error.localizedDescription))."), Data())
-                } as? NetServiceProtocol
-            guard let proxy else { return call.finish(.failed("The network service isn’t available."), Data()) }
-            proxy.perform(data, body: body) { reply, body in
-                call.finish(
-                    (try? JSONDecoder().decode(NetReply.self, from: reply)) ?? .failed("Unreadable reply."), body)
-            }
-        }
+        #else
+        NoNetwork()
+        #endif
     }
 }
 
-/// One call: its connection, answered once (the reply or the error handler, whichever comes first).
-private final class XPCCall: @unchecked Sendable {
-    let connection = NSXPCConnection(serviceName: NetXPC.serviceName)
-    private var cont: CheckedContinuation<(reply: NetReply, body: Data), Never>?
-    private let lock = NSLock()
+/// No way to the network: every request fails and every socket closes.
+struct NoNetwork: ShareTransport, RoomConnector {
+    static let why = "This device has no way to the network yet."
 
-    init(_ cont: CheckedContinuation<(reply: NetReply, body: Data), Never>) {
-        self.cont = cont
-        connection.remoteObjectInterface = NSXPCInterface(with: NetServiceProtocol.self)
-        connection.resume()
+    func perform(_ job: NetJob, body: Data) async -> NetReply { .failed(Self.why) }
+
+    func open(_ url: URL, events: @escaping @Sendable (SocketEvent) -> Void) -> any RoomSocket {
+        events(.closed(Self.why))
+        return Closed()
     }
 
-    func finish(_ reply: NetReply, _ body: Data) {
-        let c = lock.withLock {
-            defer { cont = nil }
-            return cont
-        }
-        c?.resume(returning: (reply, body))
-        connection.invalidate()
+    final class Closed: RoomSocket {
+        func send(_ text: String) {}
+        func close() {}
     }
 }
 
@@ -80,41 +82,6 @@ public protocol SecretStore: Sendable {
     func secret(_ account: String) -> Data?
     func setSecret(_ data: Data, _ account: String)
     func deleteSecret(_ account: String)
-}
-
-/// The login Keychain: generic passwords, this app only.
-public struct KeychainSecrets: SecretStore {
-    public var service: String
-    public init(service: String = "org.opennexus.sharing") { self.service = service }
-
-    func query(_ account: String) -> [String: Any] {
-        [
-            kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
-            kSecAttrAccount as String: account,
-        ]
-    }
-
-    public func secret(_ account: String) -> Data? {
-        var q = query(account)
-        q[kSecReturnData as String] = true
-        q[kSecMatchLimit as String] = kSecMatchLimitOne
-        var out: CFTypeRef?
-        guard SecItemCopyMatching(q as CFDictionary, &out) == errSecSuccess else { return nil }
-        return out as? Data
-    }
-
-    public func setSecret(_ data: Data, _ account: String) {
-        deleteSecret(account)
-        var q = query(account)
-        q[kSecValueData as String] = data
-        q[kSecAttrLabel as String] = "OpenNexus sharing"
-        q[kSecAttrAccessible as String] = kSecAttrAccessibleWhenUnlocked
-        SecItemAdd(q as CFDictionary, nil)
-    }
-
-    public func deleteSecret(_ account: String) {
-        SecItemDelete(query(account) as CFDictionary)
-    }
 }
 
 /// Secrets in memory (tests).
@@ -341,8 +308,8 @@ public final class ShareCenter {
     public private(set) var busy = 0
 
     public init(
-        store: ShareStore, log: NetworkLog, secrets: any SecretStore = KeychainSecrets(),
-        transport: any ShareTransport = XPCShareTransport(), prefs: Preferences = .shared
+        store: ShareStore, log: NetworkLog, secrets: any SecretStore, transport: any ShareTransport,
+        prefs: Preferences = .shared
     ) {
         self.store = store
         self.log = log
@@ -354,7 +321,8 @@ public final class ShareCenter {
     convenience init(directory: URL?) {
         self.init(
             store: ShareStore(file: directory?.appending(path: "sharing.json")),
-            log: NetworkLog(file: directory?.appending(path: "network-log.json")))
+            log: NetworkLog(file: directory?.appending(path: "network-log.json")), secrets: PlatformNetwork.secrets(),
+            transport: PlatformNetwork.transport())
     }
 
     public enum Failure: Error, Equatable, CustomStringConvertible {

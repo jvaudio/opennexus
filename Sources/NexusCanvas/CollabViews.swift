@@ -1,6 +1,8 @@
+#if os(macOS)
 import AppKit
 import NexusCore
 import NexusReplica
+import NexusScene
 import NexusTheme
 import QuartzCore
 import SwiftUI
@@ -434,3 +436,4 @@ final class PresenceLayer: CALayer {
         }
     }
 }
+#endif

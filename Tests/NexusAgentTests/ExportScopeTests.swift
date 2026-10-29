@@ -5,6 +5,7 @@ import Testing
 @testable import NexusAgent
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// M27: `nexus export` and the MCP `export` tool take a branch, a zone, or every zone
 /// (a file each, or a PDF page each), like the export sheet (D227).

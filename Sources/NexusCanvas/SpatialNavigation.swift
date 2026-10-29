@@ -1,5 +1,6 @@
 import CoreGraphics
 import NexusCore
+import NexusScene
 
 public enum NavigationDirection: Sendable {
     case up, down, left, right

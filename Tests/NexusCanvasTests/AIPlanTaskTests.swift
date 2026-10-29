@@ -3,6 +3,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 
 /// M22 (D209): a work breakdown's dates and lengths become task fields; a plan without
 /// them makes undated tasks.

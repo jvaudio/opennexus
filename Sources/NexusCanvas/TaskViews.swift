@@ -1,4 +1,6 @@
+#if os(macOS)
 import NexusCore
+import NexusScene
 import SwiftUI
 
 // MARK: Task editor (⌃⌘T, M11)
@@ -224,3 +226,4 @@ private struct TaskEditorSheet: View {
         }
     }
 }
+#endif

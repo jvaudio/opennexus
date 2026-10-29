@@ -4,6 +4,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// M9: the logic behind Quick Capture, Share, Spotlight, widgets and the agent settings.
 @MainActor

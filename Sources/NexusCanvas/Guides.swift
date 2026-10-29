@@ -1,7 +1,9 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusFormat
 import NexusKeys
+import NexusScene
 
 /// The built-in guides (M41): JSON files in `Guides/`, checked against
 /// `schema/guide.schema.json`, one per diagram type that has one.

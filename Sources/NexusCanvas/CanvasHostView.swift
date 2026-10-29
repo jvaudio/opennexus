@@ -1,4 +1,6 @@
+#if os(macOS)
 import AppKit
+import NexusScene
 import SwiftUI
 
 /// The canvas plus its floating chrome: state pill and hints (bottom-left), toast (top
@@ -293,3 +295,4 @@ public final class CanvasHostView: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 }
+#endif

@@ -1,4 +1,5 @@
-import AppKit
+import CoreText
+import Foundation
 import NexusCore
 import NexusTheme
 
@@ -48,7 +49,7 @@ public struct NodeTextStyle: Hashable, Sendable {
         code = a.code
     }
 
-    var nsWeight: NSFont.Weight {
+    public var fontWeight: FontWeight {
         switch weight {
         case .regular: .regular
         case .medium: .medium
@@ -60,7 +61,7 @@ public struct NodeTextStyle: Hashable, Sendable {
 
     /// Fonts are built once per face: a descriptor with a cascade list is costly, and
     /// every node's style asks for its font several times per update.
-    public var font: NSFont {
+    public var font: CTFont {
         let key = FontKey(
             family: code ? "mono" : family, size: fontSize, weight: weight, italic: italic, cjk: Self.cjkFamily)
         if let f = Self.fonts[key] { return f }
@@ -79,57 +80,45 @@ public struct NodeTextStyle: Hashable, Sendable {
 
     static let fonts = FontCache()
 
-    /// NSFont is immutable once made, so sharing it across threads under a lock is safe.
+    /// CTFont is immutable once made, so sharing it across threads under a lock is safe.
     final class FontCache: @unchecked Sendable {
         private let lock = NSLock()
-        private var fonts: [FontKey: NSFont] = [:]
-        subscript(key: FontKey) -> NSFont? {
+        private var fonts: [FontKey: CTFont] = [:]
+        subscript(key: FontKey) -> CTFont? {
             get { lock.withLock { fonts[key] } }
             set { lock.withLock { fonts[key] = newValue } }
         }
     }
 
-    private func makeFont() -> NSFont {
+    private func makeFont() -> CTFont {
         let size = CGFloat(fontSize)
-        var f: NSFont
+        var f: CTFont
         switch code ? "mono" : family {
-        case "system", "": f = .systemFont(ofSize: size, weight: nsWeight)
-        case "mono": f = .monospacedSystemFont(ofSize: size, weight: nsWeight)
-        case "serif", "rounded":
-            let base = NSFont.systemFont(ofSize: size, weight: nsWeight)
-            let design: NSFontDescriptor.SystemDesign = family == "serif" ? .serif : .rounded
-            f = base.fontDescriptor.withDesign(design).flatMap { NSFont(descriptor: $0, size: size) } ?? base
+        case "system", "": f = Fonts.system(size, fontWeight)
+        case "mono": f = Fonts.mono(size, fontWeight)
+        case "serif": f = Fonts.system(size, fontWeight, design: .serif)
+        case "rounded": f = Fonts.system(size, fontWeight, design: .rounded)
         case "hand":
-            // A handwriting face that ships with macOS (no bundled font needed).
+            // A handwriting face that ships with macOS and iOS (no bundled font needed).
             let heavy = weight == .bold || weight == .heavy || weight == .semibold
             f =
-                NSFont(name: heavy ? "Noteworthy-Bold" : "Noteworthy-Light", size: size)
-                ?? NSFont(name: "ChalkboardSE-Regular", size: size) ?? .systemFont(ofSize: size, weight: nsWeight)
+                Fonts.named(heavy ? "Noteworthy-Bold" : "Noteworthy-Light", size: size)
+                ?? Fonts.named("ChalkboardSE-Regular", size: size) ?? Fonts.system(size, fontWeight)
         default:
             f =
-                NSFontManager.shared.font(
-                    withFamily: family, traits: [], weight: Self.managerWeight(weight), size: size)
-                ?? .systemFont(ofSize: size, weight: nsWeight)
+                Fonts.family(family, weight: Self.managerWeight(weight), size: size)
+                ?? Fonts.system(size, fontWeight)
         }
-        if italic {
-            f = NSFontManager.shared.convert(f, toHaveTrait: .italicFontMask)
-        }
+        if italic { f = Fonts.adding(.traitItalic, to: f) }
         // Settings › Appearance › CJK font: Chinese, Japanese and Korean text falls back to it.
-        if let cjk = Self.cjkFamily {
-            let fallback = NSFontDescriptor(fontAttributes: [.family: cjk])
-            if let withCascade = NSFont(
-                descriptor: f.fontDescriptor.addingAttributes([.cascadeList: [fallback]]), size: size)
-            {
-                f = withCascade
-            }
-        }
+        if let cjk = Self.cjkFamily { f = Fonts.cascading(f, to: cjk) }
         return f
     }
 
     /// Set from Settings (nil keeps the system's CJK fallback).
     nonisolated(unsafe) public static var cjkFamily: String?
 
-    static func managerWeight(_ w: NodeTypography.Weight) -> Int {
+    public static func managerWeight(_ w: NodeTypography.Weight) -> Int {
         switch w {
         case .regular: 5
         case .medium: 6
@@ -139,31 +128,27 @@ public struct NodeTextStyle: Hashable, Sendable {
         }
     }
 
-    public var paragraphStyle: NSParagraphStyle {
-        let p = NSMutableParagraphStyle()
-        p.alignment =
+    public var paragraphStyle: TextParagraph {
+        let a: TextParagraph.Alignment =
             switch align {
             case "leading": .left
             case "trailing": .right
             default: .center
             }
-        p.lineBreakMode = .byWordWrapping
-        p.minimumLineHeight = lineHeight
-        p.maximumLineHeight = lineHeight
-        return p
+        return TextParagraph(alignment: a, lineBreak: .wordWrap, lineHeight: lineHeight)
     }
 
     /// Baseline shift that centres glyphs in a line box taller than the font's own line
     /// (TextKit puts the extra height above the glyphs).
     public var baselineOffset: Double {
-        let f = font
-        let natural = f.ascender - f.descender + f.leading
+        let m = Fonts.metrics(font)
+        let natural = m.ascender - m.descender + m.leading
         return max(0, (lineHeight - natural) / 2)
     }
 
     /// The title with its rich-text runs applied over the base attributes.
-    public func attributed(_ text: String, marks: [TextMark], color: NSColor, linkColor: NSColor? = nil)
-        -> NSAttributedString
+    public func attributed(_ text: String, marks: [TextMark], color: TextColorValue, linkColor: TextColorValue? = nil)
+        -> StyledText
     {
         if format == "math" {
             return MathText.render(text, size: CGFloat(fontSize) * 1.15, color: color, paragraph: paragraphStyle)
@@ -177,31 +162,30 @@ public struct NodeTextStyle: Hashable, Sendable {
             let r = NSRange(location: max(0, m.start), length: max(0, min(m.length, length - m.start)))
             guard r.length > 0, r.location < length else { continue }
             if m.bold || m.italic {
-                let base = s.attribute(.font, at: r.location, effectiveRange: nil) as? NSFont ?? font
+                let base = s.attribute(TextKey.font, at: r.location, effectiveRange: nil).map { $0 as! CTFont } ?? font
                 var f = base
-                if m.bold { f = NSFontManager.shared.convert(f, toHaveTrait: .boldFontMask) }
-                if m.italic { f = NSFontManager.shared.convert(f, toHaveTrait: .italicFontMask) }
-                s.addAttribute(.font, value: f, range: r)
+                if m.bold { f = Fonts.adding(.traitBold, to: f) }
+                if m.italic { f = Fonts.adding(.traitItalic, to: f) }
+                s.addAttribute(TextKey.font, value: f, range: r)
             }
-            if m.underline { s.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: r) }
-            if m.strikethrough {
-                s.addAttribute(.strikethroughStyle, value: NSUnderlineStyle.single.rawValue, range: r)
-            }
+            if m.underline { s.addAttribute(TextKey.underline, value: 1, range: r) }
+            if m.strikethrough { s.addAttribute(TextKey.strikethrough, value: 1, range: r) }
             if let link = m.link {
-                s.addAttribute(.link, value: link, range: r)
-                s.addAttribute(.underlineStyle, value: NSUnderlineStyle.single.rawValue, range: r)
-                if let linkColor { s.addAttribute(.foregroundColor, value: linkColor, range: r) }
+                s.addAttribute(TextKey.link, value: link, range: r)
+                s.addAttribute(TextKey.underline, value: 1, range: r)
+                if let linkColor { s.addAttribute(TextKey.color, value: linkColor.attribute, range: r) }
             }
         }
         return s
     }
 
-    public func attributes(color: NSColor) -> [NSAttributedString.Key: Any] {
+    public func attributes(color: TextColorValue) -> [NSAttributedString.Key: Any] {
         var a: [NSAttributedString.Key: Any] = [
-            .font: font, .paragraphStyle: paragraphStyle, .foregroundColor: color, .baselineOffset: baselineOffset,
+            TextKey.font: font, TextKey.paragraph: paragraphStyle, TextKey.color: color.attribute,
+            TextKey.baselineOffset: baselineOffset,
         ]
-        if underline { a[.underlineStyle] = NSUnderlineStyle.single.rawValue }
-        if strikethrough { a[.strikethroughStyle] = NSUnderlineStyle.single.rawValue }
+        if underline { a[TextKey.underline] = 1 }
+        if strikethrough { a[TextKey.strikethrough] = 1 }
         return a
     }
 }
@@ -221,7 +205,7 @@ public final class NodeMeasurer {
 
     public init() {}
 
-    func clearCache() { cache.removeAll() }
+    public func clearCache() { cache.removeAll() }
 
     /// Size of the text block (not including padding).
     public func textSize(_ text: String, style: NodeTextStyle, marks: [TextMark] = []) -> CGSize {
@@ -237,18 +221,27 @@ public final class NodeMeasurer {
         return s
     }
 
-    /// Uses AppKit string drawing (TextKit), the same engine that draws node text and
-    /// backs the editor.
-    static func measure(_ text: String, style: NodeTextStyle, marks: [TextMark] = []) -> CGSize {
+    /// Uses the platform's string drawing (TextKit on the Mac), the same engine that draws
+    /// node text and backs the editor.
+    public static func measure(_ text: String, style: NodeTextStyle, marks: [TextMark] = []) -> CGSize {
+        measure(text, style: style, marks: marks, engine: Graphics.platform)
+    }
+
+    /// The same measurement with a given engine (NexusSceneTests compares CoreText's with TextKit's).
+    package static func measure(_ text: String, style: NodeTextStyle, marks: [TextMark], engine: any PlatformGraphics)
+        -> CGSize
+    {
         let string = text.isEmpty ? " " : text
-        let attr = style.attributed(string, marks: marks, color: .black)
-        let options: NSString.DrawingOptions = [.usesLineFragmentOrigin, .usesFontLeading]
+        let attr = style.attributed(string, marks: marks, color: .fixed(CGColor(gray: 0, alpha: 1)))
+        let options: TextOptions = [.lineFragmentOrigin, .fontLeading]
         // Natural width first, so short titles never wrap.
-        let natural = attr.boundingRect(
-            with: CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude), options: options)
+        let natural = engine.boundingRect(
+            attr, size: CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude),
+            options: options)
         let width = min(ceil(natural.width), style.maxWidth)
         func fit(_ w: CGFloat) -> (CGRect, CGFloat) {
-            let r = attr.boundingRect(with: CGSize(width: w, height: .greatestFiniteMagnitude), options: options)
+            let r = engine.boundingRect(
+                attr, size: CGSize(width: w, height: .greatestFiniteMagnitude), options: options)
             return (r, max(1, (r.height / style.lineHeight).rounded()))
         }
         var (fitted, lines) = fit(width)

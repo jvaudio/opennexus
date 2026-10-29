@@ -1,5 +1,7 @@
+#if os(macOS)
 import NexusCore
 import NexusKeys
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -256,3 +258,4 @@ struct ConnectFieldView: View {
         .background(on ? theme.amberSoft.color : .clear)
     }
 }
+#endif

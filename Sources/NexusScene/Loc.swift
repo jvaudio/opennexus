@@ -2,7 +2,7 @@ import Foundation
 
 /// Localisation scaffolding (M10). User-facing strings that come from data (command
 /// titles, Settings rows) are looked up here at display time, in the String Catalog
-/// `Resources/Localizable.xcstrings` (kept complete by `LocalizationTests`; regenerate
+/// NexusScene's `Resources/Localizable.xcstrings` (kept complete by `LocalizationTests`; regenerate
 /// with `NEXUS_WRITE_CATALOG=1 swift test --filter writeStringCatalog`). SwiftUI literals
 /// localise themselves; text with values in it goes through `f`, and counts through `n`.
 ///
@@ -10,6 +10,9 @@ import Foundation
 /// accents every looked-up string and makes it about 40% longer, to find truncation
 /// before a real translation does.
 public enum Loc {
+    /// The bundle holding the catalog.
+    package static var bundle: Bundle { .module }
+
     nonisolated(unsafe) public static var pseudo = UserDefaults.standard.bool(forKey: "NexusPseudoLanguage")
 
     /// A string with no values in it: `Loc.t("Copied as Markdown")`. Keys passed as literals
@@ -40,7 +43,7 @@ public enum Loc {
         return pseudo ? pseudolocalize(v) : v
     }
 
-    static let accents: [Character: Character] = [
+    package static let accents: [Character: Character] = [
         "a": "á", "e": "é", "i": "í", "o": "ö", "u": "ü", "c": "ç", "n": "ñ", "s": "š", "y": "ý", "z": "ž",
         "A": "Å", "E": "É", "I": "Î", "O": "Ø", "U": "Û", "C": "Ç", "N": "Ñ", "S": "Š", "Y": "Ý", "Z": "Ž",
     ]

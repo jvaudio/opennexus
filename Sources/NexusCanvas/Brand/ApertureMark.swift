@@ -1,6 +1,9 @@
-import AppKit
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#endif
 
 /// The OpenNexus mark, Aperture (brand/BRAND.md §1): a ring left open on the right, with two
 /// branches leaving the centre through the gap. Drawn from the spec's geometry on its
@@ -167,6 +170,7 @@ public struct ApertureMark: View {
     }
 }
 
+#if os(macOS)
 /// The app icon as a tile, for Welcome and the About card (brand/BRAND.md §5): the running
 /// app's own icon, so it's whatever the asset catalog (or `AppIcon.icon`) compiled.
 public struct AppIconTile: View {
@@ -190,6 +194,7 @@ public struct AppIconTile: View {
         }
     }
 }
+#endif
 
 /// The horizontal lockup from the kit (`BrandLockup` in the app's catalog, light and dark).
 /// It's the kit's outlined wordmark, never live text (BRAND.md §3).

@@ -5,6 +5,7 @@ import NexusCore
 import NexusFormat
 import NexusInterchange
 import NexusReplica
+import NexusScene
 import NexusSync
 
 /// A `.nexus` package document. Autosaves in place and keeps versions (File › Revert To),

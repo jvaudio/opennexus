@@ -1,4 +1,5 @@
 import Foundation
+import NexusScene
 
 /// Settings as data (README §10: "Generate the panes from a declarative schema … so the
 /// search field in Settings can find every row"). Mirrors the sources' `sec()` and

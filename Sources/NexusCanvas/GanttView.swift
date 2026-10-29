@@ -1,6 +1,8 @@
+#if os(macOS)
 import AppKit
 import NexusCore
 import NexusKeys
+import NexusScene
 
 /// The Gantt view (⌘4): the canvas's tasks on a timeline, another view of the same model
 /// (D146). It scrolls; the table and the date header stay pinned.
@@ -117,7 +119,7 @@ final class GanttSurface: NSView, ContextMenuTarget, NSMenuItemValidation {
         setAccessibilityElement(true)
         setAccessibilityRole(.outline)
         setAccessibilityLabel(Loc.t("Tasks"))
-        controller.ganttAnchor = { [weak self] id in self?.popoverAnchor(id) }
+        PopoverAnchors.setGantt(controller) { [weak self] id in self?.popoverAnchor(id) }
     }
 
     /// A task's row as a popover's anchor: its name column, scrolled into view, while the
@@ -184,7 +186,7 @@ final class GanttSurface: NSView, ContextMenuTarget, NSMenuItemValidation {
         r.selection = Set(controller.selection.nodes).union([controller.selection.primary])
         r.colors = controller.ganttColors
         let vis = visibleRect
-        r.draw(dirty: vis, pin: vis.origin)
+        if let ctx = NSGraphicsContext.current?.cgContext { r.draw(in: ctx, dirty: vis, pin: vis.origin) }
         if let d = drag, d.kind == .link {
             NSColor.controlAccentColor.setStroke()
             let path = NSBezierPath()
@@ -453,21 +455,4 @@ final class GanttSurface: NSView, ContextMenuTarget, NSMenuItemValidation {
         axRows.filter { $0.isAccessibilitySelected() }
     }
 }
-
-@MainActor
-extension CanvasController {
-    /// Bar colours: each task's branch colour from the map.
-    public var ganttColors: [NodeID: NSColor] {
-        var out: [NodeID: NSColor] = [:]
-        let c = canvas
-        for r in taskSchedule.rows {
-            var cur = r.id
-            while scene.nodes[cur] == nil, let p = c.parent(of: cur) { cur = p }
-            if cur == c.root, r.id != c.root, let main = c.path(to: r.id).dropFirst().first { cur = main }
-            if let b = scene.nodes[cur]?.branchColor {
-                out[r.id] = NSColor(srgbRed: b.r, green: b.g, blue: b.b, alpha: 1)
-            }
-        }
-        return out
-    }
-}
+#endif

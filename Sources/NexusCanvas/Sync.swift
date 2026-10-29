@@ -2,6 +2,7 @@ import CryptoKit
 import Foundation
 import NexusCore
 import NexusFormat
+import NexusScene
 import NexusSync
 import Observation
 
@@ -88,7 +89,8 @@ public enum SyncStatus: Equatable, Sendable {
 public final class SyncCenter {
     public static let shared = SyncCenter(
         directory: FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first?
-            .appending(path: "OpenNexus/Sync"))
+            .appending(path: "OpenNexus/Sync"), secrets: PlatformNetwork.secrets(service: "org.opennexus.sync"),
+        transport: PlatformNetwork.transport())
 
     public private(set) var libraries: [SyncLibrary] = []
     public private(set) var status: [String: SyncStatus] = [:]
@@ -112,11 +114,10 @@ public final class SyncCenter {
     @ObservationIgnored var observer: (any NSObjectProtocol)?
     static let maxLog = 300
     /// Looked up once, when the first library syncs.
-    static let computerName = Host.current().localizedName ?? "Mac"
+    static let computerName = CanvasHosts.platform().deviceName
 
     public init(
-        directory: URL?, secrets: any SecretStore = KeychainSecrets(service: "org.opennexus.sync"),
-        transport: any ShareTransport = XPCShareTransport(), prefs: Preferences = .shared,
+        directory: URL?, secrets: any SecretStore, transport: any ShareTransport, prefs: Preferences = .shared,
         networkLog: NetworkLog? = nil
     ) {
         self.directory = directory
@@ -247,9 +248,13 @@ public final class SyncCenter {
     func folderURL(_ lib: SyncLibrary) -> URL {
         guard let b = lib.bookmark else { return lib.folderURL }
         var stale = false
+        #if os(macOS)
+        let options: URL.BookmarkResolutionOptions = .withSecurityScope
+        #else
+        let options: URL.BookmarkResolutionOptions = []
+        #endif
         guard
-            let url = try? URL(
-                resolvingBookmarkData: b, options: .withSecurityScope, relativeTo: nil, bookmarkDataIsStale: &stale)
+            let url = try? URL(resolvingBookmarkData: b, options: options, relativeTo: nil, bookmarkDataIsStale: &stale)
         else { return lib.folderURL }
         if !scoped.contains(lib.id), url.startAccessingSecurityScopedResource() { scoped.insert(lib.id) }
         return url

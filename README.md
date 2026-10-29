@@ -30,7 +30,10 @@ Sources/
   NexusNet             HTTP client and share destinations, linked only into OpenNexusNet.xpc
   NexusSync            library sync through your own bucket: encryption, merging, history
   NexusReplica         live co-editing: the CRDT behind sessions, invites and the room client
-  NexusCanvas          AppKit canvas and SwiftUI chrome (rendering, editing, animation)
+  NexusScene           scenes, text, layers and the renderer that draws them for the canvas
+                       and exports (CoreGraphics and CoreText; no AppKit or UIKit)
+  NexusCanvas          the editing controller for every platform; on the Mac, the AppKit
+                       canvas and SwiftUI chrome
   NexusWidgetsUI       widgets
   nexus                command-line tool
 App/                   Xcode project for the macOS app and its extensions (thin shell)
@@ -39,7 +42,8 @@ schema/                published JSON Schema for .nexus files
 web/                   the interactive viewer (viewer-core) and the share-link site (viewer-app)
 server/                OpenNexus Server: stores share links, relays live sessions (Swift, Docker)
 brand/                 the Aperture brand kit: spec (BRAND.md), icons, marks, lockups
-scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints)
+scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints),
+                       build-ios.sh (the shared modules for the iOS Simulator)
 Handoff/               design handoff package (brief, artboards, screenshots, specs)
 ```
 
@@ -63,11 +67,17 @@ swift run nexus validate path/to/Map.nexus
 swift run nexus --help
 ```
 
-Lint as CI does: Swift formatting, and the brand checks (no old logo, document icon up to
-date with `brand/`):
+Lint as CI does: Swift formatting, the brand checks (no old logo, document icon up to
+date with `brand/`), and no AppKit, UIKit or SwiftUI in the modules the iPad app shares:
 
 ```bash
 scripts/lint.sh
+```
+
+Build the shared modules, NexusCanvas included, for the iOS Simulator:
+
+```bash
+scripts/build-ios.sh
 ```
 
 Share links for real: MinIO and two OpenNexus Servers in Docker, links made against them,

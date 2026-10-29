@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusReplica
+@testable import NexusScene
 
 /// M46: invites for the join page's browser tests (`web/e2e/join.spec.ts`), made by a real
 /// session on the in-memory relay: the link, the host's sealed view as the server would

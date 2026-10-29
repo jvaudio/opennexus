@@ -5,6 +5,7 @@ import SwiftUI
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 /// The starter picker (M40): what it lists, how search and the arrow keys move through it,
 /// where it opens, and what Create makes.

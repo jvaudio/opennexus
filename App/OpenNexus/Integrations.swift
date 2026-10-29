@@ -6,6 +6,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 import UniformTypeIdentifiers
 import WidgetKit
 

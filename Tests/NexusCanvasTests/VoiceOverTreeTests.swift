@@ -4,6 +4,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 
 /// M10: the VoiceOver canvas tree (README §11, §12).
 @MainActor

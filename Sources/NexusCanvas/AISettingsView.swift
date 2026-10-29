@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 import SwiftUI
 
 struct AISettingsPane: View {
@@ -102,3 +104,4 @@ struct AISettingsPane: View {
         }
     }
 }
+#endif

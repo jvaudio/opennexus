@@ -2,6 +2,7 @@ import Foundation
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// A document's viewer copy (M43, D314): the bundle a browser, a share link or Obsidian
 /// shows without OpenNexus. Packages carry it as `render/viewer.json` (Settings › Files &

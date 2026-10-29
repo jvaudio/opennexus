@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -238,3 +240,4 @@ enum CanvasPanelFormat {
         v == v.rounded() ? Loc.f("%lld pt", Int(v)) : Loc.f("%.1f pt", v)
     }
 }
+#endif

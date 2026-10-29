@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -134,8 +136,7 @@ struct SlideStripView: View {
     var controller: CanvasController
     let state: PresentState
     let slides: [Slide]
-    /// The strip's height; the corner legend and the dots sit above it (D232).
-    static let height: CGFloat = 236
+    static var height: CGFloat { PresentLegendPlacement.stripHeight }
 
     var body: some View {
         let controls = controller.stripControls
@@ -276,7 +277,7 @@ struct SlideStripView: View {
 
 /// A slide thumbnail: the scene's outlines with the slide's topics emphasised.
 struct SlideWireframe: View {
-    let scene: Scene
+    let scene: NexusScene.Scene
     let slide: Slide
 
     var body: some View {
@@ -447,3 +448,90 @@ public struct PresenterView: View {
 final class PresenterSlides {
     var images: [String: CGImage] = [:]
 }
+
+// MARK: On screen
+
+/// The legend in the slide's bottom-left corner (D200).
+struct PresentLegendCorner: View {
+    let legend: SceneLegend
+    let theme: Theme
+    let canvas: RGBA
+    let placement: PresentLegendPlacement
+
+    var body: some View {
+        let k = placement.scale(legend)
+        LegendDrawing(legend: legend, theme: theme, canvas: canvas, scale: k)
+            .frame(width: legend.rect.width * k, height: legend.rect.height * k)
+            .accessibilityElement()
+            .accessibilityLabel(legend.spoken)
+            .accessibilityAddTraits(.isImage)
+    }
+
+    struct LegendDrawing: NSViewRepresentable {
+        let legend: SceneLegend
+        let theme: Theme
+        let canvas: RGBA
+        let scale: CGFloat
+        func makeNSView(context: Context) -> Surface { Surface() }
+        func updateNSView(_ v: Surface, context: Context) {
+            v.legend = legend
+            v.theme = theme
+            v.canvas = canvas
+            v.scale = scale
+            v.needsDisplay = true
+        }
+
+        final class Surface: NSView {
+            var legend: SceneLegend?
+            var theme = Theme.classic
+            var canvas = Theme.classic.canvas
+            var scale: CGFloat = 1
+            override var isFlipped: Bool { true }
+            override func draw(_ dirtyRect: NSRect) {
+                guard let l = legend, let ctx = NSGraphicsContext.current?.cgContext else { return }
+                ctx.scaleBy(x: scale, y: scale)
+                LegendLayer.draw(l, theme: theme, canvas: canvas, origin: l.rect.origin, in: ctx)
+            }
+        }
+    }
+}
+
+/// A Timeline slide's chart, under the title in its `TimelinePlacement` box (D202, D264).
+struct TimelineCard: View {
+    let chart: TimelineChart
+    let spoken: String
+    let maxScale: CGFloat
+
+    var body: some View {
+        Drawing(chart: chart, maxScale: maxScale)
+            .accessibilityElement()
+            .accessibilityLabel(spoken)
+            .accessibilityAddTraits(.isImage)
+    }
+
+    struct Drawing: NSViewRepresentable {
+        let chart: TimelineChart
+        let maxScale: CGFloat
+        func makeNSView(context: Context) -> Surface { Surface() }
+        func updateNSView(_ v: Surface, context: Context) {
+            v.chart = chart
+            v.maxScale = maxScale
+            v.needsDisplay = true
+        }
+
+        final class Surface: NSView {
+            var chart: TimelineChart?
+            var maxScale: CGFloat = 1.6
+            override var isFlipped: Bool { true }
+            override func draw(_ dirtyRect: NSRect) {
+                guard let chart, let ctx = NSGraphicsContext.current?.cgContext else { return }
+                let drawn = chart.draw(in: bounds, maxScale: maxScale, context: ctx)
+                NSColor.separatorColor.setStroke()
+                let ring = NSBezierPath(roundedRect: drawn.insetBy(dx: 0.5, dy: 0.5), xRadius: 10, yRadius: 10)
+                ring.lineWidth = 1
+                ring.stroke()
+            }
+        }
+    }
+}
+#endif

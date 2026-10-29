@@ -2,6 +2,7 @@ import Foundation
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 /// README §12: "Network traffic with default settings: none". The network rule (D313):
 /// OpenNexus itself has no network code and no network entitlement, so the sandbox blocks

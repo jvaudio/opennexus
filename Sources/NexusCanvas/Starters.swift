@@ -1,5 +1,6 @@
 import Foundation
 import NexusCore
+import NexusScene
 
 /// A starter: a card in the starter picker (M40) and on Home's template shelf (artboard
 /// 16). The built-in templates are JSON files in `Starters/`, checked against

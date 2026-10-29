@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusFormat
+import NexusScene
 import SwiftUI
 
 /// Quick Capture (✦N from any app, artboard 33): one field on a glass panel. ↩ saves,
@@ -74,3 +76,4 @@ public struct QuickCaptureView: View {
         return t.targets.count > 1 ? "\(current) · \(t.current.title)" : current
     }
 }
+#endif

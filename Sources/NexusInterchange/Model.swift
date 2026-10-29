@@ -476,8 +476,10 @@ enum XML {
         return out
     }
 
-    /// Parses XML with Foundation's tree parser (no network: external entities off).
+    /// Parses XML with Foundation's tree parser where there is one (no network: external
+    /// entities off), `MiniXML` elsewhere.
     static func parse(_ data: Data, name: String) throws -> XMLElement {
+        #if os(macOS)
         do {
             let doc = try XMLDocument(data: data, options: [.nodePreserveWhitespace])
             guard let root = doc.rootElement() else { throw ImportError.invalid(name, "no XML root element") }
@@ -487,8 +489,18 @@ enum XML {
         } catch {
             throw ImportError.invalid(name, "not well-formed XML")
         }
+        #else
+        guard let root = MiniXML.parse(data) else { throw ImportError.invalid(name, "not well-formed XML") }
+        return root
+        #endif
     }
 }
+
+#if !os(macOS)
+/// iOS has no `XMLDocument`: the importers read `MiniXML`'s tree, which `MiniXMLTests`
+/// checks against Foundation's on every fixture.
+typealias XMLElement = MiniXMLElement
+#endif
 
 extension XMLElement {
     func attr(_ name: String) -> String? { attribute(forName: name)?.stringValue }

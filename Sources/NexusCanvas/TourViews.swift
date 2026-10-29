@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusKeys
+import NexusScene
 import SwiftUI
 
 // MARK: Keycap coach (artboard 31)
@@ -243,3 +245,4 @@ struct EmptyCanvasHints: View {
         }
     }
 }
+#endif

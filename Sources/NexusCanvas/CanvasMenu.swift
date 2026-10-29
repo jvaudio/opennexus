@@ -1,6 +1,7 @@
 import Foundation
 import NexusCore
 import NexusKeys
+import NexusScene
 
 /// What a right-click (or Control-click) landed on (M17).
 public enum CanvasMenuTarget: Equatable, Sendable {

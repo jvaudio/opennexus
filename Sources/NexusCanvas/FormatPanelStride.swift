@@ -1,4 +1,6 @@
+#if os(macOS)
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -122,3 +124,4 @@ struct StrideTab: View {
         .background(threat?.risk == "High" ? Color.red.opacity(0.05) : .clear)
     }
 }
+#endif

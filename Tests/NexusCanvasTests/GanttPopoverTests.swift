@@ -4,6 +4,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 
 extension ContextMenuTests {
     /// M33's known gap: the Gantt let Note and Label through to the canvas, whose popovers

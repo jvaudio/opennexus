@@ -1,7 +1,8 @@
-import AppKit
-import NaturalLanguage
+import CoreGraphics
+import Foundation
 import NexusAI
 import NexusCore
+import NexusScene
 
 /// The AI+ sheets (artboard 52).
 public enum AISheet: Equatable, Sendable {
@@ -26,12 +27,8 @@ extension CanvasController {
 
     // MARK: Translate map
 
-    /// The map's dominant language (NaturalLanguage).
-    public var mapLanguage: Locale.Language {
-        let r = NLLanguageRecognizer()
-        r.processString(canvas.nodes.values.map(\.text).joined(separator: ". "))
-        return Locale.Language(identifier: r.dominantLanguage?.rawValue ?? "en")
-    }
+    /// The map's dominant language.
+    public var mapLanguage: Locale.Language { MapTranslator.language(of: canvas) }
 
     /// Writes a translated copy as a new canvas; the original stays. One step.
     public func translateMap(to target: Locale.Language, options: MapTranslator.Options) async {

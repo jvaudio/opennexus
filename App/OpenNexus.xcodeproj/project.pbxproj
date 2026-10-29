@@ -727,7 +727,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "src=\"$BUILT_PRODUCTS_DIR/OpenNexus_NexusCanvas.bundle/Contents/Resources\"\ndst=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nfor d in \"$src\"/*.lproj; do\n  [ -d \"$d\" ] || continue\n  mkdir -p \"$dst/$(basename \"$d\")\"\n  for f in \"$d\"/Localizable.strings \"$d\"/Localizable.stringsdict; do [ -f \"$f\" ] && cp -f \"$f\" \"$dst/$(basename \"$d\")/\"; done\ndone\nexit 0\n";
+			shellScript = "src=\"$BUILT_PRODUCTS_DIR/OpenNexus_NexusScene.bundle/Contents/Resources\"\ndst=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nfor d in \"$src\"/*.lproj; do\n  [ -d \"$d\" ] || continue\n  mkdir -p \"$dst/$(basename \"$d\")\"\n  for f in \"$d\"/Localizable.strings \"$d\"/Localizable.stringsdict; do [ -f \"$f\" ] && cp -f \"$f\" \"$dst/$(basename \"$d\")/\"; done\ndone\nexit 0\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 

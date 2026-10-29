@@ -1,4 +1,6 @@
-import AppKit
+import CoreGraphics
+import CoreText
+import Foundation
 import NexusCore
 import NexusLayout
 import NexusTheme
@@ -238,6 +240,8 @@ public struct SceneCallout: Equatable {
 
 /// Everything the view needs to draw one canvas.
 public struct Scene {
+    package init() {}
+
     public var nodes: [NodeID: SceneNode] = [:]
     /// Draw order (parents before children).
     public var order: [NodeID] = []
@@ -271,7 +275,7 @@ public struct Scene {
     }
 
     /// The colour a relationship takes from its source end ("source" colour).
-    func sourceColor(_ end: RelationshipEnd) -> RGBA? {
+    package func sourceColor(_ end: RelationshipEnd) -> RGBA? {
         switch end {
         case .topic(let id): nodes[id]?.branchColor
         case .zone(let id): zones.first { $0.zone.id == id }?.color
@@ -303,18 +307,18 @@ public struct SceneBuilder {
     public init(measurer: NodeMeasurer) { self.measurer = measurer }
 
     /// Leading slot widths (P0): priority marker 24, to-do box 21, progress ring 22.
-    nonisolated static let priorityWidth: CGFloat = 24
-    nonisolated static let todoWidth: CGFloat = 21
-    nonisolated static let markerWidth: CGFloat = 22
-    nonisolated static let stickerWidth: CGFloat = 30
-    nonisolated static var kickerFont: NSFont { .monospacedSystemFont(ofSize: 10.5, weight: .semibold) }
-    nonisolated static var badgeFont: NSFont { .monospacedSystemFont(ofSize: 10.5, weight: .bold) }
-    nonisolated static let kickerHeight: CGFloat = 15
-    nonisolated static let boundaryPad: CGFloat = 14
-    nonisolated static let boundaryTitle: CGFloat = 16
-    nonisolated static let indicatorWidth: CGFloat = 18
-    nonisolated static let labelHeight: CGFloat = 18
-    nonisolated static var labelFont: NSFont { NSFont.systemFont(ofSize: 11, weight: .medium) }
+    package nonisolated static let priorityWidth: CGFloat = 24
+    package nonisolated static let todoWidth: CGFloat = 21
+    package nonisolated static let markerWidth: CGFloat = 22
+    package nonisolated static let stickerWidth: CGFloat = 30
+    package nonisolated static var kickerFont: CTFont { Fonts.mono(10.5, .semibold) }
+    package nonisolated static var badgeFont: CTFont { Fonts.mono(10.5, .bold) }
+    package nonisolated static let kickerHeight: CGFloat = 15
+    package nonisolated static let boundaryPad: CGFloat = 14
+    package nonisolated static let boundaryTitle: CGFloat = 16
+    package nonisolated static let indicatorWidth: CGFloat = 18
+    package nonisolated static let labelHeight: CGFloat = 18
+    package nonisolated static var labelFont: CTFont { Fonts.system(11, .medium) }
 
     public struct EditingState: Equatable {
         public var node: NodeID
@@ -326,36 +330,36 @@ public struct SceneBuilder {
     }
 
     private struct Pending {
-        var role: NodeRoleStyle
-        var appearance: NodeAppearance
-        var style: NodeTextStyle
-        var text: String
-        var marks: [TextMark]
-        var placeholder: Bool
-        var branch: RGBA
-        var line: LineStyle?
-        var inherits: Bool
-        var labels: [String]
-        var indicators: [Indicator]
-        var sticker: String?
-        var progress: ToDoProgress?
-        var others: [String]
-        var pinned: [MetadataField]
-        var image: AssetRef?
+        package var role: NodeRoleStyle
+        package var appearance: NodeAppearance
+        package var style: NodeTextStyle
+        package var text: String
+        package var marks: [TextMark]
+        package var placeholder: Bool
+        package var branch: RGBA
+        package var line: LineStyle?
+        package var inherits: Bool
+        package var labels: [String]
+        package var indicators: [Indicator]
+        package var sticker: String?
+        package var progress: ToDoProgress?
+        package var others: [String]
+        package var pinned: [MetadataField]
+        package var image: AssetRef?
         // Relative rects, computed against the content box.
-        var textRect: CGRect
-        var leadRect: CGRect
-        var stickerRect: CGRect
-        var imageRect: CGRect
-        var indicatorRects: [CGRect]
-        var labelRects: [CGRect]
-        var pinnedRect: CGRect
-        var tech = TechDecor()
+        package var textRect: CGRect
+        package var leadRect: CGRect
+        package var stickerRect: CGRect
+        package var imageRect: CGRect
+        package var indicatorRects: [CGRect]
+        package var labelRects: [CGRect]
+        package var pinnedRect: CGRect
+        package var tech = TechDecor()
     }
 
     /// Default looks for the summary and callout topics (artboard 07: "Summary dashed,
     /// owns children"; artboard 08: callouts are soft yellow bubbles).
-    static let summaryLayer: TopicStyle = {
+    package static let summaryLayer: TopicStyle = {
         var t = TopicStyle()
         t.border = "dashed"
         t.borderColor = "ink"
@@ -367,7 +371,7 @@ public struct SceneBuilder {
     }()
 
     /// `/code` blocks: a dark rounded panel, left-aligned monospace (artboard 12).
-    static let codeLayer: TopicStyle = {
+    package static let codeLayer: TopicStyle = {
         var t = TopicStyle()
         t.fill = "solid"
         t.fillColor = "#17171C"
@@ -381,7 +385,7 @@ public struct SceneBuilder {
         return t
     }()
 
-    static let calloutLayer: TopicStyle = {
+    package static let calloutLayer: TopicStyle = {
         var t = TopicStyle()
         t.fill = "solid"
         t.fillColor = "#FFF6D6"
@@ -566,7 +570,7 @@ public struct SceneBuilder {
                 let iconW: CGFloat = tech.icon != nil ? 24 : 0
                 let leadTextW: CGFloat =
                     tech.leadText.map {
-                        ceil(($0 as NSString).size(withAttributes: [.font: Self.kickerFont]).width) + 10
+                        ceil($0.width(in: Self.kickerFont)) + 10
                     } ?? 0
                 lead += iconW + leadTextW
                 var indicators: [Indicator] = []
@@ -581,7 +585,7 @@ public struct SceneBuilder {
                 if node.ai { indicators.append(.ai) }
                 let badgeW: CGFloat =
                     tech.badge.map {
-                        ceil(($0 as NSString).size(withAttributes: [.font: Self.badgeFont]).width) + 14
+                        ceil($0.width(in: Self.badgeFont)) + 14
                     } ?? 0
                 let trail = CGFloat(indicators.count) * Self.indicatorWidth + (badgeW > 0 ? badgeW + 8 : 0)
                 let stickerW: CGFloat = node.sticker != nil ? Self.stickerWidth : 0
@@ -591,7 +595,7 @@ public struct SceneBuilder {
                 // Labels row.
                 var labelWidths: [CGFloat] = []
                 for l in node.labels {
-                    let w = ceil((l as NSString).size(withAttributes: [.font: Self.labelFont]).width) + 14
+                    let w = ceil(l.width(in: Self.labelFont)) + 14
                     labelWidths.append(w)
                 }
                 let labelsRow = labelWidths.reduce(0, +) + CGFloat(max(0, labelWidths.count - 1)) * 4
@@ -608,9 +612,7 @@ public struct SceneBuilder {
                     pinned.isEmpty
                     ? 0
                     : ceil(
-                        (pinnedText as NSString).size(withAttributes: [
-                            .font: NSFont.monospacedSystemFont(ofSize: 10.5, weight: .regular)
-                        ]).width)
+                        pinnedText.width(in: Fonts.mono(10.5)))
                 // Image (above or beside the title).
                 var imageSize = CGSize.zero
                 if let img = node.image {
@@ -625,7 +627,7 @@ public struct SceneBuilder {
                 let py = CGFloat(appearance.paddingY)
                 let padBottom = appearance.isUnderline ? CGFloat(appearance.borderWidth) + 4 : py
                 let kickerW: CGFloat =
-                    tech.kicker.map { ceil(($0 as NSString).size(withAttributes: [.font: Self.kickerFont]).width) }
+                    tech.kicker.map { ceil($0.width(in: Self.kickerFont)) }
                     ?? 0
                 var innerW = max(rowWidth, labelsRow, pinnedW, kickerW)
                 var innerH = rowHeight
@@ -1067,7 +1069,7 @@ public struct SceneBuilder {
         }
         if !view.isEmpty || focus != nil { Self.apply(view, focusSet: focusSet, to: &scene) }
         if !view.ghosts.isEmpty {
-            for i in scene.edges.indices where CanvasController.ghostIndex(scene.edges[i].child) != nil {
+            for i in scene.edges.indices where Ghost.index(scene.edges[i].child) != nil {
                 scene.edges[i].line.color = env.theme.ai
                 scene.edges[i].line.dash = "dashed"
             }
@@ -1079,7 +1081,7 @@ public struct SceneBuilder {
         return scene
     }
 
-    static func isolate(_ keep: Set<NodeID>, root: NodeID, zone: String? = nil, in scene: inout Scene) {
+    package static func isolate(_ keep: Set<NodeID>, root: NodeID, zone: String? = nil, in scene: inout Scene) {
         scene.nodes = scene.nodes.filter { keep.contains($0.key) }
         scene.order = scene.order.filter(keep.contains)
         scene.edges = scene.edges.filter { keep.contains($0.parent) && keep.contains($0.child) }
@@ -1105,11 +1107,11 @@ public struct SceneBuilder {
 
     /// Ghost suggestions styled dashed teal (artboard 28); the highlighted one is stronger
     /// and carries a ⌃↩ badge.
-    static func inject(_ ghosts: [SceneViewState.Ghost], highlight: Int?, into c: Canvas) -> Canvas {
+    package static func inject(_ ghosts: [SceneViewState.Ghost], highlight: Int?, into c: Canvas) -> Canvas {
         var c = c
         for (i, g) in ghosts.enumerated() {
-            let id = CanvasController.ghostID(i)
-            let parent = g.parentGhost.map { CanvasController.ghostID($0) } ?? g.parent ?? c.root
+            let id = Ghost.id(i)
+            let parent = g.parentGhost.map { Ghost.id($0) } ?? g.parent ?? c.root
             guard c.nodes[parent] != nil else { continue }
             var n = Node(text: g.idea.text, kind: .topic)
             n.markers = g.idea.markers
@@ -1133,7 +1135,7 @@ public struct SceneBuilder {
     }
 
     /// Applies view state: dimming, hiding, focus blur, glows and search matches.
-    static func apply(_ view: SceneViewState, focusSet: Set<NodeID>, to scene: inout Scene) {
+    package static func apply(_ view: SceneViewState, focusSet: Set<NodeID>, to scene: inout Scene) {
         let focusing = !focusSet.isEmpty
         for id in scene.nodes.keys {
             var o = 1.0
@@ -1167,14 +1169,14 @@ public struct SceneBuilder {
     }
 
     /// To-do progress summed from a topic's direct children (EN).
-    static func progress(of id: NodeID, in canvas: Canvas) -> ToDoProgress? {
+    package static func progress(of id: NodeID, in canvas: Canvas) -> ToDoProgress? {
         guard let kids = canvas.nodes[id]?.children else { return nil }
         let todos = kids.compactMap { canvas.nodes[$0]?.todo }
         guard !todos.isEmpty else { return nil }
         return ToDoProgress(done: todos.filter(\.done).count, total: todos.count)
     }
 
-    static func applyCase(_ c: String, _ s: String) -> String {
+    package static func applyCase(_ c: String, _ s: String) -> String {
         switch c {
         case "upper": s.uppercased()
         case "lower": s.lowercased()
@@ -1184,7 +1186,7 @@ public struct SceneBuilder {
     }
 
     /// Numbering labels (FMT-1: 1 2 3, 1.1 1.2, I II, A B C, a b c, ① ②, 一 二).
-    nonisolated static func number(_ n: Int, format: String) -> String {
+    package nonisolated static func number(_ n: Int, format: String) -> String {
         switch format {
         case "roman":
             let table: [(Int, String)] = [
@@ -1220,5 +1222,14 @@ public struct SceneBuilder {
         default:
             return "\(n)"
         }
+    }
+}
+
+/// Suggested topics (ghosts) in the scene, by their index in the suggestion list.
+public enum Ghost {
+    /// `ghost:<index>`.
+    public static func id(_ i: Int) -> NodeID { NodeID("ghost:\(i)") }
+    public static func index(_ id: NodeID) -> Int? {
+        id.rawValue.hasPrefix("ghost:") ? Int(id.rawValue.dropFirst(6)) : nil
     }
 }

@@ -1,4 +1,5 @@
 import Foundation
+import NexusScene
 import Observation
 
 /// App preferences (Settings, README §10). A thin observable layer over `UserDefaults`:

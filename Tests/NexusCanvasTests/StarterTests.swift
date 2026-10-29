@@ -4,6 +4,7 @@ import NexusFormat
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 /// Starters build exactly what the Swift templates they replaced built (M39 A3): each
 /// template's canvas, in canonical JSON, was captured into `StarterFixtures/` before the

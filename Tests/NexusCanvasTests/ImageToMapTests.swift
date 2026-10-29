@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusInterchange
+@testable import NexusScene
 
 /// M12: an image's map lands in the open document as one undo step.
 @MainActor
@@ -23,7 +24,7 @@ import Testing
 
     func harness(_ model: DocumentModel) -> CanvasHarness {
         let h = CanvasHarness(model: model)
-        h.controller.pasteboard = NSPasteboard(name: NSPasteboard.Name("nexus-test-\(UUID().uuidString)"))
+        h.controller.pasteboard = MemoryPasteboard()
         return h
     }
 
@@ -265,9 +266,10 @@ import Testing
             NSBitmapImageRep(
                 bitmapDataPlanes: nil, pixelsWide: 4, pixelsHigh: 4, bitsPerSample: 8, samplesPerPixel: 4,
                 hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
+        let tiff = try #require(rep.representation(using: .tiff, properties: [:]))
         let pb = h.controller.pasteboard
         pb.clearContents()
-        pb.setData(rep.representation(using: .tiff, properties: [:]), forType: .tiff)
+        pb.setData(tiff, forType: .tiff)
         let found = try #require(ImageToMap.image(on: pb))
         #expect(found.name.hasSuffix(".png") && NSBitmapImageRep(data: found.data)?.pixelsWide == 4)
         #expect(ImageToMap.isImage(name: "Screenshot 2026-10-20.HEIC") && ImageToMap.isImage(name: "poster.pdf"))

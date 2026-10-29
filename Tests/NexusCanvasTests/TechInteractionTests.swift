@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusKeys
+@testable import NexusScene
 
 @MainActor
 @Suite(.serialized) struct TechInteractionTests {
@@ -86,7 +87,7 @@ import Testing
         h.press("return")
         #expect(h.canvas.nodes[id]?.text == "x^2 + \\alpha")
         let rendered = h.controller.scene.nodes[id]!.textStyle.attributed(
-            "x^2 + \\alpha", marks: [], color: .black)
+            "x^2 + \\alpha", marks: [], color: .fixed(CGColor(gray: 0, alpha: 1)))
         #expect(rendered.string.contains("α"))
     }
 
@@ -254,15 +255,16 @@ import Testing
 
     @Test func codeHighlighting() {
         let s = CodeText.render(
-            "func retry(op) { // again\n  for i in 0..<3 { }\n}", size: 12, color: .white,
-            paragraph: NSParagraphStyle.default)
-        let kw = s.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? NSColor
-        #expect(kw == CodeText.keyword)
+            "func retry(op) { // again\n  for i in 0..<3 { }\n}", size: 12, color: .system(.white),
+            paragraph: TextParagraph())
+        let kw = s.attribute(TextKey.color, at: 0, effectiveRange: nil)
+        #expect(TextColorValue(attribute: kw)?.cgColor == CodeText.keyword)
         let ns = s.string as NSString
-        let comment =
-            s.attribute(.foregroundColor, at: ns.range(of: "// again").location, effectiveRange: nil) as? NSColor
-        #expect(comment == CodeText.comment)
-        let m = MathText.render("E[X] = \\sum_i x_i \\cdot p(x_i)", size: 16, color: .black, paragraph: .default)
+        let comment = s.attribute(TextKey.color, at: ns.range(of: "// again").location, effectiveRange: nil)
+        #expect(TextColorValue(attribute: comment)?.cgColor == CodeText.comment)
+        let m = MathText.render(
+            "E[X] = \\sum_i x_i \\cdot p(x_i)", size: 16, color: .fixed(CGColor(gray: 0, alpha: 1)),
+            paragraph: TextParagraph())
         #expect(m.string.contains("Σ") && m.string.contains("·") && !m.string.contains("\\"))
     }
 }
