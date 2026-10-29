@@ -13,7 +13,7 @@ let package = Package(
         .library(
             name: "OpenNexusKit",
             targets: ["NexusCore", "NexusLayout", "NexusFormat", "NexusTheme", "NexusKeys", "NexusAI", "NexusInterchange",
-                "NexusCanvas",
+                "NexusSync", "NexusCanvas",
             ]
         ),
         // For the light extensions (Share, Spotlight, Widgets): the model and file format only.
@@ -40,6 +40,10 @@ let package = Package(
         // HTTP with an allow-list and a request log, AWS SigV4, and the share destinations
         // (M44). Linked only into OpenNexusNet.xpc: the app and its extensions never link it.
         .target(name: "NexusNet", dependencies: ["NexusCore", "NexusFormat"], swiftSettings: strict),
+        // Bring-your-own sync (M45): a library folder and an S3-compatible bucket, encrypted by
+        // default, merged topic by topic. Platform-neutral: the bucket is reached through a
+        // transport (the network service in the app, memory in tests).
+        .target(name: "NexusSync", dependencies: ["NexusCore", "NexusFormat"], swiftSettings: strict),
         // Tokens, themes, node styles, contrast checks.
         .target(name: "NexusTheme", dependencies: ["NexusCore"], swiftSettings: strict),
         // Command registry, key chords, profiles, conflict detection.
@@ -55,7 +59,10 @@ let package = Package(
         // AppKit canvas: rendering, hit testing, editing overlay, animation.
         .target(
             name: "NexusCanvas",
-            dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI", "NexusFormat", "NexusInterchange"],
+            dependencies: [
+                "NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI", "NexusFormat", "NexusInterchange",
+                "NexusSync",
+            ],
             // Starters/ and Guides/ are copied as folders: one JSON file per built-in starter
             // (M39) and guide (M41).
             // Viewer/ holds the built interactive viewer (web/viewer-core, M43).
@@ -88,9 +95,11 @@ let package = Package(
         .testTarget(name: "NexusKeysTests", dependencies: ["NexusKeys"]),
         // The share tests run the network service in process, against stubs and Docker (M44).
         .testTarget(
-            name: "NexusCanvasTests", dependencies: ["NexusCanvas", "NexusFormat", "NexusWidgetsUI", "NexusNet"]),
+            name: "NexusCanvasTests", dependencies: ["NexusCanvas", "NexusFormat", "NexusWidgetsUI", "NexusNet", "NexusSync"]),
         .testTarget(
             name: "NexusNetTests", dependencies: ["NexusNet", "NexusFormat", "NexusCore"], resources: [.copy("Fixtures")]),
+        // The live run (MinIO in Docker) goes through the real network service (M45).
+        .testTarget(name: "NexusSyncTests", dependencies: ["NexusSync", "NexusFormat", "NexusCore", "NexusNet"]),
         .testTarget(name: "NexusAITests", dependencies: ["NexusAI", "NexusCore"]),
         .testTarget(name: "NexusAgentTests", dependencies: ["NexusAgent", "NexusCanvas", "NexusFormat", "NexusCore"]),
         .testTarget(

@@ -12,13 +12,13 @@ import Testing
     @Test func everyPaneInOrderWithTints() {
         #expect(
             SettingsSchema.panes.map(\.title) == [
-                "General", "Editing", "Appearance", "Files & Backup", "AI", "Shortcuts", "Export", "Sharing",
+                "General", "Editing", "Appearance", "Files & Backup", "AI", "Shortcuts", "Export", "Sharing", "Sync",
                 "Integrations", "Privacy & Data", "Accessibility",
             ])
         #expect(
             SettingsSchema.panes.map(\.tint) == [
-                "#8E8E96", "#1E8BE0", "#D6408B", "#E08A00", "#0F7F7A", "#5850EC", "#C25E00", "#1F7A68", "#7A4CC2",
-                "#17171C", "#1E6FB8",
+                "#8E8E96", "#1E8BE0", "#D6408B", "#E08A00", "#0F7F7A", "#5850EC", "#C25E00", "#1F7A68", "#3A6EA5",
+                "#7A4CC2", "#17171C", "#1E6FB8",
             ])
     }
 
@@ -56,6 +56,11 @@ import Testing
         }
         #expect(SettingsSchema.search("caps lock").first?.0.id == "shortcuts")
         #expect(SettingsSchema.search("watermark").first?.2.key == "export.watermark")
+        // Settings › Sync (M45).
+        #expect(SettingsSchema.search("recovery key").first?.2.key == "sync.libraries")
+        #expect(SettingsSchema.search("dropbox").contains { $0.2.key == "sync.otherApps" })
+        #expect(SettingsSchema.search("merge driver").contains { $0.2.key == "sync.git" })
+        #expect(SettingsSchema.search("sync libraries").contains { $0.2.key == "network.sync" })
         #expect(SettingsSchema.search("zzz-nothing").isEmpty)
     }
 

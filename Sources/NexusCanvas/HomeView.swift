@@ -44,6 +44,10 @@ public final class HomeModel {
     public var onTemplate: (Starter) -> Void = { _ in }
     public var onInbox: () -> Void = {}
     public var onFilter: (URL, String) -> Void = { _, _ in }
+    /// Sync libraries and each document's sync status (M45).
+    @ObservationIgnored public var syncCenter: SyncCenter?
+    /// iCloud documents being downloaded to open (M45).
+    public var downloading: Set<URL> = []
 
     /// Home's Templates section: the starter picker, making documents (M40).
     @ObservationIgnored public lazy var gallery: StarterGallery = {
@@ -57,6 +61,11 @@ public final class HomeModel {
     /// Reads each recent package's title, type, size and text (for search and the cards).
     public func load(_ urls: [URL]) {
         recents = urls.compactMap { url in
+            if CloudDownload.isPending(url) {
+                return RecentItem(
+                    url: url, title: url.deletingPathExtension().lastPathComponent, type: .mindmap,
+                    detail: Loc.t("In iCloud Drive · opening downloads it"), date: .distantPast, text: [], filters: [])
+            }
             guard let doc = try? NexusPackage.read(from: url) else { return nil }
             let c = doc.orderedCanvases.first
             let type = c?.type ?? .mindmap
@@ -197,8 +206,21 @@ public struct HomeView: View {
                 .padding(.horizontal, 10).frame(height: 30).contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            if !model.locations.isEmpty {
+            if !model.locations.isEmpty || model.syncCenter?.libraries.isEmpty == false {
                 sideHeader("LOCATIONS")
+                ForEach(model.syncCenter?.libraries ?? []) { lib in
+                    let s = model.syncCenter?.status[lib.id] ?? .off
+                    HStack(spacing: 6) {
+                        Text(lib.name).font(.chrome(13.5)).lineLimit(1)
+                        Spacer()
+                        Text(verbatim: s.glyph).font(.chrome(12)).foregroundStyle(
+                            Self.problem(s) ? .orange : .secondary)
+                    }
+                    .padding(.horizontal, 10).frame(height: 30, alignment: .leading)
+                    .help(Loc.f("Sync library · %@", s.label))
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(Loc.f("%@, sync library, %@", lib.name, s.label))
+                }
                 ForEach(model.locations, id: \.self) { u in
                     Text(Self.prettyPath(u)).font(.chrome(13.5)).lineLimit(1).padding(.horizontal, 10).frame(
                         height: 30, alignment: .leading
@@ -224,6 +246,13 @@ public struct HomeView: View {
         .padding(12)
         .frame(width: .chromeWidth(230))
         .background(Color(nsColor: .underPageBackgroundColor).opacity(0.5))
+    }
+
+    static func problem(_ s: SyncStatus) -> Bool {
+        switch s {
+        case .offline, .conflicts: true
+        default: false
+        }
     }
 
     static func prettyPath(_ u: URL) -> String {
@@ -348,7 +377,19 @@ public struct HomeView: View {
                                 Spacer()
                                 Text(Self.relative(r.date)).font(.chrome(12)).foregroundStyle(.secondary)
                             }
-                            Text(r.detail).font(.chrome(12.5)).foregroundStyle(.secondary)
+                            HStack(spacing: 6) {
+                                if model.downloading.contains(r.url) {
+                                    ProgressView().controlSize(.mini)
+                                    Text("Downloading from iCloud Drive…").font(.chrome(12.5)).foregroundStyle(
+                                        .secondary)
+                                } else {
+                                    Text(r.detail).font(.chrome(12.5)).foregroundStyle(.secondary)
+                                }
+                                if let s = model.syncCenter?.status(of: r.url) {
+                                    Text(verbatim: "\(s.glyph) \(s.label)").font(.chrome(12))
+                                        .foregroundStyle(Self.problem(s) ? .orange : .secondary).lineLimit(1)
+                                }
+                            }
                         }
                         .contentShape(Rectangle())
                     }

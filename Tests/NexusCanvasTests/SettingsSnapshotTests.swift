@@ -45,7 +45,8 @@ import Testing
         for (id, art) in [
             ("general", "35"), ("editing", "36"), ("appearance", "37"), ("files", "38"), ("ai", "29"),
             ("shortcuts", "08"),
-            ("export", "39"), ("sharing", "m44"), ("integrations", "40"), ("privacy", "41"), ("accessibility", "42"),
+            ("export", "39"), ("sharing", "m44"), ("sync", "m45"), ("integrations", "40"), ("privacy", "41"),
+            ("accessibility", "42"),
         ] {
             try await shoot(SettingsView(prefs: .isolated(), availability: .ready, pane: id), "\(art)-\(id)")
         }

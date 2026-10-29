@@ -13,7 +13,13 @@ public struct NetService: Sendable {
     }
 
     public func perform(_ job: NetJob, body: Data) async -> NetReply {
+        await exchange(job, body: body).reply
+    }
+
+    /// The reply, and the bytes a `get` read.
+    public func exchange(_ job: NetJob, body: Data) async -> (reply: NetReply, body: Data) {
         let client = HTTPClient(allowed: job.allowedHosts, purpose: job.purpose, protocolClasses: protocolClasses)
+        var out = Data()
         do {
             // The destination itself must be on the list: nothing is sent otherwise.
             for host in job.destination.hosts where !job.allowedHosts.map({ $0.lowercased() }).contains(host) {
@@ -37,11 +43,22 @@ public struct NetService: Sendable {
                     throw NetError.unexpected("only buckets have CORS rules")
                 }
                 try await s3.setUpCORS(origin: origin, client: client)
+            case .get, .put, .list, .syncTest:
+                guard let s3 = target as? S3Target else { throw NetError.unexpected("only buckets sync libraries") }
+                switch job.action {
+                case .get:
+                    (reply, out) = try await s3.get(try object(job), ifNoneMatch: job.ifNoneMatch, client: client)
+                case .put:
+                    reply = try await s3.put(
+                        try object(job), body, ifMatch: job.ifMatch, ifNoneMatch: job.ifNoneMatch, client: client)
+                case .list: reply.keys = try await s3.list(job.object ?? "", client: client)
+                default: reply = try await s3.syncTest(client: client)
+                }
             }
             reply.log = await client.log
-            return reply
+            return (reply, out)
         } catch {
-            return .failed(String(describing: error), log: await client.log)
+            return (.failed(String(describing: error), log: await client.log), Data())
         }
     }
 

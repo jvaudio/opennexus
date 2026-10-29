@@ -135,6 +135,17 @@ public final class CanvasController {
     /// The document's file, for links that update when it's saved (the app sets it).
     @ObservationIgnored public var documentPath: String?
     @ObservationIgnored var shareRepublish: Task<Void, Never>?
+    /// Sync (M45): Resolve Conflicts (and what waits after it), Sync History…, and
+    /// conflict copies other apps' sync left beside the document.
+    public internal(set) var resolveState: ResolveState?
+    @ObservationIgnored var resolveQueue: [ResolveState] = []
+    public internal(set) var syncHistory: SyncHistoryState?
+    public internal(set) var conflictCopies: [ConflictCopy] = []
+    @ObservationIgnored public var syncCenter: SyncCenter = .shared
+    /// Reads a conflict copy (tests replace it).
+    @ObservationIgnored public var readCopy: (ConflictCopy) throws -> DocumentModel = ConflictCopies.read
+    /// Merged copies are done with: the app resolves iCloud's versions and trashes the files.
+    @ObservationIgnored public var onConflictCopiesMerged: (([ConflictCopy]) -> Void)?
     /// File › Set Password… sheet (the app encrypts on save).
     public var passwordSheet = false
     public var documentEncrypted = false

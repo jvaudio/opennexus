@@ -28,6 +28,8 @@ struct CardView: View {
         case .card("networkLog"): NetworkLogCard(prefs: prefs, log: ShareCenter.shared.log, onAction: onAction)
         case .card("shareDestinations"): ShareDestinationsCard(center: ShareCenter.shared)
         case .card("shareLinks"): ShareLinksCard(center: ShareCenter.shared)
+        case .card("syncLibraries"): SyncLibrariesCard(center: SyncCenter.shared)
+        case .card("syncLog"): SyncLogCard(center: SyncCenter.shared)
         case .card("maskPreview"): MaskPreviewCard(prefs: prefs)
         case .card("voiceOverPreview"): VoiceOverPreview(prefs: prefs)
         default: EmptyView()

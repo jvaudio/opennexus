@@ -14,6 +14,14 @@ import Security
 
 public protocol ShareTransport: Sendable {
     func perform(_ job: NetJob, body: Data) async -> NetReply
+    /// The reply and the bytes a sync `get` read (M45).
+    func exchange(_ job: NetJob, body: Data) async -> (reply: NetReply, body: Data)
+}
+
+extension ShareTransport {
+    public func exchange(_ job: NetJob, body: Data) async -> (reply: NetReply, body: Data) {
+        (await perform(job, body: body), Data())
+    }
 }
 
 /// `OpenNexusNet.xpc`, over a private XPC connection (only the app can open it).
@@ -21,16 +29,23 @@ public struct XPCShareTransport: ShareTransport {
     public init() {}
 
     public func perform(_ job: NetJob, body: Data) async -> NetReply {
-        guard let data = try? JSONEncoder().encode(job) else { return .failed("The request couldn’t be encoded.") }
+        await exchange(job, body: body).reply
+    }
+
+    public func exchange(_ job: NetJob, body: Data) async -> (reply: NetReply, body: Data) {
+        guard let data = try? JSONEncoder().encode(job) else {
+            return (.failed("The request couldn’t be encoded."), Data())
+        }
         return await withCheckedContinuation { cont in
             let call = XPCCall(cont)
             let proxy =
                 call.connection.remoteObjectProxyWithErrorHandler { error in
-                    call.finish(.failed("The network service didn’t answer (\(error.localizedDescription))."))
+                    call.finish(.failed("The network service didn’t answer (\(error.localizedDescription))."), Data())
                 } as? NetServiceProtocol
-            guard let proxy else { return call.finish(.failed("The network service isn’t available.")) }
-            proxy.perform(data, body: body) { reply in
-                call.finish((try? JSONDecoder().decode(NetReply.self, from: reply)) ?? .failed("Unreadable reply."))
+            guard let proxy else { return call.finish(.failed("The network service isn’t available."), Data()) }
+            proxy.perform(data, body: body) { reply, body in
+                call.finish(
+                    (try? JSONDecoder().decode(NetReply.self, from: reply)) ?? .failed("Unreadable reply."), body)
             }
         }
     }
@@ -39,21 +54,21 @@ public struct XPCShareTransport: ShareTransport {
 /// One call: its connection, answered once (the reply or the error handler, whichever comes first).
 private final class XPCCall: @unchecked Sendable {
     let connection = NSXPCConnection(serviceName: NetXPC.serviceName)
-    private var cont: CheckedContinuation<NetReply, Never>?
+    private var cont: CheckedContinuation<(reply: NetReply, body: Data), Never>?
     private let lock = NSLock()
 
-    init(_ cont: CheckedContinuation<NetReply, Never>) {
+    init(_ cont: CheckedContinuation<(reply: NetReply, body: Data), Never>) {
         self.cont = cont
         connection.remoteObjectInterface = NSXPCInterface(with: NetServiceProtocol.self)
         connection.resume()
     }
 
-    func finish(_ reply: NetReply) {
+    func finish(_ reply: NetReply, _ body: Data) {
         let c = lock.withLock {
             defer { cont = nil }
             return cont
         }
-        c?.resume(returning: reply)
+        c?.resume(returning: (reply, body))
         connection.invalidate()
     }
 }

@@ -47,7 +47,8 @@ import Testing
         let uses = package.split(separator: "\n").filter { $0.contains("\"NexusNet\"") }.map {
             $0.trimmingCharacters(in: .whitespaces)
         }
-        #expect(uses.count == 4, "\(uses)")
+        // The product, the target, and three test targets (canvas, network, sync).
+        #expect(uses.count == 5, "\(uses)")
         for u in uses {
             #expect(
                 u.hasPrefix(".library(name: \"NexusNetKit\"") || u.hasPrefix(".target(name: \"NexusNet\"")

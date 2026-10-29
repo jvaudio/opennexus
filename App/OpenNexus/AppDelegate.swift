@@ -44,6 +44,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         Updates.shared.start()
         // Links past their expiry date are deleted where they're stored (when sharing is on).
         Task { await ShareCenter.shared.sweepExpired() }
+        // Sync libraries (M45): at launch, then on the schedule (when the network is on).
+        SyncCenter.shared.start()
     }
 
     /// Spotlight results open straight to the topic; Handoff for iCloud documents is
@@ -68,6 +70,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc func showWelcome(_ sender: Any?) { Onboarding.showWelcome() }
     @objc func showHome(_ sender: Any?) { HomeWindow.shared.show() }
+    /// File › Sync Now: every library.
+    @objc func syncNow(_ sender: Any?) { Task { await SyncCenter.shared.syncNow() } }
     /// File › New Document from Starter… (⇧⌘N on Home): Home's starter picker (M40).
     @objc func newDocumentChooseType(_ sender: Any?) { HomeWindow.shared.show(choosingStarter: true) }
     /// ⌘N: a new document with the default look (Settings › New documents).

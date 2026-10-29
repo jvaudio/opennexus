@@ -32,11 +32,14 @@ public enum NexusCLI {
         public var variables: [String: String]
         /// The team that signed this binary (it shares the app's App Group).
         public var team: String?
-        public init(cwd: URL, home: URL, variables: [String: String], team: String?) {
+        /// This binary's path, for the Git settings `nexus git setup` writes.
+        public var executable: String?
+        public init(cwd: URL, home: URL, variables: [String: String], team: String?, executable: String? = nil) {
             self.cwd = cwd
             self.home = home
             self.variables = variables
             self.team = team
+            self.executable = executable
         }
     }
 
@@ -65,6 +68,11 @@ public enum NexusCLI {
           import <file> [--out <path>]        Convert Xmind, OPML, Markdown, Mermaid, … to .nexus.
           mcp [--config <agent.json>]         Run the MCP server on stdio (enable it in OpenNexus ›
                                               Settings › Integrations).
+          git setup                           In a Git repository: merge maps topic by topic and diff
+                                              them as outlines (.gitattributes and git config).
+          git textconv <file>                 Print a map file as an outline, one topic per line.
+          merge-driver %O %A %B %P            Git's merge driver (set up by git setup): exits 1
+                                              when both branches changed the same topic.
           --version, --help
 
         """
@@ -90,6 +98,8 @@ public enum NexusCLI {
             case "starters": return starters(io: io)
             case "import": return try importFile(&rest, io: io, env: env)
             case "mcp": return try mcp(&rest, io: io, env: env)
+            case "git": return try git(&rest, io: io, env: env)
+            case "merge-driver": return try mergeDriver(&rest, io: io, env: env)
             default:
                 io.err("nexus: unknown command “\(command)”\n\n" + usage)
                 return 64

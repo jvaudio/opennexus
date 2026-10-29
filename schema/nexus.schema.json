@@ -730,6 +730,10 @@
           "type": "array",
           "uniqueItems": true
         },
+        "documentID": {
+          "description": "A stable id for the document: recovery snapshots and sync (M45) find it by this, wherever the file moves.",
+          "type": "string"
+        },
         "encrypted": {
           "type": "boolean"
         },

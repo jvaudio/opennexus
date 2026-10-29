@@ -44,6 +44,13 @@ public struct ShareDestination: Codable, Equatable, Hashable, Sendable, Identifi
     /// GitHub's API, the only host a gist destination talks to.
     public static let githubAPI = "https://api.github.com"
 
+    /// A bucket object's key: `name` under the prefix.
+    public func objectKey(_ name: String) -> String {
+        var p = prefix.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
+        if !p.isEmpty { p += "/" }
+        return p + name
+    }
+
     /// The hosts this destination may reach (the service's allow-list for its jobs).
     public var hosts: [String] {
         let urls: [String] =
@@ -100,6 +107,15 @@ public struct NetJob: Codable, Equatable, Sendable {
         case test
         /// S3: allow the viewer's origin to read the bucket (its CORS rule).
         case setUpCORS
+        // A sync library's bucket (M45): `object` is a key under the prefix.
+        /// Read an object and its ETag (the reply's body); a missing one isn't an error.
+        case get
+        /// Store the body at `object`, if `ifMatch` / `ifNoneMatch` hold.
+        case put
+        /// Every key under `object`.
+        case list
+        /// Check the bucket works for sync, and whether it honours conditional writes.
+        case syncTest
     }
 
     public var action: Action
@@ -117,10 +133,15 @@ public struct NetJob: Codable, Equatable, Sendable {
     public var expires: Date?
     /// The viewer's origin, for `setUpCORS`.
     public var origin: String?
+    /// `put`: replace only this version. `get`: answer "not modified" if it's still this one.
+    public var ifMatch: String?
+    /// `put`: `*` creates only. `get`: an ETag, as for `ifMatch`.
+    public var ifNoneMatch: String?
 
     public init(
         action: Action, purpose: String, destination: ShareDestination, secret: String, allowedHosts: [String],
-        object: String? = nil, writeSecret: String? = nil, expires: Date? = nil, origin: String? = nil
+        object: String? = nil, writeSecret: String? = nil, expires: Date? = nil, origin: String? = nil,
+        ifMatch: String? = nil, ifNoneMatch: String? = nil
     ) {
         self.action = action
         self.purpose = purpose
@@ -131,6 +152,8 @@ public struct NetJob: Codable, Equatable, Sendable {
         self.writeSecret = writeSecret
         self.expires = expires
         self.origin = origin
+        self.ifMatch = ifMatch
+        self.ifNoneMatch = ifNoneMatch
     }
 }
 
@@ -146,11 +169,20 @@ public struct NetReply: Codable, Equatable, Sendable {
     public var writeSecret: String?
     /// What a test found, in words.
     public var detail: String?
+    /// A bucket operation's answer (M45): 200, 304 (not modified), 404 (missing) or 412
+    /// (a condition failed).
+    public var status: Int?
+    public var etag: String?
+    /// `list`: keys under the prefix, without it.
+    public var keys: [String]?
+    /// `syncTest`: the bucket honours `If-Match` and `If-None-Match`.
+    public var conditionalWrites: Bool?
     public var log: [NetLogEntry]
 
     public init(
         ok: Bool, error: String? = nil, object: String? = nil, locator: String? = nil,
-        source: ShareLinkCode.Source? = nil, writeSecret: String? = nil, detail: String? = nil, log: [NetLogEntry] = []
+        source: ShareLinkCode.Source? = nil, writeSecret: String? = nil, detail: String? = nil, status: Int? = nil,
+        etag: String? = nil, log: [NetLogEntry] = []
     ) {
         self.ok = ok
         self.error = error
@@ -159,6 +191,8 @@ public struct NetReply: Codable, Equatable, Sendable {
         self.source = source
         self.writeSecret = writeSecret
         self.detail = detail
+        self.status = status
+        self.etag = etag
         self.log = log
     }
 
@@ -189,9 +223,10 @@ public struct NetLogEntry: Codable, Equatable, Hashable, Sendable {
     }
 }
 
-/// The service's XPC interface: a JSON `NetJob` and the body; a JSON `NetReply` back.
+/// The service's XPC interface: a JSON `NetJob` and the body; a JSON `NetReply` and a
+/// body (what `get` read) back.
 @objc public protocol NetServiceProtocol {
-    func perform(_ job: Data, body: Data, reply: @escaping @Sendable (Data) -> Void)
+    func perform(_ job: Data, body: Data, reply: @escaping @Sendable (Data, Data) -> Void)
 }
 
 public enum NetXPC {

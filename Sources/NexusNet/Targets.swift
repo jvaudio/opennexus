@@ -53,11 +53,7 @@ struct S3Target: ShareTarget {
         return try url(base + key)
     }
 
-    func key(_ name: String) -> String {
-        var p = d.prefix.trimmingCharacters(in: CharacterSet(charactersIn: "/ "))
-        if !p.isEmpty { p += "/" }
-        return p + name
-    }
+    func key(_ name: String) -> String { d.objectKey(name) }
 
     func send(
         _ method: String, _ key: String, body: Data = Data(), headers: [String: String] = [:], query: String? = nil,

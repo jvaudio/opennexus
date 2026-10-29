@@ -129,7 +129,8 @@ public enum SettingsSchema {
     public static let noNetwork = "Not offered: OpenNexus collects nothing and fetches nothing on its own"
 
     public static let panes: [SettingPane] = [
-        general, editing, appearance, files, ai, shortcuts, export, sharing, integrations, privacy, accessibility,
+        general, editing, appearance, files, ai, shortcuts, export, sharing, sync, integrations, privacy,
+        accessibility,
     ]
 
     public static func pane(_ id: String) -> SettingPane? { panes.first { $0.id == id } }
@@ -654,6 +655,50 @@ public enum SettingsSchema {
                 ]),
         ])
 
+    // MARK: Sync (M45)
+
+    static let sync = SettingPane(
+        id: "sync", glyph: "⇅", title: "Sync", tint: "#3A6EA5",
+        subtitle:
+            "Keep a folder of documents the same on every Mac through a bucket you own. Encrypted on this Mac first; merged topic by topic.",
+        sections: [
+            sec(
+                "Libraries", 0,
+                [
+                    G(
+                        "sync.libraries", "", "syncLibraries", nil,
+                        [
+                            "library", "folder", "bucket", "s3", "r2", "b2", "minio", "recovery key", "encryption",
+                            "sync now", "deleted", "restore", "trash",
+                        ])
+                ]),
+            sec(
+                "Schedule", 1,
+                [
+                    M(
+                        "sync.interval", "Sync every",
+                        [("5", "5 minutes"), ("15", "15 minutes"), ("60", "Hour"), ("0", "Only after saving")], "15",
+                        "Also after each save, when a window comes forward, and with File › Sync Now"),
+                    M(
+                        "sync.keepDeleted", "Keep deleted documents",
+                        [("7", "7 days"), ("30", "30 days"), ("90", "90 days")], "30",
+                        "In the bucket, so any Mac can restore them", ["trash", "restore", "purge"]),
+                ]),
+            sec(
+                "Other ways to sync", 1,
+                [
+                    I(
+                        "sync.otherApps", "iCloud Drive, Dropbox, Syncthing", "Merged",
+                        "Conflicting copies they leave are offered for merging when a document opens"),
+                    I(
+                        "sync.git", "Git", "nexus git setup",
+                        "A merge driver that merges maps topic by topic, and diffs that read as outlines"),
+                ]),
+            sec(
+                "Sync log", 0,
+                [G("sync.log", "", "syncLog", nil, ["log", "activity", "history", "errors"])]),
+        ])
+
     // MARK: 8 Integrations (artboard 40)
 
     static let integrations = SettingPane(
@@ -737,6 +782,9 @@ public enum SettingsSchema {
                     T(
                         "network.sharing", "Share links", false,
                         "Uploads sealed maps to a destination in Settings › Sharing", ["share", "link", "upload"]),
+                    T(
+                        "network.sync", "Sync libraries", false,
+                        "Keeps library folders in step through your bucket in Settings › Sync", ["sync", "bucket"]),
                 ], footnote: "A separate service makes every request; OpenNexus itself still has no network permission."
             ),
             sec(

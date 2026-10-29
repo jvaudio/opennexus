@@ -4,6 +4,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusSync
 
 /// A `.nexus` package document. Autosaves in place and keeps versions (File › Revert To),
 /// writes recovery snapshots, and encrypts when a password is set (M7).
@@ -53,6 +54,8 @@ final class NexusDocument: NSDocument {
             )
             store.updateDocument { $0.repairs = [] }
         }
+        // Copies other apps' sync left beside it (M45).
+        wc.findConflictCopies(offer: true)
     }
 
     /// A stable id for this document's recovery snapshots (kept in the manifest).
@@ -108,6 +111,7 @@ final class NexusDocument: NSDocument {
         super.save(to: url, ofType: typeName, for: saveOperation) { [weak self] error in
             if error == nil, let self {
                 Integrations.shared.documentSaved(self)
+                SyncCenter.shared.documentSaved(url)
                 (self.windowControllers.first as? DocumentWindowController)?.documentSaved(to: url, saveOperation)
             }
             completionHandler(error)
@@ -148,6 +152,16 @@ final class NexusDocument: NSDocument {
         DispatchQueue.main.async { MainActor.assumeIsolated { me.mergeFromDisk() } }
     }
 
+    /// iCloud kept a conflicting version of this document (M45): offer to merge it in.
+    nonisolated override func presentedItemDidGain(_ version: NSFileVersion) {
+        nonisolated(unsafe) let me = self
+        DispatchQueue.main.async {
+            MainActor.assumeIsolated {
+                (me.windowControllers.first as? DocumentWindowController)?.findConflictCopies(offer: true)
+            }
+        }
+    }
+
     func mergeFromDisk() {
         guard let url = fileURL, lockedFiles == nil, let base = diskBase else { return }
         var disk: DocumentModel?
@@ -177,6 +191,18 @@ final class NexusDocument: NSDocument {
             fileModificationDate = date
         }
         if wasClean && conflicts.isEmpty { updateChangeCount(.changeCleared) }
+        // Sync's merges (M45) say so, and point at the clashes they kept this Mac's side of.
+        if SyncCenter.shared.fromSync(url) {
+            controller?.showToast(Loc.t("Updated from sync · ⌘Z undoes"))
+            Task {
+                guard let p = await SyncCenter.shared.pendingConflict(for: url), !p.clashes.isEmpty else { return }
+                controller?.showToast(
+                    Loc.f(
+                        "Updated from sync · %@ kept your version: File › Resolve Conflicts…",
+                        Loc.n("%lld conflict", "%lld conflicts", p.clashes.count)))
+            }
+            return
+        }
         controller?.showToast(
             conflicts.isEmpty
                 ? Loc.t("Updated from disk · ⌘Z undoes")

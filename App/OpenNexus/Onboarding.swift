@@ -132,7 +132,11 @@ enum Onboarding {
 @MainActor
 final class HomeWindow {
     static let shared = HomeWindow()
-    let model = HomeModel()
+    let model: HomeModel = {
+        let m = HomeModel()
+        m.syncCenter = .shared
+        return m
+    }()
     private var window: NSWindow?
 
     func show(choosingStarter: Bool = false) {
@@ -176,6 +180,22 @@ final class HomeWindow {
             NewDocument.make(type: type)
         }
         model.onOpen = { [weak self] url in
+            // An iCloud document that isn't here yet downloads first (M45).
+            if CloudDownload.isPending(url) {
+                self?.model.downloading.insert(url)
+                Task { @MainActor in
+                    do {
+                        try await CloudDownload.download(url)
+                        self?.model.downloading.remove(url)
+                        NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, _ in }
+                        self?.window?.orderOut(nil)
+                    } catch {
+                        self?.model.downloading.remove(url)
+                        NSAlert(error: error).runModal()
+                    }
+                }
+                return
+            }
             NSDocumentController.shared.openDocument(withContentsOf: url, display: true) { _, _, _ in }
             self?.window?.orderOut(nil)
         }

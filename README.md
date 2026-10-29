@@ -28,6 +28,7 @@ Sources/
   NexusAI              on-device AI (Apple Intelligence), never the network
   NexusAgent           the nexus CLI and MCP server's tools
   NexusNet             HTTP client and share destinations, linked only into OpenNexusNet.xpc
+  NexusSync            library sync through your own bucket: encryption, merging, history
   NexusCanvas          AppKit canvas and SwiftUI chrome (rendering, editing, animation)
   NexusWidgetsUI       widgets
   nexus                command-line tool
@@ -75,6 +76,13 @@ then opened in Chromium and WebKit (needs Docker; everything stays on `127.0.0.1
 scripts/test-share.sh
 ```
 
+Sync for real: MinIO in Docker, the sync property test and the upload and speed checks
+through the real network service, then a longer property run in memory:
+
+```bash
+scripts/test-sync.sh
+```
+
 ## Install
 
 Download `OpenNexus-<version>.dmg` from the release, open it and drag OpenNexus to
@@ -110,6 +118,27 @@ place that stores it (your own S3-compatible bucket, a secret GitHub gist, or an
 Sharing is off until you turn it on in Settings › Privacy & Data › Network. Even then the
 app has no network permission: a separate service, OpenNexusNet, makes every request, only
 to the destinations you set up in Settings › Sharing, and Privacy & Data lists each one.
+
+### Sync
+
+Settings › Sync keeps a folder of documents (a library) the same on each of your Macs
+through an S3-compatible bucket you own: AWS, Cloudflare R2, Backblaze B2, MinIO and others.
+Everything is encrypted on your Mac first; Show Recovery Key… gives the key (as text and a
+QR code) to set up your other Macs. Changes from two Macs are merged topic by topic, and
+where both changed the same topic, your Mac's version stays until you choose in File ›
+Resolve Conflicts…. File › Sync History… restores any earlier version, and deleted documents
+can be restored for 30 days. Like sharing, sync is off until you turn it on in Privacy &
+Data › Network, and only OpenNexusNet makes its requests.
+
+Folders that iCloud Drive, Dropbox, Google Drive, OneDrive or Syncthing sync work too: when
+those apps leave a conflicting copy, opening the document offers to merge it in.
+
+For maps kept in Git, run this once in the repository so Git merges them topic by topic and
+shows diffs as outlines:
+
+```bash
+nexus git setup
+```
 
 ### Command-line tool
 

@@ -160,6 +160,10 @@ extension CommandID {
     public static let exportHTML: CommandID = "file.exportHTML"
     public static let shareLink: CommandID = "file.shareLink"
     public static let manageShareLinks: CommandID = "file.manageShareLinks"
+    public static let syncNow: CommandID = "file.syncNow"
+    public static let syncHistory: CommandID = "file.syncHistory"
+    public static let resolveConflicts: CommandID = "file.resolveConflicts"
+    public static let mergeConflictCopies: CommandID = "file.mergeConflictCopies"
     public static let mapShot: CommandID = "file.mapShot"
     public static let copyAsImage: CommandID = "file.copyAsImage"
     public static let copyAsMarkdown: CommandID = "file.copyAsMarkdown"
@@ -548,6 +552,14 @@ public enum DefaultCommands {
             .shareLink, "Share Link…", .file, scope: .global, keys: [k("ctrl+cmd+s")], menu: .file,
             note: "An encrypted link anyone can open in a browser"),
         C(.manageShareLinks, "Manage Share Links…", .file, scope: .global, menu: .file),
+        C(
+            .syncNow, "Sync Now", .file, scope: .global, menu: .file, note: "Sync every library (Settings › Sync)",
+            standardAction: "syncNow:"),
+        C(.syncHistory, "Sync History…", .file, scope: .global, menu: .file),
+        C(.resolveConflicts, "Resolve Conflicts…", .file, scope: .global, menu: .file),
+        C(
+            .mergeConflictCopies, "Merge Conflicting Copies…", .file, scope: .global, menu: .file,
+            note: "Copies iCloud Drive, Dropbox or Syncthing left beside this document"),
         C(.mapShot, "Map Shot", .file, scope: .global, keys: [k("ctrl+cmd+m")], menu: .file),
         C(.copyAsImage, "Copy as Image", .file, keys: [k("ctrl+cmd+c")], menu: .edit),
         C(.copyAsMarkdown, "Copy as Markdown", .file, menu: .edit),
