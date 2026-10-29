@@ -532,3 +532,10 @@ Choices made where the design was silent or ambiguous, each with a one-line rati
 | D345 | **`OpenNexusNet.xpc` is an app-only XPC service and the connection checks no code-signing requirement.** | Only the containing app can look up its own XPC service. With ad hoc signing there's no team identity to require; revisit when the app is Developer ID signed. |
 | D346 | **Two switches, both off on a fresh install:** "Use the network for sharing, sync and collaboration" (`network.enabled`, Privacy & Data › Network) and "Share links" (`network.sharing`). With either off, Share Link… says so and opens the right Settings pane. A new Settings › Sharing pane holds destinations, links, the viewer address and the default expiry. | One master switch for every later network feature, and one per feature, as the rule asks (D313). |
 | D347 | **Share Link… is ⌃⌘S, in the File menu, and in the toolbar's share button** (the system share picker gains a "Share Link…" entry). The Gist fixtures follow the response shape GitHub documents, rather than recordings from a real account. | ⇧⌘S is Save As; ⌃⌘S is free in all four key profiles and close to it. The tests make no network calls, and a recording would need a real token. |
+
+## M45 · Bring-your-own sync
+
+| # | Decision | Rationale |
+| --- | --- | --- |
+| D348 | **S3 sync is end-to-end encrypted by default** (decision #8). Each file is sealed with the library's random key, and named by an HMAC of its content under that key, so equal files are stored once without revealing anything. A library can be set up unencrypted, for people who want a readable bucket. | Decision #8, confirmed by Jerry. The bucket's owner, or anyone who gets its keys, then sees only sizes and timings. |
+| D349 | **No in-app Git in M45; it waits until after M47** (decision #9). M45 ships Git tier 1 only: `nexus merge-driver`, `nexus git setup` and `nexus git textconv`, for people who use their own `git`. | Decision #9, confirmed by Jerry. The merge driver covers people who already use Git; libgit2 inside the network service is a large addition best weighed after iOS (M47). |

@@ -1,6 +1,6 @@
 # OpenNexus Plan: Collaboration, Reach and Smaller Gaps (M43–M50)
 
-Oct 28, 2026 · Jerry Voelker · written against the code at `66ed075` (0.3, after M42) · **Status: in progress.** Decisions #1–#3 were confirmed on Oct 28, 2026 and #4–#7 on Oct 29; the other rows in "Decisions for Jerry" stay pending until Jerry confirms them. Corrections from checking the plan against the code were folded in the same day.
+Oct 28, 2026 · Jerry Voelker · written against the code at `66ed075` (0.3, after M42) · **Status: in progress.** Decisions #1–#3 were confirmed on Oct 28, 2026 and #4–#9 on Oct 29; the other rows in "Decisions for Jerry" stay pending until Jerry confirms them. Corrections from checking the plan against the code were folded in the same day.
 
 This plan closes the eight gaps chosen from the [feature review](https://claude.ai/artifact/P9XpE1ituB1UgL9WXsZGjT) in eight milestones, M43–M50. Each phase is one milestone that Claude Code can plan, build, test and accept on its own, in the repo's existing style.
 
@@ -587,8 +587,8 @@ Each row has a recommendation. Every row starts Pending; before the milestone in
 | 5 | A public share and relay instance run by you | None, bring your own only · run one | None for now; revisit after M46 | M44 | Confirmed: none, bring your own only (2026-10-29) |
 | 6 | Server stack | Swift (Hummingbird) in Docker · TypeScript on Cloudflare Workers with Durable Objects | Swift in Docker: one language, and it runs on your ZimaOS box or any VPS | M44 | Confirmed: Swift (Hummingbird) in Docker (2026-10-29) |
 | 7 | GitHub Gist as a share destination | Include · skip | Include: no server or bucket needed | M44 | Confirmed: include (2026-10-29) |
-| 8 | S3 sync encryption default | On · off (readable bucket, as Mind Elixir) | On, with off available | M45 | Pending |
-| 9 | In-app Git (libgit2) | Now in M45 · after M47 · never | After M47; the merge driver covers people who already use Git | M45 | Pending |
+| 8 | S3 sync encryption default | On · off (readable bucket, as Mind Elixir) | On, with off available | M45 | Confirmed: on, with off available (2026-10-29) |
+| 9 | In-app Git (libgit2) | Now in M45 · after M47 · never | After M47; the merge driver covers people who already use Git | M45 | Confirmed: after M47 (2026-10-29) |
 | 10 | Invite and share links open the app | Universal links (custom domain + associated-domains entitlement) · `opennexus://` links via a landing page | Universal links if #4 is a custom domain | M46 | Pending |
 | 11 | CRDT | Native `NexusReplica` · Loro · Automerge | Native, with Loro as the fallback | M46 | Pending |
 | 12 | iOS minimum and distribution | iOS/iPadOS 27 or 26 · App Store, TestFlight only, or ad hoc | iOS/iPadOS 27 (matches macOS, and on-device AI), via TestFlight then the App Store | M47 | Pending |
