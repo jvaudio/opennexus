@@ -32,7 +32,7 @@ let package = Package(
         .target(
             name: "NexusFormat",
             dependencies: ["NexusCore"],
-            resources: [.copy("Resources/nexus.schema.json")],
+            resources: [.copy("Resources/nexus.schema.json"), .copy("Resources/viewer.schema.json")],
             swiftSettings: strict
         ),
         // Tokens, themes, node styles, contrast checks.
@@ -53,7 +53,8 @@ let package = Package(
             dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusAI", "NexusFormat", "NexusInterchange"],
             // Starters/ and Guides/ are copied as folders: one JSON file per built-in starter
             // (M39) and guide (M41).
-            resources: [.process("Resources"), .copy("Starters"), .copy("Guides")],
+            // Viewer/ holds the built interactive viewer (web/viewer-core, M43).
+            resources: [.process("Resources"), .copy("Starters"), .copy("Guides"), .copy("Viewer")],
             swiftSettings: strict
         ),
         // The `nexus` CLI and MCP server (M9): commands, map tools, permissions. Uses the

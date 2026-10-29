@@ -15,7 +15,7 @@ extension DocumentWindowController {
     static let windowCommands: Set<CommandID> = [
         .newCanvas, .inspector, .importFile, .setPassword, .recoverySnapshots, .renameCanvas, .moveCanvasToWindow,
         .duplicateCanvas, .deleteCanvas, .copyCanvas, .pasteCanvas, .saveCanvasAsDocument, .mergeDocuments,
-        .printDocument, .export, .mapShot, .splitByBranch, .nextPanel, .previousPanel,
+        .printDocument, .export, .exportHTML, .mapShot, .splitByBranch, .nextPanel, .previousPanel,
     ]
 
     func runWindowCommand(_ id: CommandID) {
@@ -35,6 +35,7 @@ extension DocumentWindowController {
         case .mergeDocuments: controller.openMerge()
         case .printDocument: controller.openPrint()
         case .export: controller.openExport()
+        case .exportHTML: controller.openExport(.html)
         case .mapShot: controller.openMapShot()
         case .splitByBranch: controller.splitByBranch()
         case .nextPanel: moveFocus(forward: true)

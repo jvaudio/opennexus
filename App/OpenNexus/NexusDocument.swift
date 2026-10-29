@@ -86,8 +86,8 @@ final class NexusDocument: NSDocument {
         // A document that was never unlocked is written back exactly as it was read.
         if let lockedFiles { return NexusPackage.directoryWrapper(from: lockedFiles) }
         if typeName == Self.jsonType {
-            let json = DocumentJSON.export(
-                modelForSaving(), pretty: prefs.string("files.jsonLayout") != "compact", assets: true)
+            let json = ViewerCopy.json(
+                modelForSaving(), pretty: prefs.string("files.jsonLayout") != "compact", prefs: prefs)
             return FileWrapper(regularFileWithContents: Data(json.utf8))
         }
         var files = packageFiles()
@@ -95,8 +95,9 @@ final class NexusDocument: NSDocument {
         if let key = cryptoKey {
             return NexusPackage.directoryWrapper(from: try PackageCrypto.encrypt(files, with: key))
         }
-        // Quick Look's thumbnail and preview (never for encrypted documents).
+        // Quick Look's thumbnail and preview, and the viewer copy (never for encrypted documents).
         if let png = HeadlessExport.previewPNG(store.model) { files[NexusPackage.previewName] = png }
+        ViewerCopy.add(to: &files, modelForSaving(), prefs: prefs)
         return NexusPackage.directoryWrapper(from: files)
     }
 

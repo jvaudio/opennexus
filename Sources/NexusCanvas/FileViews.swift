@@ -356,7 +356,9 @@ private struct ExportSheet: View {
                 scopeOnly
             }
         case .document:
-            if state.format == .markdown {
+            if state.format == .html {
+                htmlOptions
+            } else if state.format == .markdown {
                 HStack(spacing: 18) {
                     FileSegments(
                         items: [(true, Loc.t("Headings")), (false, Loc.t("Nested bullets"))],
@@ -465,6 +467,78 @@ private struct ExportSheet: View {
                         "Only to-dos and tasks: status, priority, owner, dates, working days, progress, dependencies.")
             )
             .font(.chrome(13)).foregroundStyle(.secondary)
+        }
+    }
+
+    /// Interactive HTML (M43): scope, what it includes, layouts, theme.
+    var htmlOptions: some View {
+        let bytes = controller.htmlAttachmentBytes(state)
+        return VStack(alignment: .leading, spacing: 14) {
+            HStack(alignment: .top, spacing: 24) {
+                labelled(Loc.t("Scope")) {
+                    FileSegments(
+                        items: [
+                            ("document", Loc.t("Document")), ("canvas", Loc.t("Canvas")), ("branch", Loc.t("Branch")),
+                        ]
+                            + (state.image.zone != nil ? [("zone", Loc.t("Zone"))] : []),
+                        selection: Binding(
+                            get: {
+                                switch state.image.scope {
+                                case .canvas: state.html.document ? "document" : "canvas"
+                                case .selection, .branch: "branch"
+                                case .zone: "zone"
+                                }
+                            },
+                            set: { v in
+                                set {
+                                    $0.html.document = v == "document"
+                                    $0.image.scope = v == "branch" ? .branch : v == "zone" ? .zone : .canvas
+                                }
+                            })
+                    )
+                    .frame(width: state.image.zone != nil ? 400 : 300)
+                }
+                labelled(Loc.t("Layouts")) {
+                    FileSegments(
+                        items: [(true, Loc.t("As saved and Everything")), (false, Loc.t("As saved"))],
+                        selection: Binding(get: { state.html.expanded }, set: { v in set { $0.html.expanded = v } })
+                    )
+                    .frame(width: 300)
+                }
+                labelled(Loc.t("Theme override")) {
+                    Menu(
+                        state.image.theme.map { Loc.f("Use %@", Theme.named($0).name) }
+                            ?? Loc.f("Keep %@", controller.theme.name)
+                    ) {
+                        Button(Loc.f("Keep %@", controller.theme.name)) { set { $0.image.theme = nil } }
+                        Divider()
+                        ForEach(Theme.builtIn, id: \.id) { t in Button(t.name) { set { $0.image.theme = t.id } } }
+                    }
+                    .frame(width: 220)
+                }
+            }
+            HStack(spacing: 18) {
+                Toggle(
+                    "Include notes", isOn: Binding(get: { state.html.notes }, set: { v in set { $0.html.notes = v } })
+                ).toggleStyle(.switch)
+                Toggle(
+                    "Include comments",
+                    isOn: Binding(get: { state.html.comments }, set: { v in set { $0.html.comments = v } })
+                ).toggleStyle(.switch)
+                Toggle(
+                    bytes > 0
+                        ? Loc.f(
+                            "Include attachments (%@)",
+                            ByteCountFormatter.string(fromByteCount: Int64(bytes), countStyle: .file))
+                        : Loc.t("Include attachments"),
+                    isOn: Binding(get: { state.html.attachments }, set: { v in set { $0.html.attachments = v } })
+                ).toggleStyle(.switch)
+            }
+            Text(
+                "One file that opens in any browser, offline: pan, zoom, search, the outline and each topic's details. It makes no network requests."
+            )
+            .font(.chrome(13)).foregroundStyle(.secondary)
+            .fixedSize(horizontal: false, vertical: true)
         }
     }
 

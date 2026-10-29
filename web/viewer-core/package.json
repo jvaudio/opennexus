@@ -1,0 +1,11 @@
+{
+  "name": "@opennexus/viewer-core",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The interactive OpenNexus viewer: draws a viewer bundle (schema/viewer.schema.json).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

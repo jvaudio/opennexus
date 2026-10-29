@@ -881,6 +881,24 @@ final class ElementRenderer {
         }
     }
 
+    /// A callout's tail, from the bubble's edge to the host's edge.
+    static func calloutTail(host: CGRect, bubble: CGRect) -> CGPath {
+        let hc = CGPoint(x: host.midX, y: host.midY)
+        let bc = CGPoint(x: bubble.midX, y: bubble.midY)
+        let tip = RelationshipGeometry.clip(hc, host, toward: bc, pad: 2)
+        let base = RelationshipGeometry.clip(bc, bubble, toward: hc, pad: -6)
+        let dx = tip.x - base.x
+        let dy = tip.y - base.y
+        let len = max(hypot(dx, dy), 1)
+        let half: CGFloat = 7
+        let p = CGMutablePath()
+        p.move(to: CGPoint(x: base.x - dy / len * half, y: base.y + dx / len * half))
+        p.addLine(to: tip)
+        p.addLine(to: CGPoint(x: base.x + dy / len * half, y: base.y - dx / len * half))
+        p.closeSubpath()
+        return p
+    }
+
     private func syncPointers(_ scene: Scene, frame: (NodeID) -> CGRect?) {
         var seen = Set<String>()
         for k in scene.callouts {
@@ -898,21 +916,7 @@ final class ElementRenderer {
                     pointerLayers[k.callout.id] = c
                     return c
                 }()
-            // A tail from the bubble's edge to the host's edge.
-            let hc = CGPoint(x: host.midX, y: host.midY)
-            let bc = CGPoint(x: bubble.midX, y: bubble.midY)
-            let tip = RelationshipGeometry.clip(hc, host, toward: bc, pad: 2)
-            let base = RelationshipGeometry.clip(bc, bubble, toward: hc, pad: -6)
-            let dx = tip.x - base.x
-            let dy = tip.y - base.y
-            let len = max(hypot(dx, dy), 1)
-            let half: CGFloat = 7
-            let p = CGMutablePath()
-            p.move(to: CGPoint(x: base.x - dy / len * half, y: base.y + dx / len * half))
-            p.addLine(to: tip)
-            p.addLine(to: CGPoint(x: base.x + dy / len * half, y: base.y - dx / len * half))
-            p.closeSubpath()
-            l.path = p
+            l.path = Self.calloutTail(host: host, bubble: bubble)
             l.fillColor = n.appearance.fill.representative?.cgColor ?? RGBA(hex: "#FFF6D6").cgColor
             l.strokeColor = n.appearance.borderColor.cgColor
             l.lineWidth = CGFloat(n.appearance.borderWidth)

@@ -23,4 +23,7 @@ fi
 
 scripts/build-icons.sh --check || failed=1
 
+# The interactive viewer copied into the Swift resources matches web/viewer-core (M43).
+scripts/build-viewer.sh --check || failed=1
+
 exit $failed

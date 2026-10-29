@@ -30,7 +30,7 @@ public enum DocumentJSON {
         return pretty ? CanonicalJSON.string(v) : compact(v) + "\n"
     }
 
-    static func compact(_ v: JSONValue) -> String {
+    public static func compact(_ v: JSONValue) -> String {
         switch v {
         case .null: return "null"
         case .bool(let b): return b ? "true" : "false"

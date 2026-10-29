@@ -23,6 +23,15 @@ public enum CanonicalJSON {
         return out
     }
 
+    /// The same form on one line with no spaces: what viewer copies and interactive
+    /// exports carry (M43).
+    public static func compact(_ value: JSONValue) -> String {
+        var out = ""
+        out.reserveCapacity(1 << 16)
+        writeCompact(value, into: &out)
+        return out
+    }
+
     public static func parse(_ data: Data) throws -> JSONValue {
         try JSONDecoder().decode(JSONValue.self, from: data)
     }
@@ -65,6 +74,29 @@ public enum CanonicalJSON {
         }
     }
 
+    private static func writeCompact(_ value: JSONValue, into out: inout String) {
+        switch value {
+        case .array(let a):
+            out.append("[")
+            for (i, v) in a.enumerated() {
+                if i > 0 { out.append(",") }
+                writeCompact(v, into: &out)
+            }
+            out.append("]")
+        case .object(let o):
+            out.append("{")
+            let keys = o.keys.sorted { $0.unicodeScalars.lexicographicallyPrecedes($1.unicodeScalars) }
+            for (i, k) in keys.enumerated() {
+                if i > 0 { out.append(",") }
+                writeString(k, into: &out)
+                out.append(":")
+                writeCompact(o[k]!, into: &out)
+            }
+            out.append("}")
+        default: write(value, indent: 0, into: &out)
+        }
+    }
+
     private static func pad(_ level: Int, _ out: inout String) {
         out.append(String(repeating: "  ", count: level))
     }
@@ -79,21 +111,31 @@ public enum CanonicalJSON {
 
     private static func writeString(_ s: String, into out: inout String) {
         out.append("\"")
-        for scalar in s.unicodeScalars {
-            switch scalar {
-            case "\"": out.append("\\\"")
-            case "\\": out.append("\\\\")
-            case "\n": out.append("\\n")
-            case "\r": out.append("\\r")
-            case "\t": out.append("\\t")
-            case "\u{08}": out.append("\\b")
-            case "\u{0C}": out.append("\\f")
-            case let c where c.value < 0x20:
-                out.append(String(format: "\\u%04x", c.value))
-            default:
-                out.unicodeScalars.append(scalar)
+        // Copy the runs between escapes whole, not scalar by scalar (SVGs run to megabytes).
+        let u = s.utf8
+        var run = u.startIndex
+        var i = run
+        while i != u.endIndex {
+            let b = u[i]
+            guard b < 0x20 || b == 0x22 || b == 0x5C else {
+                i = u.index(after: i)
+                continue
             }
+            out.append(contentsOf: Substring(s.unicodeScalars[run..<i]))
+            switch b {
+            case 0x22: out.append("\\\"")
+            case 0x5C: out.append("\\\\")
+            case 0x0A: out.append("\\n")
+            case 0x0D: out.append("\\r")
+            case 0x09: out.append("\\t")
+            case 0x08: out.append("\\b")
+            case 0x0C: out.append("\\f")
+            default: out.append(String(format: "\\u%04x", b))
+            }
+            i = u.index(after: i)
+            run = i
         }
+        out.append(contentsOf: Substring(s.unicodeScalars[run..<u.endIndex]))
         out.append("\"")
     }
 }

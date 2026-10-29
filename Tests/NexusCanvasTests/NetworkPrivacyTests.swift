@@ -28,6 +28,36 @@ import Testing
         #expect(hits.isEmpty, "networking code: \(hits)")
     }
 
+    /// The interactive viewer (M43) opens offline: neither its source nor the copy built into
+    /// the app may reach the network (exported pages also forbid it by CSP; HTMLExportTests).
+    @Test func theViewerMakesNoRequests() throws {
+        let banned = [
+            "fetch(", "XMLHttpRequest", "WebSocket", "EventSource", "sendBeacon", "serviceWorker", "importScripts",
+            "new Worker", "import(", "<link", "<iframe", "eval(", "new Function",
+        ]
+        let files =
+            NetworkPrivacyTests.files(under: "Sources/NexusCanvas/Viewer", ext: ["js", "css"])
+            + NetworkPrivacyTests.files(under: "web/viewer-core/src", ext: ["ts", "css"])
+        #expect(files.count >= 9, "the built viewer and its sources")
+        var hits: [String] = []
+        for f in files {
+            // SVG's and XLink's namespace names are URIs, not addresses anything loads.
+            let text = try String(contentsOf: f, encoding: .utf8)
+                .replacingOccurrences(of: "http://www.w3.org/2000/svg", with: "")
+                .replacingOccurrences(of: "http://www.w3.org/1999/xlink", with: "")
+            for b in banned where text.contains(b) { hits.append("\(f.lastPathComponent): \(b)") }
+            if f.pathExtension == "css", text.contains("@import") || text.contains("url(") {
+                hits.append("\(f.lastPathComponent): a stylesheet reference")
+            }
+            if text.range(of: #"(https?:)?//[A-Za-z0-9-]+\.[A-Za-z]"#, options: .regularExpression) != nil,
+                f.pathExtension != "ts"
+            {
+                hits.append("\(f.lastPathComponent): an address")
+            }
+        }
+        #expect(hits.isEmpty, "network code in the viewer: \(hits)")
+    }
+
     @Test func noTargetHasANetworkEntitlement() throws {
         let ents = NetworkPrivacyTests.files(under: "App/Support", ext: ["entitlements"])
         #expect(ents.count >= 7, "the app, five extensions and the CLI")

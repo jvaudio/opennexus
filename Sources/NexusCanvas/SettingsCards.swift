@@ -543,7 +543,7 @@ public enum Spoken {
     public static func describe(
         _ id: NodeID, in c: NexusCore.Canvas, prefs: Preferences, branchColor: String? = nil,
         depth knownDepth: Int? = nil,
-        maxDepth knownMax: Int? = nil
+        maxDepth knownMax: Int? = nil, today: TaskDate = .today(), hints: Bool = true
     ) -> String {
         guard let n = c.nodes[id] else { return "" }
         let depth: Int
@@ -573,7 +573,7 @@ public enum Spoken {
         if let t = n.nodeType, let info = DiagramCatalog.info(t, in: c.type) { parts.append(Loc.t(info.name)) }
         if let b = branchColor { parts.append(Loc.f("Branch colour %@", b)) }
         if let todo = n.todo { parts.append(todo.done ? Loc.t("Done") : Loc.t("To do")) }
-        if let task = TaskFormat.spoken(c, id, today: TaskDate.today()) { parts.append(task) }
+        if let task = TaskFormat.spoken(c, id, today: today) { parts.append(task) }
         if n.note != nil { parts.append(Loc.t("Has note")) }
         if !n.comments.isEmpty { parts.append(Loc.n("%lld comment", "%lld comments", n.comments.count)) }
         if prefs.string("accessibility.readEdges") == "source" {
@@ -585,7 +585,7 @@ public enum Spoken {
                         ? Loc.f("Connected to %@", name) : Loc.f("Connected to %@ by ‘%@’", name, r.label))
             }
         }
-        if prefs.bool("accessibility.speakHints") { parts.append(Loc.t("Tab adds a child")) }
+        if hints && prefs.bool("accessibility.speakHints") { parts.append(Loc.t("Tab adds a child")) }
         return parts.joined(separator: ". ") + "."
     }
 

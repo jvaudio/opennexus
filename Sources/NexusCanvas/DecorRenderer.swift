@@ -61,7 +61,7 @@ final class DecorRenderer {
     func updateGeometry(frame: (NodeID) -> CGRect?) {
         let rest = decor.filter { if case .band = $0 { false } else { true } }
         for (i, d) in rest.enumerated() where i < shapes.count {
-            shapes[i].path = path(d, frame: frame)
+            shapes[i].path = Self.path(d, frame: frame)
         }
     }
 
@@ -76,44 +76,44 @@ final class DecorRenderer {
     }
 
     private func style(_ s: CAShapeLayer, _ d: SceneDecor, scene: Scene) {
-        s.lineDashPattern = nil
+        let p = Self.paint(d, theme: scene.theme)
+        s.fillColor = p.fill?.cgColor
+        s.strokeColor = p.stroke?.cgColor
+        s.lineWidth = p.width
+        s.lineDashPattern = p.dash?.map { NSNumber(value: Double($0)) }
         s.lineCap = .round
         s.lineJoin = .round
+    }
+
+    /// How a piece of decor is painted (the SVG export draws it the same way).
+    struct Paint {
+        var fill: RGBA?
+        var stroke: RGBA?
+        var width: CGFloat = 1
+        var dash: [CGFloat]?
+    }
+
+    static func paint(_ d: SceneDecor, theme: Theme) -> Paint {
         switch d {
         case .brace(_, _, let color, let width):
-            s.fillColor = nil
-            s.strokeColor = color.cgColor
-            s.lineWidth = width
+            return Paint(stroke: color, width: width)
         case .cell(_, _, let kind, let color):
             switch kind {
             case .matrixCell:
-                s.fillColor = scene.theme.isDark ? color.alpha(0.08).cgColor : RGBA.white.alpha(0.9).cgColor
-                s.strokeColor = color.alpha(0.35).cgColor
-                s.lineWidth = 1
-            case .tableRow:
-                s.fillColor = color.alpha(0.05).cgColor
-                s.strokeColor = scene.theme.ink2.alpha(0.25).cgColor
-                s.lineWidth = 1
-            case .tableCell:
-                s.fillColor = nil
-                s.strokeColor = scene.theme.ink2.alpha(0.2).cgColor
-                s.lineWidth = 1
+                return Paint(fill: theme.isDark ? color.alpha(0.08) : RGBA.white.alpha(0.9), stroke: color.alpha(0.35))
+            case .tableRow: return Paint(fill: color.alpha(0.05), stroke: theme.ink2.alpha(0.25))
+            case .tableCell: return Paint(stroke: theme.ink2.alpha(0.2))
             }
         case .lifeline(_, _, let color):
-            s.fillColor = nil
-            s.strokeColor = color.alpha(0.6).cgColor
-            s.lineWidth = 1.2
-            s.lineDashPattern = [5, 5]
+            return Paint(stroke: color.alpha(0.6), width: 1.2, dash: [5, 5])
         case .activation(_, _, _, let color):
-            s.fillColor = color.alpha(0.14).cgColor
-            s.strokeColor = color.cgColor
-            s.lineWidth = 1.2
+            return Paint(fill: color.alpha(0.14), stroke: color, width: 1.2)
         case .band:
-            break
+            return Paint()
         }
     }
 
-    private func path(_ d: SceneDecor, frame: (NodeID) -> CGRect?) -> CGPath? {
+    static func path(_ d: SceneDecor, frame: (NodeID) -> CGRect?) -> CGPath? {
         switch d {
         case .brace(let parent, let children, _, _):
             guard let p = frame(parent) else { return nil }

@@ -58,6 +58,7 @@ extension CanvasController {
             .guide: { $0.toggleGuide() },
             .setNodeType: { $0.showNodeTypeControl() },
             .export: { $0.openExport() },
+            .exportHTML: { $0.openExport(.html) },
             .mapShot: { $0.openMapShot() },
             .copyAsImage: { $0.copyAsImage() },
             .copyAsMarkdown: { $0.copyAsMarkdown() },

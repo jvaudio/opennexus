@@ -122,7 +122,7 @@ public enum Stride: String, Sendable, CaseIterable {
 
     public static let tableHeader = ["ID", "Element", "STRIDE", "Threat", "Risk", "Mitigation", "Status"]
 
-    static func row(_ t: Threat) -> [String] {
+    public static func row(_ t: Threat) -> [String] {
         [t.id, t.elementName, t.category?.name ?? "—", t.title, t.risk, t.mitigation ?? "—", t.status]
     }
 

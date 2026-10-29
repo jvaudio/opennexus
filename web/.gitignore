@@ -1,0 +1,5 @@
+node_modules/
+viewer-core/dist/
+test-results/
+playwright-report/
+fixtures/

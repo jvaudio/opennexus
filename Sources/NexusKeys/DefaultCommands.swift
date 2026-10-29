@@ -157,6 +157,7 @@ extension CommandID {
     public static let newCanvas: CommandID = "file.newCanvas"
     public static let newCanvasFromTopic: CommandID = "file.newCanvasFromTopic"
     public static let export: CommandID = "file.export"
+    public static let exportHTML: CommandID = "file.exportHTML"
     public static let mapShot: CommandID = "file.mapShot"
     public static let copyAsImage: CommandID = "file.copyAsImage"
     public static let copyAsMarkdown: CommandID = "file.copyAsMarkdown"
@@ -538,6 +539,9 @@ public enum DefaultCommands {
         C(.newCanvas, "New Canvas", .file, scope: .global, keys: [k("cmd+t")], menu: .file),
         C(.newCanvasFromTopic, "New Canvas from Topic", .file, keys: [k("opt+cmd+n")], menu: .file),
         C(.export, "Export…", .file, scope: .global, keys: [k("shift+cmd+e")], menu: .file),
+        C(
+            .exportHTML, "Export as Interactive HTML…", .file, scope: .global, menu: .file,
+            note: "One file that opens in any browser, offline"),
         C(.mapShot, "Map Shot", .file, scope: .global, keys: [k("ctrl+cmd+m")], menu: .file),
         C(.copyAsImage, "Copy as Image", .file, keys: [k("ctrl+cmd+c")], menu: .edit),
         C(.copyAsMarkdown, "Copy as Markdown", .file, menu: .edit),

@@ -451,6 +451,12 @@ public enum SettingsSchema {
                     T(
                         "files.optimiseImages", "Optimise images on import", true,
                         "HEIC → JPEG, strip location metadata"),
+                    T(
+                        "files.viewerCopy", "Save a viewer copy for browsers and Obsidian", true,
+                        "render/viewer.json in packages; never for encrypted documents"),
+                    T(
+                        "files.viewerCopyJSON", "Also in single-file documents", false,
+                        "A “render” key in .nexusjson files"),
                 ]),
             sec(
                 "Recovery", 0,

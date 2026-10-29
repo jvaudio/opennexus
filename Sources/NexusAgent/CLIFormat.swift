@@ -7,6 +7,9 @@ import NexusInterchange
 /// app's own exporters (the offscreen canvas for visual formats and draw.io).
 public enum CLIFormat: String, CaseIterable, Sendable {
     case md, opml, mermaid, plantuml, json, yaml, csv, txt, drawio, svg, png, jpeg, pdf, docx, pptx, xlsx, xmind, xmind8
+    /// Interactive HTML (M43): one page with the viewer, written to a file like the binary
+    /// formats (it's for opening, not for reading on stdout).
+    case html
 
     /// Also accepted: the file extensions people type.
     public init?(name: String) {
@@ -14,14 +17,14 @@ public enum CLIFormat: String, CaseIterable, Sendable {
         let aliases: [String: CLIFormat] = [
             "markdown": .md, "mmd": .mermaid, "puml": .plantuml, "jpg": .jpeg, "word": .docx, "powerpoint": .pptx,
             "excel": .xlsx,
-            "text": .txt, "indented": .txt, "yml": .yaml, "dio": .drawio, "xmind-8": .xmind8,
+            "text": .txt, "indented": .txt, "yml": .yaml, "dio": .drawio, "xmind-8": .xmind8, "htm": .html,
         ]
         if let f = CLIFormat(rawValue: n) ?? aliases[n] { self = f } else { return nil }
     }
 
     public var isText: Bool {
         switch self {
-        case .png, .jpeg, .pdf, .docx, .pptx, .xlsx, .xmind, .xmind8: false
+        case .png, .jpeg, .pdf, .docx, .pptx, .xlsx, .xmind, .xmind8, .html: false
         default: true
         }
     }
@@ -53,6 +56,7 @@ public enum CLIFormat: String, CaseIterable, Sendable {
         case .pptx: .powerpoint
         case .xlsx: .excel
         case .xmind, .xmind8: .xmind
+        case .html: .html
         case .txt: nil
         }
     }
@@ -65,25 +69,29 @@ public enum CLIFormat: String, CaseIterable, Sendable {
     /// The formats the export sheet offers Branch scope for (and indented text).
     public var exportsBranch: Bool {
         switch self {
-        case .md, .opml, .txt, .svg, .png, .jpeg, .pdf: true
+        case .md, .opml, .txt, .svg, .png, .jpeg, .pdf, .html: true
         default: false
         }
     }
 
-    /// The visual formats, which draw a zone on its own.
+    /// The formats that draw a zone on its own: the visual ones and interactive HTML.
     public var exportsZone: Bool {
         switch self {
-        case .svg, .png, .jpeg, .pdf: true
+        case .svg, .png, .jpeg, .pdf, .html: true
         default: false
         }
     }
+
+    /// The formats that write every zone at once (a file each, or a PDF page each).
+    public var exportsZones: Bool { exportsZone && self != .html }
 
     /// One file. nil for `.eachZone` (see `zoneFiles`) and for a scope the format doesn't
     /// export (`ExportScope.parse` refuses those first).
     @MainActor
-    public func export(_ doc: DocumentModel, canvas: CanvasID?, scope: ExportScope = .canvas, scale: Double? = nil)
-        -> Data?
-    {
+    public func export(
+        _ doc: DocumentModel, canvas: CanvasID?, scope: ExportScope = .canvas, scale: Double? = nil,
+        html: ExportState.HTMLOptions? = nil
+    ) -> Data? {
         if self == .txt {
             guard let c = doc.canvases[canvas ?? doc.canvasOrder.first ?? "c1"] else { return nil }
             switch scope {
@@ -102,7 +110,8 @@ public enum CLIFormat: String, CaseIterable, Sendable {
         default: return nil
         }
         return HeadlessExport.data(
-            doc, canvas: canvas, format: f, scope: s, yaml: self == .yaml, scale: scale, xmind8: self == .xmind8)
+            doc, canvas: canvas, format: f, scope: s, yaml: self == .yaml, scale: scale, xmind8: self == .xmind8,
+            html: self == .html ? html ?? ExportState.HTMLOptions() : nil)
     }
 
     /// Each zone as its own file, named after its title (`.eachZone`, D227). Empty for a
@@ -111,8 +120,30 @@ public enum CLIFormat: String, CaseIterable, Sendable {
     public func zoneFiles(_ doc: DocumentModel, canvas: CanvasID?, scale: Double? = nil) -> [(
         name: String, data: Data
     )] {
-        guard exportsZone, let f = exportFormat else { return [] }
+        guard exportsZones, let f = exportFormat else { return [] }
         return HeadlessExport.zoneFiles(doc, canvas: canvas, format: f, scale: scale)
+    }
+}
+
+/// Interactive HTML's options from `nexus export` flags or the MCP tool's arguments: what
+/// the page leaves out, and whether it holds every canvas (no canvas named) or one.
+extension ExportState.HTMLOptions {
+    public static func from(
+        canvasNamed: Bool, notes: Bool?, comments: Bool?, attachments: Bool?, layouts: String?
+    ) throws -> ExportState.HTMLOptions {
+        var o = ExportState.HTMLOptions()
+        o.document = !canvasNamed
+        if let notes { o.notes = notes }
+        if let comments { o.comments = comments }
+        if let attachments { o.attachments = attachments }
+        if let layouts {
+            guard layouts == "saved" || layouts == "both" else {
+                throw MapTools.ToolError(
+                    "layouts is “saved” (as the map was saved) or “both” (and Everything), not “\(layouts)”.")
+            }
+            o.expanded = layouts == "both"
+        }
+        return o
     }
 }
 
@@ -156,8 +187,8 @@ public enum ExportScope: Equatable, Sendable {
             throw MapTools.ToolError(
                 "zones is “each” (a file per zone) or “pages” (one PDF, a page per zone), not “\(zones)”.")
         }
-        guard f.exportsZone else {
-            throw MapTools.ToolError("Zones export as \(CLIFormat.names(\.exportsZone)), not \(f.rawValue).")
+        guard f.exportsZones else {
+            throw MapTools.ToolError("Zones export as \(CLIFormat.names(\.exportsZones)), not \(f.rawValue).")
         }
         guard zones == "each" || f == .pdf else {
             throw MapTools.ToolError("A page per zone needs pdf; “each” writes a file per zone.")

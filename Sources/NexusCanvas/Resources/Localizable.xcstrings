@@ -205,6 +205,10 @@
       "comment" : "Text with values filled in (DFD.swift)",
       "extractionState" : "migrated"
     },
+    "%d of %d" : {
+      "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
     "%lld × %lld pt · %@" : {
       "comment" : "Text with values filled in (CanvasController+Files.swift)",
       "extractionState" : "migrated"
@@ -1721,6 +1725,10 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "A “render” key in .nexusjson files" : {
+      "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
     "a boundary" : {
       "comment" : "UI text (CanvasController+Connect.swift)",
       "extractionState" : "migrated"
@@ -2201,6 +2209,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Also in single-file documents" : {
+      "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
     "Always" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -2361,6 +2373,10 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "Arrow keys move between topics · Return opens details · \/ searches · Esc closes" : {
+      "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
     "Arrow keys then move it; ⇧ moves it further" : {
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
@@ -2371,6 +2387,14 @@
     },
     "As canvases or into this canvas" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "As saved" : {
+      "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
+    "As saved and Everything" : {
+      "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "Ask" : {
@@ -2431,6 +2455,10 @@
     },
     "Attachment" : {
       "comment" : "UI text (Scene.swift)",
+      "extractionState" : "migrated"
+    },
+    "Attachments" : {
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "Attack tree" : {
@@ -2887,6 +2915,10 @@
     },
     "canvases" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Canvases" : {
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "Capability map" : {
@@ -3941,6 +3973,10 @@
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
+    "Details" : {
+      "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
     "Detect, mitigate, resolve" : {
       "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
@@ -4437,6 +4473,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Everything" : {
+      "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
     "Everything converted." : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
@@ -4496,6 +4536,10 @@
           }
         }
       }
+    },
+    "Export as Interactive HTML…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
     },
     "Export Branch" : {
       "comment" : "UI text (CanvasMenu.swift)",
@@ -4651,6 +4695,10 @@
     },
     "Fetch link previews and favicons" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Fields" : {
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "File" : {
@@ -5529,6 +5577,18 @@
       "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
+    "Include attachments" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Include attachments (%@)" : {
+      "comment" : "Text with values filled in (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Include comments" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Include metadata (types, fields)" : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
@@ -5611,6 +5671,10 @@
     },
     "Integrations" : {
       "comment" : "Settings pane",
+      "extractionState" : "migrated"
+    },
+    "Interactive HTML" : {
+      "comment" : "UI text (CanvasController+Files.swift)",
       "extractionState" : "migrated"
     },
     "Into this canvas" : {
@@ -5809,8 +5873,16 @@
       "comment" : "Text with values filled in (NetworkActivity.swift)",
       "extractionState" : "migrated"
     },
+    "Layout" : {
+      "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
     "Layout & guides" : {
       "comment" : "Settings section",
+      "extractionState" : "migrated"
+    },
+    "Layouts" : {
+      "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "Learning" : {
@@ -6150,7 +6222,7 @@
       "extractionState" : "migrated"
     },
     "Map" : {
-      "comment" : "UI text (FormatPanel.swift)",
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "Map Shot" : {
@@ -6279,6 +6351,10 @@
     },
     "Mat colour" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Match case" : {
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "Matches" : {
@@ -6909,6 +6985,10 @@
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
+    "Next match" : {
+      "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
     "Next Node Style" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -7057,6 +7137,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Not included in this export" : {
+      "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
     "Not started" : {
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
@@ -7199,6 +7283,14 @@
     },
     "One file per zone, or a PDF page per zone" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "One file that opens in any browser, offline" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "One file that opens in any browser, offline: pan, zoom, search, the outline and each topic's details. It makes no network requests." : {
+      "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "One image per first-level branch" : {
@@ -7733,6 +7825,10 @@
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "Previous match" : {
+      "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
     "Previous Row" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -8253,6 +8349,10 @@
       "comment" : "UI text (DocumentFiles.swift)",
       "extractionState" : "migrated"
     },
+    "render\/viewer.json in packages; never for encrypted documents" : {
+      "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
     "Reorder Slides" : {
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
@@ -8571,6 +8671,10 @@
     },
     "Save" : {
       "comment" : "UI text (ThemeSheets.swift)",
+      "extractionState" : "migrated"
+    },
+    "Save a viewer copy for browsers and Obsidian" : {
+      "comment" : "Settings row",
       "extractionState" : "migrated"
     },
     "Save as" : {
@@ -8991,6 +9095,10 @@
     },
     "Shorten Task" : {
       "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
+    "Show %d hidden topics" : {
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "Show All" : {
@@ -9765,6 +9873,10 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "Theme override" : {
+      "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Themes" : {
       "comment" : "UI text (FormatPanelMap.swift)",
       "extractionState" : "migrated"
@@ -9835,6 +9947,10 @@
     },
     "This Mac" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "This map needs JavaScript to show." : {
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "This map’s colours" : {
@@ -9915,6 +10031,10 @@
     },
     "Threat table: element, STRIDE category, risk, mitigation, status." : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Threats" : {
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "Threats, data and access" : {

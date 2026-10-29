@@ -32,6 +32,15 @@ jobs:
       - name: Test packages
         run: swift test
 
+      - name: Web viewer
+        # Typecheck, ESLint, Vitest, and Playwright in Chromium and WebKit (M43); Firefox
+        # where it starts, not on macOS 27 (D326, playwright.config.ts).
+        working-directory: web
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install chromium webkit
+          npm run check
+
       - name: Build app
         run: |
           xcodebuild -project App/OpenNexus.xcodeproj -scheme OpenNexus -configuration Debug \

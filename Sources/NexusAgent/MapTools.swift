@@ -216,6 +216,20 @@ public struct MapTools {
                         "description":
                             "Every zone: each writes a file per zone, named after it, into the \"out\" folder; pages writes one pdf with a page per zone.",
                     ],
+                    "notes": [
+                        "type": "boolean", "description": "html: include notes (default true).",
+                    ],
+                    "comments": [
+                        "type": "boolean", "description": "html: include comments (default true).",
+                    ],
+                    "attachments": [
+                        "type": "boolean", "description": "html: embed attachments (default false).",
+                    ],
+                    "layouts": [
+                        "type": "string", "enum": ["saved", "both"],
+                        "description":
+                            "html: only the layout as saved, or Everything (every branch open) too (default both). An html export holds every canvas unless \"canvas\" is given.",
+                    ],
                 ], required: ["path", "format"]), readOnly: true),
         tool(
             "list_starters", "List starters",
@@ -780,7 +794,11 @@ public struct MapTools {
             branch: args["branch"]?.stringValue, zone: args["zone"]?.stringValue, zones: args["zones"]?.stringValue,
             format: f, in: doc.canvases[cid]!)
         if part == .eachZone { return try exportZones(doc, cid, f, out: args["out"]?.stringValue) }
-        guard let data = f.export(doc, canvas: cid, scope: part) else {
+        let html = try ExportState.HTMLOptions.from(
+            canvasNamed: args["canvas"]?.stringValue.map { !$0.isEmpty } ?? false, notes: args["notes"]?.boolValue,
+            comments: args["comments"]?.boolValue, attachments: args["attachments"]?.boolValue,
+            layouts: args["layouts"]?.stringValue)
+        guard let data = f.export(doc, canvas: cid, scope: part, html: html) else {
             throw ToolError("Couldn't export \(f.rawValue).")
         }
         if let out = args["out"]?.stringValue, !out.isEmpty {
@@ -803,6 +821,7 @@ public struct MapTools {
                 ]
             ])
         }
+        if f == .html { throw ToolError("html is a page to open in a browser; give “out” to write it to a file.") }
         throw ToolError("\(f.rawValue) is a binary format; give “out” to write it to a file.")
     }
 

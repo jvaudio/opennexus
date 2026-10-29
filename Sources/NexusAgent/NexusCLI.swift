@@ -54,6 +54,9 @@ public enum NexusCLI {
                  [--zone <id|title>]          Only one zone and its topics: \(CLIFormat.names(\.exportsZone)).
                  [--zones each|pages]         Every zone, a file each in the --out folder (default
                                               "<map> – Zones"), or one PDF with a page per zone.
+                 [--no-notes] [--no-comments] html: every canvas unless --canvas is given; leave
+                 [--attachments]              notes or comments out, embed attachments, and keep
+                 [--layouts saved|both]       only the layout as saved or Everything too (default).
                                               Formats: \(CLIFormat.names())
           new "<title>" [--type <type>]       Create a map (mindmap, flowchart, dfd, architecture, …),
                  [--starter <id>]             or one from a starter: its topics, titled "<title>".
@@ -111,6 +114,13 @@ public enum NexusCLI {
         return v
     }
 
+    /// Removes `--name` from args; true when it was there.
+    static func flag(_ name: String, _ args: inout [String]) -> Bool {
+        guard let i = args.firstIndex(of: name) else { return false }
+        args.remove(at: i)
+        return true
+    }
+
     static func file(_ path: String, _ env: Environment) -> URL {
         let p = (path as NSString).expandingTildeInPath
         return p.hasPrefix("/") ? URL(fileURLWithPath: p) : env.cwd.appending(path: p)
@@ -136,10 +146,15 @@ public enum NexusCLI {
     /// Checks the files as they are on disk (not a re-serialisation), then each canvas.
     public static func validationIssues(_ url: URL) throws -> (issues: [String], summary: String) {
         if url.pathExtension.lowercased() == "nexusjson" {
-            let doc = try DocumentJSON.parse(Data(contentsOf: url), name: url.lastPathComponent)
-            let issues =
+            let data = try Data(contentsOf: url)
+            let doc = try DocumentJSON.parse(data, name: url.lastPathComponent)
+            var issues =
                 doc.repairs.map { "needs repair: \($0)" }
                 + doc.orderedCanvases.flatMap { c in c.validate().map { "\(c.id.rawValue): \($0)" } }
+            // The viewer copy (M43), when the file carries one.
+            if let render = (try? CanonicalJSON.parse(data))?.objectValue?["render"] {
+                issues += SchemaValidator.viewer.validate(render).map { "render: \($0)" }
+            }
             return (issues, contentSummary(doc))
         }
         let files = NexusPackage.flatten(try FileWrapper(url: url, options: [.immediate]))
@@ -148,6 +163,13 @@ public enum NexusCLI {
             return (issues.map(\.description), "encrypted; contents not checked without the password")
         }
         var issues = SchemaValidator.bundled.validate(package: files).map(\.description)
+        if let copy = files["render/viewer.json"] {
+            if let v = try? CanonicalJSON.parse(copy) {
+                issues += SchemaValidator.viewer.validate(v).map { "render/viewer.json: \($0)" }
+            } else {
+                issues.append("render/viewer.json is not valid JSON.")
+            }
+        }
         do {
             let doc = try NexusPackage.read(files: files)
             issues += doc.repairs.map { "needs repair: \($0)" }
@@ -225,19 +247,30 @@ public enum NexusCLI {
         let branch = try option("--branch", &args)
         let zone = try option("--zone", &args)
         let zones = try option("--zones", &args)
+        let noNotes = flag("--no-notes", &args)
+        let noComments = flag("--no-comments", &args)
+        let attachments = flag("--attachments", &args)
+        let layouts = try option("--layouts", &args)
+        if format != .html, noNotes || noComments || attachments || layouts != nil {
+            throw UsageError(message: "--no-notes, --no-comments, --attachments and --layouts are for --to html")
+        }
         let url = file(try positional(args, "file"), env)
         let doc = try MapFiles.read(url)
         let cid: CanvasID
         let scope: ExportScope
+        let html: ExportState.HTMLOptions
         do {
             cid = try MapTools.canvasID(canvasRef.map { ["canvas": .string($0)] } ?? [:], in: doc)
             scope = try ExportScope.parse(
                 branch: branch, zone: zone, zones: zones, format: format, in: doc.canvases[cid]!)
+            html = try .from(
+                canvasNamed: canvasRef != nil, notes: noNotes ? false : nil, comments: noComments ? false : nil,
+                attachments: attachments ? true : nil, layouts: layouts)
         } catch {
             throw UsageError(message: "\(error)")
         }
         if scope == .eachZone { return try exportZones(doc, cid, format, url: url, out: out, scale: scale, io, env) }
-        guard let data = format.export(doc, canvas: cid, scope: scope, scale: scale) else {
+        guard let data = format.export(doc, canvas: cid, scope: scope, scale: scale, html: html) else {
             io.err("nexus export: couldn't export \(format.rawValue)\n")
             return 1
         }
