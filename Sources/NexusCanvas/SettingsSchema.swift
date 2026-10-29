@@ -123,12 +123,13 @@ private func sec(_ title: String, _ column: Int = 0, _ rows: [SettingRow], footn
 }
 
 public enum SettingsSchema {
-    /// OpenNexus makes no network requests (README §12); rows that would are shown, off.
-    /// Update checks are the one exception, opt-in and made by Sparkle's service (D275).
-    public static let noNetwork = "OpenNexus makes no network requests"
+    /// Rows OpenNexus will never offer, shown off: it collects nothing about you and fetches
+    /// nothing on its own. The network is used only by features under Privacy & Data ›
+    /// Network (D313) and by update checks (D275), each opt-in.
+    public static let noNetwork = "Not offered: OpenNexus collects nothing and fetches nothing on its own"
 
     public static let panes: [SettingPane] = [
-        general, editing, appearance, files, ai, shortcuts, export, integrations, privacy, accessibility,
+        general, editing, appearance, files, ai, shortcuts, export, sharing, integrations, privacy, accessibility,
     ]
 
     public static func pane(_ id: String) -> SettingPane? { panes.first { $0.id == id } }
@@ -615,6 +616,44 @@ public enum SettingsSchema {
                 ]),
         ])
 
+    // MARK: Sharing (M44)
+
+    static let sharing = SettingPane(
+        id: "sharing", glyph: "⤴", title: "Sharing", tint: "#1F7A68",
+        subtitle:
+            "Share links are sealed on this Mac; the key travels only in the link. Store them in a bucket, a gist or your own server.",
+        sections: [
+            sec(
+                "Destinations", 0,
+                [
+                    G(
+                        "sharing.destinations", "", "shareDestinations", nil,
+                        ["s3", "bucket", "r2", "b2", "wasabi", "minio", "gist", "github", "server", "upload", "cors"])
+                ]),
+            sec(
+                "Links", 0,
+                [
+                    G(
+                        "sharing.links", "", "shareLinks", nil,
+                        ["manage", "revoke", "update", "copy", "expire", "share link"])
+                ]
+            ),
+            sec(
+                "Viewer", 1,
+                [
+                    X(
+                        "sharing.viewerAddress", "Viewer address", "https://jvaudio.github.io/opennexus/",
+                        "Where links open. The viewer is a static site anyone can host")
+                ]),
+            sec(
+                "New links", 1,
+                [
+                    M(
+                        "sharing.expiry", "Expire after",
+                        [("never", "Never"), ("day", "1 day"), ("week", "7 days"), ("month", "30 days")], "never")
+                ]),
+        ])
+
     // MARK: 8 Integrations (artboard 40)
 
     static let integrations = SettingPane(
@@ -689,6 +728,18 @@ public enum SettingsSchema {
             "Local by default. Everything that could leave the Mac is listed here and is off unless you turn it on.",
         sections: [
             sec(
+                "Network", 0,
+                [
+                    T(
+                        "network.enabled", "Use the network for sharing, sync and collaboration", false,
+                        "Off, OpenNexus connects to nothing. On, only the features below you turn on, only to places you set up",
+                        ["internet", "online", "offline", "connection"]),
+                    T(
+                        "network.sharing", "Share links", false,
+                        "Uploads sealed maps to a destination in Settings › Sharing", ["share", "link", "upload"]),
+                ], footnote: "A separate service makes every request; OpenNexus itself still has no network permission."
+            ),
+            sec(
                 "Network activity · last 7 days", 0,
                 [G("privacy.networkLog", "", "networkLog", nil, ["network", "requests", "telemetry"])]),
             sec(
@@ -704,7 +755,7 @@ public enum SettingsSchema {
                     T(
                         "privacy.linkPreviews", "Fetch link previews and favicons", false,
                         "Makes a web request per link", [], locked: noNetwork),
-                ], footnote: "Unavailable by design: OpenNexus v1 has no network permission."),
+                ], footnote: "Unavailable by design: nothing about you or your documents is ever sent."),
             sec(
                 "AI data", 0,
                 [

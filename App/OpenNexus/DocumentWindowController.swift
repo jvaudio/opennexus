@@ -274,6 +274,8 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         controller.onViewMode = { [weak self] m in self?.applyViewMode(m) }
         controller.onOpenAISettings = { AppPreferences.shared.showSettings(pane: "ai") }
         controller.onRebind = { AppPreferences.shared.showSettings(pane: "shortcuts", record: $0) }
+        controller.onOpenSettings = { AppPreferences.shared.showSettings(pane: $0) }
+        controller.documentPath = document_.fileURL?.path
         controller.externalCommands.insert(.inspector)
         controller.onZen = { [weak self] on in self?.setImmersive(on) }
         host.onPresentChange = { [weak self] on in
@@ -397,6 +399,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         case .share:
             let item = NSSharingServicePickerToolbarItem(itemIdentifier: id)
             item.label = Loc.t("Share")
+            item.delegate = self
             return item
         default:
             return nil
@@ -560,4 +563,35 @@ struct CanvasTabsView: View {
 
     /// The tab's square: the type's colour, as on Home (D287).
     func color(for type: DiagramType) -> Color { RGBA(hex: DiagramDescriptor[type].tint).swiftUIColor }
+}
+
+// MARK: Share (the toolbar button)
+
+/// The document file, plus Share Link… (M44) for a link anyone can open in a browser.
+extension DocumentWindowController: NSSharingServicePickerToolbarItemDelegate {
+    func items(for pickerToolbarItem: NSSharingServicePickerToolbarItem) -> [Any] {
+        document_.fileURL.map { [$0] } ?? [document_.displayName as Any]
+    }
+
+    func sharingServicePicker(
+        _ sharingServicePicker: NSSharingServicePicker, sharingServicesForItems items: [Any],
+        proposedSharingServices proposedServices: [NSSharingService]
+    ) -> [NSSharingService] {
+        let link = NSSharingService(
+            title: Loc.t("Share Link…"),
+            image: NSImage(systemSymbolName: "link", accessibilityDescription: nil) ?? NSImage(),
+            alternateImage: nil
+        ) { [weak self] in
+            MainActor.assumeIsolated { self?.controller.openShareLink() }
+        }
+        return [link] + proposedServices
+    }
+
+    /// After a save: the file's path for this document's links, and "Update when I save"
+    /// (at once for ⌘S, 30 seconds after the last autosave).
+    func documentSaved(to url: URL, _ op: NSDocument.SaveOperationType) {
+        guard op == .saveOperation || op == .saveAsOperation || op == .autosaveInPlaceOperation else { return }
+        controller.documentPath = url.path
+        controller.republishShareLinks(after: op == .autosaveInPlaceOperation ? .seconds(30) : .zero)
+    }
 }

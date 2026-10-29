@@ -25,7 +25,9 @@ struct CardView: View {
         case .card("frames"): FramePicker(prefs: prefs)
         case .card("matColor"): MatColorRow(prefs: prefs)
         case .card("agentCard"): AgentCard(prefs: prefs)
-        case .card("networkLog"): NetworkLogCard(prefs: prefs, onAction: onAction)
+        case .card("networkLog"): NetworkLogCard(prefs: prefs, log: ShareCenter.shared.log, onAction: onAction)
+        case .card("shareDestinations"): ShareDestinationsCard(center: ShareCenter.shared)
+        case .card("shareLinks"): ShareLinksCard(center: ShareCenter.shared)
         case .card("maskPreview"): MaskPreviewCard(prefs: prefs)
         case .card("voiceOverPreview"): VoiceOverPreview(prefs: prefs)
         default: EmptyView()
@@ -448,10 +450,12 @@ private struct FlowChips: View {
 
 private struct NetworkLogCard: View {
     var prefs: Preferences
+    var log: NetworkLog
     var onAction: (String) -> Void
     var body: some View {
         let _ = prefs.revision
-        let head = NetworkActivity.headline(prefs)
+        let recent = log.recent()
+        let head = NetworkActivity.headline(prefs, log: recent)
         // Dark like artboard 41, so the log reads as the system's record rather than a setting.
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -459,9 +463,12 @@ private struct NetworkLogCard: View {
                 Text(head.unit).font(.chrome(14)).foregroundStyle(.white.opacity(0.75))
             }
             .accessibilityElement(children: .combine)
-            Text(NetworkActivity.summary(prefs))
+            Text(NetworkActivity.summary(prefs, log: recent))
                 .font(.chrome(12.5)).foregroundStyle(.white.opacity(0.7)).fixedSize(horizontal: false, vertical: true)
-            Button("Open log…") { onAction("privacy.log") }
+            HStack {
+                Button("Open log…") { onAction("privacy.log") }
+                Button("Export Log…") { onAction("privacy.exportLog") }.disabled(log.entries.isEmpty)
+            }
         }
         .foregroundStyle(.white)
         .environment(\.colorScheme, .dark)

@@ -15,7 +15,8 @@ extension DocumentWindowController {
     static let windowCommands: Set<CommandID> = [
         .newCanvas, .inspector, .importFile, .setPassword, .recoverySnapshots, .renameCanvas, .moveCanvasToWindow,
         .duplicateCanvas, .deleteCanvas, .copyCanvas, .pasteCanvas, .saveCanvasAsDocument, .mergeDocuments,
-        .printDocument, .export, .exportHTML, .mapShot, .splitByBranch, .nextPanel, .previousPanel,
+        .printDocument, .export, .exportHTML, .shareLink, .manageShareLinks, .mapShot, .splitByBranch, .nextPanel,
+        .previousPanel,
     ]
 
     func runWindowCommand(_ id: CommandID) {
@@ -36,6 +37,8 @@ extension DocumentWindowController {
         case .printDocument: controller.openPrint()
         case .export: controller.openExport()
         case .exportHTML: controller.openExport(.html)
+        case .shareLink: controller.openShareLink()
+        case .manageShareLinks: controller.manageLinks = true
         case .mapShot: controller.openMapShot()
         case .splitByBranch: controller.splitByBranch()
         case .nextPanel: moveFocus(forward: true)
@@ -43,7 +46,8 @@ extension DocumentWindowController {
         default: break
         }
         if let w = window, w.firstResponder !== host.canvasView, controller.passwordSheet == false,
-            controller.exportState == nil
+            controller.exportState == nil, controller.shareState == nil, controller.shareNotice == nil,
+            !controller.manageLinks
         {
             w.makeFirstResponder(host.canvasView)
         }

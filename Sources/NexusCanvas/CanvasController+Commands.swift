@@ -59,6 +59,8 @@ extension CanvasController {
             .setNodeType: { $0.showNodeTypeControl() },
             .export: { $0.openExport() },
             .exportHTML: { $0.openExport(.html) },
+            .shareLink: { $0.openShareLink() },
+            .manageShareLinks: { $0.manageLinks = true },
             .mapShot: { $0.openMapShot() },
             .copyAsImage: { $0.copyAsImage() },
             .copyAsMarkdown: { $0.copyAsMarkdown() },

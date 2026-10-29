@@ -1,0 +1,32 @@
+# The OpenNexus Server behind Caddy, which gets and renews the HTTPS certificate.
+# Copy .env.example to .env, set the domain and a token, then: docker compose up -d
+services:
+  server:
+    build: .
+    image: opennexus-server
+    restart: unless-stopped
+    environment:
+      OPENNEXUS_UPLOAD_TOKEN: ${OPENNEXUS_UPLOAD_TOKEN:?Set OPENNEXUS_UPLOAD_TOKEN in .env}
+      OPENNEXUS_MAX_DAYS: ${OPENNEXUS_MAX_DAYS:-0}
+      # Caddy is the only client; the reader's address is in X-Forwarded-For.
+      OPENNEXUS_TRUST_PROXY: "1"
+    volumes:
+      - shares:/data
+  caddy:
+    image: caddy:2.10
+    restart: unless-stopped
+    ports:
+      - "${HTTP_PORT:-80}:80"
+      - "${HTTPS_PORT:-443}:443"
+    environment:
+      OPENNEXUS_DOMAIN: ${OPENNEXUS_DOMAIN:?Set OPENNEXUS_DOMAIN in .env}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - server
+volumes:
+  shares:
+  caddy-data:
+  caddy-config:

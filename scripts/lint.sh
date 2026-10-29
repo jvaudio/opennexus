@@ -11,7 +11,7 @@ ROOT=${0:A:h:h}
 cd "$ROOT"
 failed=0
 
-swift format lint --strict -r Sources Tests App/OpenNexus || failed=1
+swift format lint --strict -r Sources Tests App/OpenNexus App/Services server/Sources server/Tests || failed=1
 
 # The only files allowed to name the old mark: the kit's own brief, the plan that
 # inventoried it, and this script.

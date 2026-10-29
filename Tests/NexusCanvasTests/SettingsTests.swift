@@ -12,13 +12,13 @@ import Testing
     @Test func everyPaneInOrderWithTints() {
         #expect(
             SettingsSchema.panes.map(\.title) == [
-                "General", "Editing", "Appearance", "Files & Backup", "AI", "Shortcuts", "Export", "Integrations",
-                "Privacy & Data", "Accessibility",
+                "General", "Editing", "Appearance", "Files & Backup", "AI", "Shortcuts", "Export", "Sharing",
+                "Integrations", "Privacy & Data", "Accessibility",
             ])
         #expect(
             SettingsSchema.panes.map(\.tint) == [
-                "#8E8E96", "#1E8BE0", "#D6408B", "#E08A00", "#0F7F7A", "#5850EC", "#C25E00", "#7A4CC2", "#17171C",
-                "#1E6FB8",
+                "#8E8E96", "#1E8BE0", "#D6408B", "#E08A00", "#0F7F7A", "#5850EC", "#C25E00", "#1F7A68", "#7A4CC2",
+                "#17171C", "#1E6FB8",
             ])
     }
 

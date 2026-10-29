@@ -77,8 +77,13 @@ public final class CanvasHostView: NSView {
         let shotBar = NSHostingView(rootView: MapShotBar(controller: controller))
         let shotHint = NSHostingView(rootView: MapShotHintHost(controller: controller))
         let taskSheet = NSHostingView(rootView: TaskEditorSheetView(controller: controller))
+        // Share links (M44).
+        let shareSheet = NSHostingView(rootView: ShareSheetView(controller: controller))
+        let shareNotice = NSHostingView(rootView: ShareNoticeView(controller: controller))
+        let linksSheet = NSHostingView(rootView: ManageLinksView(controller: controller))
         let fileSheets: [NSView] = [
-            exportSheet, printSheet, mergeSheet, passwordSheet, reportSheet, snapshotSheet, taskSheet,
+            exportSheet, printSheet, mergeSheet, passwordSheet, reportSheet, snapshotSheet, taskSheet, shareSheet,
+            shareNotice, linksSheet,
         ]
         // Onboarding (M8).
         let tourBar = NSHostingView(rootView: TourOverlay(controller: controller, part: .bar))
@@ -102,6 +107,7 @@ public final class CanvasHostView: NSView {
             (exportSheet, Loc.t("Export")), (printSheet, Loc.t("Print")), (mergeSheet, Loc.t("Merge documents")),
             (passwordSheet, Loc.t("Password")), (reportSheet, Loc.t("Import report")),
             (snapshotSheet, Loc.t("Recovery snapshots")), (taskSheet, Loc.t("Task")),
+            (shareSheet, Loc.t("Share Link")), (shareNotice, Loc.t("Share Link")), (linksSheet, Loc.t("Share Links")),
             (shotBar, Loc.t("Map Shot")), (shotHint, Loc.t("Map Shot hint")), (tourBar, Loc.t("Tutorial")),
             (tourPill, Loc.t("Tutorial paused")),
             (tourFinish, Loc.t("Tutorial finished")), (tipHost, Loc.t("Tip")),
@@ -179,6 +185,9 @@ public final class CanvasHostView: NSView {
             if let h = v as? NSHostingView<ImportReportView> { h.sizingOptions = [.intrinsicContentSize] }
             if let h = v as? NSHostingView<SnapshotsSheetView> { h.sizingOptions = [.intrinsicContentSize] }
             if let h = v as? NSHostingView<TaskEditorSheetView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<ShareSheetView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<ShareNoticeView> { h.sizingOptions = [.intrinsicContentSize] }
+            if let h = v as? NSHostingView<ManageLinksView> { h.sizingOptions = [.intrinsicContentSize] }
             NSLayoutConstraint.activate([
                 v.centerXAnchor.constraint(equalTo: centerXAnchor),
                 v.centerYAnchor.constraint(equalTo: centerYAnchor),

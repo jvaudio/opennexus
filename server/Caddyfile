@@ -1,0 +1,8 @@
+# HTTPS for the OpenNexus Server. Caddy gets a certificate for the domain from Let's
+# Encrypt (or, for "localhost", from its own local authority).
+{$OPENNEXUS_DOMAIN} {
+	request_body {
+		max_size 50MB
+	}
+	reverse_proxy server:8787
+}

@@ -1,0 +1,112 @@
+/* The share page's own messages (the map itself is viewer-core's). */
+
+:root {
+  color-scheme: light dark;
+  --share-bg: #f6f6f8;
+  --share-card: #ffffff;
+  --share-text: #1d1d1f;
+  --share-muted: #55555f;
+  --share-line: #d9d9e0;
+  --share-accent: #5b45c2;
+  --share-error: #b3261e;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --share-bg: #1f1f22;
+    --share-card: #26262a;
+    --share-text: #f2f2f5;
+    --share-muted: #b4b4bd;
+    --share-line: #3a3a40;
+    --share-accent: #b9a8ff;
+    --share-error: #ffb4ab;
+  }
+}
+
+body {
+  background: var(--share-bg);
+  color: var(--share-text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+}
+
+.share {
+  box-sizing: border-box;
+  max-width: 34rem;
+  margin: 12vh auto 0;
+  padding: 28px 32px;
+  background: var(--share-card);
+  border: 1px solid var(--share-line);
+  border-radius: 14px;
+}
+
+.share h1 {
+  margin: 0 0 8px;
+  font-size: 21px;
+  font-weight: 650;
+}
+
+.share p {
+  margin: 0 0 16px;
+  color: var(--share-muted);
+}
+
+.share form {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 10px;
+  align-items: center;
+}
+
+.share label {
+  grid-column: 1 / -1;
+  font-weight: 600;
+}
+
+.share input {
+  font: inherit;
+  padding: 7px 10px;
+  border: 1px solid var(--share-line);
+  border-radius: 8px;
+  background: var(--share-bg);
+  color: var(--share-text);
+}
+
+.share button {
+  font: inherit;
+  font-weight: 600;
+  padding: 7px 16px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--share-accent);
+  color: #ffffff;
+  cursor: pointer;
+}
+
+@media (prefers-color-scheme: dark) {
+  .share button {
+    color: #1d1d1f;
+  }
+}
+
+.share button:disabled {
+  opacity: 0.6;
+}
+
+.share :focus-visible {
+  outline: 2px solid var(--share-accent);
+  outline-offset: 2px;
+}
+
+.share .share-error {
+  grid-column: 1 / -1;
+  margin: 0;
+  min-height: 1.5em;
+  color: var(--share-error);
+}
+
+@media (max-width: 600px) {
+  .share {
+    margin: 16px;
+    padding: 20px;
+  }
+}

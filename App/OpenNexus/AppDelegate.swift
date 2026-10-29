@@ -42,6 +42,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         if !launchedAtLogin { Onboarding.launch() }
         Updates.shared.start()
+        // Links past their expiry date are deleted where they're stored (when sharing is on).
+        Task { await ShareCenter.shared.sweepExpired() }
     }
 
     /// Spotlight results open straight to the topic; Handoff for iCloud documents is

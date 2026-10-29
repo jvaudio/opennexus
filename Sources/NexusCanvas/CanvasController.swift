@@ -127,6 +127,14 @@ public final class CanvasController {
     /// Pictures the merge sheet is reading, by name (D191).
     @ObservationIgnored var mergeReads: [String: Task<Void, Never>] = [:]
     public internal(set) var importReport: ImportReport?
+    /// File › Share Link… (M44): the sheet, why it can't open, and Manage Share Links….
+    public internal(set) var shareState: ShareState?
+    public var shareNotice: ShareCenter.Failure?
+    public var manageLinks = false
+    @ObservationIgnored public var shareCenter: ShareCenter = .shared
+    /// The document's file, for links that update when it's saved (the app sets it).
+    @ObservationIgnored public var documentPath: String?
+    @ObservationIgnored var shareRepublish: Task<Void, Never>?
     /// File › Set Password… sheet (the app encrypts on save).
     public var passwordSheet = false
     public var documentEncrypted = false
@@ -177,6 +185,8 @@ public final class CanvasController {
     @ObservationIgnored public var onSaveDocument: ((DocumentModel, String) -> Void)?
     /// "Use a local model" and ⌘, open Settings › AI.
     @ObservationIgnored public var onOpenAISettings: (() -> Void)?
+    /// Opens Settings at a pane ("privacy", "sharing").
+    @ObservationIgnored public var onOpenSettings: ((String) -> Void)?
     /// Opens Settings › Shortcuts, recording a new key for the command (the palette's
     /// "Shortcuts › …" row).
     @ObservationIgnored public var onRebind: ((CommandID) -> Void)?

@@ -106,7 +106,10 @@ final class NexusDocument: NSDocument {
         completionHandler: @escaping ((any Error)?) -> Void
     ) {
         super.save(to: url, ofType: typeName, for: saveOperation) { [weak self] error in
-            if error == nil, let self { Integrations.shared.documentSaved(self) }
+            if error == nil, let self {
+                Integrations.shared.documentSaved(self)
+                (self.windowControllers.first as? DocumentWindowController)?.documentSaved(to: url, saveOperation)
+            }
             completionHandler(error)
         }
     }

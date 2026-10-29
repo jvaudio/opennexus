@@ -21,6 +21,8 @@ let package = Package(
         .library(name: "NexusWidgetsKit", targets: ["NexusWidgetsUI"]),
         // The CLI's code, for the app's embedded `nexus` tool target.
         .library(name: "NexusAgentKit", targets: ["NexusAgent"]),
+        // For OpenNexusNet.xpc only (M44): the one process that may use the network.
+        .library(name: "NexusNetKit", targets: ["NexusNet"]),
         .executable(name: "nexus", targets: ["nexus"]),
     ],
     targets: [
@@ -35,6 +37,9 @@ let package = Package(
             resources: [.copy("Resources/nexus.schema.json"), .copy("Resources/viewer.schema.json")],
             swiftSettings: strict
         ),
+        // HTTP with an allow-list and a request log, AWS SigV4, and the share destinations
+        // (M44). Linked only into OpenNexusNet.xpc: the app and its extensions never link it.
+        .target(name: "NexusNet", dependencies: ["NexusCore", "NexusFormat"], swiftSettings: strict),
         // Tokens, themes, node styles, contrast checks.
         .target(name: "NexusTheme", dependencies: ["NexusCore"], swiftSettings: strict),
         // Command registry, key chords, profiles, conflict detection.
@@ -81,7 +86,11 @@ let package = Package(
         ),
         .testTarget(name: "NexusThemeTests", dependencies: ["NexusTheme", "NexusCore"]),
         .testTarget(name: "NexusKeysTests", dependencies: ["NexusKeys"]),
-        .testTarget(name: "NexusCanvasTests", dependencies: ["NexusCanvas", "NexusFormat", "NexusWidgetsUI"]),
+        // The share tests run the network service in process, against stubs and Docker (M44).
+        .testTarget(
+            name: "NexusCanvasTests", dependencies: ["NexusCanvas", "NexusFormat", "NexusWidgetsUI", "NexusNet"]),
+        .testTarget(
+            name: "NexusNetTests", dependencies: ["NexusNet", "NexusFormat", "NexusCore"], resources: [.copy("Fixtures")]),
         .testTarget(name: "NexusAITests", dependencies: ["NexusAI", "NexusCore"]),
         .testTarget(name: "NexusAgentTests", dependencies: ["NexusAgent", "NexusCanvas", "NexusFormat", "NexusCore"]),
         .testTarget(

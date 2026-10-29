@@ -3,3 +3,4 @@ viewer-core/dist/
 test-results/
 playwright-report/
 fixtures/
+viewer-app/dist/

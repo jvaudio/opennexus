@@ -7,9 +7,11 @@ import { release } from "node:os";
 const firefoxStarts =
   process.env.NEXUS_E2E_FIREFOX === "1" || process.platform !== "darwin" || Number(release().split(".")[0]) < 27;
 
-// The viewer opens from disk (file://), as a reader opens an exported .html.
+// The viewer opens from disk (file://), as a reader opens an exported .html. Share links
+// (M44) open on the viewer site, served from viewer-app/dist as GitHub Pages would.
 export default defineConfig({
   testDir: "e2e",
+  webServer: { command: "node e2e/serve.mjs", url: "http://127.0.0.1:4310/s/", reuseExistingServer: true },
   fullyParallel: true,
   forbidOnly: true,
   reporter: [["list"]],

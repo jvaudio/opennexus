@@ -125,6 +125,10 @@
       "comment" : "Text with values filled in (DFD.swift)",
       "extractionState" : "migrated"
     },
+    "%@ has no credential saved. Edit it in Settings › Sharing." : {
+      "comment" : "Text with values filled in (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
     "%@ has no incoming flow, so nothing ever writes to it." : {
       "comment" : "Text with values filled in (DFD.swift)",
       "extractionState" : "migrated"
@@ -890,6 +894,30 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld relationships to missing topics or elements"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld requests" : {
+      "comment" : "Count phrase with plural variants (NetworkActivity.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld request"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld requests"
                 }
               }
             }
@@ -1757,6 +1785,10 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "A GitHub token with permission to create gists (fine-grained: Gists, read and write). Links are secret gists: unlisted, but anyone with the address can fetch the sealed file." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "A guide for %@ is coming soon." : {
       "comment" : "Text with values filled in (GuideViews.swift)",
       "extractionState" : "migrated"
@@ -1803,6 +1835,10 @@
     },
     "A process with no output" : {
       "comment" : "UI text (DFD.swift)",
+      "extractionState" : "migrated"
+    },
+    "A separate service makes every request; OpenNexus itself still has no network permission." : {
+      "comment" : "Settings footnote",
       "extractionState" : "migrated"
     },
     "a summary" : {
@@ -1885,6 +1921,10 @@
       "comment" : "Threat risk or status",
       "extractionState" : "migrated"
     },
+    "Access key ID" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Access review" : {
       "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
@@ -1913,6 +1953,14 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Add %@" : {
+      "comment" : "Text with values filled in (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Add a bucket, a GitHub gist or your own OpenNexus Server in Settings › Sharing. Links are sealed before they’re uploaded, so it can’t read them." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Add a child (⇥)" : {
       "comment" : "UI text (MouseAids.swift)",
       "extractionState" : "migrated"
@@ -1935,6 +1983,10 @@
     },
     "Add a Mitigation under each threat from {insert.slash}; the threat table marks it mitigated." : {
       "comment" : "Guide tip (threatModel). Keep each {command.id} as it is: it shows the command's keys.",
+      "extractionState" : "migrated"
+    },
+    "Add a place to store links in Settings › Sharing." : {
+      "comment" : "UI text (Sharing.swift)",
       "extractionState" : "migrated"
     },
     "Add a sibling (↩)" : {
@@ -1971,6 +2023,10 @@
     },
     "Add data stores" : {
       "comment" : "Guide step (Guide mode, dfd)",
+      "extractionState" : "migrated"
+    },
+    "Add Destination" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Add elements" : {
@@ -2229,6 +2285,10 @@
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
     },
+    "An encrypted link anyone can open in a browser" : {
+      "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
     "An indented hierarchy, like folders in a file tree" : {
       "comment" : "Diagram type summary (starter picker)",
       "extractionState" : "migrated"
@@ -2259,6 +2319,10 @@
     },
     "Any MCP client on this Mac (Claude, Codex, Cursor…) can read and edit maps in the folders you allow. Nothing is uploaded." : {
       "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
+    "Anyone with the link can open the map. Revoke it in File › Manage Share Links…." : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "API Gateway" : {
@@ -2425,6 +2489,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Ask for a password" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Ask, or type @ to reference a node…" : {
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
@@ -2458,7 +2526,7 @@
       "extractionState" : "migrated"
     },
     "Attachments" : {
-      "comment" : "UI text (ViewerBundle.swift)",
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Attack tree" : {
@@ -2690,7 +2758,7 @@
       "extractionState" : "migrated"
     },
     "Branch" : {
-      "comment" : "UI text (FileViews.swift)",
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Branch colour" : {
@@ -2811,6 +2879,10 @@
     },
     "Brutal" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Bucket" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Build %@ · Open source · MIT" : {
@@ -3298,7 +3370,7 @@
       "extractionState" : "migrated"
     },
     "Comments" : {
-      "comment" : "UI text (FileViews.swift)",
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Commit" : {
@@ -3549,6 +3621,10 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
+    "Copy Link" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Copy style" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
@@ -3579,6 +3655,10 @@
     },
     "Couldn’t import “%@”: %@" : {
       "comment" : "Text with values filled in (ImageToMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Couldn’t make the link: %@" : {
+      "comment" : "Text with values filled in (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Couldn’t open the snapshot" : {
@@ -3679,6 +3759,10 @@
     },
     "Create from clipboard, add to inbox, export, convert" : {
       "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
+    "Create Link" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Create new node “%@”" : {
@@ -3969,6 +4053,10 @@
       "comment" : "Text with values filled in (LegendViews.swift)",
       "extractionState" : "migrated"
     },
+    "Destinations" : {
+      "comment" : "Settings section",
+      "extractionState" : "migrated"
+    },
     "Detach" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
@@ -4013,6 +4101,10 @@
       "comment" : "UI text (DiagramOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "Didn’t work." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Dim" : {
       "comment" : "UI text (ViewOverlays.swift)",
       "extractionState" : "migrated"
@@ -4045,7 +4137,7 @@
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
-    "Documents, AI prompts and AI results never leave this Mac. OpenNexus itself has no network permission, so macOS blocks any connection it might try." : {
+    "Documents, AI prompts and AI results never leave this Mac unsealed. OpenNexus itself has no network permission, so macOS blocks any connection it might try." : {
       "comment" : "UI text (NetworkActivity.swift)",
       "extractionState" : "migrated"
     },
@@ -4185,6 +4277,10 @@
       "comment" : "Cheat sheet column",
       "extractionState" : "migrated"
     },
+    "Edit %@" : {
+      "comment" : "Text with values filled in (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Edit colour theme" : {
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
@@ -4265,6 +4361,10 @@
       "comment" : "Settings value",
       "extractionState" : "migrated"
     },
+    "Edit…" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Editing" : {
       "comment" : "Settings pane",
       "extractionState" : "migrated"
@@ -4291,6 +4391,10 @@
     },
     "Email addresses" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Emails, keys and names are masked (Settings › Export)." : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Emails, keys, names, phones; review each hit" : {
@@ -4355,6 +4459,10 @@
     },
     "End on this slide's topic" : {
       "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Endpoint" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Endpoints auto-slide to best edge" : {
@@ -4457,6 +4565,10 @@
       "comment" : "Guide tip (dfd). Keep each {command.id} as it is: it shows the command's keys.",
       "extractionState" : "migrated"
     },
+    "Every layout" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Every model runs on this Mac. OpenNexus v1 offers no cloud models, including Private Cloud Compute." : {
       "comment" : "Settings pane subtitle",
       "extractionState" : "migrated"
@@ -4503,6 +4615,26 @@
     },
     "Expand Zone" : {
       "comment" : "UI text (CanvasMenu.swift)",
+      "extractionState" : "migrated"
+    },
+    "Expire after" : {
+      "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "expired" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Expires" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "expires %@" : {
+      "comment" : "Text with values filled in (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Expiry date" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Export" : {
@@ -4571,6 +4703,10 @@
     },
     "Export JSON" : {
       "comment" : "UI text (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
+    "Export Log…" : {
+      "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
     "Export slides as %@" : {
@@ -4705,12 +4841,20 @@
       "comment" : "Command category",
       "extractionState" : "migrated"
     },
+    "File › Manage Share Links…" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "File › Revert To" : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
     "File › Set Password…" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "File › Share Link… ⌃⌘S" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "File format" : {
@@ -4739,6 +4883,10 @@
     },
     "Fill Colour" : {
       "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Fill in the address fields first." : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Filled · Pill" : {
@@ -4937,6 +5085,10 @@
       "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
     },
+    "Folder in the bucket" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Follow branch" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
@@ -5103,6 +5255,14 @@
     },
     "GitHub" : {
       "comment" : "Settings value",
+      "extractionState" : "migrated"
+    },
+    "GitHub Gist" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "GitHub Gist…" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "github.com\/jvaudio\/opennexus" : {
@@ -5377,6 +5537,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Host" : {
+      "comment" : "UI text (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
     "Hourly, 30 days" : {
       "comment" : "Settings value",
       "extractionState" : "migrated"
@@ -5541,6 +5705,18 @@
       "comment" : "Text with values filled in (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "In 1 day" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "In 7 days" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "In 30 days" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "In document" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -5685,6 +5861,10 @@
       "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
+    "It updates each time you save this document." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Italic" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
@@ -5723,6 +5903,10 @@
     },
     "Justify topic alignment" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Keep" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Keep %@" : {
@@ -6025,12 +6209,32 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Link copied" : {
+      "comment" : "UI text (CanvasController+Share.swift)",
+      "extractionState" : "migrated"
+    },
+    "Link copied · it asks for the password" : {
+      "comment" : "UI text (CanvasController+Share.swift)",
+      "extractionState" : "migrated"
+    },
     "Link Image" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
     },
+    "Link password" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Link revoked" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Link Tasks" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Link updated" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "LINKED FROM %lld TOPICS" : {
@@ -6057,8 +6261,16 @@
         }
       }
     },
+    "Links" : {
+      "comment" : "Settings section",
+      "extractionState" : "migrated"
+    },
     "Links & attachments" : {
       "comment" : "UI text (FormatPanelMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Links are stored where you choose: an S3-compatible bucket (AWS, Cloudflare R2, Backblaze B2, MinIO…), a secret GitHub gist, or your own OpenNexus Server." : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Links keep the file where it is; the file itself is not copied into the document." : {
@@ -6221,6 +6433,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Manage Share Links…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
     "Map" : {
       "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
@@ -6310,6 +6526,30 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Mask %lld emails, keys or names in this export"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Mask %lld emails, keys or names in this link" : {
+      "comment" : "Count phrase with plural variants (ShareViews.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mask %lld email, key or name in this link"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Mask %lld emails, keys or names in this link"
                 }
               }
             }
@@ -6898,7 +7138,7 @@
       "extractionState" : "migrated"
     },
     "Network" : {
-      "comment" : "UI text (DiagramOverlays.swift)",
+      "comment" : "Settings section",
       "extractionState" : "migrated"
     },
     "Network activity" : {
@@ -6965,6 +7205,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "New links" : {
+      "comment" : "Settings section",
+      "extractionState" : "migrated"
+    },
     "New Theme" : {
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
@@ -7021,6 +7265,10 @@
       "comment" : "UI text (CommentViews.swift)",
       "extractionState" : "migrated"
     },
+    "No credential saved" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "No dated tasks on this canvas" : {
       "comment" : "UI text (PresentExtras.swift)",
       "extractionState" : "migrated"
@@ -7073,8 +7321,16 @@
       "comment" : "UI text (TreeOperations.swift)",
       "extractionState" : "migrated"
     },
+    "No requests in the last 30 days." : {
+      "comment" : "UI text (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
     "No settings match “%@”" : {
       "comment" : "Text with values filled in (SettingsView.swift)",
+      "extractionState" : "migrated"
+    },
+    "No share links yet. Choose File › Share Link… to make one." : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "No snapshots yet. OpenNexus keeps one every five minutes while you edit, and when you close." : {
@@ -7141,6 +7397,10 @@
       "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
+    "Not offered: OpenNexus collects nothing and fetches nothing on its own" : {
+      "comment" : "Why a Settings row is locked",
+      "extractionState" : "migrated"
+    },
     "Not started" : {
       "comment" : "UI text (LegendViews.swift)",
       "extractionState" : "migrated"
@@ -7158,7 +7418,7 @@
       "extractionState" : "migrated"
     },
     "Notes" : {
-      "comment" : "UI text (AIViews.swift)",
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Notes as appendix" : {
@@ -7213,6 +7473,10 @@
       "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
+    "Nowhere to store links yet" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Numbering" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
@@ -7245,6 +7509,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Off, OpenNexus connects to nothing. On, only the features below you turn on, only to places you set up" : {
+      "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
     "On" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -7255,6 +7523,10 @@
     },
     "On %@" : {
       "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
+    "On a date" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "On demand" : {
@@ -7353,6 +7625,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Open in Browser" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Open Inbox Map" : {
       "comment" : "UI text (QuickCapture.swift)",
       "extractionState" : "migrated"
@@ -7371,6 +7647,10 @@
     },
     "Open Recovery…" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Open Settings…" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Open source" : {
@@ -7393,6 +7673,10 @@
       "comment" : "Text with values filled in (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
+    "OpenNexus doesn’t use the network unless you turn it on. Turn on “Use the network” and “Share links” in Settings › Privacy & Data, then add a place to store links in Settings › Sharing." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "OpenNexus follows macOS settings first; these refine or override them." : {
       "comment" : "Settings pane subtitle",
       "extractionState" : "migrated"
@@ -7405,12 +7689,16 @@
       "comment" : "UI text (AppPreferences.swift)",
       "extractionState" : "migrated"
     },
-    "OpenNexus makes no network requests" : {
-      "comment" : "Why a Settings row is locked",
-      "extractionState" : "migrated"
-    },
     "OpenNexus schema · the whole document · assets stay in the .nexus package" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "OpenNexus Server" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "OpenNexus Server…" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "OpenNexus uses it for **%@** (%@ scope). You’re assigning it to **%@**." : {
@@ -7611,6 +7899,10 @@
     },
     "Pasted Image" : {
       "comment" : "UI text (ImageToMap.swift)",
+      "extractionState" : "migrated"
+    },
+    "Path-style addresses" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Pattern" : {
@@ -8005,8 +8297,16 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Public address (optional)" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "px" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "QR code of the link" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Quality" : {
@@ -8105,6 +8405,14 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Readers fetch the sealed map from the bucket, so it needs public read for the folder and CORS for the viewer (Set Up CORS does that)." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Readers need the password to open it." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Reading %@" : {
       "comment" : "Text with values filled in (FileViews.swift)",
       "extractionState" : "migrated"
@@ -8131,6 +8439,10 @@
     },
     "Rebind" : {
       "comment" : "UI text (ViewOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Received" : {
+      "comment" : "UI text (NetworkActivity.swift)",
       "extractionState" : "migrated"
     },
     "Recent" : {
@@ -8221,6 +8533,10 @@
       "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
+    "refused" : {
+      "comment" : "UI text (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
     "Regex, e.g. ticket or account IDs (one per line)" : {
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
@@ -8255,6 +8571,10 @@
     },
     "Remember in Keychain" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Remove" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Remove %@" : {
@@ -8327,6 +8647,10 @@
     },
     "Remove zones (keep content)" : {
       "comment" : "UI text (FormatPanelElements.swift)",
+      "extractionState" : "migrated"
+    },
+    "Removed destination" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Rename" : {
@@ -8431,6 +8755,14 @@
     },
     "Repudiation" : {
       "comment" : "STRIDE category",
+      "extractionState" : "migrated"
+    },
+    "request" : {
+      "comment" : "UI text (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
+    "Request" : {
+      "comment" : "UI text (NetworkActivity.swift)",
       "extractionState" : "migrated"
     },
     "requests" : {
@@ -8553,6 +8885,18 @@
       "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
+    "Revoke Link" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Revoke share link" : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
+    "Revoke…" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Rewrite" : {
       "comment" : "UI text (AIViews.swift)",
       "extractionState" : "migrated"
@@ -8661,6 +9005,14 @@
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
+    "S3-compatible bucket" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "S3-Compatible Bucket…" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Safari web clipper" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -8670,7 +9022,7 @@
       "extractionState" : "migrated"
     },
     "Save" : {
-      "comment" : "UI text (ThemeSheets.swift)",
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Save a viewer copy for browsers and Obsidian" : {
@@ -8721,6 +9073,10 @@
       "comment" : "UI text (CanvasController+Styling.swift)",
       "extractionState" : "migrated"
     },
+    "Save the document first to keep its links up to date." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Save Theme" : {
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
@@ -8743,6 +9099,10 @@
     },
     "Saved for Xmind 2020 or later" : {
       "comment" : "UI text (CanvasController+Files.swift)",
+      "extractionState" : "migrated"
+    },
+    "Saved in the Keychain" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Saved to %@" : {
@@ -8775,6 +9135,14 @@
     },
     "Scroll wheel" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Sealed on this Mac with AES-256-GCM before it leaves. The key is in the link after the #, which browsers never send, so where it’s stored can’t read it." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Sealing and uploading…" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Search" : {
@@ -8953,6 +9321,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Sent" : {
+      "comment" : "UI text (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
     "sequence" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -8971,6 +9343,10 @@
     },
     "Server" : {
       "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Server address" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Server off · local only" : {
@@ -9011,6 +9387,14 @@
     },
     "Set Progress" : {
       "comment" : "UI text (CanvasController+Tasks.swift)",
+      "extractionState" : "migrated"
+    },
+    "Set up CORS" : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
+    "Set Up CORS" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Settings" : {
@@ -9055,6 +9439,54 @@
     },
     "Share extension" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Share link" : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
+    "Share Link" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Share Link…" : {
+      "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Share links" : {
+      "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Share Links" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Share links are on: the separate network service uploads maps, sealed on this Mac, only to the destinations in Settings › Sharing. In the last 7 days it made %@ to %@." : {
+      "comment" : "Text with values filled in (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
+    "Share links are on: the separate network service uploads maps, sealed on this Mac, only to the destinations in Settings › Sharing. It has made no requests in the last 7 days." : {
+      "comment" : "UI text (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
+    "Share links are sealed on this Mac; the key travels only in the link. Store them in a bucket, a gist or your own server." : {
+      "comment" : "Settings pane subtitle",
+      "extractionState" : "migrated"
+    },
+    "Share links use the network" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Share links use the network, which is off. Turn it on in Settings › Privacy & Data." : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
+    "Share…" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Sharing" : {
+      "comment" : "Settings pane",
       "extractionState" : "migrated"
     },
     "sheets → canvases" : {
@@ -9477,8 +9909,16 @@
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
+    "Stops working %@." : {
+      "comment" : "Text with values filled in (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Store document passwords in Keychain" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Store in" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Stores all written" : {
@@ -9761,8 +10201,16 @@
       "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
+    "Test" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Test connection" : {
       "comment" : "UI text (AISettingsView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Test destination" : {
+      "comment" : "UI text (Sharing.swift)",
       "extractionState" : "migrated"
     },
     "Text · applies to selected characters while editing" : {
@@ -9813,6 +10261,10 @@
       "comment" : "Guide tip (threatModel). Keep each {command.id} as it is: it shows the command's keys.",
       "extractionState" : "migrated"
     },
+    "The destination didn’t say where it stored the link." : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
     "The due date is before the start" : {
       "comment" : "UI text (CanvasController+Tasks.swift)",
       "extractionState" : "migrated"
@@ -9825,8 +10277,20 @@
       "comment" : "Text with values filled in (DFD.swift)",
       "extractionState" : "migrated"
     },
+    "The network is off (Privacy & Data › Network), so the network service connects to nothing." : {
+      "comment" : "UI text (NetworkActivity.swift)",
+      "extractionState" : "migrated"
+    },
+    "The network is off: links can be copied, not updated or revoked." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "The outline as headings, notes as paragraphs, each canvas's diagram as an image." : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "The password isn’t in the link. Send it another way." : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "The passwords don’t match." : {
@@ -9851,6 +10315,10 @@
     },
     "The timeline scale follows the Gantt view (⌘= and ⌘- while it shows)." : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "The token set as OPENNEXUS_UPLOAD_TOKEN on your server." : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Theme" : {
@@ -9939,6 +10407,10 @@
     },
     "This document" : {
       "comment" : "UI text (DocumentFiles.swift)",
+      "extractionState" : "migrated"
+    },
+    "This link’s key is missing from the Keychain." : {
+      "comment" : "UI text (Sharing.swift)",
       "extractionState" : "migrated"
     },
     "This list" : {
@@ -10055,6 +10527,10 @@
     },
     "Tile at actual size" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "Time" : {
+      "comment" : "UI text (NetworkActivity.swift)",
       "extractionState" : "migrated"
     },
     "Time: %@" : {
@@ -10305,6 +10781,10 @@
       "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
+    "Turn on the network in Privacy & Data to test or use these." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Tutorial" : {
       "comment" : "UI text (TourViews.swift)",
       "extractionState" : "migrated"
@@ -10357,7 +10837,7 @@
       "comment" : "UI text (AISettingsView.swift)",
       "extractionState" : "migrated"
     },
-    "Unavailable by design: OpenNexus v1 has no network permission." : {
+    "Unavailable by design: nothing about you or your documents is ever sent." : {
       "comment" : "Settings footnote",
       "extractionState" : "migrated"
     },
@@ -10393,6 +10873,10 @@
       "comment" : "UI text (DocumentWindowController.swift)",
       "extractionState" : "migrated"
     },
+    "Update" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Update checks are off (Settings › General › Updates); the update service connects only when you choose Check for Updates…." : {
       "comment" : "UI text (NetworkActivity.swift)",
       "extractionState" : "migrated"
@@ -10401,12 +10885,28 @@
       "comment" : "Text with values filled in (NetworkActivity.swift)",
       "extractionState" : "migrated"
     },
+    "Update share link" : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
     "Update style" : {
       "comment" : "UI text (FormatPanel.swift)",
       "extractionState" : "migrated"
     },
     "UPDATE STYLE" : {
       "comment" : "UI text (FormatPanel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Update the link when I save" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Update when I save" : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "updated %@" : {
+      "comment" : "Text with values filled in (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Updated from disk · ⌘Z undoes" : {
@@ -10429,6 +10929,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Uploads sealed maps to a destination in Settings › Sharing" : {
+      "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
     "Usage statistics are off. See Privacy & Data." : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -10439,6 +10943,10 @@
     },
     "Use a local model" : {
       "comment" : "UI text (AIViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Use an https:\/\/ address; http:\/\/ works only for this Mac." : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Use High Contrast theme with Increase Contrast" : {
@@ -10455,6 +10963,10 @@
     },
     "Use the arrows to move" : {
       "comment" : "UI text (Tour.swift)",
+      "extractionState" : "migrated"
+    },
+    "Use the network for sharing, sync and collaboration" : {
+      "comment" : "Settings row",
       "extractionState" : "migrated"
     },
     "used %lld×" : {
@@ -10507,6 +11019,14 @@
     },
     "View" : {
       "comment" : "Command category",
+      "extractionState" : "migrated"
+    },
+    "Viewer" : {
+      "comment" : "Settings section",
+      "extractionState" : "migrated"
+    },
+    "Viewer address" : {
+      "comment" : "Settings row",
       "extractionState" : "migrated"
     },
     "Vision" : {
@@ -10569,6 +11089,10 @@
       "comment" : "Starter summary (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
     },
+    "What this link shows is no longer in the document." : {
+      "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
     "What will you map first?" : {
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
@@ -10591,6 +11115,10 @@
     },
     "Where data rests: a database, a queue, a log. Pick Data Store from {insert.slash}." : {
       "comment" : "Guide tip (dfd). Keep each {command.id} as it is: it shows the command's keys.",
+      "extractionState" : "migrated"
+    },
+    "Where links open. The viewer is a static site anyone can host" : {
+      "comment" : "Settings row detail",
       "extractionState" : "migrated"
     },
     "While panning" : {
@@ -10639,6 +11167,10 @@
     },
     "Working days" : {
       "comment" : "UI text (TaskViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Works." : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Workstreams and tasks" : {
@@ -10711,6 +11243,10 @@
     },
     "Your keys already work here." : {
       "comment" : "UI text (OnboardingViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Your link is ready" : {
+      "comment" : "UI text (ShareViews.swift)",
       "extractionState" : "migrated"
     },
     "Your name on new comments. Empty uses this Mac’s account name." : {

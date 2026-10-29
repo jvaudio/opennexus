@@ -27,12 +27,15 @@ Sources/
                        MindManager, Mermaid, PlantUML, draw.io, images and PDF to map
   NexusAI              on-device AI (Apple Intelligence), never the network
   NexusAgent           the nexus CLI and MCP server's tools
+  NexusNet             HTTP client and share destinations, linked only into OpenNexusNet.xpc
   NexusCanvas          AppKit canvas and SwiftUI chrome (rendering, editing, animation)
   NexusWidgetsUI       widgets
   nexus                command-line tool
 App/                   Xcode project for the macOS app and its extensions (thin shell)
   tools/               make_project.py, release.sh, axaudit.swift
 schema/                published JSON Schema for .nexus files
+web/                   the interactive viewer (viewer-core) and the share-link site (viewer-app)
+server/                OpenNexus Server: stores share links (Swift, Docker; see its README)
 brand/                 the Aperture brand kit: spec (BRAND.md), icons, marks, lockups
 scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints)
 Handoff/               design handoff package (brief, artboards, screenshots, specs)
@@ -65,6 +68,13 @@ date with `brand/`):
 scripts/lint.sh
 ```
 
+Share links for real: MinIO and two OpenNexus Servers in Docker, links made against them,
+then opened in Chromium and WebKit (needs Docker; everything stays on `127.0.0.1`):
+
+```bash
+scripts/test-share.sh
+```
+
 ## Install
 
 Download `OpenNexus-<version>.dmg` from the release, open it and drag OpenNexus to
@@ -89,6 +99,17 @@ The app itself still has no network permission. Sparkle's separate update servic
 [`appcast.xml`](appcast.xml) from this repository and the DMG from GitHub Releases, and
 every update must carry the project's signature before it's installed. Version 0.1 predates
 updates, so install 0.2 by hand once.
+
+### Share links
+
+File › Share Link… (⌃⌘S) turns a map, a canvas, a branch or a zone into a link anyone can
+open in a browser. The map is encrypted on your Mac and the key is only in the link, so the
+place that stores it (your own S3-compatible bucket, a secret GitHub gist, or an
+[OpenNexus Server](server/README.md) you run) holds bytes it can't read.
+
+Sharing is off until you turn it on in Settings › Privacy & Data › Network. Even then the
+app has no network permission: a separate service, OpenNexusNet, makes every request, only
+to the destinations you set up in Settings › Sharing, and Privacy & Data lists each one.
 
 ### Command-line tool
 

@@ -49,6 +49,19 @@ TARGETS = [
     dict(name="SpotlightImporter", ext=True, packages=["NexusShared"]),
     dict(name="Share", ext=True, packages=["NexusShared"]),
     dict(name="Widgets", ext=True, packages=["NexusShared", "NexusWidgetsKit"]),
+    # The network service (M44, D313): the only target with the network entitlement.
+    dict(
+        name="OpenNexusNet", type="com.apple.product-type.xpc-service", product="OpenNexusNet.xpc",
+        wrapper="wrapper.xpc-service", folder="Services/OpenNexusNet", packages=["NexusNetKit"], xpc=True,
+        settings={
+            "CODE_SIGN_ENTITLEMENTS": "Support/OpenNexusNet/OpenNexusNet.entitlements",
+            "INFOPLIST_FILE": "Support/OpenNexusNet/Info.plist",
+            "INFOPLIST_KEY_NSHumanReadableCopyright": "OpenNexus contributors",
+            "LD_RUNPATH_SEARCH_PATHS": ["$(inherited)", "@executable_path/../Frameworks", "@loader_path/../../../../Frameworks"],
+            "PRODUCT_BUNDLE_IDENTIFIER": f"{BUNDLE}.OpenNexusNet",
+            "SKIP_INSTALL": "YES",
+        },
+    ),
     dict(
         name="OpenNexusUITests", type="com.apple.product-type.bundle.ui-testing", product="OpenNexusUITests.xctest",
         wrapper="wrapper.cfbundle", folder="UITests", packages=[], test=True,
@@ -209,14 +222,16 @@ for t in TARGETS:
 
 app = TARGETS[0]
 embedded = [t for t in TARGETS[1:] if not t.get("test")]
-# The app embeds the extensions (PlugIns) and the CLI (Contents/Helpers), signing on copy.
+# The app embeds the extensions (PlugIns), the network service (XPCServices) and the CLI
+# (Contents/Helpers), signing on copy.
 embed_ext = oid("phase", "OpenNexus", "embed-extensions")
+embed_xpc = oid("phase", "OpenNexus", "embed-xpc")
 embed_cli = oid("phase", "OpenNexus", "embed-cli")
-ext_files, cli_files, deps = [], [], []
+ext_files, xpc_files, cli_files, deps = [], [], [], []
 for t in embedded:
     bf = oid("embed", t["name"])
     add("PBXBuildFile", bf, f'{bf} /* {t["product"]} in Embed */ = {{isa = PBXBuildFile; fileRef = {t["ref"]} /* {t["product"]} */; settings = {{ATTRIBUTES = (CodeSignOnCopy, {"RemoveHeadersOnCopy, " if t.get("ext") else ""}); }}; }};')
-    (ext_files if t.get("ext") else cli_files).append(f'{bf} /* {t["product"]} in Embed */')
+    (ext_files if t.get("ext") else xpc_files if t.get("xpc") else cli_files).append(f'{bf} /* {t["product"]} in Embed */')
     proxy = oid("proxy", t["name"])
     dep = oid("dependency", t["name"])
     add("PBXContainerItemProxy", proxy, f'{proxy} /* PBXContainerItemProxy */ = {{\n\t\t\tisa = PBXContainerItemProxy;\n\t\t\tcontainerPortal = {PROJ} /* Project object */;\n\t\t\tproxyType = 1;\n\t\t\tremoteGlobalIDString = {t["id"]};\n\t\t\tremoteInfo = {q(t["name"])};\n\t\t}};')
@@ -238,6 +253,7 @@ def copy_phase(ident, name, spec, path, files):
 
 
 copy_phase(embed_ext, "Embed Foundation Extensions", 13, "", ext_files)
+copy_phase(embed_xpc, "Embed XPC Services", 16, "$(CONTENTS_FOLDER_PATH)/XPCServices", xpc_files)
 
 # SwiftUI literals in the package resolve against the main bundle, so the app carries the
 # package catalog's compiled strings as its own Localizable table (M10).
@@ -260,7 +276,8 @@ for t in TARGETS:
     phases = [f'{t["phases"]["sources"]} /* Sources */', f'{t["phases"]["frameworks"]} /* Frameworks */', f'{t["phases"]["resources"]} /* Resources */']
     if n == "OpenNexus":
         phases += [
-            f"{embed_ext} /* Embed Foundation Extensions */", f"{embed_cli} /* Embed Command-Line Tool */",
+            f"{embed_ext} /* Embed Foundation Extensions */", f"{embed_xpc} /* Embed XPC Services */",
+            f"{embed_cli} /* Embed Command-Line Tool */",
             f"{LOC_PHASE} /* Localized strings */",
         ]
     own_deps = deps if n == "OpenNexus" else ([ui_dep] if t.get("test") else [])
@@ -294,7 +311,7 @@ for f in support_files:
     add("PBXFileReference", fid, f'{fid} /* {f} */ = {{isa = PBXFileReference; lastKnownFileType = {kind}; path = {q(f)}; sourceTree = "<group>"; }};')
     support_children.append(f"{fid} /* {f} */")
 for t in TARGETS:
-    if t.get("ext"):
+    if t.get("ext") or t.get("xpc"):
         n = t["name"]
         gid = oid("group", "Support", n)
         kids = []
@@ -309,7 +326,7 @@ add("PBXGroup", SUPPORT, f'{SUPPORT} /* Support */ = {{\n\t\t\tisa = PBXGroup;\n
 EXT_GROUP = oid("group", "Extensions")
 add("PBXGroup", EXT_GROUP, f'{EXT_GROUP} /* Extensions */ = {{\n\t\t\tisa = PBXGroup;\n\t\t\tchildren = (\n' + "".join(f'\t\t\t\t{t["sync"]} /* {t["name"]} */,\n' for t in TARGETS if t.get("ext")) + '\t\t\t);\n\t\t\tname = Extensions;\n\t\t\tsourceTree = "<group>";\n\t\t};')
 add("PBXGroup", PRODUCTS, f'{PRODUCTS} /* Products */ = {{\n\t\t\tisa = PBXGroup;\n\t\t\tchildren = (\n' + "".join(f'\t\t\t\t{t["ref"]} /* {t["product"]} */,\n' for t in TARGETS) + '\t\t\t);\n\t\t\tname = Products;\n\t\t\tsourceTree = "<group>";\n\t\t};')
-add("PBXGroup", MAIN_GROUP, f'{MAIN_GROUP} = {{\n\t\t\tisa = PBXGroup;\n\t\t\tchildren = (\n\t\t\t\t{app["sync"]} /* OpenNexus */,\n\t\t\t\t{EXT_GROUP} /* Extensions */,\n\t\t\t\t{TARGETS[-1]["sync"]} /* nexus */,\n\t\t\t\t{oid("sync", "OpenNexusUITests")} /* UITests */,\n\t\t\t\t{SUPPORT} /* Support */,\n\t\t\t\t{CONFIG_REF} /* Base.xcconfig */,\n\t\t\t\t{PRODUCTS} /* Products */,\n\t\t\t);\n\t\t\tsourceTree = "<group>";\n\t\t}};')
+add("PBXGroup", MAIN_GROUP, f'{MAIN_GROUP} = {{\n\t\t\tisa = PBXGroup;\n\t\t\tchildren = (\n\t\t\t\t{app["sync"]} /* OpenNexus */,\n\t\t\t\t{EXT_GROUP} /* Extensions */,\n\t\t\t\t{oid("sync", "OpenNexusNet")} /* OpenNexusNet */,\n\t\t\t\t{TARGETS[-1]["sync"]} /* nexus */,\n\t\t\t\t{oid("sync", "OpenNexusUITests")} /* UITests */,\n\t\t\t\t{SUPPORT} /* Support */,\n\t\t\t\t{CONFIG_REF} /* Base.xcconfig */,\n\t\t\t\t{PRODUCTS} /* Products */,\n\t\t\t);\n\t\t\tsourceTree = "<group>";\n\t\t}};')
 add("XCLocalSwiftPackageReference", PKG, f'{PKG} /* XCLocalSwiftPackageReference ".." */ = {{\n\t\t\tisa = XCLocalSwiftPackageReference;\n\t\t\trelativePath = ..;\n\t\t}};')
 for name, (url, minimum) in REMOTE.items():
     r = REMOTE_REF[name]

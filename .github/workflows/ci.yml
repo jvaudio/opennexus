@@ -32,6 +32,11 @@ jobs:
       - name: Test packages
         run: swift test
 
+      - name: Test the server
+        # The OpenNexus Server (M44): its own package, with its own dependencies.
+        working-directory: server
+        run: swift test
+
       - name: Web viewer
         # Typecheck, ESLint, Vitest, and Playwright in Chromium and WebKit (M43); Firefox
         # where it starts, not on macOS 27 (D326, playwright.config.ts).

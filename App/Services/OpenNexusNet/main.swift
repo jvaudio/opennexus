@@ -1,0 +1,34 @@
+import Foundation
+import NexusFormat
+import NexusNet
+
+/// OpenNexusNet.xpc (M44): the one OpenNexus process with the network entitlement (D313).
+/// The app hands it one job at a time; it makes the requests that job needs, only to the
+/// hosts the job allows, and replies with the outcome and a log entry for every request.
+/// An app's XPC service can be reached only by that app.
+final class Service: NSObject, NetServiceProtocol {
+    func perform(_ job: Data, body: Data, reply: @escaping @Sendable (Data) -> Void) {
+        guard let j = try? JSONDecoder().decode(NetJob.self, from: job) else {
+            reply((try? JSONEncoder().encode(NetReply.failed("Unreadable request."))) ?? Data())
+            return
+        }
+        Task {
+            let r = await NetService().perform(j, body: body)
+            reply((try? JSONEncoder().encode(r)) ?? Data())
+        }
+    }
+}
+
+final class Listener: NSObject, NSXPCListenerDelegate {
+    func listener(_ listener: NSXPCListener, shouldAcceptNewConnection connection: NSXPCConnection) -> Bool {
+        connection.exportedInterface = NSXPCInterface(with: NetServiceProtocol.self)
+        connection.exportedObject = Service()
+        connection.resume()
+        return true
+    }
+}
+
+let delegate = Listener()
+let listener = NSXPCListener.service()
+listener.delegate = delegate
+listener.resume()

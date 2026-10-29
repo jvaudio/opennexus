@@ -1,23 +1,25 @@
 {
   "name": "opennexus-web",
   "private": true,
-  "description": "OpenNexus in the browser: the interactive viewer (M43) and what grows from it.",
+  "description": "OpenNexus in the browser: the interactive viewer (M43), the viewer site (M44) and what grows from them.",
   "license": "MIT",
   "type": "module",
   "workspaces": [
-    "viewer-core"
+    "viewer-core",
+    "viewer-app"
   ],
   "engines": {
     "node": ">=20"
   },
   "scripts": {
-    "build": "npm run build -w viewer-core",
-    "fixtures": "cd .. && NEXUS_WRITE_VIEWER_FIXTURES=1 swift test --filter ViewerFixtures",
-    "typecheck": "tsc -p viewer-core --noEmit && tsc -p e2e --noEmit",
+    "build": "npm run build -w viewer-core && npm run build -w viewer-app",
+    "fixtures": "cd .. && NEXUS_WRITE_VIEWER_FIXTURES=1 swift test --filter \"ViewerFixtures|ShareFixtures\"",
+    "typecheck": "tsc -p viewer-core --noEmit && tsc -p viewer-app --noEmit && tsc -p e2e --noEmit",
     "lint": "eslint .",
     "test": "vitest run",
     "e2e": "playwright test",
-    "check": "npm run typecheck && npm run lint && npm run test && npm run fixtures && npm run e2e"
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build -w viewer-app && npm run fixtures && npm run e2e",
+    "vectors": "NEXUS_WRITE_VECTORS=1 vitest run viewer-app/test/sealed.test.ts && cd .. && NEXUS_WRITE_VECTORS=1 swift test --filter SealedTests"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",

@@ -5,6 +5,7 @@ import NexusCore
 import NexusFormat
 import NexusKeys
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// App-wide settings that live outside a document window (M8): appearance, language,
 /// launch behaviour, tabs, the menu bar's shortcuts, and the Settings buttons' actions.
@@ -228,7 +229,17 @@ final class AppPreferences {
                 ChatStore.clearAll()
             }
         case "privacy.log":
-            showInfo(Loc.t("Network activity"), NetworkActivity.summary(prefs))
+            let log = ShareCenter.shared.log
+            showInfo(
+                Loc.t("Network activity"),
+                NetworkActivity.summary(prefs, log: log.recent()) + "\n\n" + NetworkActivity.table(log.entries))
+        case "privacy.exportLog":
+            let panel = NSSavePanel()
+            panel.nameFieldStringValue = "OpenNexus network log.csv"
+            panel.allowedContentTypes = [.commaSeparatedText]
+            if panel.runModal() == .OK, let url = panel.url {
+                try? Data(ShareCenter.shared.log.csv().utf8).write(to: url, options: .atomic)
+            }
         default:
             if action.hasPrefix("snapshot.copy:") || action.hasPrefix("snapshot.compare:") {
                 let path = String(action.split(separator: ":", maxSplits: 1)[1])
