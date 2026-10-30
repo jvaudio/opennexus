@@ -74,7 +74,7 @@ struct AINoticeView: View {
                 }
             }
             .padding(16)
-            .frame(width: 400, alignment: .leading)
+            .fixedWidth(400, alignment: .leading)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
             .shadow(color: .black.opacity(0.15), radius: 14, y: 6)
@@ -165,7 +165,7 @@ struct PromptBarView: View {
                 .foregroundStyle(.chromeSecondary)
             }
             .padding(18)
-            .frame(width: 640)
+            .fixedWidth(640)
             .background(.background, in: RoundedRectangle(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(controller.aiColor.opacity(0.35), lineWidth: 1.5))
             .shadow(color: controller.aiColor.opacity(0.18), radius: 18, y: 6)
@@ -279,7 +279,7 @@ struct AIPanelView: View {
                 }
                 .padding(16)
             }
-            .frame(width: 380)
+            .panelWidth(380)
             .frame(maxHeight: .infinity)
             .background(.background)
             .overlay(alignment: .leading) { Rectangle().fill(.separator).frame(width: 1) }
@@ -422,7 +422,7 @@ struct AISheetView: View {
                 }
             }
             .padding(22)
-            .frame(width: 460)
+            .fixedWidth(460)
             .background(.background, in: RoundedRectangle(cornerRadius: 16))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(.separator))
             .shadow(color: .black.opacity(0.2), radius: 24, y: 10)

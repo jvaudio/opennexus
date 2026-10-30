@@ -26,6 +26,8 @@ public final class TouchDocumentModel {
     @ObservationIgnored public let ganttView: TouchGanttView
 
     public private(set) var viewMode: CanvasViewMode = .canvas
+    /// Compact width (the iPhone, M47c): Outline first, no Split, the bottom toolbar.
+    public private(set) var compact = false
     public var inspectorVisible = UserDefaults.standard.bool(forKey: "formatPanelVisible") {
         didSet { UserDefaults.standard.set(inspectorVisible, forKey: "formatPanelVisible") }
     }
@@ -59,6 +61,7 @@ public final class TouchDocumentModel {
     @ObservationIgnored public var onOpenDocument: (DocumentModel, String) -> Void = { _, _ in }
 
     @ObservationIgnored private var chromeBeforeImmersion: (inspector: Bool, mode: CanvasViewMode)?
+    @ObservationIgnored private var compactPlaced = false
     @ObservationIgnored private var player: AVAudioPlayer?
     @ObservationIgnored private var snapshotTimer: Timer?
 
@@ -132,6 +135,11 @@ public final class TouchDocumentModel {
             self.setImmersive(on)
             self.presenterVisible = on && ExternalDisplay.shared.connected
             if !on { self.controller.refreshView() }
+            // The iPhone reaches a TV or a Mac through Screen Mirroring (M47c, D419).
+            if on, self.compact, !ExternalDisplay.shared.connected {
+                self.controller.showToast(
+                    Loc.t("To present on a TV or a Mac, start Screen Mirroring in Control Center"))
+            }
         }
         controller.onTogglePresenter = { [weak self] in self?.presenterVisible.toggle() }
         controller.onExportSlides = { [weak self] f in self?.exportSlides(f) }
@@ -222,6 +230,74 @@ public final class TouchDocumentModel {
     // MARK: View modes and immersion
 
     public func setViewMode(_ m: CanvasViewMode) { controller.viewMode = m }
+
+    /// The size class changed (the screen calls this as it appears, and when an iPad's
+    /// window narrows or a large iPhone turns). The first time it's compact, the map opens
+    /// in its default view; Split, which compact width doesn't offer, becomes the Outline.
+    public func setCompact(_ on: Bool) {
+        compact = on
+        canvasView.compactTouch = on
+        canvasView.fitInsets =
+            on
+            ? UIEdgeInsets(top: 24, left: 16, bottom: 76, right: 16)
+            : UIEdgeInsets(top: 40, left: 40, bottom: 40, right: 40)
+        outlineView.compact = on
+        if !on {
+            canvasView.fitsOnResize = false
+        } else if !compactPlaced {
+            compactPlaced = true
+            showDefaultView()
+        } else if controller.viewMode == .split {
+            setViewMode(.outline)
+        }
+    }
+
+    /// The iPhone's view for the current canvas: the Outline for maps, the canvas fitted to
+    /// the screen for technical diagrams, which are tuned for viewing (M47c, D414).
+    public func showDefaultView() {
+        if DiagramCatalog.isTechnical(controller.canvas.type) {
+            setViewMode(.canvas)
+            canvasView.fitOnResize()
+        } else {
+            canvasView.fitsOnResize = false
+            setViewMode(.outline)
+        }
+    }
+
+    /// The toggle's value: the canvas, or the Outline (Gantt is under More).
+    public var compactMode: CanvasViewMode { viewMode == .canvas ? .canvas : .outline }
+
+    /// The title menu's choice: on the iPhone each canvas opens in its default view.
+    public func switchCanvas(to id: CanvasID) {
+        controller.switchCanvas(to: id)
+        if compact { showDefaultView() }
+    }
+
+    public var canvasName: String { Self.name(of: controller.canvas) }
+
+    /// A canvas's title, else its central topic's text.
+    public static func name(of c: NexusCore.Canvas) -> String {
+        let name = c.title.isEmpty ? (c.nodes[c.root]?.text ?? "") : c.title
+        return name.isEmpty ? Loc.t("Untitled") : name
+    }
+
+    /// The bottom toolbar's Add Child and Add Sibling: as Tab and Return do, committing a
+    /// topic being edited first.
+    public func addTopic(child: Bool) {
+        if controller.mode == .edit { controller.commitEdit() }
+        controller.perform(child ? .addChild : .addSiblingAfter)
+    }
+
+    /// A command from the iPhone's More menu: the screen's own, or the controller's.
+    public func run(_ id: CommandID) {
+        if Self.windowCommands.contains(id) {
+            runWindowCommand(id)
+        } else if !controller.perform(id), controller.canvas.nodes[controller.selection.primary] == nil {
+            // A command that needs a selection acts on the central topic when none is left.
+            controller.select(controller.canvas.root)
+            controller.perform(id)
+        }
+    }
 
     func apply(_ mode: CanvasViewMode) {
         viewMode = mode

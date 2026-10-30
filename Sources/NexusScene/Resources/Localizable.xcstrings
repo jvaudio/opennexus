@@ -237,6 +237,10 @@
       "comment" : "Text with values filled in (HomeView.swift)",
       "extractionState" : "migrated"
     },
+    "%@: %@" : {
+      "comment" : "Text with values filled in (TouchOutlineView.swift)",
+      "extractionState" : "migrated"
+    },
     "%@. Boundary around %@." : {
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
@@ -2189,6 +2193,10 @@
       "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
+    "Add Child" : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
+      "extractionState" : "migrated"
+    },
     "Add child topic" : {
       "comment" : "UI text (MouseAids.swift)",
       "extractionState" : "migrated"
@@ -3326,6 +3334,10 @@
       "extractionState" : "migrated"
     },
     "Chats kept on this iPad are removed." : {
+      "comment" : "UI text (SettingsActions.swift)",
+      "extractionState" : "migrated"
+    },
+    "Chats kept on this iPhone are removed." : {
       "comment" : "UI text (SettingsActions.swift)",
       "extractionState" : "migrated"
     },
@@ -4729,6 +4741,10 @@
       "comment" : "Settings pane",
       "extractionState" : "migrated"
     },
+    "Elapsed" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Elapsed: %lld minutes %lld seconds" : {
       "comment" : "Text with values filled in (PresentViews.swift)",
       "extractionState" : "migrated"
@@ -5409,6 +5425,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Fit to Screen" : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
+      "extractionState" : "migrated"
+    },
     "Five eighths done" : {
       "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
@@ -5467,6 +5487,10 @@
     },
     "Fly Back" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Focus" : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Focus breadcrumb" : {
@@ -6201,6 +6225,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Inbox map · %lld" : {
+      "comment" : "Text with values filled in (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
     "Incident response runbook" : {
       "comment" : "Starter name (Home's template shelf, starter picker)",
       "extractionState" : "migrated"
@@ -6907,6 +6935,10 @@
     },
     "Local server on this Mac" : {
       "comment" : "UI text (AISettingsView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Locations" : {
+      "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
     "Lock · Auth" : {
@@ -8281,6 +8313,10 @@
       "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
+    "On My iPhone › OpenNexus" : {
+      "comment" : "UI text (HomeView.swift)",
+      "extractionState" : "migrated"
+    },
     "on request" : {
       "comment" : "UI text (NetworkActivity.swift)",
       "extractionState" : "migrated"
@@ -9273,6 +9309,10 @@
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
+    "Recorded on this iPhone. Transcription runs on-device (AI, M6)." : {
+      "comment" : "UI text (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
     "Recorded on this Mac. Transcription runs on-device (AI, M6)." : {
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
@@ -9937,12 +9977,20 @@
       "comment" : "UI text (ThemeSheets.swift)",
       "extractionState" : "migrated"
     },
+    "Save to" : {
+      "comment" : "UI text (TouchQuickCapture.swift)",
+      "extractionState" : "migrated"
+    },
     "Saved “%@”" : {
       "comment" : "Text with values filled in (CanvasController+Views.swift)",
       "extractionState" : "migrated"
     },
     "Saved %@" : {
       "comment" : "Text with values filled in (TouchDocumentModel.swift)",
+      "extractionState" : "migrated"
+    },
+    "Saved filters" : {
+      "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
     "SAVED FILTERS" : {
@@ -10014,7 +10062,7 @@
       "extractionState" : "migrated"
     },
     "Search" : {
-      "comment" : "UI text (SettingsView.swift)",
+      "comment" : "UI text (ShortcutsPane.swift)",
       "extractionState" : "migrated"
     },
     "Search icons" : {
@@ -10047,6 +10095,10 @@
     },
     "Secret" : {
       "comment" : "Node type (Architecture)",
+      "extractionState" : "migrated"
+    },
+    "Sections" : {
+      "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
     "Security" : {
@@ -10541,6 +10593,10 @@
       "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
     },
+    "Slide picture" : {
+      "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
     "Slide Theme" : {
       "comment" : "UI text (PresentStrip.swift)",
       "extractionState" : "migrated"
@@ -10926,6 +10982,10 @@
       "extractionState" : "migrated"
     },
     "Summarised on this iPad into a branch with the link" : {
+      "comment" : "UI text (ShareViewController.swift)",
+      "extractionState" : "migrated"
+    },
+    "Summarised on this iPhone into a branch with the link" : {
       "comment" : "UI text (ShareViewController.swift)",
       "extractionState" : "migrated"
     },
@@ -11538,7 +11598,7 @@
       "extractionState" : "migrated"
     },
     "Time" : {
-      "comment" : "UI text (NetworkActivity.swift)",
+      "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
     },
     "Time: %@" : {
@@ -11591,6 +11651,10 @@
     },
     "To do" : {
       "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
+    "To present on a TV or a Mac, start Screen Mirroring in Control Center" : {
+      "comment" : "UI text (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "To turn Caps Lock into Hyper, macOS needs to allow Input Monitoring. OpenNexus only remaps that one key and never records what you type." : {
@@ -11882,7 +11946,7 @@
       "extractionState" : "migrated"
     },
     "Untitled" : {
-      "comment" : "UI text (TouchDocumentScreen.swift)",
+      "comment" : "UI text (TouchScene.swift)",
       "extractionState" : "migrated"
     },
     "Update" : {
@@ -12283,6 +12347,10 @@
     },
     "Zed" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "ZEN" : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "ZEN & chrome" : {

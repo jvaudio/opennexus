@@ -322,7 +322,7 @@ private struct ExportSheet: View {
                         ],
                         selection: Binding(get: { state.pdfScope }, set: { v in set { $0.pdfScope = v } })
                     )
-                    .frame(width: 440)
+                    .fixedWidth(440)
                 }
             }
         case .structural:
@@ -334,7 +334,7 @@ private struct ExportSheet: View {
                             get: { state.mermaid ?? MermaidFormat.flavour(for: controller.canvas) },
                             set: { v in set { $0.mermaid = v } })
                     )
-                    .frame(width: 480)
+                    .fixedWidth(480)
                 }
                 Text("Round-trips: paste Mermaid back to rebuild").font(.chrome(13)).foregroundStyle(.chromeSecondary)
             } else if state.format == .json {
@@ -769,7 +769,7 @@ private struct PrintSheet: View {
                     .font(.chrome(12.5, design: .monospaced)).foregroundStyle(.chromeSecondary)
                     Spacer(minLength: 0)
                 }
-                .frame(width: 380)
+                .fixedWidth(380)
                 .padding(16)
                 .background(Color.underPageBackground.opacity(0.6))
                 Divider()
@@ -820,7 +820,7 @@ private struct PrintSheet: View {
             }
             .padding(16)
         }
-        .frame(width: 700, height: 640)
+        .fixedWidth(700, height: 640)
         .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
         .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
@@ -918,7 +918,7 @@ struct MergeSheetView: View {
                 }
                 .padding(16)
             }
-            .frame(width: 520)
+            .fixedWidth(520)
             .frame(minHeight: 560)
             .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
@@ -1057,7 +1057,7 @@ struct PasswordSheetView: View {
                 }
                 .padding(16)
             }
-            .frame(width: 520)
+            .fixedWidth(520)
             .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
@@ -1118,7 +1118,7 @@ struct ImportReportView: View {
                 }
             }
             .padding(24)
-            .frame(width: 560)
+            .fixedWidth(560)
             .background(RoundedRectangle(cornerRadius: 16).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
@@ -1198,7 +1198,7 @@ struct SnapshotsSheetView: View {
                 }
                 .padding(16)
             }
-            .frame(width: 560)
+            .fixedWidth(560)
             .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)

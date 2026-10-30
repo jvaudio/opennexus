@@ -20,7 +20,7 @@ public final class TouchOutlineView: UIScrollView, UITextViewDelegate {
     private var pendingTyping: String?
 
     struct Row {
-        enum Kind { case title, topic, note, link, folded }
+        enum Kind { case title, topic, note, comments, link, folded }
         var id: NodeID
         var kind: Kind
         var depth: Int
@@ -109,16 +109,31 @@ public final class TouchOutlineView: UIScrollView, UITextViewDelegate {
 
     // MARK: Layout
 
-    static let left: CGFloat = 56
-    static let indent: CGFloat = 32
+    /// The iPhone's margins (M47c): narrower, so a third level keeps most of the width, and
+    /// the central topic a size smaller.
+    public var compact = false {
+        didSet { if compact != oldValue { relayout() } }
+    }
+
+    /// Where a row's text starts at `depth`, and the margin after it.
+    func textX(_ depth: Int) -> CGFloat {
+        if compact { return depth == 0 ? 16 : 44 + CGFloat(depth - 1) * 20 }
+        return depth == 0 ? 56 : 96 + CGFloat(depth - 1) * 32
+    }
+
+    var trailing: CGFloat { compact ? 16 : 56 }
+
+    /// Where a row's highlight ends.
+    func rowRight(_ width: CGFloat) -> CGFloat { width - (compact ? 8 : 56) }
 
     func font(_ depth: Int) -> UIFont {
         let metrics = UIFontMetrics(forTextStyle: depth == 0 ? .largeTitle : .body)
+        let size: CGFloat = compact ? 28 : 34
         let base: UIFont =
             depth == 0
-            ? (UIFont.systemFont(ofSize: 34, weight: .bold).fontDescriptor.withDesign(.serif).map {
-                UIFont(descriptor: $0, size: 34)
-            } ?? .systemFont(ofSize: 34, weight: .bold))
+            ? (UIFont.systemFont(ofSize: size, weight: .bold).fontDescriptor.withDesign(.serif).map {
+                UIFont(descriptor: $0, size: size)
+            } ?? .systemFont(ofSize: size, weight: .bold))
             : depth == 1 ? .systemFont(ofSize: 17, weight: .semibold) : .systemFont(ofSize: 16)
         return metrics.scaledFont(for: base)
     }
@@ -126,11 +141,11 @@ public final class TouchOutlineView: UIScrollView, UITextViewDelegate {
     var lineFont: UIFont { UIFontMetrics(forTextStyle: .callout).scaledFont(for: .systemFont(ofSize: 14.5)) }
 
     func relayout() {
-        let width = max(bounds.width, 300)
+        let width = max(bounds.width, compact ? 240 : 300)
         let c = controller.canvas
         let parents = c.parentMap()
         var out: [Row] = []
-        var y: CGFloat = 40
+        var y: CGFloat = compact ? 20 : 40
         func height(_ a: NSAttributedString, _ w: CGFloat) -> CGFloat {
             ceil(
                 a.boundingRect(with: CGSize(width: w, height: 10_000), options: [.usesLineFragmentOrigin], context: nil)
@@ -139,8 +154,8 @@ public final class TouchOutlineView: UIScrollView, UITextViewDelegate {
         for id in controller.outlineOrder {
             guard let n = c.nodes[id] else { continue }
             let depth = id == c.root ? 0 : max(1, c.path(to: id, parents: parents).count)
-            let x = depth == 0 ? 56 : Self.left + 40 + CGFloat(depth - 1) * Self.indent
-            let maxW = width - x - 56
+            let x = textX(depth)
+            let maxW = width - x - trailing
             let a = NSAttributedString(
                 string: n.text.isEmpty ? " " : n.text,
                 attributes: [.font: font(depth), .foregroundColor: UIColor.label])
@@ -148,7 +163,7 @@ public final class TouchOutlineView: UIScrollView, UITextViewDelegate {
             out.append(
                 Row(
                     id: id, kind: depth == 0 ? .title : .topic, depth: depth,
-                    rect: CGRect(x: x - 36, y: y, width: width - x - 20, height: h + 16),
+                    rect: CGRect(x: x - 36, y: y, width: rowRight(width) - x + 36, height: h + 16),
                     textRect: CGRect(x: x, y: y + 8, width: maxW, height: h), text: a))
             y += h + 16
             func line(_ s: String, _ kind: Row.Kind) {
@@ -158,11 +173,19 @@ public final class TouchOutlineView: UIScrollView, UITextViewDelegate {
                 out.append(
                     Row(
                         id: id, kind: kind, depth: depth,
-                        rect: CGRect(x: x - 36, y: y - 8, width: width - x - 20, height: lh + 8),
+                        rect: CGRect(x: x - 36, y: y - 8, width: rowRight(width) - x + 36, height: lh + 8),
                         textRect: CGRect(x: x, y: y - 6, width: maxW, height: lh), text: la))
                 y += lh + 6
             }
             if let note = n.note?.text, !note.isEmpty || noteNode == id { line(Loc.f("Note · %@", note), .note) }
+            if let last = n.comments.last {
+                // Reading and commenting (M47c): the thread's size and its latest comment;
+                // tapping the line opens the thread.
+                let latest = last.text.split(separator: "\n").first.map(String.init) ?? ""
+                line(
+                    Loc.n("%lld comment", "%lld comments", n.comments.count) + " · "
+                        + (last.author.isEmpty ? latest : Loc.f("%@: %@", last.author, latest)), .comments)
+            }
             for r in c.relationships where r.from == .topic(id) {
                 let target = c.spokenName(r.to)
                 line(
@@ -331,16 +354,27 @@ public final class TouchOutlineView: UIScrollView, UITextViewDelegate {
     func row(at p: CGPoint) -> Row? { rows.last { $0.rect.contains(p) } }
 
     @objc func tapped(_ g: UITapGestureRecognizer) {
+        tap(at: g.location(in: content), shift: g.modifierFlags.contains(.shift))
+    }
+
+    /// A tap at a point in the rows: selects the row, edits a note, opens comments.
+    func tap(at p: CGPoint, shift: Bool = false) {
         _ = becomeFirstResponder()
         if noteNode != nil { commitNote() }
         if controller.mode == .edit { controller.commitEdit() }
-        guard let row = row(at: g.location(in: content)) else { return }
+        guard let row = row(at: p) else { return }
         if row.kind == .note {
             controller.select(row.id)
             beginNote(row.id)
             return
         }
-        if g.modifierFlags.contains(.shift) {
+        if row.kind == .comments {
+            controller.outlineFocused = true
+            controller.select(row.id)
+            controller.perform(.comment)
+            return
+        }
+        if shift {
             var nodes = controller.selection.nodes
             if !nodes.contains(row.id) { nodes.append(row.id) }
             controller.setSelection(Selection(primary: row.id, nodes: nodes))
@@ -398,12 +432,19 @@ public final class TouchOutlineView: UIScrollView, UITextViewDelegate {
     public override var accessibilityElements: [Any]? {
         get {
             if let accessibilityRows { return accessibilityRows + (editor.isHidden ? [] : [editor]) }
-            let made = rows.filter { $0.kind == .topic || $0.kind == .title }.map { r in
+            // Every row: a topic, and the lines under it (M47c) — a note or the comments,
+            // which a tap edits or opens, and a link or a folded count, which it reads.
+            let made = rows.map { r in
                 let e = UIAccessibilityElement(accessibilityContainer: self)
                 e.accessibilityLabel = r.text.string
-                e.accessibilityTraits = controller.selection.nodes.contains(r.id) ? [.button, .selected] : .button
+                switch r.kind {
+                case .title, .topic:
+                    e.accessibilityTraits = controller.selection.nodes.contains(r.id) ? [.button, .selected] : .button
+                    e.accessibilityCustomActions = rowActions(r.id)
+                case .note, .comments: e.accessibilityTraits = .button
+                case .link, .folded: e.accessibilityTraits = .staticText
+                }
                 e.accessibilityFrameInContainerSpace = content.convert(r.rect, to: self)
-                e.accessibilityCustomActions = rowActions(r.id)
                 return e
             }
             accessibilityRows = made

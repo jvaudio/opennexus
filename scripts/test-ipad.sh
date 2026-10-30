@@ -15,7 +15,7 @@ COMPOSE=(docker compose -f "$ROOT/server/compose.test.yaml")
 S3=http://127.0.0.1:19000
 SIGN=(--fail --silent --show-error --aws-sigv4 "aws:amz:us-east-1:s3" --user onxtest:onxtest-secret-key)
 DEVICE=${OPENNEXUS_IPAD_DEVICE:-iPad Pro 13-inch (M5)}
-XCODE=(xcodebuild -project "$ROOT/App/OpenNexusiOS.xcodeproj" -scheme "OpenNexus iPad"
+XCODE=(xcodebuild -project "$ROOT/App/OpenNexusiOS.xcodeproj" -scheme "OpenNexus iOS"
   -destination "platform=iOS Simulator,name=$DEVICE" -derivedDataPath "$ROOT/.build/ipad-dd")
 keep=0
 [[ ${1:-} == --keep ]] && keep=1

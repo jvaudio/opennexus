@@ -210,7 +210,7 @@ private struct LibraryEditor: View {
             }
             .padding(16)
         }
-        .frame(width: 540)
+        .fixedWidth(540)
     }
 
     func chooseFolder() {
@@ -272,7 +272,7 @@ struct RecoveryKeySheet: View {
             }
             .padding(16)
         }
-        .frame(width: 560)
+        .fixedWidth(560)
     }
 
     static func qr(_ text: String) -> PlatformImage? {
@@ -345,7 +345,7 @@ private struct DeletedDocumentsSheet: View {
             }
             .padding(16)
         }
-        .frame(width: 520)
+        .fixedWidth(520)
         .task { await load() }
     }
 
@@ -436,7 +436,7 @@ struct ResolveConflictsView: View {
                 }
                 .padding(16)
             }
-            .frame(width: 680)
+            .fixedWidth(680)
             .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
@@ -566,7 +566,7 @@ struct SyncHistoryView: View {
                 }
                 .padding(16)
             }
-            .frame(width: 560)
+            .fixedWidth(560)
             .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
@@ -617,7 +617,7 @@ struct ConflictCopiesNotice: View {
                 }
                 .padding(16)
             }
-            .frame(width: 520)
+            .fixedWidth(520)
             .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)

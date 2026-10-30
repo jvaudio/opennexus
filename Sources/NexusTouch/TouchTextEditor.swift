@@ -64,6 +64,20 @@ final class TouchTextEditor: UITextView, UITextViewDelegate {
         inputAssistantItem.trailingBarButtonGroups = [
             UIBarButtonItemGroup(barButtonItems: items, representativeItem: collapsed)
         ]
+        // The iPhone's keyboard has no shortcuts bar, and it covers the bottom toolbar: the
+        // two ride above it instead, with Done to commit and put the keyboard away (M47c, D416).
+        guard UIDevice.current.userInterfaceIdiom == .phone else { return }
+        let done = UIBarButtonItem(
+            systemItem: .done, primaryAction: UIAction { [weak self] _ in _ = self?.resignFirstResponder() })
+        let bar = UIToolbar(frame: CGRect(x: 0, y: 0, width: 320, height: 44))
+        bar.items =
+            actions.map { a in
+                let b = UIBarButtonItem(image: a.image, primaryAction: a)
+                b.accessibilityLabel = a.title
+                return b
+            } + [.flexibleSpace(), done]
+        bar.sizeToFit()
+        inputAccessoryView = bar
     }
 
     /// The shortcuts bar: while editing, Tab (commit and add a child) or Return then Return

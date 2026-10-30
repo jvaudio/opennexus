@@ -90,6 +90,18 @@ extension View {
         #endif
     }
 
+    /// A floating sheet's or card's width: fixed on the Mac and the iPad; at compact width
+    /// (the iPhone, M47c) at most that, so it fits the screen (D418).
+    public func fixedWidth(_ w: CGFloat, height: CGFloat? = nil, alignment: Alignment = .center) -> some View {
+        modifier(FixedWidth(width: w, height: height, alignment: alignment))
+    }
+
+    /// A side panel's width (the AI panel, the guide): fixed, except at compact width (the
+    /// iPhone, M47c), where the panel is a sheet as wide as the screen.
+    public func panelWidth(_ w: CGFloat) -> some View {
+        modifier(PanelWidth(width: w))
+    }
+
     /// A window's smallest size on the Mac; the iPad's screen sets its own (M47b, D396).
     public func windowMinSize(width: CGFloat, height: CGFloat) -> some View {
         #if os(macOS)
@@ -248,5 +260,41 @@ public struct LabeledMenu<Content: View>: View {
             Text(title).accessibilityHidden(true)
         }
         .accessibilityLabel(title)
+    }
+}
+
+struct PanelWidth: ViewModifier {
+    let width: CGFloat
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        if sizeClass == .compact { content.frame(maxWidth: .infinity) } else { content.frame(width: width) }
+        #else
+        content.frame(width: width)
+        #endif
+    }
+}
+
+struct FixedWidth: ViewModifier {
+    let width: CGFloat
+    let height: CGFloat?
+    let alignment: Alignment
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
+
+    func body(content: Content) -> some View {
+        #if os(iOS)
+        if sizeClass == .compact {
+            content.frame(maxWidth: width, maxHeight: height, alignment: alignment)
+        } else {
+            content.frame(width: width, height: height, alignment: alignment)
+        }
+        #else
+        content.frame(width: width, height: height, alignment: alignment)
+        #endif
     }
 }

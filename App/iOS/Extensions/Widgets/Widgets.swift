@@ -4,16 +4,21 @@ import SwiftUI
 import UIKit
 import WidgetKit
 
-/// Home Screen widgets on the iPad (M47b; artboard 33): the Inbox map's newest items, and recent maps with
-/// their Quick Look previews. OpenNexus writes what they show to the App Group; links
-/// carry a token, never a path.
+/// Home Screen widgets on the iPad and iPhone (M47b, M47c; artboard 33): the Inbox map's
+/// newest items with a capture button, recent maps with their Quick Look previews, and a
+/// Lock Screen widget that opens Quick Capture. OpenNexus writes what they show to the App
+/// Group; links carry a token, never a path.
 @main
 struct OpenNexusWidgets: WidgetBundle {
     var body: some Widget {
         InboxWidget()
         RecentMapsWidget()
+        CaptureWidget()
     }
 }
+
+/// Quick Capture's link (`TouchScene.handle`).
+let captureURL = URL(string: "opennexus://inbox/add")!
 
 struct SnapshotEntry: TimelineEntry {
     var date: Date
@@ -71,9 +76,13 @@ struct InboxView: View {
     @Environment(\.widgetFamily) var family
 
     var body: some View {
-        InboxWidgetView(snapshot: entry.snapshot, compact: family == .systemSmall)
-            .containerBackground(InboxWidgetView.background, for: .widget)
-            .widgetURL(URL(string: "opennexus://inbox"))
+        // A small widget is one link (the Inbox); the medium one has room for a button.
+        InboxWidgetView(
+            snapshot: entry.snapshot, compact: family == .systemSmall,
+            capture: family == .systemMedium ? captureURL : nil
+        )
+        .containerBackground(InboxWidgetView.background, for: .widget)
+        .widgetURL(URL(string: "opennexus://inbox"))
     }
 }
 
@@ -94,5 +103,48 @@ struct RecentMapsView: View {
     var body: some View {
         RecentMapsWidgetView(snapshot: entry.snapshot, thumbnails: entry.thumbnails, large: family == .systemLarge)
             .containerBackground(RecentMapsWidgetView.background, for: .widget)
+    }
+}
+
+/// The Lock Screen's capture widget (M47c): a tap opens Quick Capture.
+struct CaptureWidget: Widget {
+    var body: some WidgetConfiguration {
+        StaticConfiguration(kind: "com.opennexus.capture", provider: SnapshotProvider()) { e in CaptureView(entry: e) }
+            .configurationDisplayName("Quick Capture")
+            .description("Jot an idea into your Inbox map.")
+            .supportedFamilies([.accessoryCircular, .accessoryRectangular, .accessoryInline])
+    }
+}
+
+struct CaptureView: View {
+    var entry: SnapshotEntry
+    @Environment(\.widgetFamily) var family
+
+    var body: some View {
+        Group {
+            switch family {
+            case .accessoryCircular:
+                ZStack {
+                    AccessoryWidgetBackground()
+                    Image(systemName: "plus").font(.system(size: 22, weight: .semibold))
+                }
+                .accessibilityLabel("Quick Capture")
+            case .accessoryRectangular:
+                VStack(alignment: .leading, spacing: 2) {
+                    Label("Quick Capture", systemImage: "plus.circle").font(.headline).widgetAccentable()
+                    Text(inboxLine).font(.caption).lineLimit(2)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            default:
+                Label("Jot an idea", systemImage: "plus")
+            }
+        }
+        .containerBackground(.clear, for: .widget)
+        .widgetURL(captureURL)
+    }
+
+    var inboxLine: String {
+        guard let s = entry.snapshot else { return "Inbox map" }
+        return s.inboxCount == 1 ? "Inbox map · 1 idea" : "Inbox map · \(s.inboxCount) ideas"
     }
 }

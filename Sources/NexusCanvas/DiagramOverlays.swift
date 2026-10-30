@@ -163,7 +163,7 @@ struct ConvertSheetView: View {
             )
             .font(.chrome(12))
             .foregroundStyle(.chromeSecondary)
-            .frame(width: 636, alignment: .leading)
+            .fixedWidth(636, alignment: .leading)
         }
         .padding(22)
         .background(.background, in: RoundedRectangle(cornerRadius: 16))

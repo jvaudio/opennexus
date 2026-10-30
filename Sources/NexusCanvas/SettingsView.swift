@@ -28,6 +28,12 @@ public struct SettingsView: View {
     @State private var position = ScrollPosition(edge: .top)
     /// The sidebar grows with the text, up to 380 points, so a pane's name fits (D408).
     @ScaledMetric(relativeTo: .body) private var sidebarWidth: CGFloat = 250
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    /// On the iPhone a pane is pushed over the list of panes (M47c).
+    @State private var paneOpen: Bool
+    var compact: Bool { sizeClass == .compact }
+    #else
+    let compact = false
     #endif
 
     public init(
@@ -39,47 +45,101 @@ public struct SettingsView: View {
         self.record = record
         self.onAction = onAction
         _pane = State(initialValue: pane)
+        #if os(iOS)
+        // Settings opened at a pane (AI, a shortcut to record) shows it on the iPhone too.
+        _paneOpen = State(initialValue: pane != "general")
+        #endif
     }
 
     public var body: some View {
+        #if os(iOS)
+        if compact { compactBody } else { regularBody }
+        #else
+        regularBody
+        #endif
+    }
+
+    var regularBody: some View {
         HStack(spacing: 0) {
             sidebar
             Divider()
-            ScrollViewReader { proxy in
-                ScrollView {
-                    if !query.isEmpty {
-                        results
-                    } else if pane == "shortcuts" {
-                        ShortcutsPane(prefs: prefs, record: record).padding(.horizontal, 36).padding(.vertical, 30)
-                    } else if let p = SettingsSchema.pane(pane) {
-                        PaneView(
-                            pane: p, prefs: prefs, availability: availability, highlight: highlight, onAction: onAction
-                        )
-                        .padding(.horizontal, 30).padding(.vertical, 28)
-                    }
-                }
-                .onChange(of: highlight) { _, h in
-                    if let h { withAnimation(UIMotion.animation(.default)) { proxy.scrollTo(h, anchor: .center) } }
-                }
-                .accessibilityLabel(
-                    query.isEmpty
-                        ? Loc.t(SettingsSchema.pane(pane)?.title ?? Loc.t("Shortcuts")) : Loc.t("Search results")
-                )
-                .accessibilityIdentifier("settings.content")
-                #if os(iOS)
-                // Each pane opens at its top, not at the last pane's scroll position; a
-                // search result's pane scrolls to its row instead (`highlight`).
-                .scrollPosition($position)
-                .onChange(of: pane) { _, _ in if highlight == nil { position.scrollTo(edge: .top) } }
-                #endif
-            }
-            .background(Color.windowBackground)
+            content
         }
         .windowMinSize(width: 1100, height: 760)
         .chromeControls()
         .background {
             Button("") { searchFocused = true }.keyboardShortcut("f", modifiers: .command).opacity(0)
         }
+    }
+
+    #if os(iOS)
+    /// The iPhone's Settings: search and the panes, each pushed when chosen.
+    var compactBody: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            TextField("Search", text: $query)
+                .textFieldStyle(.roundedBorder)
+                .controlSize(.large)
+                .focused($searchFocused)
+                .accessibilityLabel("Search settings")
+                .padding(.horizontal, 16).padding(.vertical, 10)
+            ScrollView {
+                if query.isEmpty { paneList.padding(.horizontal, 8).padding(.bottom, 16) } else { results }
+            }
+        }
+        .chromeControls()
+        .background(Color.windowBackground)
+        .navigationDestination(isPresented: $paneOpen) {
+            content
+                .navigationTitle(Loc.t(SettingsSchema.pane(pane)?.title ?? Loc.t("Shortcuts")))
+                .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+    #endif
+
+    /// Shows a pane (and on the iPhone, pushes it).
+    func open(_ id: String) {
+        pane = id
+        #if os(iOS)
+        if compact { paneOpen = true }
+        #endif
+    }
+
+    /// The chosen pane, or the search results.
+    var content: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                if !query.isEmpty && !compact {
+                    results
+                } else if pane == "shortcuts" {
+                    ShortcutsPane(prefs: prefs, record: record)
+                        .padding(.horizontal, compact ? 16 : 36).padding(.vertical, compact ? 16 : 30)
+                } else if let p = SettingsSchema.pane(pane) {
+                    PaneView(
+                        pane: p, prefs: prefs, availability: availability, highlight: highlight, onAction: onAction
+                    )
+                    .padding(.horizontal, compact ? 16 : 30).padding(.vertical, compact ? 16 : 28)
+                }
+            }
+            .onChange(of: highlight) { _, h in
+                if let h { withAnimation(UIMotion.animation(.default)) { proxy.scrollTo(h, anchor: .center) } }
+            }
+            #if os(iOS)
+            // A search result's pane, pushed on the iPhone, opens at its row.
+            .onAppear { if compact, let h = highlight { proxy.scrollTo(h, anchor: .center) } }
+            #endif
+            .accessibilityLabel(
+                query.isEmpty
+                    ? Loc.t(SettingsSchema.pane(pane)?.title ?? Loc.t("Shortcuts")) : Loc.t("Search results")
+            )
+            .accessibilityIdentifier("settings.content")
+            #if os(iOS)
+            // Each pane opens at its top, not at the last pane's scroll position; a
+            // search result's pane scrolls to its row instead (`highlight`).
+            .scrollPosition($position)
+            .onChange(of: pane) { _, _ in if highlight == nil { position.scrollTo(edge: .top) } }
+            #endif
+        }
+        .background(Color.windowBackground)
     }
 
     var sidebar: some View {
@@ -116,7 +176,7 @@ public struct SettingsView: View {
                 Button {
                     query = ""
                     highlight = nil
-                    pane = p.id
+                    open(p.id)
                 } label: {
                     let selected = pane == p.id && query.isEmpty
                     HStack(spacing: 12) {
@@ -176,9 +236,9 @@ public struct SettingsView: View {
             .padding(.bottom, 8)
             ForEach(Array(hits.enumerated()), id: \.offset) { _, h in
                 Button {
-                    pane = h.0.id
-                    query = ""
                     highlight = h.2.key
+                    query = ""
+                    open(h.0.id)
                 } label: {
                     HStack {
                         VStack(alignment: .leading, spacing: 2) {
@@ -196,7 +256,7 @@ public struct SettingsView: View {
                 .buttonStyle(.plain)
             }
         }
-        .padding(30)
+        .padding(compact ? 16 : 30)
         .frame(maxWidth: 760, alignment: .leading)
     }
 }
@@ -254,10 +314,18 @@ struct SectionView: View {
     var highlight: String?
     var onAction: (String) -> Void
 
+    /// The Mac's "macOS" section is "iPadOS" on the iPad and "iOS" on the iPhone (M47c).
+    var title: String {
+        #if os(iOS)
+        if section.title == "iPadOS", onPhone { return "iOS" }
+        #endif
+        return section.title
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if !section.title.isEmpty {
-                Text(Loc.t(section.title))
+                Text(Loc.t(title))
                     .font(.chrome(14, weight: .semibold))
                     .foregroundStyle(.chromeSecondary)
                     .padding(.leading, 4)

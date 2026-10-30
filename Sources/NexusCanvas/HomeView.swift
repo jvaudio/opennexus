@@ -133,6 +133,13 @@ public final class HomeModel {
 
 public struct HomeView: View {
     @Bindable var model: HomeModel
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    /// The iPhone's layout (M47c): no sidebar; its sections are chips above the column.
+    var compact: Bool { sizeClass == .compact }
+    #else
+    let compact = false
+    #endif
 
     public init(model: HomeModel) { self.model = model }
 
@@ -164,12 +171,17 @@ public struct HomeView: View {
 
     public var body: some View {
         HStack(spacing: 0) {
-            sidebar
-            Divider()
-            if model.section == "templates" {
-                StarterGalleryView(model: model.gallery, embedded: true)
-            } else {
-                main
+            if !compact {
+                sidebar
+                Divider()
+            }
+            VStack(spacing: 0) {
+                if compact { sectionChips }
+                if model.section == "templates" {
+                    StarterGalleryView(model: model.gallery, embedded: true)
+                } else {
+                    main
+                }
             }
         }
         .windowMinSize(width: 1100, height: 760)
@@ -199,14 +211,16 @@ public struct HomeView: View {
                     newRow
                     if !model.recents.isEmpty { recents(Array(model.recents.prefix(4))) }
                     shelf
+                    if compact { places }
                 }
             }
-            .padding(.horizontal, 34)
-            .padding(.vertical, 26)
+            .padding(.horizontal, compact ? 16 : 34)
+            .padding(.vertical, compact ? 16 : 26)
         }
         .accessibilityLabel(model.section == "recents" ? Loc.t("Recents") : Loc.t("Home"))
+        .accessibilityIdentifier("home.content")
         .overlay(alignment: .bottomTrailing) {
-            if model.tourMap != nil && model.section == "home" { emptyState.padding(24) }
+            if model.tourMap != nil && model.section == "home" { emptyState.padding(compact ? 16 : 24) }
         }
     }
 
@@ -275,6 +289,73 @@ public struct HomeView: View {
         .background(Color.underPageBackground.opacity(0.5))
     }
 
+    /// The sidebar's sections on the iPhone: chips that scroll sideways when they don't fit.
+    var sectionChips: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                chip(Loc.t("Home"), selected: model.section == "home") { choose("home") }
+                chip(Loc.t("Recents"), selected: model.section == "recents") { choose("recents") }
+                chip(Loc.t("Templates"), selected: model.section == "templates") { choose("templates") }
+                chip(
+                    model.inboxCount > 0 ? Loc.f("Inbox map · %lld", model.inboxCount) : Loc.t("Inbox map"),
+                    selected: false
+                ) { model.onInbox() }
+            }
+            .padding(.horizontal, 16).padding(.vertical, 8)
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Loc.t("Sections"))
+    }
+
+    func chip(_ title: String, selected: Bool, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Text(title)
+                .font(.chrome(13, weight: selected ? .semibold : .regular))
+                .foregroundStyle(selected ? Color.white : .primary)
+                .padding(.horizontal, 12).frame(minHeight: 30)
+                .background(Capsule().fill(selected ? Color.black : Color.secondary.opacity(0.1)))
+                .touchTarget()
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+
+    func choose(_ section: String) {
+        model.section = section
+        model.query = ""
+        model.choosingStarter = false
+    }
+
+    /// The sidebar's sync libraries, locations, saved filters and AI status, under Home's
+    /// column on the iPhone.
+    @ViewBuilder var places: some View {
+        let libraries = model.syncCenter?.libraries ?? []
+        if !libraries.isEmpty || !model.locations.isEmpty {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Locations").font(.chrome(16, weight: .semibold))
+                ForEach(libraries) { lib in
+                    let s = model.syncCenter?.status[lib.id] ?? .off
+                    Text(verbatim: "\(lib.name) \(s.glyph)").font(.chrome(13.5))
+                        .accessibilityLabel(Loc.f("%@, sync library, %@", lib.name, s.label))
+                }
+                ForEach(model.locations, id: \.self) { u in Text(Self.prettyPath(u)).font(.chrome(13.5)) }
+            }
+        }
+        if !model.savedFilters.isEmpty {
+            VStack(alignment: .leading, spacing: 6) {
+                Text("Saved filters").font(.chrome(16, weight: .semibold))
+                ForEach(Array(model.savedFilters.enumerated()), id: \.offset) { _, f in
+                    Button(f.1) { model.onFilter(f.0, f.1) }.linkButton().font(.chrome(13.5))
+                }
+            }
+        }
+        HStack(spacing: 8) {
+            Circle().fill(model.aiStatus.canRun ? Color.teal : Color.orange).frame(width: 7, height: 7)
+            Text(model.aiStatus.canRun ? Loc.t("On-device AI ready") : model.aiStatus.chip).font(.chrome(13))
+                .foregroundStyle(.chromeSecondary)
+        }
+    }
+
     static func problem(_ s: SyncStatus) -> Bool {
         switch s {
         case .offline, .conflicts: true
@@ -293,10 +374,11 @@ public struct HomeView: View {
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         return p.hasPrefix(home) ? "~" + p.dropFirst(home.count) : p
         #else
-        // The app's own Documents folder is "On My iPad › OpenNexus" in Files.
+        // The app's own Documents folder is "On My iPad › OpenNexus" in Files ("On My
+        // iPhone" on the iPhone).
         let docs = URL.documentsDirectory.path
-        return p.hasPrefix(docs)
-            ? Loc.t("On My iPad › OpenNexus") + p.dropFirst(docs.count).replacingOccurrences(of: "/", with: " › ") : p
+        let root = onPhone ? Loc.t("On My iPhone › OpenNexus") : Loc.t("On My iPad › OpenNexus")
+        return p.hasPrefix(docs) ? root + p.dropFirst(docs.count).replacingOccurrences(of: "/", with: " › ") : p
         #endif
     }
 
@@ -346,17 +428,20 @@ public struct HomeView: View {
             HStack {
                 Text("New").font(.chrome(16, weight: .semibold))
                 Spacer()
-                keycap("⌘N")
-                Text("blank mind map ·").foregroundStyle(.chromeSecondary)
-                keycap("⇧⌘N")
-                Text("choose a starter").foregroundStyle(.chromeSecondary)
+                if !compact {
+                    keycap("⌘N")
+                    Text("blank mind map ·").foregroundStyle(.chromeSecondary)
+                    keycap("⇧⌘N")
+                    Text("choose a starter").foregroundStyle(.chromeSecondary)
+                }
             }
             .font(.chrome(12.5))
             #if os(macOS)
             HStack(spacing: 14) { newCards }
             #else
-            // The iPad's column is narrower: the cards wrap rather than shrink their names.
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 14)], spacing: 14) { newCards }
+            // The iPad's column is narrower: the cards wrap rather than shrink their names. On
+            // the iPhone that makes two columns (M47c).
+            ColumnsLayout(minimum: 160, spacing: 14) { newCards }
             #endif
         }
     }
@@ -395,6 +480,9 @@ public struct HomeView: View {
             .lineLimit(2).multilineTextAlignment(.center)
                 #endif
                 .padding(.horizontal, 6)
+                // The button's label reads the card ("New Whiteboard"); as an element of its own
+                // the name took the card's frame, and the audit measured it across the picture.
+                .accessibilityHidden(true)
         }
         .frame(maxWidth: .infinity, minHeight: 108)
         .background(RoundedRectangle(cornerRadius: 14).fill(Color.textBackground))
@@ -409,6 +497,52 @@ public struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             if model.section == "home" { Text("Recents").font(.chrome(16, weight: .semibold)) }
             if items.isEmpty { Text("Documents you open appear here.").foregroundStyle(.chromeSecondary) }
+            if compact {
+                recentList(items)
+            } else {
+                recentGrid(items)
+            }
+        }
+    }
+
+    /// The iPhone's recents: a row each, the type's glyph beside the name and details.
+    func recentList(_ items: [RecentItem]) -> some View {
+        VStack(spacing: 8) {
+            ForEach(items) { r in
+                Button {
+                    model.onOpen(r.url)
+                } label: {
+                    HStack(spacing: 12) {
+                        TypeGlyph(type: r.type, color: Self.tint(r.type)).frame(width: 44, height: 30)
+                            .frame(width: 64, height: 52)
+                            .background(RoundedRectangle(cornerRadius: 10).fill(Self.tint(r.type).opacity(0.06)))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(r.title).font(.chrome(15, weight: .semibold))
+                            Text(verbatim: recentDetail(r)).font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
+                        }
+                        Spacer(minLength: 0)
+                        if model.downloading.contains(r.url) { ProgressView() }
+                    }
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color.textBackground))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Recents")
+    }
+
+    func recentDetail(_ r: RecentItem) -> String {
+        var parts = [r.detail, Self.relative(r.date)]
+        if model.downloading.contains(r.url) { parts = [Loc.t("Downloading from iCloud Drive…")] }
+        if let s = model.syncCenter?.status(of: r.url) { parts.append("\(s.glyph) \(s.label)") }
+        return parts.joined(separator: " · ")
+    }
+
+    func recentGrid(_ items: [RecentItem]) -> some View {
+        VStack(alignment: .leading, spacing: 12) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 20), count: 4), spacing: 20) {
                 ForEach(items) { r in
                     Button {
@@ -504,9 +638,7 @@ public struct HomeView: View {
             .fixedSize(horizontal: false, vertical: true)
         #else
         // As many as fit across, so each summary has room (D404).
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 16, alignment: .top)], spacing: 16) {
-            templateCards(ts)
-        }
+        ColumnsLayout(minimum: 200, spacing: 16) { templateCards(ts) }
         #endif
     }
 
@@ -591,7 +723,7 @@ public struct HomeView: View {
             }
             .padding(20)
         }
-        .frame(width: 420)
+        .sheetWidth(420)
         .background(
             RoundedRectangle(cornerRadius: 16).fill(Color.textBackground).shadow(
                 color: .black.opacity(0.12), radius: 18, y: 6))

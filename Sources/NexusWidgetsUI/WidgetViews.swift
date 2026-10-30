@@ -21,16 +21,41 @@ public struct InboxWidgetView: View {
     public static let background = Color(red: 0.13, green: 0.14, blue: 0.2)
     var snapshot: WidgetSnapshot?
     var compact: Bool
+    /// A capture button's link (the iPhone's and iPad's medium widget, M47c).
+    var capture: URL?
 
-    public init(snapshot: WidgetSnapshot?, compact: Bool) {
+    public init(snapshot: WidgetSnapshot?, compact: Bool, capture: URL? = nil) {
         self.snapshot = snapshot
         self.compact = compact
+        self.capture = capture
     }
 
     public var body: some View {
+        if let capture {
+            // The medium widget is as tall as the small one: its three newest ideas, and the
+            // capture button as a tile beside them (M47c).
+            HStack(alignment: .top, spacing: 12) {
+                list(shown: 3)
+                Link(destination: capture) {
+                    VStack(spacing: 6) {
+                        Image(systemName: "plus").font(.system(size: 22, weight: .semibold))
+                            .accessibilityHidden(true)
+                        Text("Capture").font(.system(size: 13, weight: .semibold))
+                    }
+                    .foregroundStyle(.white)
+                    .frame(width: 92)
+                    .frame(maxHeight: .infinity)
+                    .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(.white.opacity(0.16)))
+                }
+            }
+        } else {
+            list(shown: compact ? 3 : 5)
+        }
+    }
+
+    func list(shown: Int) -> some View {
         let items = snapshot?.inbox ?? []
-        let shown = compact ? 3 : 5
-        VStack(alignment: .leading, spacing: 9) {
+        return VStack(alignment: .leading, spacing: 9) {
             Text("INBOX").font(.system(size: 11, weight: .semibold)).foregroundStyle(.white.opacity(0.6))
             if snapshot == nil {
                 Text("Open OpenNexus to fill this in").font(.system(size: 13)).foregroundStyle(.white.opacity(0.7))

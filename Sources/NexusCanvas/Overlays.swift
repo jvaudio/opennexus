@@ -33,6 +33,9 @@ struct Keycap: View {
 /// Bottom-left: the always-visible state pill and the context hints beside it (P0).
 public struct CanvasStatusBar: View {
     var controller: CanvasController
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
 
     public init(controller: CanvasController) { self.controller = controller }
 
@@ -47,14 +50,18 @@ public struct CanvasStatusBar: View {
             #if os(macOS)
             strip(hints)
             #else
-            // The iPad's canvas can be narrower than every hint: drop them from the end
-            // rather than run under the zoom control (M47b).
-            ViewThatFits(in: .horizontal) {
-                ForEach([hints.count, 6, 4, 2].filter { $0 <= hints.count }, id: \.self) { n in
-                    strip(Array(hints.prefix(n)))
+            // The iPhone's bottom toolbar adds topics; only the pill fits beside the zoom
+            // control (M47c).
+            if sizeClass != .compact {
+                // The iPad's canvas can be narrower than every hint: drop them from the end
+                // rather than run under the zoom control (M47b).
+                ViewThatFits(in: .horizontal) {
+                    ForEach([hints.count, 6, 4, 2].filter { $0 <= hints.count }, id: \.self) { n in
+                        strip(Array(hints.prefix(n)))
+                    }
                 }
+                .padding(.trailing, 230)
             }
-            .padding(.trailing, 230)
             #endif
         }
         .animation(UIMotion.animation(.snappy(duration: 0.18)), value: controller.mode)

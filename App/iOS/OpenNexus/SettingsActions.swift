@@ -32,7 +32,10 @@ enum SettingsActions {
             }
         case "privacy.clearChats":
             confirm(
-                Loc.t("Clear all AI chats?"), Loc.t("Chats kept on this iPad are removed."), Loc.t("Clear")
+                Loc.t("Clear all AI chats?"),
+                UIDevice.current.userInterfaceIdiom == .phone
+                    ? Loc.t("Chats kept on this iPhone are removed.") : Loc.t("Chats kept on this iPad are removed."),
+                Loc.t("Clear")
             ) { ChatStore.clearAll() }
         case "privacy.log", "privacy.exportLog":
             let url = FileManager.default.temporaryDirectory.appending(path: "OpenNexus network log.csv")

@@ -166,7 +166,7 @@ struct ThemeBuilder: View {
             }
         }
         .padding(20)
-        .frame(width: 520, height: 640)
+        .fixedWidth(520, height: 640)
     }
 
     func modeRow(_ label: String, _ key: String, _ options: [String: String]) -> some View {
@@ -326,7 +326,7 @@ struct ColourThemeEditor: View {
             }
         }
         .padding(20)
-        .frame(width: 440, height: 470)
+        .fixedWidth(440, height: 470)
         .onAppear { hex = palette.colors.first?.hex ?? "" }
     }
 

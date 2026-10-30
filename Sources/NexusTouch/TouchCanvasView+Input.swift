@@ -97,8 +97,33 @@ extension TouchCanvasView: UIGestureRecognizerDelegate, UIContextMenuInteraction
             controller.presentClick()
             return
         }
+        let p = aimed(p)
         pointer.down(at: p, clickCount: count, modifiers: m, emptyDrag: PointerSurfaceEmptyDrag.none)
         pointer.up(at: p, modifiers: m)
+    }
+
+    /// A topic's target for a finger: its frame in the view, grown to 44 × 44 points about
+    /// its centre where the zoom draws it smaller. With compact touch only (the iPhone, whose
+    /// fitted diagrams can be small; D416). Its accessibility frame is the same.
+    func touchTarget(_ world: CGRect) -> CGRect {
+        let r = camera.toView(world)
+        guard compactTouch else { return r }
+        return r.insetBy(dx: min(0, (r.width - 44) / 2), dy: min(0, (r.height - 44) / 2))
+    }
+
+    /// Where a tap lands: off every topic but inside a topic's target, on that topic (the
+    /// nearest, where targets overlap), at the point of it closest to the finger.
+    func aimed(_ p: CGPoint) -> CGPoint {
+        guard compactTouch, pointer.node(at: p) == nil else { return p }
+        var best: (distance: CGFloat, point: CGPoint)?
+        for id in controller.scene.order {
+            guard let world = controller.scene.nodes[id]?.frame.rect, touchTarget(world).contains(p) else { continue }
+            let r = camera.toView(world).insetBy(dx: 0.5, dy: 0.5)
+            let q = CGPoint(x: min(max(p.x, r.minX), r.maxX), y: min(max(p.y, r.minY), r.maxY))
+            let d = hypot(q.x - p.x, q.y - p.y)
+            if d < (best?.distance ?? .infinity) { best = (d, q) }
+        }
+        return best?.point ?? p
     }
 
     // MARK: Drags
@@ -110,12 +135,30 @@ extension TouchCanvasView: UIGestureRecognizerDelegate, UIContextMenuInteraction
     }
 
     /// One finger's drag (a band from empty canvas, a move from a topic), at each phase.
+    /// With compact touch (the iPhone), it pans unless it starts on a selected topic. While
+    /// presenting, a swipe left goes to the next slide and a swipe right to the last.
     func drag(_ phase: UIGestureRecognizer.State, from start: CGPoint, to p: CGPoint, modifiers m: PointerModifiers) {
+        if controller.present != nil {
+            if phase == .began { touched() }
+            if phase == .ended, abs(p.x - start.x) > 60, abs(p.x - start.x) > abs(p.y - start.y) {
+                controller.stepSlide(p.x < start.x ? 1 : -1)
+            }
+            return
+        }
+        if let last = oneFingerPan {
+            pan(by: CGPoint(x: p.x - last.x, y: p.y - last.y))
+            oneFingerPan = phase == .changed ? p : nil
+            return
+        }
         switch phase {
         case .began:
             controller.stopFollowing()
             touched()
-            if controller.present != nil { return }
+            if compactTouch, pointer.node(at: start).map({ !controller.selection.nodes.contains($0) }) ?? true {
+                oneFingerPan = start
+                drag(.changed, from: start, to: p, modifiers: m)
+                return
+            }
             pointer.down(at: start, clickCount: 1, modifiers: m, emptyDrag: .band)
             pointer.dragged(to: p, modifiers: m)
         case .changed:

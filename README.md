@@ -5,7 +5,7 @@
   </picture>
 </h1>
 
-An open-source, native **macOS 27** and **iPadOS 27** app for mind maps and technical diagrams:
+An open-source, native **macOS 27**, **iPadOS 27** and **iOS 27** app for mind maps and technical diagrams:
 Xmind's keyboard flow, plus flowcharts, data flow diagrams, threat models, architecture
 and sequence diagrams, and on-device AI. Apple silicon only.
 
@@ -28,18 +28,20 @@ Sources/
   NexusAI              on-device AI (Apple Intelligence), never the network
   NexusAgent           the nexus CLI and MCP server's tools
   NexusNet             HTTP client and share destinations, linked only into OpenNexusNet.xpc
-                       on the Mac and into the iPad app's own process
+                       on the Mac and into the iPad and iPhone app's own process
   NexusSync            library sync through your own bucket: encryption, merging, history
   NexusReplica         live co-editing: the CRDT behind sessions, invites and the room client
   NexusScene           scenes, text, layers and the renderer that draws them for the canvas
                        and exports (CoreGraphics and CoreText; no AppKit or UIKit)
   NexusCanvas          the editing controller for every platform, the SwiftUI chrome, and
                        on the Mac the AppKit canvas
-  NexusTouch           the iPad's canvas, documents, windows and Home (UIKit)
+  NexusTouch           the iPad's and iPhone's canvas, outline, documents, windows and Home
+                       (UIKit; the iPhone's layout is the compact size class)
   NexusWidgetsUI       widgets
   nexus                command-line tool
 App/                   Xcode projects (thin shells): OpenNexus.xcodeproj for the Mac app and
-                       its extensions, OpenNexusiOS.xcodeproj for the iPad app (App/iOS)
+                       its extensions, OpenNexusiOS.xcodeproj for the iPad and iPhone app
+                       (App/iOS)
   tools/               make_project.py, make_ios_project.py, release.sh, axaudit.swift
 schema/                published JSON Schema for .nexus files
 web/                   the interactive viewer (viewer-core) and the share-link site (viewer-app)
@@ -84,11 +86,16 @@ Build the shared modules, NexusCanvas included, for the iOS Simulator:
 scripts/build-ios.sh
 ```
 
-Build the iPad app and run its tests (the goldens, text and timing checks, then F1 and the
-accessibility audits in XCUITest) on the iPad Pro 13-inch (M5) simulator:
+Build the iPad and iPhone app and run its tests (the goldens, text and timing checks, the
+compact layout, then F1 and the accessibility audits in XCUITest) on the iPad Pro 13-inch
+(M5) simulator, then on the iPhone 17 Pro:
 
 ```bash
-xcodebuild test -project App/OpenNexusiOS.xcodeproj -scheme "OpenNexus iPad" -destination "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
+xcodebuild test -project App/OpenNexusiOS.xcodeproj -scheme "OpenNexus iOS" -destination "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
+```
+
+```bash
+xcodebuild test -project App/OpenNexusiOS.xcodeproj -scheme "OpenNexus iOS" -destination "platform=iOS Simulator,name=iPhone 17 Pro"
 ```
 
 Share links for real: MinIO and two OpenNexus Servers in Docker, links made against them,

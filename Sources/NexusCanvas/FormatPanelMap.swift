@@ -71,7 +71,7 @@ struct MapTab: View {
                         }
                     }
                     .padding(20)
-                    .frame(width: 520, height: 560)
+                    .fixedWidth(520, height: 560)
                 }
         }
     }

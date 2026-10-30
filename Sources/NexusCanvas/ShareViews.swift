@@ -55,7 +55,7 @@ private struct ShareSheet: View {
                 footer
             }
         }
-        .frame(width: 640)
+        .fixedWidth(640)
         .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
         .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
@@ -343,7 +343,7 @@ struct ShareNoticeView: View {
                 }
                 .padding(16)
             }
-            .frame(width: 500)
+            .fixedWidth(500)
             .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
@@ -385,7 +385,7 @@ struct ManageLinksView: View {
                 }
                 .padding(16)
             }
-            .frame(width: 720)
+            .fixedWidth(720)
             .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
@@ -695,7 +695,7 @@ private struct DestinationEditor: View {
             }
             .padding(16)
         }
-        .frame(width: 520)
+        .fixedWidth(520)
     }
 }
 

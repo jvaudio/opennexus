@@ -38,6 +38,18 @@ public final class TouchCanvasView: UIView, PointerSurface {
     public var onCameraMoved: (() -> Void)?
     /// Hint label for drops ("Drop to attach under …").
     private var dropHint: UILabel?
+    /// The iPhone's touch (M47c, D416): a one-finger drag pans unless it starts on a
+    /// selected topic, which it moves.
+    public var compactTouch = false
+    /// The last point of a one-finger pan (compact touch).
+    var oneFingerPan: CGPoint?
+    /// Technical diagrams on the iPhone (M47c): the camera fits the map when the view first
+    /// lays out and whenever its size changes (the phone turns).
+    public var fitsOnResize = false
+    private var fittedWidth: CGFloat = 0
+    /// The margins Fit to Window leaves; the iPhone's keep the map clear of the chrome at
+    /// the canvas's foot.
+    public var fitInsets = UIEdgeInsets(top: 40, left: 40, bottom: 40, right: 40)
 
     /// The elements VoiceOver walks (TouchAccessibility.swift).
     lazy var accessibilityTree = TouchAccessibility(view: self)
@@ -99,7 +111,12 @@ public final class TouchCanvasView: UIView, PointerSurface {
 
     public override var canBecomeFirstResponder: Bool { true }
 
+    /// Taking the keyboard moves focus off the outline, first, so the outline's editor
+    /// resigning doesn't take it back. A canvas off screen or hidden can't take it, and leaves
+    /// the focus alone (the iPhone's Outline, where the canvas's deferred `takeKeyboard` came
+    /// after the Outline showed, M47c).
     public override func becomeFirstResponder() -> Bool {
+        guard window != nil, !isHidden else { return false }
         controller.outlineFocused = false
         return super.becomeFirstResponder()
     }
@@ -134,6 +151,11 @@ public final class TouchCanvasView: UIView, PointerSurface {
             hasPlacedCamera = true
             centerScene()
             update(animated: false)
+        }
+        // The width: turning the phone refits, the keyboard coming up doesn't.
+        if fitsOnResize, bounds.width > 0, bounds.width != fittedWidth {
+            fittedWidth = bounds.width
+            fitToWindow(animated: false)
         }
     }
 
@@ -290,12 +312,21 @@ public final class TouchCanvasView: UIView, PointerSurface {
     /// Zooms to `z` around the view's centre (Settings › Editing › Default zoom).
     public func setZoom(_ z: CGFloat) { zoom(by: z / max(camera.zoom, 0.01)) }
 
-    public func fitToWindow() {
+    public func fitToWindow() { fitToWindow(animated: true) }
+
+    public func fitToWindow(animated: Bool) {
         let b = controller.scene.bounds
         guard !b.isNull, bounds.width > 0 else { return }
-        let z = min(1, max(0.1, min((bounds.width - 80) / b.width, (bounds.height - 80) / b.height)))
-        setCamera(
-            Camera(offset: CGPoint(x: bounds.midX - b.midX * z, y: bounds.midY - b.midY * z), zoom: z), animated: true)
+        let r = bounds.inset(by: fitInsets)
+        let z = min(1, max(0.1, min(r.width / b.width, r.height / b.height)))
+        setCamera(Camera(offset: CGPoint(x: r.midX - b.midX * z, y: r.midY - b.midY * z), zoom: z), animated: animated)
+    }
+
+    /// Fits the map now and again whenever the view's size changes.
+    public func fitOnResize() {
+        fitsOnResize = true
+        fittedWidth = 0
+        setNeedsLayout()
     }
 
     private func defaultFloatingPoint() -> CGPoint {

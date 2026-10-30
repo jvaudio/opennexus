@@ -17,6 +17,14 @@ public struct StarterGalleryView: View {
     /// Inside Home: no title or Cancel, and a wider grid.
     var embedded: Bool
     @FocusState private var searchFocused: Bool
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    /// The iPhone's layout (M47c): chips for the sections, two columns, the search field
+    /// under the title.
+    var compact: Bool { sizeClass == .compact }
+    #else
+    let compact = false
+    #endif
 
     public init(model: StarterGallery, embedded: Bool = false) {
         self.model = model
@@ -24,25 +32,25 @@ public struct StarterGalleryView: View {
     }
 
     static let accent = Color(hex: "#5850EC")
-    var columns: Int { embedded ? 5 : 4 }
+    var columns: Int { compact ? 2 : embedded ? 5 : 4 }
 
     public var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                if !embedded {
+                if !embedded && !compact {
                     sidebar
                     Divider()
                 }
                 VStack(spacing: 0) {
                     searchBar
-                    if embedded { chips }
+                    if embedded || compact { chips }
                     grid
                 }
             }
             Divider()
             footer
         }
-        .frame(minWidth: embedded ? nil : 900, minHeight: embedded ? nil : 600)
+        .frame(minWidth: embedded || compact ? nil : 900, minHeight: embedded || compact ? nil : 600)
         .chromeControls()
         .background(Color.windowBackground)
         .onAppear {
@@ -106,7 +114,7 @@ public struct StarterGalleryView: View {
                         .accessibilityAddTraits(on ? .isSelected : [])
                 }
             }
-            .padding(.horizontal, 20)
+            .padding(.horizontal, compact ? 16 : 20)
         }
         .padding(.bottom, 14)
     }
@@ -114,32 +122,48 @@ public struct StarterGalleryView: View {
     // MARK: Search
 
     var searchBar: some View {
-        HStack(spacing: 12) {
-            Text(embedded ? "Templates" : model.purpose == .canvas ? "New Canvas" : "New Document")
-                .font(.chrome(embedded ? 27 : 17, weight: embedded ? .bold : .semibold))
-            Spacer()
-            TextField("Search starters", text: $model.query)
-                .textFieldStyle(.roundedBorder)
-                .controlSize(.large)
-                .font(.chrome(13))
-                .frame(width: 300)
-                .focused($searchFocused)
-                .accessibilityLabel("Search starters")
-                // Typing filters while the arrow keys move through the cards (Xcode's template chooser).
-                .onKeyPress(keys: [.upArrow, .downArrow, .leftArrow, .rightArrow]) { press in
-                    switch press.key {
-                    case .upArrow: model.move(dy: -1)
-                    case .downArrow: model.move(dy: 1)
-                    case .leftArrow: model.move(dx: -1)
-                    default: model.move(dx: 1)
-                    }
-                    return .handled
+        let title = Text(embedded ? "Templates" : model.purpose == .canvas ? "New Canvas" : "New Document")
+            .font(.chrome(embedded ? 27 : 17, weight: embedded ? .bold : .semibold))
+        return Group {
+            if compact {
+                VStack(alignment: .leading, spacing: 10) {
+                    if !embedded { title }
+                    searchField.frame(maxWidth: .infinity)
                 }
-                .onSubmit { model.choose() }
+                .padding(.horizontal, 16)
+                .padding(.top, embedded ? 4 : 14)
+                .padding(.bottom, 10)
+            } else {
+                HStack(spacing: 12) {
+                    title
+                    Spacer()
+                    searchField.frame(width: 300)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, embedded ? 26 : 14)
+                .padding(.bottom, 14)
+            }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, embedded ? 26 : 14)
-        .padding(.bottom, 14)
+    }
+
+    var searchField: some View {
+        TextField("Search starters", text: $model.query)
+            .textFieldStyle(.roundedBorder)
+            .controlSize(.large)
+            .font(.chrome(13))
+            .focused($searchFocused)
+            .accessibilityLabel("Search starters")
+            // Typing filters while the arrow keys move through the cards (Xcode's template chooser).
+            .onKeyPress(keys: [.upArrow, .downArrow, .leftArrow, .rightArrow]) { press in
+                switch press.key {
+                case .upArrow: model.move(dy: -1)
+                case .downArrow: model.move(dy: 1)
+                case .leftArrow: model.move(dx: -1)
+                default: model.move(dx: 1)
+                }
+                return .handled
+            }
+            .onSubmit { model.choose() }
     }
 
     // MARK: Grid
@@ -166,7 +190,7 @@ public struct StarterGalleryView: View {
                             .accessibilityAction { model.choose(s) }
                     }
                 }
-                .padding(.horizontal, 20)
+                .padding(.horizontal, compact ? 16 : 20)
                 .padding(.bottom, 20)
             }
             .onChange(of: model.selection) { _, id in
@@ -179,15 +203,37 @@ public struct StarterGalleryView: View {
 
     // MARK: Footer
 
-    var footer: some View {
-        HStack(spacing: 12) {
-            if let s = model.selected {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(Loc.t(s.name)).font(.chrome(13.5, weight: .semibold))
-                    Text("\(s.isBlank ? Loc.t("Blank") : HomeView.typeName(s.type)) · \(Loc.t(s.category.title))")
-                        .font(.chrome(12)).foregroundStyle(.chromeSecondary)
-                }
+    @ViewBuilder var footer: some View {
+        if compact {
+            // The iPhone's: the chosen starter above the buttons.
+            VStack(alignment: .leading, spacing: 8) {
+                selectedName
+                footerButtons
             }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+        } else {
+            HStack(spacing: 12) {
+                selectedName
+                footerButtons
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 12)
+        }
+    }
+
+    @ViewBuilder var selectedName: some View {
+        if let s = model.selected {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(Loc.t(s.name)).font(.chrome(13.5, weight: .semibold))
+                Text("\(s.isBlank ? Loc.t("Blank") : HomeView.typeName(s.type)) · \(Loc.t(s.category.title))")
+                    .font(.chrome(12)).foregroundStyle(.chromeSecondary)
+            }
+        }
+    }
+
+    @ViewBuilder var footerButtons: some View {
+        HStack(spacing: 12) {
             Spacer()
             if let s = model.selected, GuideLibrary.guide(for: s.type) != nil {
                 Toggle("Start with Guide", isOn: $model.startsWithGuide)
@@ -203,8 +249,6 @@ public struct StarterGalleryView: View {
                 .controlSize(.large)
                 .disabled(model.selected == nil)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
     }
 }
 

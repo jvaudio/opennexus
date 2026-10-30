@@ -23,12 +23,16 @@ public final class TouchScene {
     public var settings = false
     /// Image to map's progress while it runs.
     public var importProgress: ImageImportProgress?
+    /// Quick Capture, while its sheet shows (M47c).
+    public var capture: QuickCaptureModel?
     public var error: String?
     /// Opening a document (iCloud may download it first).
     public private(set) var busy = false
 
     /// Captures and Spotlight (the app's integrations) hear about documents here.
     @ObservationIgnored public var onDocumentOpened: (TouchDocumentModel) -> Void = { _ in }
+    /// Files a Quick Capture idea in its map (the app's integrations, as Share captures).
+    @ObservationIgnored public var onCapture: (String, CaptureTargets.Target) -> Void = { _, _ in }
 
     public init(library: TouchLibrary = .shared) {
         self.library = library
@@ -121,6 +125,16 @@ public final class TouchScene {
         open(TouchLibrary.inboxURL)
     }
 
+    /// Quick Capture: the Inbox, then the recent maps, as targets.
+    public func startCapture() {
+        let inbox = TouchLibrary.inboxURL.standardizedFileURL
+        let m = QuickCaptureModel(
+            targets: CaptureTargets(recents: library.recents.filter { $0.standardizedFileURL != inbox }))
+        m.onSave = { [weak self] text, target in self?.onCapture(text, target) }
+        m.onClose = { [weak self] in self?.capture = nil }
+        capture = m
+    }
+
     /// File › Import… and files from other apps: a new document from what they read as.
     public func importFile(_ url: URL) {
         library.importFile(url, progress: { [weak self] p in self?.importProgress = p }) { [weak self] result in
@@ -178,8 +192,9 @@ public final class TouchScene {
 
     // MARK: Links
 
-    /// `opennexus://inbox`, `new`, `open/<token>` (widgets), `join#<invite>` (M46); file
-    /// URLs of documents (open in place) and of other formats (import).
+    /// `opennexus://inbox`, `inbox/add` (Quick Capture), `new`, `open/<token>` (widgets),
+    /// `join#<invite>` (M46); file URLs of documents (open in place) and of other formats
+    /// (import).
     public func handle(_ url: URL, token: (String) -> URL? = { _ in nil }) {
         if url.isFileURL {
             if ["nexus", "nexusjson"].contains(url.pathExtension.lowercased()) { open(url) } else { importFile(url) }
@@ -190,7 +205,7 @@ public final class TouchScene {
             return
         }
         switch url.host() {
-        case "inbox": openInbox()
+        case "inbox": if url.path == "/add" { startCapture() } else { openInbox() }
         case "new": home.onNew(.mindmap)
         case "open": if let u = token(url.lastPathComponent) { open(u) }
         case "join": join(url.absoluteString)
@@ -202,6 +217,7 @@ public final class TouchScene {
 /// An iPad window's root: Home with Open…, Import… and Settings, or the open document.
 public struct TouchSceneView: View {
     @Bindable var scene: TouchScene
+    @Environment(\.horizontalSizeClass) private var sizeClass
 
     public init(scene: TouchScene) { self.scene = scene }
 
@@ -231,9 +247,14 @@ public struct TouchSceneView: View {
                         }
                         .navigationTitle(Loc.t("Home"))
                         .navigationBarTitleDisplayMode(.inline)
+                        // On the iPhone, under the title rather than iOS's field floating at the
+                        // foot, which covers Home's last row and the shelf, and a prompt short
+                        // enough for the largest text (D418).
                         .searchable(
                             text: Binding(get: { scene.home.query }, set: { scene.home.query = $0 }),
-                            prompt: Loc.t("Search maps and nodes"))
+                            placement: sizeClass == .compact
+                                ? .navigationBarDrawer(displayMode: .always) : .automatic,
+                            prompt: sizeClass == .compact ? Loc.t("Search") : Loc.t("Search maps and nodes"))
                 }
                 .onAppear { scene.reloadHome() }
             }
@@ -252,6 +273,9 @@ public struct TouchSceneView: View {
         }
         .fullScreenCover(isPresented: $scene.settings) {
             SettingsSheet(request: .init(pane: "general"), library: scene.library) { scene.settings = false }
+        }
+        .sheet(isPresented: Binding(get: { scene.capture != nil }, set: { if !$0 { scene.capture = nil } })) {
+            if let m = scene.capture { TouchQuickCaptureView(model: m) }
         }
         .sheet(item: $scene.importProgress) { p in
             ImageImportView(progress: p).padding(24).presentationDetents([.height(180)])

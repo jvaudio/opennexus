@@ -498,7 +498,11 @@ struct AudioPopover: View {
     #if os(macOS)
     static var recordedHere: String { Loc.t("Recorded on this Mac. Transcription runs on-device (AI, M6).") }
     #else
-    static var recordedHere: String { Loc.t("Recorded on this iPad. Transcription runs on-device (AI, M6).") }
+    static var recordedHere: String {
+        onPhone
+            ? Loc.t("Recorded on this iPhone. Transcription runs on-device (AI, M6).")
+            : Loc.t("Recorded on this iPad. Transcription runs on-device (AI, M6).")
+    }
     #endif
     var controller: CanvasController
     let node: NodeID

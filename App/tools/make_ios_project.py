@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Writes App/OpenNexusiOS.xcodeproj/project.pbxproj (M47b): OpenNexus for iPad.
+"""Writes App/OpenNexusiOS.xcodeproj/project.pbxproj (M47b): OpenNexus for iPad and iPhone.
 
 A project of its own, so the Mac project stays as it is (D395). Like make_project.py,
 it lists the targets, their sources (synchronised folders), package products, plists and
@@ -31,9 +31,9 @@ APP = dict(
         "INFOPLIST_KEY_CFBundleDisplayName": "OpenNexus",
         "INFOPLIST_KEY_LSApplicationCategoryType": "public.app-category.productivity",
         "INFOPLIST_KEY_NSHumanReadableCopyright": "OpenNexus contributors",
-        "INFOPLIST_KEY_NSMicrophoneUsageDescription": "OpenNexus records audio notes on this iPad. Recordings stay in your document.",
-        "INFOPLIST_KEY_NSSpeechRecognitionUsageDescription": "Record to Map transcribes speech on this iPad. Nothing leaves your device.",
-        "INFOPLIST_KEY_NSCameraUsageDescription": "Image to map scans a whiteboard or a page with the camera. The picture stays on this iPad.",
+        "INFOPLIST_KEY_NSMicrophoneUsageDescription": "OpenNexus records audio notes on this device. Recordings stay in your document.",
+        "INFOPLIST_KEY_NSSpeechRecognitionUsageDescription": "Record to Map transcribes speech on this device. Nothing leaves your device.",
+        "INFOPLIST_KEY_NSCameraUsageDescription": "Image to map scans a whiteboard or a page with the camera. The picture stays on this device.",
         "INFOPLIST_KEY_UILaunchScreen_Generation": "YES",
         "LD_RUNPATH_SEARCH_PATHS": ["$(inherited)", "@executable_path/Frameworks"],
         "PRODUCT_BUNDLE_IDENTIFIER": BUNDLE,
@@ -120,8 +120,8 @@ PROJECT = {
     "SUPPORTS_MACCATALYST": "NO",
     "SWIFT_STRICT_CONCURRENCY": "complete",
     "SWIFT_VERSION": "6.0",
-    # The iPad (M47b); the iPhone's compact layout is M47c.
-    "TARGETED_DEVICE_FAMILY": "2",
+    # The iPhone (M47c) and the iPad (M47b): one app, laid out by size class (D412).
+    "TARGETED_DEVICE_FAMILY": "1,2",
 }
 DEBUG = {
     "DEBUG_INFORMATION_FORMAT": "dwarf",
@@ -364,4 +364,7 @@ scheme = f"""<?xml version="1.0" encoding="UTF-8"?>
 """
 scheme_dir = os.path.join(ROOT, f"{NAME}.xcodeproj", "xcshareddata", "xcschemes")
 os.makedirs(scheme_dir, exist_ok=True)
-open(os.path.join(scheme_dir, "OpenNexus iPad.xcscheme"), "w").write(scheme)
+old = os.path.join(scheme_dir, "OpenNexus iPad.xcscheme")
+if os.path.exists(old):
+    os.remove(old)
+open(os.path.join(scheme_dir, "OpenNexus iOS.xcscheme"), "w").write(scheme)

@@ -93,7 +93,7 @@ struct PaletteView: View {
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
             }
-            .frame(width: 640)
+            .fixedWidth(640)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(.separator))
             .shadow(color: .black.opacity(0.22), radius: 30, y: 12)
@@ -199,7 +199,7 @@ struct JumpView: View {
                 Text("↩ flies the camera there and selects the node · ⇧↩ adds to selection")
                     .font(.chrome(12)).foregroundStyle(.chromeSecondary).padding(12)
             }
-            .frame(width: 560)
+            .fixedWidth(560)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(.separator))
             .shadow(color: .black.opacity(0.22), radius: 30, y: 12)
@@ -275,7 +275,7 @@ struct FilterBarView: View {
                 }
             }
             .padding(14)
-            .frame(width: 680)
+            .fixedWidth(680)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
             .onAppear { focused = true }
@@ -830,9 +830,56 @@ struct TodosTab: View {
     }
 }
 
-/// Wrapping row layout for chips.
+/// Equal columns, as many as fit at `minimum` wide, each row as tall as its tallest cell: a
+/// `LazyVGrid` with adaptive columns, laid out at once. A lazy grid makes cells anew as the
+/// text grows, which the accessibility audit can't follow (M47c); these grids are short.
+struct ColumnsLayout: Layout {
+    var minimum: CGFloat
+    var spacing: CGFloat
+
+    func columns(_ width: CGFloat) -> Int { max(1, Int((width + spacing) / (minimum + spacing))) }
+
+    /// The cell width and each row's height.
+    func rows(_ width: CGFloat, _ subviews: Subviews) -> (cell: CGFloat, heights: [CGFloat]) {
+        let n = columns(width)
+        let cell = (width - CGFloat(n - 1) * spacing) / CGFloat(n)
+        var heights: [CGFloat] = []
+        for (i, s) in subviews.enumerated() {
+            let h = s.sizeThatFits(ProposedViewSize(width: cell, height: nil)).height
+            if i % n == 0 { heights.append(h) } else { heights[heights.count - 1] = max(heights[heights.count - 1], h) }
+        }
+        return (cell, heights)
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? minimum
+        let heights = rows(width, subviews).heights
+        return CGSize(width: width, height: heights.reduce(0, +) + spacing * CGFloat(max(0, heights.count - 1)))
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        let n = columns(bounds.width)
+        let (cell, heights) = rows(bounds.width, subviews)
+        var y = bounds.minY
+        for (i, s) in subviews.enumerated() {
+            let (row, column) = (i / n, i % n)
+            if column == 0, row > 0 { y += heights[row - 1] + spacing }
+            s.place(
+                at: CGPoint(x: bounds.minX + CGFloat(column) * (cell + spacing), y: y),
+                proposal: ProposedViewSize(width: cell, height: heights[row]))
+        }
+    }
+}
+
+/// Wrapping row layout for chips. A chip wider than the row on its own gets the row's width
+/// (its text wraps) rather than running past it.
 struct FlowLayout: Layout {
     var spacing: CGFloat = 6
+
+    func size(_ s: LayoutSubview, in width: CGFloat) -> CGSize {
+        let size = s.sizeThatFits(.unspecified)
+        return size.width <= width ? size : s.sizeThatFits(ProposedViewSize(width: width, height: nil))
+    }
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let width = proposal.width ?? 300
@@ -840,7 +887,7 @@ struct FlowLayout: Layout {
         var y: CGFloat = 0
         var row: CGFloat = 0
         for s in subviews {
-            let size = s.sizeThatFits(.unspecified)
+            let size = size(s, in: width)
             if x + size.width > width, x > 0 {
                 x = 0
                 y += row + spacing
@@ -857,7 +904,7 @@ struct FlowLayout: Layout {
         var y = bounds.minY
         var row: CGFloat = 0
         for s in subviews {
-            let size = s.sizeThatFits(.unspecified)
+            let size = size(s, in: bounds.width)
             if x + size.width > bounds.maxX, x > bounds.minX {
                 x = bounds.minX
                 y += row + spacing

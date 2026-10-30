@@ -12,9 +12,14 @@ import UIKit
 /// inspector, share, collaborate, AI, Settings), the canvas with its floating chrome and
 /// the AI panel beside it, and the request popovers. ZEN and Present hide the chrome;
 /// presenting with a second display shows the presenter view here.
+///
+/// At compact width (the iPhone, M47c) the Outline comes first with a toggle to the
+/// canvas, the title is a menu of the canvases, a bottom toolbar adds topics and holds
+/// Style and More, and what floats beside the canvas on the iPad comes up as sheets.
 public struct TouchDocumentScreen: View {
     @Bindable var model: TouchDocumentModel
     let library: TouchLibrary
+    @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var display = ExternalDisplay.shared
     @State private var password = ""
     @State private var remember = true
@@ -26,25 +31,51 @@ public struct TouchDocumentScreen: View {
     }
 
     var controller: CanvasController { model.controller }
+    var compact: Bool { sizeClass == .compact }
 
     public var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                if !model.immersive {
+                if !model.immersive && !compact {
                     CanvasTabStrip(model: model)
                     Divider()
                 }
                 content
             }
             .toolbar(model.immersive ? .hidden : .visible, for: .navigationBar)
-            .toolbar { toolbar }
+            .toolbar(compact && !model.immersive ? .visible : .hidden, for: .bottomBar)
+            .toolbar {
+                if compact {
+                    compactToolbar
+                } else {
+                    toolbar
+                }
+            }
             .navigationTitle(model.title)
+            // The iPhone's title is the canvases' menu, the canvas's name under it: the
+            // system's title, which follows Dynamic Type as text in the bar can't (D415).
+            .navigationSubtitle(compact && controller.store.model.canvasOrder.count > 1 ? model.canvasName : "")
+            .toolbarTitleMenu {
+                if compact { CanvasTitleMenu(model: model) }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .inspector(isPresented: $model.inspectorVisible) {
                 FormatPanel(controller: controller)
                     .inspectorColumnWidth(min: 300, ideal: 330, max: 420)
+                    .presentationDetents([.medium, .large])
                     .accessibilityLabel(Loc.t("Format panel"))
             }
+        }
+        .onChange(of: compact, initial: true) { _, on in model.setCompact(on) }
+        .sheet(item: Binding(get: { compact ? model.request : nil }, set: { if $0 == nil { model.closeRequest() } })) {
+            r in
+            CanvasRequestView(controller: controller, request: r.request) { model.closeRequest() }
+                .presentationDetents([.medium, .large])
+                .environment(\.colorScheme, controller.theme.isDark ? .dark : .light)
+        }
+        .sheet(isPresented: compactPanel) {
+            CanvasTrailingPanel(controller: controller)
+                .presentationDetents([.medium, .large])
         }
         .statusBarHidden(model.immersive)
         .persistentSystemOverlays(model.immersive ? .hidden : .automatic)
@@ -137,7 +168,7 @@ public struct TouchDocumentScreen: View {
                 if model.viewMode == .canvas || model.viewMode == .split {
                     canvas
                 }
-                CanvasTrailingPanel(controller: controller)
+                if !compact { CanvasTrailingPanel(controller: controller) }
             }
         }
     }
@@ -149,7 +180,7 @@ public struct TouchDocumentScreen: View {
             CanvasOverlayStack(controller: controller)
         }
         .popover(
-            item: $model.request,
+            item: Binding(get: { compact ? nil : model.request }, set: { model.request = $0 }),
             attachmentAnchor: .rect(.rect(model.request?.anchor ?? .zero)),
             arrowEdge: .leading
         ) { r in
@@ -166,7 +197,7 @@ public struct TouchDocumentScreen: View {
             model.choosingStarter = false
             controller.addCanvas(from: starter)
         }
-        return StarterGalleryView(model: gallery).frame(minWidth: 700, minHeight: 560)
+        return StarterGalleryView(model: gallery).frame(minWidth: compact ? nil : 700, minHeight: compact ? nil : 560)
     }
 
     // MARK: Toolbar
@@ -199,23 +230,7 @@ public struct TouchDocumentScreen: View {
                 Label(Loc.t("Collaborate"), systemImage: "person.2")
             }
             Menu {
-                Button(Loc.t("Export…")) { model.runWindowCommand(.export) }
-                Button(Loc.t("Share Link…")) { model.runWindowCommand(.shareLink) }
-                Button(Loc.t("Print…")) { model.runWindowCommand(.printDocument) }
-                Divider()
-                Button(Loc.t("Import…")) { model.runWindowCommand(.importFile) }
-                if DocumentScanner.isSupported {
-                    Button(Loc.t("Scan Document…")) { model.scanning = true }
-                }
-                Button(Loc.t("Merge Documents…")) { model.runWindowCommand(.mergeDocuments) }
-                Button(Loc.t("Recovery Snapshots…")) { model.runWindowCommand(.recoverySnapshots) }
-                Button(model.document.isEncrypted ? Loc.t("Change Password…") : Loc.t("Set Password…")) {
-                    model.runWindowCommand(.setPassword)
-                }
-                Divider()
-                Button(Loc.t("Resolve Conflicts…")) { model.runWindowCommand(.resolveConflicts) }
-                Button(Loc.t("Sync History…")) { model.runWindowCommand(.syncHistory) }
-                Button(Loc.t("Join Session…")) { model.runWindowCommand(.joinSession) }
+                ShareMenuItems(model: model)
             } label: {
                 Label(Loc.t("Share"), systemImage: "square.and.arrow.up")
             }
@@ -238,6 +253,73 @@ public struct TouchDocumentScreen: View {
                 Label(Loc.t("Settings"), systemImage: "gearshape")
             }
             .accessibilityIdentifier("settings")
+        }
+    }
+
+    // MARK: Compact (the iPhone)
+
+    /// The AI panel or the guide, which sit beside the canvas on the iPad.
+    var compactPanel: Binding<Bool> {
+        Binding(
+            get: {
+                compact && (controller.aiPanelVisible || controller.guideVisible) && !controller.zen
+                    && controller.present == nil
+            },
+            set: { shown in
+                if !shown {
+                    controller.aiPanelVisible = false
+                    controller.guideVisible = false
+                }
+            })
+    }
+
+    @ToolbarContentBuilder var compactToolbar: some ToolbarContent {
+        ToolbarItem(placement: .topBarLeading) {
+            Button {
+                model.close()
+            } label: {
+                Label(Loc.t("Documents"), systemImage: "chevron.backward")
+            }
+            .accessibilityIdentifier("close-document")
+        }
+        ToolbarItem(placement: .topBarTrailing) {
+            Picker(Loc.t("View"), selection: Binding(get: { model.compactMode }, set: { model.setViewMode($0) })) {
+                Label(Loc.t("Outline"), systemImage: "list.bullet.indent").tag(CanvasViewMode.outline)
+                Label(Loc.t("Canvas"), systemImage: "point.3.connected.trianglepath.dotted").tag(CanvasViewMode.canvas)
+            }
+            .pickerStyle(.segmented)
+            .labelStyle(.iconOnly)
+            .fixedSize()
+            .accessibilityIdentifier("view-mode")
+        }
+        ToolbarItemGroup(placement: .bottomBar) {
+            Button {
+                model.addTopic(child: true)
+            } label: {
+                Label(Loc.t("Add Child"), systemImage: "arrow.turn.down.right")
+            }
+            .accessibilityIdentifier("add-child")
+            Spacer()
+            Button {
+                model.addTopic(child: false)
+            } label: {
+                Label(Loc.t("Add Sibling"), systemImage: "arrow.down.to.line")
+            }
+            .accessibilityIdentifier("add-sibling")
+            Spacer()
+            Button {
+                model.inspectorVisible.toggle()
+            } label: {
+                Label(Loc.t("Style"), systemImage: "paintbrush")
+            }
+            .accessibilityIdentifier("inspector")
+            Spacer()
+            Menu {
+                CompactMoreMenu(model: model)
+            } label: {
+                Label(Loc.t("More"), systemImage: "ellipsis.circle")
+            }
+            .accessibilityIdentifier("more-menu")
         }
     }
 
@@ -265,6 +347,87 @@ public struct TouchDocumentScreen: View {
         p.present(animated: true) { _, _, _ in
             MainActor.assumeIsolated { model.printing = nil }
         }
+    }
+}
+
+// MARK: Compact menus
+
+/// The title's menu on the iPhone: the document's canvases, then the tab menu's actions.
+struct CanvasTitleMenu: View {
+    let model: TouchDocumentModel
+    var controller: CanvasController { model.controller }
+
+    var body: some View {
+        Section(Loc.t("Canvases")) {
+            ForEach(controller.store.model.orderedCanvases, id: \.id) { c in
+                Button {
+                    model.switchCanvas(to: c.id)
+                } label: {
+                    if c.id == controller.canvasID {
+                        Label(TouchDocumentModel.name(of: c), systemImage: "checkmark")
+                    } else {
+                        Text(verbatim: TouchDocumentModel.name(of: c))
+                    }
+                }
+            }
+        }
+        CanvasTabActions(model: model, target: controller.canvasID)
+    }
+}
+
+/// The bottom toolbar's More on the iPhone: what the iPad's toolbar, share menu and the
+/// canvas's modes offer.
+struct CompactMoreMenu: View {
+    let model: TouchDocumentModel
+    var controller: CanvasController { model.controller }
+
+    var body: some View {
+        Section {
+            Button(Loc.t("Comments"), systemImage: "text.bubble") { model.run(.comment) }
+            Button(Loc.t("Note"), systemImage: "note.text") { model.run(.note) }
+            Button("AI", systemImage: "sparkles") { controller.toggleAIPanel() }
+        }
+        Section {
+            Button(Loc.t("Present"), systemImage: "play.rectangle") { model.run(.present) }
+            Button(Loc.t("Focus"), systemImage: "scope") { model.run(.focusBranch) }
+            Button(Loc.t("ZEN"), systemImage: "rectangle.dashed") { model.run(.zen) }
+            Button(Loc.t("Find"), systemImage: "magnifyingglass") { model.run(.find) }
+            Button(Loc.t("Filter"), systemImage: "line.3.horizontal.decrease") { model.run(.filterBar) }
+            Button(Loc.t("Gantt"), systemImage: "chart.bar.xaxis") { model.setViewMode(.gantt) }
+            Button(Loc.t("Fit to Screen"), systemImage: "arrow.up.left.and.arrow.down.right") {
+                model.run(.fitToWindow)
+            }
+        }
+        Section {
+            Button(Loc.t("Collaborate"), systemImage: "person.2") { model.runWindowCommand(.collaborate) }
+            Menu(Loc.t("Share"), systemImage: "square.and.arrow.up") { ShareMenuItems(model: model) }
+            Button(Loc.t("Settings"), systemImage: "gearshape") { model.settingsPane = .init(pane: "general") }
+        }
+    }
+}
+
+/// The iPad's share menu (and the iPhone's More › Share).
+struct ShareMenuItems: View {
+    let model: TouchDocumentModel
+
+    var body: some View {
+        Button(Loc.t("Export…")) { model.runWindowCommand(.export) }
+        Button(Loc.t("Share Link…")) { model.runWindowCommand(.shareLink) }
+        Button(Loc.t("Print…")) { model.runWindowCommand(.printDocument) }
+        Divider()
+        Button(Loc.t("Import…")) { model.runWindowCommand(.importFile) }
+        if DocumentScanner.isSupported {
+            Button(Loc.t("Scan Document…")) { model.scanning = true }
+        }
+        Button(Loc.t("Merge Documents…")) { model.runWindowCommand(.mergeDocuments) }
+        Button(Loc.t("Recovery Snapshots…")) { model.runWindowCommand(.recoverySnapshots) }
+        Button(model.document.isEncrypted ? Loc.t("Change Password…") : Loc.t("Set Password…")) {
+            model.runWindowCommand(.setPassword)
+        }
+        Divider()
+        Button(Loc.t("Resolve Conflicts…")) { model.runWindowCommand(.resolveConflicts) }
+        Button(Loc.t("Sync History…")) { model.runWindowCommand(.syncHistory) }
+        Button(Loc.t("Join Session…")) { model.runWindowCommand(.joinSession) }
     }
 }
 
@@ -300,7 +463,7 @@ struct CanvasTabStrip: View {
 
     func tab(_ c: NexusCore.Canvas) -> some View {
         let selected = c.id == controller.canvasID
-        let name = c.title.isEmpty ? (c.nodes[c.root]?.text ?? "") : c.title
+        let name = TouchDocumentModel.name(of: c)
         return Button {
             controller.switchCanvas(to: c.id)
         } label: {
@@ -308,7 +471,7 @@ struct CanvasTabStrip: View {
                 RoundedRectangle(cornerRadius: 2.5)
                     .fill(Color(cgColor: RGBA(hex: DiagramDescriptor[c.type].tint).cgColor))
                     .frame(width: 10, height: 10)
-                Text(verbatim: name.isEmpty ? Loc.t("Untitled") : name).lineLimit(1)
+                Text(verbatim: name).lineLimit(1)
                     .font(.chrome(13, weight: selected ? .semibold : .regular))
             }
             .padding(.horizontal, 12)

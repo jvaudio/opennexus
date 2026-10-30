@@ -59,7 +59,7 @@ public struct WelcomeView: View {
                 .font(.chrome(13.5)).foregroundStyle(.white.opacity(0.55)).padding(.top, 30)
             }
             .padding(.horizontal, 48).padding(.vertical, 44)
-            .frame(width: 640)
+            .fixedWidth(640)
             .background(
                 RoundedRectangle(cornerRadius: 30).fill(Color(red: 0.11, green: 0.11, blue: 0.13).opacity(0.94))
             )
@@ -313,7 +313,7 @@ public struct XmindSwitcherCard: View {
             Text(report).font(.chrome(13.5)).foregroundStyle(.chromeSecondary)
         }
         .padding(22)
-        .frame(width: 460, alignment: .leading)
+        .fixedWidth(460, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 16).fill(Color.windowBackground))
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(.separator))
         .shadow(color: .black.opacity(0.15), radius: 24, y: 10)

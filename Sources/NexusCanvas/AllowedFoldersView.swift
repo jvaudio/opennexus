@@ -56,7 +56,7 @@ public struct AllowedFoldersView: View {
             }
         }
         .padding(18)
-        .frame(width: 520)
+        .fixedWidth(520)
         .onAppear { folders = AgentFolders.list(prefs) }
     }
 

@@ -82,15 +82,23 @@ private struct AboutCard: View {
                         .foregroundStyle(.chromeSecondary)
                     }
                 }
-                HStack {
-                    Button("Source code") { onAction("about.source") }
-                    Button("Release notes") { onAction("about.notes") }
-                    Button("Report an issue…") { onAction("about.issue") }
-                }
+                #if os(macOS)
+                HStack { links }
+                #else
+                // On a row, wrapping where they don't fit (a phone); the same views as the
+                // text grows, which the audit follows.
+                FlowLayout(spacing: 8) { links }
+                #endif
                 Text("Usage statistics are off. See Privacy & Data.").font(.chrome(13)).foregroundStyle(
                     .chromeSecondary)
             }
         }
+    }
+
+    @ViewBuilder var links: some View {
+        Button("Source code") { onAction("about.source") }
+        Button("Release notes") { onAction("about.notes") }
+        Button("Report an issue…") { onAction("about.issue") }
     }
 }
 

@@ -4,10 +4,10 @@ import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
 
-/// The Share extension and Safari clipper on the iPad (M47b; artboard 33): text, links,
-/// images and Safari pages go to the Inbox or a recent map. The capture is queued in the
-/// App Group and OpenNexus adds it when it next comes forward; this extension never edits
-/// a file itself.
+/// The Share extension and Safari clipper on the iPad (M47b; artboard 33) and the iPhone
+/// (M47c): text, links, images and Safari pages go to the Inbox or a recent map. The
+/// capture is queued in the App Group and OpenNexus adds it when it next comes forward;
+/// this extension never edits a file itself.
 final class ShareViewController: UIViewController {
     let model = ShareModel()
 
@@ -140,8 +140,14 @@ struct ShareView: View {
                     .frame(minHeight: 70, maxHeight: 120)
                     .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
                 if model.kind == .page {
-                    Label("Summarised on this iPad into a branch with the link", systemImage: "sparkles")
-                        .font(.system(size: 12)).foregroundStyle(.secondary)
+                    Group {
+                        if UIDevice.current.userInterfaceIdiom == .phone {
+                            Label("Summarised on this iPhone into a branch with the link", systemImage: "sparkles")
+                        } else {
+                            Label("Summarised on this iPad into a branch with the link", systemImage: "sparkles")
+                        }
+                    }
+                    .font(.system(size: 12)).foregroundStyle(.secondary)
                 } else if let u = model.url {
                     Text(u).font(.system(size: 12)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
                 } else if model.image != nil {
@@ -159,5 +165,7 @@ struct ShareView: View {
             }
         }
         .padding(18)
+        // The iPhone shows the extension as a full-height sheet: keep the form at its top.
+        .frame(maxHeight: .infinity, alignment: .top)
     }
 }

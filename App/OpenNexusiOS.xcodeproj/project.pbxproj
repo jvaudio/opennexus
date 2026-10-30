@@ -715,7 +715,7 @@
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = "6.0";
-				TARGETED_DEVICE_FAMILY = "2";
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -812,7 +812,7 @@
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_STRICT_CONCURRENCY = complete;
 				SWIFT_VERSION = "6.0";
-				TARGETED_DEVICE_FAMILY = "2";
+				TARGETED_DEVICE_FAMILY = "1,2";
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -850,10 +850,10 @@
 				INFOPLIST_FILE = iOS/Support/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Image to map scans a whiteboard or a page with the camera. The picture stays on this iPad.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Image to map scans a whiteboard or a page with the camera. The picture stays on this device.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "OpenNexus records audio notes on this iPad. Recordings stay in your document.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Record to Map transcribes speech on this iPad. Nothing leaves your device.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "OpenNexus records audio notes on this device. Recordings stay in your document.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Record to Map transcribes speech on this device. Nothing leaves your device.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1003,10 +1003,10 @@
 				INFOPLIST_FILE = iOS/Support/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
-				INFOPLIST_KEY_NSCameraUsageDescription = "Image to map scans a whiteboard or a page with the camera. The picture stays on this iPad.";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Image to map scans a whiteboard or a page with the camera. The picture stays on this device.";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
-				INFOPLIST_KEY_NSMicrophoneUsageDescription = "OpenNexus records audio notes on this iPad. Recordings stay in your document.";
-				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Record to Map transcribes speech on this iPad. Nothing leaves your device.";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "OpenNexus records audio notes on this device. Recordings stay in your document.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Record to Map transcribes speech on this device. Nothing leaves your device.";
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",

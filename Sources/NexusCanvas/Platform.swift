@@ -18,6 +18,10 @@ public typealias PlatformImage = NSImage
 #else
 public typealias PlatformColor = UIColor
 public typealias PlatformImage = UIImage
+
+/// The iPhone rather than the iPad, for text that names the device: "this iPhone", "On My
+/// iPhone" (M47c).
+@MainActor var onPhone: Bool { UIDevice.current.userInterfaceIdiom == .phone }
 #endif
 
 extension Color {

@@ -53,7 +53,7 @@ struct GuidePanelView: View {
                 comingSoon
             }
         }
-        .frame(width: 320)
+        .panelWidth(320)
         .frame(maxHeight: .infinity)
         .background(.background)
         .overlay(alignment: .leading) { Rectangle().fill(.separator).frame(width: 1) }

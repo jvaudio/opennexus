@@ -97,7 +97,11 @@ final class TouchAccessibility {
         return UIAccessibility.convertToScreenCoordinates(v.camera.toView(world), in: v)
     }
 
-    func frame(_ id: NodeID) -> CGRect { screenRect(controller?.scene.nodes[id]?.frame.rect ?? .null) }
+    /// A topic's frame: its target for a finger (`touchTarget`), which a tap there selects.
+    func frame(_ id: NodeID) -> CGRect {
+        guard let v = view, let world = controller?.scene.nodes[id]?.frame.rect, !world.isNull else { return .zero }
+        return UIAccessibility.convertToScreenCoordinates(v.touchTarget(world), in: v)
+    }
 
     func isSelected(_ id: NodeID) -> Bool { controller?.selection.nodes.contains(id) ?? false }
 

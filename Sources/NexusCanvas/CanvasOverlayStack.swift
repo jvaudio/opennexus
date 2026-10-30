@@ -8,6 +8,13 @@ import SwiftUI
 /// The chrome follows the canvas theme (light on a light map, dark on a dark one).
 public struct CanvasOverlayStack: View {
     let controller: CanvasController
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    /// On the iPhone, sheets and bars as wide as the screen keep a margin from its edges.
+    var edge: CGFloat { sizeClass == .compact ? 10 : 0 }
+    #else
+    let edge: CGFloat = 0
+    #endif
 
     public init(controller: CanvasController) { self.controller = controller }
 
@@ -32,6 +39,7 @@ public struct CanvasOverlayStack: View {
                 PaletteView(controller: controller).named(Loc.t("Command palette")).padding(.top, 70)
                 JumpView(controller: controller).named(Loc.t("Quick jump")).padding(.top, 70)
             }
+            .padding(.horizontal, edge)
             .pinned(.top)
             Group {
                 TourOverlay(controller: controller, part: .pill).named(Loc.t("Tutorial paused"))
@@ -70,6 +78,7 @@ public struct CanvasOverlayStack: View {
                 TourOverlay(controller: controller, part: .finish).named(Loc.t("Tutorial finished"))
                 fileSheets
             }
+            .padding(.horizontal, edge)
         }
         .environment(\.colorScheme, controller.theme.isDark ? .dark : .light)
     }

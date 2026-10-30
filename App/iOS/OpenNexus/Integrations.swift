@@ -39,6 +39,7 @@ final class Integrations {
         scenes.removeAll { $0.scene == nil }
         scenes.append(WeakScene(scene: scene))
         scene.onDocumentOpened = { [weak self] m in self?.documentOpened(m) }
+        scene.onCapture = { [weak self] text, target in self?.capture(text, to: target.url) }
     }
 
     var frontScene: TouchScene? { scenes.last { $0.scene != nil }?.scene }
@@ -211,6 +212,14 @@ final class Integrations {
         }
     }
 
+    /// Quick Capture's idea (M47c), composed as a typed capture is.
+    func capture(_ text: String, to target: URL?) {
+        guard let r = CaptureComposer.compose(text, multiline: prefs.string("integrations.captureMultiline")) else {
+            return
+        }
+        add(r, to: target)
+    }
+
     /// Adds captured topics to a map (nil: the Inbox) as one undo step: the open document
     /// if it is that map, otherwise the file itself, through file coordination.
     func add(_ result: CaptureComposer.Result, to target: URL?, image: Data? = nil) {
@@ -232,7 +241,10 @@ final class Integrations {
             }
         } else {
             let doc = TouchDocument(fileURL: url)
+            // A recent map outside the app's folder is reached through its bookmark.
+            let scoped = url.startAccessingSecurityScopedResource()
             Task { @MainActor in
+                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
                 guard await doc.open() else { return }
                 self.attach(image, to: &items, in: doc.store)
                 if let canvas = doc.store.model.orderedCanvases.first,

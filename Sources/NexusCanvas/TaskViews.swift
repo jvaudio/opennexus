@@ -153,7 +153,7 @@ private struct TaskEditorSheet: View {
             }
             .padding(16)
         }
-        .frame(width: 600)
+        .fixedWidth(600)
         .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
         .shadow(color: .black.opacity(0.18), radius: 30, y: 12)

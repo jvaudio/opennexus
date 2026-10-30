@@ -87,8 +87,14 @@ struct ShortcutsPane: View {
     }
 
     var search: some View {
+        // On iOS the placeholder is short enough for a phone at the largest text size (M47c).
+        #if os(macOS)
         TextField("Search shortcuts", text: $query).textFieldStyle(.roundedBorder).controlSize(.large)
             .accessibilityLabel("Search shortcuts")
+        #else
+        TextField("Search", text: $query).textFieldStyle(.roundedBorder).controlSize(.large)
+            .accessibilityLabel("Search shortcuts")
+        #endif
     }
 
     var scopePicker: some View {
@@ -139,9 +145,7 @@ struct ShortcutsPane: View {
             #if os(macOS)
             HStack(spacing: 10) { profileCards }
             #else
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: profileWidth), spacing: 10)], spacing: 10) {
-                profileCards
-            }
+            ColumnsLayout(minimum: profileWidth, spacing: 10) { profileCards }
             #endif
         }
         .padding(18)
@@ -159,6 +163,10 @@ struct ShortcutsPane: View {
                     Text(name).font(.chrome(15, weight: .semibold))
                     Text(detail).font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                 }
+                #if os(iOS)
+                // A grid cell keeps its text's full height as it grows (M47c).
+                .fixedSize(horizontal: false, vertical: true)
+                #endif
                 .frame(maxWidth: .infinity, minHeight: 68, alignment: .topLeading)
                 .padding(12)
                 .background(
@@ -211,7 +219,7 @@ struct ShortcutsPane: View {
             }
         }
         .padding(18)
-        .frame(width: 420)
+        .fixedWidth(420)
         .background(RoundedRectangle(cornerRadius: 14).fill(Color(white: 0.1)))
         .popover(isPresented: $hyperPrompt, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 10) {
@@ -240,7 +248,7 @@ struct ShortcutsPane: View {
                 }
             }
             .padding(18)
-            .frame(width: 400)
+            .fixedWidth(400)
         }
     }
 
@@ -464,7 +472,7 @@ struct ShortcutsPane: View {
                     .font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
             }
             .padding(18)
-            .frame(width: 520)
+            .fixedWidth(520)
         }
     }
 

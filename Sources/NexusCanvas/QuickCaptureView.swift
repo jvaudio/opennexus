@@ -1,11 +1,14 @@
-#if os(macOS)
-import AppKit
 import NexusFormat
 import NexusScene
 import SwiftUI
 
+#if os(macOS)
+import AppKit
+#endif
+
 /// Quick Capture (✦N from any app, artboard 33): one field on a glass panel. ↩ saves,
-/// ⇥ / ⇧⇥ choose the map, ⌥↩ adds a line, Esc closes.
+/// ⇥ / ⇧⇥ choose the map, ⌥↩ adds a line, Esc closes. On iOS a widget opens it as a sheet
+/// (M47c).
 @MainActor
 @Observable
 public final class QuickCaptureModel {
@@ -27,6 +30,7 @@ public final class QuickCaptureModel {
     }
 }
 
+#if os(macOS)
 public struct QuickCaptureView: View {
     @Bindable var model: QuickCaptureModel
     @FocusState private var focused: Bool

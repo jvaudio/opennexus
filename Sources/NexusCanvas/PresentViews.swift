@@ -349,7 +349,19 @@ public struct PresenterView: View {
     /// Slides drawn so far. An observable object, not `@State`: the cards read it inside
     /// the TimelineView's content, where a state change wouldn't redraw them.
     @State private var drawn = PresenterSlides()
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
     public init(controller: CanvasController) { self.controller = controller }
+
+    /// The iPhone's narrow cards wrap a slide's title rather than cut it.
+    var compactTitles: Bool {
+        #if os(iOS)
+        sizeClass == .compact
+        #else
+        false
+        #endif
+    }
 
     public var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { ctx in
@@ -360,14 +372,109 @@ public struct PresenterView: View {
             let next = nextIndex.map { slides[$0] }
             let current = slides.indices.contains(index) ? slides[index] : nil
             let elapsed = Int(ctx.date.timeIntervalSince(p?.started ?? ctx.date))
+            #if os(iOS)
+            if sizeClass == .compact {
+                compactBody(
+                    now: ctx.date, elapsed: elapsed, slides: slides, index: index, current: current, next: next,
+                    nextIndex: nextIndex)
+            } else {
+                regularBody(
+                    now: ctx.date, elapsed: elapsed, slides: slides, index: index, current: current, next: next,
+                    nextIndex: nextIndex)
+            }
+            #else
+            regularBody(
+                now: ctx.date, elapsed: elapsed, slides: slides, index: index, current: current, next: next,
+                nextIndex: nextIndex)
+            #endif
+        }
+    }
+
+    /// The iPhone's clock and timer, each under a caption that says what it is: read as
+    /// drawn, since a label other than the text reads to the audit as clipped text (D408).
+    func clock(_ now: Date) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Time").font(.chrome(12, weight: .medium)).foregroundStyle(.chromeSecondary)
+            Text(now.formatted(date: .omitted, time: .shortened))
+                .font(.chrome(22, weight: .medium, design: .monospaced)).foregroundStyle(.chromeSecondary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    func timer(_ elapsed: Int) -> some View {
+        VStack(alignment: .trailing, spacing: 0) {
+            Text("Elapsed").font(.chrome(12, weight: .medium)).foregroundStyle(.chromeSecondary)
+            Text(String(format: "%02d:%02d", elapsed / 60, elapsed % 60))
+                .font(.chrome(34, weight: .semibold, design: .monospaced))
+                .foregroundStyle(Color.accentColor)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    func note(_ current: Slide?) -> some View {
+        ScrollView {
+            Text(current?.note ?? Loc.t("No note on this slide's topic."))
+                .font(.chrome(24))
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityLabel(Loc.t("Speaker note"))
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.secondary.opacity(0.08)))
+    }
+
+    #if os(iOS)
+    /// The iPhone's presenter view while the slides are on a TV or a Mac (M47c): the current
+    /// slide, the next one beside the note, and large buttons.
+    func compactBody(
+        now: Date, elapsed: Int, slides: [Slide], index: Int, current: Slide?, next: Slide?, nextIndex: Int?
+    ) -> some View {
+        let pair = Set([current, next].compactMap { $0.map(cardKey) })
+        return VStack(alignment: .leading, spacing: 12) {
+            // Side by side, or the timer under the clock when the text is too large for both.
+            TitleAndControl {
+                clock(now)
+                timer(elapsed)
+            }
+            slideCard(current, index: index, label: Loc.f("Slide %lld of %lld", index + 1, slides.count), keep: pair)
+            HStack(alignment: .top, spacing: 12) {
+                slideCard(next, index: nextIndex, label: next == nil ? Loc.t("End of deck") : Loc.t("Next"), keep: pair)
+                    .frame(width: 130)
+                    .opacity(0.85)
+                note(current)
+            }
+            HStack(spacing: 10) {
+                Button {
+                    controller.stepSlide(-1)
+                } label: {
+                    Label(Loc.t("Previous step"), systemImage: "chevron.backward").frame(maxWidth: .infinity)
+                }
+                Button {
+                    controller.stepSlide(1)
+                } label: {
+                    Label(Loc.t("Next step"), systemImage: "chevron.forward").frame(maxWidth: .infinity)
+                }
+                Button(Loc.t("End")) { controller.endPresent() }.fixedSize()
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+        }
+        .padding(16)
+    }
+    #endif
+
+    func regularBody(
+        now: Date, elapsed: Int, slides: [Slide], index: Int, current: Slide?, next: Slide?, nextIndex: Int?
+    ) -> some View {
+        Group {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .firstTextBaseline) {
                     Text("PRESENTER VIEW").font(.chrome(12, weight: .semibold, design: .monospaced)).kerning(1.4)
                         .foregroundStyle(.chromeSecondary)
                     Spacer()
-                    Text(ctx.date.formatted(date: .omitted, time: .shortened))
+                    Text(now.formatted(date: .omitted, time: .shortened))
                         .font(.chrome(22, weight: .medium, design: .monospaced)).foregroundStyle(.chromeSecondary)
-                        .accessibilityLabel(Loc.f("Time: %@", ctx.date.formatted(date: .omitted, time: .shortened)))
+                        .accessibilityLabel(Loc.f("Time: %@", now.formatted(date: .omitted, time: .shortened)))
                     Text(String(format: "%02d:%02d", elapsed / 60, elapsed % 60))
                         .font(.chrome(34, weight: .semibold, design: .monospaced))
                         .foregroundStyle(Color.accentColor)
@@ -426,9 +533,11 @@ public struct PresenterView: View {
             }
             .aspectRatio(16.0 / 9, contentMode: .fit)
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(.separator))
-            .accessibilityHidden(true)
+            .illustration(Loc.t("Slide picture"))
             Text(label).font(.chrome(13)).foregroundStyle(.chromeSecondary)
-            Text(slide.map(controller.slideTitle) ?? "").font(.chrome(19, weight: .semibold)).lineLimit(2)
+            Text(slide.map(controller.slideTitle) ?? "").font(.chrome(19, weight: .semibold))
+                .lineLimit(compactTitles ? nil : 2)
+                .fixedSize(horizontal: false, vertical: compactTitles)
         }
         .task(id: key) {
             guard let key, let index, drawn.images[key] == nil else { return }
