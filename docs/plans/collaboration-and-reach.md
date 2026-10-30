@@ -1,6 +1,6 @@
 # OpenNexus Plan: Collaboration, Reach and Smaller Gaps (M43–M50)
 
-Oct 28, 2026 · Jerry Voelker · written against the code at `66ed075` (0.3, after M42) · **Status: in progress.** Decisions #1–#3 were confirmed on Oct 28, 2026 and #4–#12 on Oct 29; the other rows in "Decisions for Jerry" stay pending until Jerry confirms them. Corrections from checking the plan against the code were folded in the same day.
+Oct 28, 2026 · Jerry Voelker · written against the code at `66ed075` (0.3, after M42) · **Status: in progress.** Decisions #1–#3 were confirmed on Oct 28, 2026, #4–#12 on Oct 29 and #13–#14 on Oct 30; the other rows in "Decisions for Jerry" stay pending until Jerry confirms them. Corrections from checking the plan against the code were folded in the same day.
 
 This plan closes the eight gaps chosen from the [feature review](https://claude.ai/artifact/P9XpE1ituB1UgL9WXsZGjT) in eight milestones, M43–M50. Each phase is one milestone that Claude Code can plan, build, test and accept on its own, in the repo's existing style.
 
@@ -592,8 +592,8 @@ Each row has a recommendation. Every row starts Pending; before the milestone in
 | 10 | Invite and share links open the app | Universal links (custom domain + associated-domains entitlement) · `opennexus://` links via a landing page | Universal links if #4 is a custom domain | M46 | Confirmed: universal links (2026-10-29) |
 | 11 | CRDT | Native `NexusReplica` · Loro · Automerge | Native, with Loro as the fallback | M46 | Confirmed: native `NexusReplica`, with Loro as the fallback (2026-10-29) |
 | 12 | iOS minimum and distribution | iOS/iPadOS 27 or 26 · App Store, TestFlight only, or ad hoc | iOS/iPadOS 27 (matches macOS, and on-device AI), via TestFlight then the App Store | M47 | Confirmed: iOS/iPadOS 27, via TestFlight then the App Store (2026-10-29) |
-| 13 | Math engine packaging | Vendor MathJax with a small bridge · depend on MathJaxSwift | Vendor it: keeps the Swift package free of dependencies | M48 | Pending |
-| 14 | Spoken math for VoiceOver | MathJax's speech engine (larger) · TeX source as the label | Measure the speech engine's size in M48, then decide; default to TeX source | M48 | Pending |
+| 13 | Math engine packaging | Vendor MathJax with a small bridge · depend on MathJaxSwift | Vendor it: keeps the Swift package free of dependencies | M48 | Confirmed: vendor MathJax with a small bridge (2026-10-30) |
+| 14 | Spoken math for VoiceOver | MathJax's speech engine (larger) · TeX source as the label | Measure the speech engine's size in M48, then decide; default to TeX source | M48 | Confirmed: measure the speech engine's size in M48, then decide; TeX source by default (2026-10-30) |
 | 15 | Obsidian plugin repo | Mirror to `jvaudio/opennexus-obsidian` · a monorepo-only release | Mirror repo, as Obsidian's directory expects | M49 | Pending |
 | 16 | Starter gallery size | 60 · about 100 · 150 | About 100 (75 new) | M50 | Pending |
 
