@@ -42,7 +42,7 @@
       "extractionState" : "migrated"
     },
     "“%@” is password-protected" : {
-      "comment" : "Text with values filled in (DocumentFiles.swift)",
+      "comment" : "Text with values filled in (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "“+ name: Type” formats itself" : {
@@ -210,7 +210,7 @@
       "extractionState" : "migrated"
     },
     "%@ to %@" : {
-      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "comment" : "Text with values filled in (TaskFormat.swift)",
       "extractionState" : "migrated"
     },
     "%@ to %@, %@. Relationship." : {
@@ -221,12 +221,16 @@
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
+    "%@, %@: shortcut %@. Record" : {
+      "comment" : "Text with values filled in (ShortcutsPane.swift)",
+      "extractionState" : "migrated"
+    },
     "%@, Control Command %lld" : {
       "comment" : "Text with values filled in (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
     "%@, level %lld of %lld" : {
-      "comment" : "Text with values filled in (SettingsCards.swift)",
+      "comment" : "Text with values filled in (Spoken.swift)",
       "extractionState" : "migrated"
     },
     "%@, sync library, %@" : {
@@ -394,7 +398,7 @@
       }
     },
     "%lld children" : {
-      "comment" : "Count phrase with plural variants (SettingsCards.swift)",
+      "comment" : "Count phrase with plural variants (Spoken.swift)",
       "extractionState" : "migrated",
       "localizations" : {
         "en" : {
@@ -418,7 +422,7 @@
       }
     },
     "%lld children, collapsed" : {
-      "comment" : "Count phrase with plural variants (SettingsCards.swift)",
+      "comment" : "Count phrase with plural variants (Spoken.swift)",
       "extractionState" : "migrated",
       "localizations" : {
         "en" : {
@@ -442,7 +446,7 @@
       }
     },
     "%lld comments" : {
-      "comment" : "Count phrase with plural variants (SettingsCards.swift)",
+      "comment" : "Count phrase with plural variants (Spoken.swift)",
       "extractionState" : "migrated",
       "localizations" : {
         "en" : {
@@ -865,6 +869,10 @@
       "comment" : "Text with values filled in (ViewOverlays.swift)",
       "extractionState" : "migrated"
     },
+    "%lld of %lld selected zones." : {
+      "comment" : "Text with values filled in (TouchAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "%lld of %lld steps done" : {
       "comment" : "Text with values filled in (GuideViews.swift)",
       "extractionState" : "migrated"
@@ -942,7 +950,7 @@
       }
     },
     "%lld percent" : {
-      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "comment" : "Text with values filled in (TaskFormat.swift)",
       "extractionState" : "migrated"
     },
     "%lld problems" : {
@@ -994,7 +1002,7 @@
       }
     },
     "%lld pt" : {
-      "comment" : "Text with values filled in (CanvasView.swift)",
+      "comment" : "Text with values filled in (CanvasPointer.swift)",
       "extractionState" : "migrated"
     },
     "%lld relationships to missing topics or elements" : {
@@ -1430,7 +1438,7 @@
       }
     },
     "%lld working days" : {
-      "comment" : "Count phrase with plural variants (CanvasController+Tasks.swift)",
+      "comment" : "Count phrase with plural variants (TaskFormat.swift)",
       "extractionState" : "migrated",
       "localizations" : {
         "en" : {
@@ -1607,6 +1615,10 @@
     },
     "⌘D on a selected zone" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "⌘F searches every pane" : {
+      "comment" : "UI text (SettingsView.swift)",
       "extractionState" : "migrated"
     },
     "⌘K › Mask" : {
@@ -2001,6 +2013,10 @@
       "comment" : "UI text (DFD.swift)",
       "extractionState" : "migrated"
     },
+    "A sample map in the chosen theme, node style and colour theme" : {
+      "comment" : "UI text (SettingsCards.swift)",
+      "extractionState" : "migrated"
+    },
     "A separate service makes every request; OpenNexus itself still has no network permission." : {
       "comment" : "Settings footnote",
       "extractionState" : "migrated"
@@ -2015,6 +2031,10 @@
     },
     "a topic" : {
       "comment" : "UI text (CanvasController+Connect.swift)",
+      "extractionState" : "migrated"
+    },
+    "A topic with its two + buttons, and the floating toolbar above it" : {
+      "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
     "A whole and its parts, grouped by braces" : {
@@ -2273,6 +2293,10 @@
       "comment" : "UI text (CanvasAccessibility.swift)",
       "extractionState" : "migrated"
     },
+    "Add topic" : {
+      "comment" : "UI text (TouchTextEditor.swift)",
+      "extractionState" : "migrated"
+    },
     "Add Topic" : {
       "comment" : "UI text (CanvasController+Commands.swift)",
       "extractionState" : "migrated"
@@ -2350,7 +2374,7 @@
       "extractionState" : "migrated"
     },
     "AI panel" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "AI Panel" : {
@@ -2378,7 +2402,7 @@
       "extractionState" : "migrated"
     },
     "aligned centre" : {
-      "comment" : "UI text (CanvasView.swift)",
+      "comment" : "UI text (CanvasPointer.swift)",
       "extractionState" : "migrated"
     },
     "All" : {
@@ -2882,11 +2906,11 @@
       "extractionState" : "migrated"
     },
     "Blue flag" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Blue star" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Bold" : {
@@ -2966,7 +2990,7 @@
       "extractionState" : "migrated"
     },
     "Branch colour %@" : {
-      "comment" : "Text with values filled in (SettingsCards.swift)",
+      "comment" : "Text with values filled in (Spoken.swift)",
       "extractionState" : "migrated"
     },
     "Branch complete ✦" : {
@@ -3185,12 +3209,16 @@
       "comment" : "UI text (DocumentWindowController.swift)",
       "extractionState" : "migrated"
     },
+    "Canvas name" : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
+      "extractionState" : "migrated"
+    },
     "Canvas settings of “%@”" : {
       "comment" : "Text with values filled in (SyncViews.swift)",
       "extractionState" : "migrated"
     },
     "Canvas tabs" : {
-      "comment" : "UI text (DocumentWindowController.swift)",
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Canvas text never smaller than" : {
@@ -3242,7 +3270,7 @@
       "extractionState" : "migrated"
     },
     "Central topic" : {
-      "comment" : "UI text (SettingsCards.swift)",
+      "comment" : "UI text (Spoken.swift)",
       "extractionState" : "migrated"
     },
     "Change Layout" : {
@@ -3262,7 +3290,7 @@
       "extractionState" : "migrated"
     },
     "Change Password…" : {
-      "comment" : "UI text (DocumentWindowController.swift)",
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Change Structure" : {
@@ -3295,6 +3323,10 @@
     },
     "Chats in open documents and those kept on this Mac are removed." : {
       "comment" : "UI text (AppPreferences.swift)",
+      "extractionState" : "migrated"
+    },
+    "Chats kept on this iPad are removed." : {
+      "comment" : "UI text (SettingsActions.swift)",
       "extractionState" : "migrated"
     },
     "Check for updates automatically" : {
@@ -3446,7 +3478,7 @@
       "extractionState" : "migrated"
     },
     "Close Document" : {
-      "comment" : "UI text (DocumentFiles.swift)",
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Close threat table" : {
@@ -3730,11 +3762,11 @@
       "extractionState" : "migrated"
     },
     "Connected to %@" : {
-      "comment" : "Text with values filled in (SettingsCards.swift)",
+      "comment" : "Text with values filled in (Spoken.swift)",
       "extractionState" : "migrated"
     },
     "Connected to %@ by ‘%@’" : {
-      "comment" : "Text with values filled in (SettingsCards.swift)",
+      "comment" : "Text with values filled in (Spoken.swift)",
       "extractionState" : "migrated"
     },
     "Connecting…" : {
@@ -3790,7 +3822,7 @@
       "extractionState" : "migrated"
     },
     "Convert diagram type" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Convert diagram type (⌥⌘T)" : {
@@ -3914,7 +3946,7 @@
       "extractionState" : "migrated"
     },
     "Couldn’t import “%@”" : {
-      "comment" : "Text with values filled in (AppDelegate.swift)",
+      "comment" : "Text with values filled in (TouchScene.swift)",
       "extractionState" : "migrated"
     },
     "Couldn’t import “%@”: %@" : {
@@ -3922,7 +3954,7 @@
       "extractionState" : "migrated"
     },
     "Couldn’t join the live session" : {
-      "comment" : "UI text (Collaboration.swift)",
+      "comment" : "UI text (TouchScene.swift)",
       "extractionState" : "migrated"
     },
     "Couldn’t make the link: %@" : {
@@ -3942,11 +3974,15 @@
       "extractionState" : "migrated"
     },
     "Couldn’t restore: %@" : {
-      "comment" : "Text with values filled in (NexusDocument.swift)",
+      "comment" : "Text with values filled in (TouchDocument.swift)",
+      "extractionState" : "migrated"
+    },
+    "Couldn’t save" : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Couldn’t save: %@" : {
-      "comment" : "Text with values filled in (DocumentFiles.swift)",
+      "comment" : "Text with values filled in (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "Couldn’t start recording: %@" : {
@@ -3954,7 +3990,7 @@
       "extractionState" : "migrated"
     },
     "Couldn’t write %@: %@" : {
-      "comment" : "Text with values filled in (DocumentFiles.swift)",
+      "comment" : "Text with values filled in (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "Course outline" : {
@@ -4170,11 +4206,11 @@
       "extractionState" : "migrated"
     },
     "Data flow levels" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Data flow rule check" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Data flow with STRIDE per element" : {
@@ -4210,7 +4246,7 @@
       "extractionState" : "migrated"
     },
     "Days" : {
-      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "comment" : "UI text (Gantt.swift)",
       "extractionState" : "migrated"
     },
     "Decision" : {
@@ -4262,7 +4298,7 @@
       "extractionState" : "migrated"
     },
     "Delete “%@”?" : {
-      "comment" : "Text with values filled in (DocumentFiles.swift)",
+      "comment" : "Text with values filled in (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Delete all recovery snapshots?" : {
@@ -4481,6 +4517,10 @@
       "comment" : "Settings row",
       "extractionState" : "migrated"
     },
+    "Double-tap to select. Actions to edit." : {
+      "comment" : "UI text (TouchAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
     "Download and install updates automatically" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -4514,7 +4554,7 @@
       "extractionState" : "migrated"
     },
     "Drop to attach under %@" : {
-      "comment" : "Text with values filled in (CanvasView.swift)",
+      "comment" : "Text with values filled in (CanvasPointer.swift)",
       "extractionState" : "migrated"
     },
     "Due" : {
@@ -4750,7 +4790,7 @@
       "extractionState" : "migrated"
     },
     "Encrypted · recovery snapshots use the same key" : {
-      "comment" : "UI text (DocumentFiles.swift)",
+      "comment" : "UI text (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "Encryption is AES-256 per package. A forgotten password cannot be recovered." : {
@@ -4826,7 +4866,7 @@
       "extractionState" : "migrated"
     },
     "Enter its password to open it." : {
-      "comment" : "UI text (DocumentFiles.swift)",
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Enter Recovery Key…" : {
@@ -5074,7 +5114,7 @@
       "extractionState" : "migrated"
     },
     "Exported %@" : {
-      "comment" : "Text with values filled in (DocumentFiles.swift)",
+      "comment" : "Text with values filled in (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "Exported %lld branch images" : {
@@ -5094,6 +5134,30 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "Exported %lld branch images"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "Exported %lld Files" : {
+      "comment" : "Count phrase with plural variants (TouchDocumentModel.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Exported %lld File"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Exported %lld Files"
                 }
               }
             }
@@ -5146,7 +5210,7 @@
       "extractionState" : "migrated"
     },
     "External" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "External entity" : {
@@ -5246,7 +5310,7 @@
       "extractionState" : "migrated"
     },
     "Filter" : {
-      "comment" : "UI text (CanvasController+Views.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "filter by text" : {
@@ -5318,7 +5382,7 @@
       "extractionState" : "migrated"
     },
     "Fishbone · Brutal" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Fishbone (right)" : {
@@ -5346,7 +5410,7 @@
       "extractionState" : "migrated"
     },
     "Five eighths done" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Fix Flow" : {
@@ -5354,7 +5418,7 @@
       "extractionState" : "migrated"
     },
     "Flags" : {
-      "comment" : "UI text (CanvasController+Elements.swift)",
+      "comment" : "UI text (MarkerLibrary.swift)",
       "extractionState" : "migrated"
     },
     "Flavour · auto-chosen from type" : {
@@ -5374,7 +5438,7 @@
       "extractionState" : "migrated"
     },
     "Floating topic" : {
-      "comment" : "UI text (SettingsCards.swift)",
+      "comment" : "UI text (Spoken.swift)",
       "extractionState" : "migrated"
     },
     "FLOW" : {
@@ -5406,7 +5470,7 @@
       "extractionState" : "migrated"
     },
     "Focus breadcrumb" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Focus on Branch" : {
@@ -5414,7 +5478,7 @@
       "extractionState" : "migrated"
     },
     "Focus timer" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Fold" : {
@@ -5482,7 +5546,7 @@
       "extractionState" : "migrated"
     },
     "Format" : {
-      "comment" : "UI text (DocumentWindowController.swift)",
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Format › Data › Type" : {
@@ -5546,7 +5610,7 @@
       "extractionState" : "migrated"
     },
     "From %@" : {
-      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "comment" : "Text with values filled in (TaskFormat.swift)",
       "extractionState" : "migrated"
     },
     "Front" : {
@@ -5686,7 +5750,7 @@
       "extractionState" : "migrated"
     },
     "Gold star" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Good afternoon" : {
@@ -5710,7 +5774,7 @@
       "extractionState" : "migrated"
     },
     "Green flag" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Grid size" : {
@@ -5758,7 +5822,7 @@
       "extractionState" : "migrated"
     },
     "Half done" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Hand" : {
@@ -5774,7 +5838,7 @@
       "extractionState" : "migrated"
     },
     "Has note" : {
-      "comment" : "UI text (SettingsCards.swift)",
+      "comment" : "UI text (Spoken.swift)",
       "extractionState" : "migrated"
     },
     "Hatch pattern by trust level" : {
@@ -5874,7 +5938,7 @@
       "extractionState" : "migrated"
     },
     "Hint: %@" : {
-      "comment" : "Text with values filled in (DocumentFiles.swift)",
+      "comment" : "Text with values filled in (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Hiragino Sans" : {
@@ -6082,7 +6146,7 @@
       "extractionState" : "migrated"
     },
     "Important" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Importing “%@”" : {
@@ -6414,7 +6478,7 @@
       "extractionState" : "migrated"
     },
     "Label %@" : {
-      "comment" : "Text with values filled in (LegendViews.swift)",
+      "comment" : "Text with values filled in (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Label suggestions" : {
@@ -6558,11 +6622,11 @@
       "extractionState" : "migrated"
     },
     "Legend Description" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (CanvasController+Legend.swift)",
       "extractionState" : "migrated"
     },
     "Legend hidden" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (CanvasController+Legend.swift)",
       "extractionState" : "migrated"
     },
     "Legend on slides" : {
@@ -6574,7 +6638,7 @@
       "extractionState" : "migrated"
     },
     "Legend shown · ⌥⌘L hides it" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (CanvasController+Legend.swift)",
       "extractionState" : "migrated"
     },
     "Lengthen by a Working Day" : {
@@ -6610,7 +6674,7 @@
       "extractionState" : "migrated"
     },
     "Level breadcrumb" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Level gap" : {
@@ -6786,7 +6850,7 @@
       "extractionState" : "migrated"
     },
     "Live Session" : {
-      "comment" : "UI text (Collaboration.swift)",
+      "comment" : "UI text (TouchLibrary.swift)",
       "extractionState" : "migrated"
     },
     "Live session: %@" : {
@@ -6803,6 +6867,10 @@
     },
     "Live sessions use the network" : {
       "comment" : "UI text (CollabViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Live sessions use the network, which is off. Turn it on in Settings › Privacy & Data." : {
+      "comment" : "UI text (TouchLibrary.swift)",
       "extractionState" : "migrated"
     },
     "Live sessions use the network, which is off. Turn on “Use the network” and “Live co-editing” in Settings › Privacy & Data." : {
@@ -6858,15 +6926,15 @@
       "extractionState" : "migrated"
     },
     "Logic · Brutal" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Logic · Outline" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Logic · Underline" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Logic chart" : {
@@ -6882,7 +6950,7 @@
       "extractionState" : "migrated"
     },
     "Logic Left · Solid" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Low" : {
@@ -6902,7 +6970,7 @@
       "extractionState" : "migrated"
     },
     "Main topic" : {
-      "comment" : "UI text (SettingsCards.swift)",
+      "comment" : "UI text (Spoken.swift)",
       "extractionState" : "migrated"
     },
     "Main Topic" : {
@@ -6970,7 +7038,7 @@
       "extractionState" : "migrated"
     },
     "Map Shot hint" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Map Shots are copied to the clipboard and saved in this folder. Change it in Settings › Export." : {
@@ -7138,7 +7206,7 @@
       "extractionState" : "migrated"
     },
     "Me" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Meaning · technical canvases" : {
@@ -7289,6 +7357,30 @@
         }
       }
     },
+    "Merged changes made elsewhere · %lld conflicts kept both ways" : {
+      "comment" : "Count phrase with plural variants (TouchDocumentModel.swift)",
+      "extractionState" : "migrated",
+      "localizations" : {
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Merged changes made elsewhere · %lld conflict kept both ways"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "Merged changes made elsewhere · %lld conflicts kept both ways"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "Merged copies go to the Trash." : {
       "comment" : "UI text (SyncViews.swift)",
       "extractionState" : "migrated"
@@ -7322,7 +7414,7 @@
       "extractionState" : "migrated"
     },
     "Milestone on %@" : {
-      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "comment" : "Text with values filled in (TaskFormat.swift)",
       "extractionState" : "migrated"
     },
     "Mind Map" : {
@@ -7338,11 +7430,11 @@
       "extractionState" : "migrated"
     },
     "Mind Map · Glow" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Mind Map · Minimal" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Mind Map · right" : {
@@ -7350,15 +7442,15 @@
       "extractionState" : "migrated"
     },
     "Mind Map · Sketch" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Mind Map · Soft" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Mind Map · Underline" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Mind Map (left)" : {
@@ -7430,7 +7522,7 @@
       "extractionState" : "migrated"
     },
     "Mode and keys" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Model" : {
@@ -7450,7 +7542,7 @@
       "extractionState" : "migrated"
     },
     "Months" : {
-      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "comment" : "UI text (TaskFormat.swift)",
       "extractionState" : "migrated"
     },
     "More" : {
@@ -7538,7 +7630,7 @@
       "extractionState" : "migrated"
     },
     "Move Legend" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (CanvasController+Legend.swift)",
       "extractionState" : "migrated"
     },
     "Move Legend Down" : {
@@ -7694,7 +7786,7 @@
       "extractionState" : "migrated"
     },
     "Navigation" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Navigation Panel" : {
@@ -7850,7 +7942,7 @@
       "extractionState" : "migrated"
     },
     "No" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "No command matches “%@”" : {
@@ -7862,7 +7954,7 @@
       "extractionState" : "migrated"
     },
     "No conflicting copies of this document" : {
-      "comment" : "UI text (DocumentFiles.swift)",
+      "comment" : "UI text (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "No conflicts to resolve" : {
@@ -7902,7 +7994,7 @@
       "extractionState" : "migrated"
     },
     "No markers or labels yet" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "No markers or labels yet." : {
@@ -8030,7 +8122,7 @@
       "extractionState" : "migrated"
     },
     "Not started" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "note" : {
@@ -8106,7 +8198,7 @@
       "extractionState" : "migrated"
     },
     "Notification" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Now, next, later" : {
@@ -8161,6 +8253,10 @@
       "comment" : "UI text (Collab.swift)",
       "extractionState" : "migrated"
     },
+    "OK" : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
+      "extractionState" : "migrated"
+    },
     "On" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -8170,7 +8266,7 @@
       "extractionState" : "migrated"
     },
     "On %@" : {
-      "comment" : "Text with values filled in (CanvasController+Tasks.swift)",
+      "comment" : "Text with values filled in (TaskFormat.swift)",
       "extractionState" : "migrated"
     },
     "On a date" : {
@@ -8179,6 +8275,10 @@
     },
     "On demand" : {
       "comment" : "Settings option",
+      "extractionState" : "migrated"
+    },
+    "On My iPad › OpenNexus" : {
+      "comment" : "UI text (HomeView.swift)",
       "extractionState" : "migrated"
     },
     "on request" : {
@@ -8198,7 +8298,7 @@
       "extractionState" : "migrated"
     },
     "One eighth done" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "One file per zone, or a PDF page per zone" : {
@@ -8321,6 +8421,10 @@
       "comment" : "UI text (CanvasController+Views.swift)",
       "extractionState" : "migrated"
     },
+    "Open…" : {
+      "comment" : "UI text (TouchScene.swift)",
+      "extractionState" : "migrated"
+    },
     "OpenNexus" : {
       "comment" : "Settings row",
       "extractionState" : "migrated"
@@ -8402,7 +8506,7 @@
       "extractionState" : "migrated"
     },
     "Orange flag" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Order" : {
@@ -8410,11 +8514,11 @@
       "extractionState" : "migrated"
     },
     "Org · Capsule" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Org · Solid" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Org chart" : {
@@ -8458,7 +8562,7 @@
       "extractionState" : "migrated"
     },
     "Overdue" : {
-      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "comment" : "UI text (TaskFormat.swift)",
       "extractionState" : "migrated"
     },
     "OVERVIEW · O RETURNS TO THE SLIDE" : {
@@ -8530,7 +8634,7 @@
       "extractionState" : "migrated"
     },
     "Password removed" : {
-      "comment" : "UI text (DocumentFiles.swift)",
+      "comment" : "UI text (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "Paste" : {
@@ -8602,7 +8706,7 @@
       "extractionState" : "migrated"
     },
     "People" : {
-      "comment" : "UI text (CanvasController+Elements.swift)",
+      "comment" : "UI text (MarkerLibrary.swift)",
       "extractionState" : "migrated"
     },
     "People or systems outside your control that send or receive data, such as “Customer” or “Bank”." : {
@@ -8742,7 +8846,7 @@
       "extractionState" : "migrated"
     },
     "Presentation" : {
-      "comment" : "UI text (FileViews.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Presentation Style" : {
@@ -8998,11 +9102,11 @@
       "extractionState" : "migrated"
     },
     "Quarter done" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Question" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Queue" : {
@@ -9165,6 +9269,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Recorded on this iPad. Transcription runs on-device (AI, M6)." : {
+      "comment" : "UI text (CanvasPopovers.swift)",
+      "extractionState" : "migrated"
+    },
     "Recorded on this Mac. Transcription runs on-device (AI, M6)." : {
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
@@ -9193,16 +9301,20 @@
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
     },
+    "Recovery Snapshots…" : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
+      "extractionState" : "migrated"
+    },
     "Rectangle" : {
       "comment" : "UI text (FormatPanelElements.swift)",
       "extractionState" : "migrated"
     },
     "Red flag" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Red star" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Redo" : {
@@ -9578,7 +9690,7 @@
       "extractionState" : "migrated"
     },
     "Restore Snapshot" : {
-      "comment" : "UI text (NexusDocument.swift)",
+      "comment" : "UI text (TouchDocument.swift)",
       "extractionState" : "migrated"
     },
     "Restore windows when reopening" : {
@@ -9590,7 +9702,7 @@
       "extractionState" : "migrated"
     },
     "Restored the snapshot from %@ · ⌘Z undoes" : {
-      "comment" : "Text with values filled in (NexusDocument.swift)",
+      "comment" : "Text with values filled in (TouchDocument.swift)",
       "extractionState" : "migrated"
     },
     "Restored the version from %@ · ⌘Z undoes" : {
@@ -9662,7 +9774,7 @@
       "extractionState" : "migrated"
     },
     "Right Map · Capsule" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Right Option" : {
@@ -9830,7 +9942,7 @@
       "extractionState" : "migrated"
     },
     "Saved %@" : {
-      "comment" : "Text with values filled in (DocumentFiles.swift)",
+      "comment" : "Text with values filled in (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "SAVED FILTERS" : {
@@ -9863,6 +9975,14 @@
     },
     "Scale" : {
       "comment" : "Settings row",
+      "extractionState" : "migrated"
+    },
+    "Scan" : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
+      "extractionState" : "migrated"
+    },
+    "Scan Document…" : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Schedule" : {
@@ -10154,7 +10274,7 @@
       "extractionState" : "migrated"
     },
     "Settings" : {
-      "comment" : "UI text (AppPreferences.swift)",
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Settings…" : {
@@ -10162,7 +10282,7 @@
       "extractionState" : "migrated"
     },
     "Seven eighths done" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "SF Mono" : {
@@ -10186,7 +10306,7 @@
       "extractionState" : "migrated"
     },
     "Share" : {
-      "comment" : "UI text (DocumentWindowController.swift)",
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Share anonymous usage statistics" : {
@@ -10245,6 +10365,10 @@
       "comment" : "Settings pane",
       "extractionState" : "migrated"
     },
+    "Sharing to OpenNexus is turned off in OpenNexus › Settings › Integrations." : {
+      "comment" : "UI text (ShareViewController.swift)",
+      "extractionState" : "migrated"
+    },
     "sheets → canvases" : {
       "comment" : "UI text (FileViews.swift)",
       "extractionState" : "migrated"
@@ -10262,7 +10386,7 @@
       "extractionState" : "migrated"
     },
     "Shortcut cheat sheet" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Shortcuts" : {
@@ -10294,7 +10418,7 @@
       "extractionState" : "migrated"
     },
     "Show Legend" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (CanvasController+Legend.swift)",
       "extractionState" : "migrated"
     },
     "Show model status chip in the toolbar" : {
@@ -10310,7 +10434,7 @@
       "extractionState" : "migrated"
     },
     "Show the legend first · ⌥⌘L" : {
-      "comment" : "UI text (LegendKeyboard.swift)",
+      "comment" : "UI text (CanvasController+Legend.swift)",
       "extractionState" : "migrated"
     },
     "Show the legend on the canvas" : {
@@ -10481,6 +10605,10 @@
       "comment" : "Settings option",
       "extractionState" : "migrated"
     },
+    "Something went wrong" : {
+      "comment" : "UI text (TouchScene.swift)",
+      "extractionState" : "migrated"
+    },
     "Source code" : {
       "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
@@ -10558,7 +10686,7 @@
       "extractionState" : "migrated"
     },
     "Stars" : {
-      "comment" : "UI text (CanvasController+Elements.swift)",
+      "comment" : "UI text (MarkerLibrary.swift)",
       "extractionState" : "migrated"
     },
     "Start" : {
@@ -10762,7 +10890,7 @@
       "extractionState" : "migrated"
     },
     "Subtopic" : {
-      "comment" : "UI text (SettingsCards.swift)",
+      "comment" : "UI text (Spoken.swift)",
       "extractionState" : "migrated"
     },
     "subtopics" : {
@@ -10795,6 +10923,10 @@
     },
     "Suggested topic: %@. Highlighted. Control-Return accepts it." : {
       "comment" : "Text with values filled in (CanvasAccessibility.swift)",
+      "extractionState" : "migrated"
+    },
+    "Summarised on this iPad into a branch with the link" : {
+      "comment" : "UI text (ShareViewController.swift)",
       "extractionState" : "migrated"
     },
     "Summarises the page on-device into a branch" : {
@@ -10846,7 +10978,7 @@
       "extractionState" : "migrated"
     },
     "Symbols" : {
-      "comment" : "UI text (CanvasController+Elements.swift)",
+      "comment" : "UI text (MarkerLibrary.swift)",
       "extractionState" : "migrated"
     },
     "Sync" : {
@@ -10978,7 +11110,7 @@
       "extractionState" : "migrated"
     },
     "Team" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Teams and who reports to whom, top down" : {
@@ -11065,6 +11197,10 @@
       "comment" : "UI text (Collab.swift)",
       "extractionState" : "migrated"
     },
+    "That password didn’t open it. Try again." : {
+      "comment" : "UI text (TouchDocumentScreen.swift)",
+      "extractionState" : "migrated"
+    },
     "That topic no longer exists" : {
       "comment" : "UI text (CanvasController+Elements.swift)",
       "extractionState" : "migrated"
@@ -11121,6 +11257,10 @@
       "comment" : "UI text (Collab.swift)",
       "extractionState" : "migrated"
     },
+    "The image is added to the topic" : {
+      "comment" : "UI text (ShareViewController.swift)",
+      "extractionState" : "migrated"
+    },
     "The network is off (Privacy & Data › Network), so the network service connects to nothing." : {
       "comment" : "UI text (NetworkActivity.swift)",
       "extractionState" : "migrated"
@@ -11130,7 +11270,7 @@
       "extractionState" : "migrated"
     },
     "The network service stopped." : {
-      "comment" : "UI text (Collab.swift)",
+      "comment" : "UI text (MacNetwork.swift)",
       "extractionState" : "migrated"
     },
     "The outline as headings, notes as paragraphs, each canvas's diagram as an image." : {
@@ -11146,7 +11286,7 @@
       "extractionState" : "migrated"
     },
     "The request couldn’t be encoded." : {
-      "comment" : "UI text (Collab.swift)",
+      "comment" : "UI text (MacNetwork.swift)",
       "extractionState" : "migrated"
     },
     "The selected tasks already have dates" : {
@@ -11242,7 +11382,7 @@
       "extractionState" : "migrated"
     },
     "this canvas" : {
-      "comment" : "UI text (DocumentFiles.swift)",
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "This canvas" : {
@@ -11358,7 +11498,7 @@
       "extractionState" : "migrated"
     },
     "Threat suggestions" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Threat table" : {
@@ -11382,11 +11522,11 @@
       "extractionState" : "migrated"
     },
     "Three eighths done" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Three quarters done" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "Tile across pages" : {
@@ -11414,7 +11554,7 @@
       "extractionState" : "migrated"
     },
     "Timeline · Solid" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Timeline (alternating)" : {
@@ -11450,7 +11590,7 @@
       "extractionState" : "migrated"
     },
     "To do" : {
-      "comment" : "UI text (SettingsCards.swift)",
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "To turn Caps Lock into Hyper, macOS needs to allow Input Monitoring. OpenNexus only remaps that one key and never records what you type." : {
@@ -11506,7 +11646,7 @@
       "extractionState" : "migrated"
     },
     "Topic" : {
-      "comment" : "UI text (SettingsCards.swift)",
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "Topic › Task…  ⌃⌘T" : {
@@ -11606,7 +11746,7 @@
       "extractionState" : "migrated"
     },
     "Tree · Minimal" : {
-      "comment" : "UI text (FormatPanelMap.swift)",
+      "comment" : "UI text (Skeleton.swift)",
       "extractionState" : "migrated"
     },
     "Tree Chart" : {
@@ -11662,11 +11802,11 @@
       "extractionState" : "migrated"
     },
     "Tutorial finished" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Tutorial paused" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Type" : {
@@ -11742,7 +11882,7 @@
       "extractionState" : "migrated"
     },
     "Untitled" : {
-      "comment" : "UI text (DocumentWindowController.swift)",
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Update" : {
@@ -11795,6 +11935,10 @@
     },
     "Updated from sync · ⌘Z undoes" : {
       "comment" : "UI text (NexusDocument.swift)",
+      "extractionState" : "migrated"
+    },
+    "Updated with changes made elsewhere · ⌘Z undoes" : {
+      "comment" : "UI text (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "Updates" : {
@@ -11890,11 +12034,11 @@
       "extractionState" : "migrated"
     },
     "Video export failed: %@" : {
-      "comment" : "Text with values filled in (DocumentWindowController.swift)",
+      "comment" : "Text with values filled in (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "Video exported" : {
-      "comment" : "UI text (DocumentWindowController.swift)",
+      "comment" : "UI text (TouchDocumentModel.swift)",
       "extractionState" : "migrated"
     },
     "View" : {
@@ -11954,7 +12098,7 @@
       "extractionState" : "migrated"
     },
     "Weeks" : {
-      "comment" : "UI text (CanvasController+Tasks.swift)",
+      "comment" : "UI text (TaskFormat.swift)",
       "extractionState" : "migrated"
     },
     "Welcome to OpenNexus" : {
@@ -12102,7 +12246,7 @@
       "extractionState" : "migrated"
     },
     "Yes" : {
-      "comment" : "UI text (LegendViews.swift)",
+      "comment" : "UI text (LegendLayer.swift)",
       "extractionState" : "migrated"
     },
     "yesterday" : {
@@ -12118,7 +12262,7 @@
       "extractionState" : "migrated"
     },
     "You can undo this." : {
-      "comment" : "UI text (DocumentFiles.swift)",
+      "comment" : "UI text (TouchDocumentScreen.swift)",
       "extractionState" : "migrated"
     },
     "Your keys already work here." : {
@@ -12186,7 +12330,7 @@
       "extractionState" : "migrated"
     },
     "Zoom and topic count" : {
-      "comment" : "UI text (CanvasHostView.swift)",
+      "comment" : "UI text (CanvasOverlayStack.swift)",
       "extractionState" : "migrated"
     },
     "Zoom in" : {

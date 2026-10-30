@@ -15,7 +15,7 @@ extension CanvasController {
     public static let legendFarStep: Double = 50
 
     /// The legend is selected and can take keys (Select mode, on the canvas, not presenting).
-    var legendActive: Bool {
+    package var legendActive: Bool {
         legendSelected && mode == .select && present == nil && scene.legend != nil && viewMode != .gantt
             && !outlineFocused
     }

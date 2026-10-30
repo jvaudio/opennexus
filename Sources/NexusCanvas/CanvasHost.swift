@@ -85,14 +85,18 @@ public final class MemoryCanvasHost: CanvasHost {
     public func announce(_ text: String) { announcements.append(text) }
 }
 
-/// The platform's own host: the Mac's, or a memory one where there's none yet.
+/// The platform's own host: the Mac's; on iOS the one the app installs (M47b), else a
+/// memory one.
 @MainActor
 public enum CanvasHosts {
+    /// Makes the platform's host where NexusCanvas can't name it (NexusTouch on iOS).
+    public static var factory: (@MainActor () -> any CanvasHost)?
+
     public static func platform() -> any CanvasHost {
         #if os(macOS)
         MacCanvasHost()
         #else
-        MemoryCanvasHost()
+        factory?() ?? MemoryCanvasHost()
         #endif
     }
 }

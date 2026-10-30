@@ -61,6 +61,27 @@ import Testing
         #expect(share > 0.93)
     }
 
+    /// TextKit's sizes on the Mac for every 27th (style, title) pair, which the iPad's
+    /// tests measure against (M47b). REGENERATE_GOLDENS=1 rewrites the file.
+    @Test func macMeasuresMatchTheirFixture() throws {
+        let url = URL(fileURLWithPath: #filePath).deletingLastPathComponent().appendingPathComponent(
+            "MacMeasures.json")
+        var sizes: [[Double]] = []
+        for (i, style) in Self.styles.enumerated() {
+            for (j, text) in Self.titles.enumerated() where (i + j) % 27 == 0 {
+                let s = NodeMeasurer.measure(text, style: style, marks: [], engine: AppKitGraphics.shared)
+                sizes.append([(s.width * 100).rounded() / 100, (s.height * 100).rounded() / 100])
+            }
+        }
+        if ProcessInfo.processInfo.environment["REGENERATE_GOLDENS"] == "1" {
+            let data = try JSONEncoder().encode(sizes)
+            try data.write(to: url)
+            return
+        }
+        let recorded = try JSONDecoder().decode([[Double]].self, from: Data(contentsOf: url))
+        #expect(recorded == sizes)
+    }
+
     /// One line's width and TextKit's line box (empty text has no attributes to measure).
     @Test func singleLinesMeasureAlike() {
         for text in Self.titles.prefix(200) where !text.isEmpty && !text.contains("\n") {

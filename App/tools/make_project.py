@@ -258,7 +258,7 @@ copy_phase(embed_xpc, "Embed XPC Services", 16, "$(CONTENTS_FOLDER_PATH)/XPCServ
 # SwiftUI literals in the package resolve against the main bundle, so the app carries the
 # package catalog's compiled strings as its own Localizable table (M10).
 LOC_PHASE = oid("phase", "OpenNexus", "localized-strings")
-LOC_SCRIPT = """src="$BUILT_PRODUCTS_DIR/OpenNexus_NexusCanvas.bundle/Contents/Resources"
+LOC_SCRIPT = """src="$BUILT_PRODUCTS_DIR/OpenNexus_NexusScene.bundle/Contents/Resources"
 dst="$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH"
 for d in "$src"/*.lproj; do
   [ -d "$d" ] || continue

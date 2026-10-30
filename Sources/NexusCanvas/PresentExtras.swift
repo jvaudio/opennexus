@@ -376,12 +376,18 @@ enum SlideFit {
 /// the slide's topics on the stage clear of both (D263). The canvas frames slides with
 /// it, and so do the slide exports, which have no view.
 @MainActor
-struct SlideStage {
+package struct SlideStage {
     let controller: CanvasController
     /// The view's bounds, or the exported slide's.
     var bounds: CGRect
     /// The exported slide's size (nil: on screen).
     var exportSize: CGSize?
+
+    package init(controller: CanvasController, bounds: CGRect, exportSize: CGSize? = nil) {
+        self.controller = controller
+        self.bounds = bounds
+        self.exportSize = exportSize
+    }
 
     /// The slide stage: the largest rect of `aspect` that fits under the title and above
     /// the slide strip.
@@ -423,7 +429,7 @@ struct SlideStage {
 
     /// The camera that fits `ids` in the bounds (or the slide stage at `aspect`), or nil
     /// when there's nothing to frame.
-    func camera(framing ids: [NodeID], aspect: Double?) -> Camera? {
+    package func camera(framing ids: [NodeID], aspect: Double?) -> Camera? {
         let scene = controller.scene
         let rects = ids.compactMap { scene.nodes[$0]?.frame.rect }
         guard bounds.width > 0, !rects.isEmpty else { return nil }

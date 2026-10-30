@@ -148,3 +148,8 @@ test.describe("share links", () => {
 test.describe("share links against MinIO and the server", () => {
   cases("share-live");
 });
+
+// fixtures/share-ipad/ is made by scripts/test-ipad.sh: a link the iPad simulator made.
+test.describe("share links made on the iPad", () => {
+  cases("share-ipad");
+});

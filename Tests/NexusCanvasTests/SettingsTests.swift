@@ -48,6 +48,13 @@ import Testing
     }
 
     /// README §10: search finds every row.
+    /// The iPad leaves out the Mac's own rows (D407); each one names a real row.
+    @Test func macOnlyRowsExist() {
+        let keys = Set(SettingsSchema.allRows.map(\.2.key))
+        #expect(SettingsSchema.macOnly.isSubset(of: keys), "\(SettingsSchema.macOnly.subtracting(keys))")
+        #expect(SettingsSchema.shown == SettingsSchema.panes, "the Mac shows every pane as it is")
+    }
+
     @Test func searchFindsEveryRow() {
         for (p, s, r) in SettingsSchema.allRows {
             let q = r.title.isEmpty ? (r.keywords.first ?? s.title) : r.title

@@ -183,6 +183,12 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         enc.dateEncodingStrategy = .iso8601
         enc.outputFormatting = [.sortedKeys]
         try enc.encode(self).write(to: dir.appending(path: "snapshot.json"), options: .atomic)
+        // The thumbnails of maps that are no longer recent.
+        let kept = Set(recents.compactMap(\.thumbnail))
+        for u in (try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? []
+        where u.pathExtension == "png" && !kept.contains(u.lastPathComponent) {
+            try? FileManager.default.removeItem(at: u)
+        }
     }
 
     public static func read(from container: URL) -> WidgetSnapshot? {

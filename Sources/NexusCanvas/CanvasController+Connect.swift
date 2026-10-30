@@ -53,7 +53,7 @@ extension CanvasController {
 
     /// What Connect mode shows and filters on: topic text, "Zone: title", "Boundary: title"
     /// and "Summary: its topic's text".
-    var connectTexts: [RelationshipEnd: String] {
+    package var connectTexts: [RelationshipEnd: String] {
         var out = Dictionary(uniqueKeysWithValues: canvas.nodes.map { (RelationshipEnd.topic($0.key), $0.value.text) })
         for z in canvas.zones { out[.zone(z.id)] = Loc.f("Zone: %@", z.title) }
         for b in canvas.boundaries { out[.boundary(b.id)] = Loc.f("Boundary: %@", canvas.boundaryTitle(b)) }
@@ -139,14 +139,14 @@ extension Canvas {
     }
 
     /// A boundary's title, or the first topic it wraps when it has none.
-    func boundaryTitle(_ b: Boundary) -> String {
+    package func boundaryTitle(_ b: Boundary) -> String {
         b.title.isEmpty ? (b.nodes.first.flatMap { nodes[$0]?.text } ?? "") : b.title
     }
 
     /// How VoiceOver, the outline and "read edges" name a relationship end: a topic's
     /// text ("callout …" for a callout's bubble), "zone …", "boundary …" or "summary …"
     /// (D171, D184).
-    func spokenName(_ end: RelationshipEnd) -> String {
+    package func spokenName(_ end: RelationshipEnd) -> String {
         switch end {
         case .topic(let t):
             guard let n = nodes[t] else { return Loc.t("a topic") }

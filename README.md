@@ -5,7 +5,7 @@
   </picture>
 </h1>
 
-An open-source, native **macOS 27** app for mind maps and technical diagrams:
+An open-source, native **macOS 27** and **iPadOS 27** app for mind maps and technical diagrams:
 Xmind's keyboard flow, plus flowcharts, data flow diagrams, threat models, architecture
 and sequence diagrams, and on-device AI. Apple silicon only.
 
@@ -28,22 +28,26 @@ Sources/
   NexusAI              on-device AI (Apple Intelligence), never the network
   NexusAgent           the nexus CLI and MCP server's tools
   NexusNet             HTTP client and share destinations, linked only into OpenNexusNet.xpc
+                       on the Mac and into the iPad app's own process
   NexusSync            library sync through your own bucket: encryption, merging, history
   NexusReplica         live co-editing: the CRDT behind sessions, invites and the room client
   NexusScene           scenes, text, layers and the renderer that draws them for the canvas
                        and exports (CoreGraphics and CoreText; no AppKit or UIKit)
-  NexusCanvas          the editing controller for every platform; on the Mac, the AppKit
-                       canvas and SwiftUI chrome
+  NexusCanvas          the editing controller for every platform, the SwiftUI chrome, and
+                       on the Mac the AppKit canvas
+  NexusTouch           the iPad's canvas, documents, windows and Home (UIKit)
   NexusWidgetsUI       widgets
   nexus                command-line tool
-App/                   Xcode project for the macOS app and its extensions (thin shell)
-  tools/               make_project.py, release.sh, axaudit.swift
+App/                   Xcode projects (thin shells): OpenNexus.xcodeproj for the Mac app and
+                       its extensions, OpenNexusiOS.xcodeproj for the iPad app (App/iOS)
+  tools/               make_project.py, make_ios_project.py, release.sh, axaudit.swift
 schema/                published JSON Schema for .nexus files
 web/                   the interactive viewer (viewer-core) and the share-link site (viewer-app)
 server/                OpenNexus Server: stores share links, relays live sessions (Swift, Docker)
 brand/                 the Aperture brand kit: spec (BRAND.md), icons, marks, lockups
 scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints),
-                       build-ios.sh (the shared modules for the iOS Simulator)
+                       build-ios.sh (the shared modules for the iOS Simulator), and the
+                       test-*.sh scripts that run against Docker
 Handoff/               design handoff package (brief, artboards, screenshots, specs)
 ```
 
@@ -80,6 +84,13 @@ Build the shared modules, NexusCanvas included, for the iOS Simulator:
 scripts/build-ios.sh
 ```
 
+Build the iPad app and run its tests (the goldens, text and timing checks, then F1 and the
+accessibility audits in XCUITest) on the iPad Pro 13-inch (M5) simulator:
+
+```bash
+xcodebuild test -project App/OpenNexusiOS.xcodeproj -scheme "OpenNexus iPad" -destination "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
+```
+
 Share links for real: MinIO and two OpenNexus Servers in Docker, links made against them,
 then opened in Chromium and WebKit (needs Docker; everything stays on `127.0.0.1`):
 
@@ -99,6 +110,14 @@ through the real network code, then the server's files searched for anything rea
 
 ```bash
 scripts/test-collab.sh
+```
+
+The iPad with a Mac for real: MinIO and the relay in Docker; a shared folder and an S3
+library edited on both and merged, the iPad joining a session the Mac hosts, and a share
+link made on the iPad opened in Chromium and WebKit:
+
+```bash
+scripts/test-ipad.sh
 ```
 
 ## Install

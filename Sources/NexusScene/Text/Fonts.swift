@@ -61,7 +61,7 @@ public enum Fonts {
     /// CoreText's pick of a family member, which agrees with NSFontManager's for 96% of the
     /// Mac's family × weight pairs (it differs on condensed-only families and on how close
     /// weights tie).
-    static func coreTextFamily(_ family: String, weight: Int, size: CGFloat) -> CTFont? {
+    package static func coreTextFamily(_ family: String, weight: Int, size: CGFloat) -> CTFont? {
         let query = CTFontDescriptorCreateWithAttributes([kCTFontFamilyNameAttribute: family] as CFDictionary)
         guard
             let members = CTFontDescriptorCreateMatchingFontDescriptors(query, nil) as? [CTFontDescriptor],

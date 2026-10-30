@@ -118,7 +118,10 @@ import Testing
         let repo = catalogURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .deletingLastPathComponent()
         var out: [(String, String)] = []
-        for dir in ["Sources/NexusCanvas", "Sources/NexusScene", "Sources/NexusCore", "App/OpenNexus"] {
+        for dir in [
+            "Sources/NexusCanvas", "Sources/NexusScene", "Sources/NexusCore", "Sources/NexusTouch", "App/OpenNexus",
+            "App/iOS/OpenNexus", "App/iOS/Extensions",
+        ] {
             let urls =
                 FileManager.default.enumerator(at: repo.appending(path: dir), includingPropertiesForKeys: nil)?
                 .compactMap { $0 as? URL } ?? []

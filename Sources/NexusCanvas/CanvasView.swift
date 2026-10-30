@@ -17,7 +17,7 @@ import UniformTypeIdentifiers
 
 /// The canvas: an opaque, layer-backed surface with one layer per node and per branch
 /// line, a spring animator, a camera, and the in-node text editor.
-public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget, NSMenuItemValidation {
+public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget, NSMenuItemValidation, PointerSurface {
     public let controller: CanvasController
 
     private let host = FlippedView()
@@ -49,8 +49,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     private var hasPlacedCamera = false
 
     let editor = NodeTextView()
-    private let rubberBand = CAShapeLayer()
-    private let dropIndicator = CAShapeLayer()
+    /// Clicks and drags (shared with the iPad's touches, M47b).
+    private(set) var pointer: CanvasPointer!
     private var connectField: NSView?
     private var slashHost: NSHostingView<SlashMenuView>?
     private var suggestHost: NSHostingView<ProtocolSuggestionsView>?
@@ -68,8 +68,6 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     /// The topic the floating toolbar shows for (after the pointer rests, or a second click).
     var toolbarFor: NodeID?
     private var restTimer: Timer?
-    /// The topic showing its "−" fold control (D215).
-    private(set) var foldHover: NodeID?
     /// Whether the pointing hand is showing over a fold control.
     private var foldCursor = false
     private var aidsTracking: NSTrackingArea?
@@ -147,21 +145,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         addSubview(host)
 
         renderer.asset = { [weak controller] in controller?.store.model.assets[$0] }
-        // The view's own marks: presence over the topics, the rubber band under the
-        // element overlay, the drop indicator on top.
+        // The view's own marks: presence over the topics; the pointer adds the rubber band
+        // under the element overlay and the drop indicator on top.
         let world = renderer.world
         world.insertSublayer(presence, above: renderer.nodesLayer)
-        world.insertSublayer(rubberBand, below: elements.overlayLayer)
-        rubberBand.fillColor = RGBA(hex: "#5850EC").alpha(0.08).cgColor
-        rubberBand.strokeColor = RGBA(hex: "#5850EC").alpha(0.6).cgColor
-        rubberBand.lineWidth = 1
-        rubberBand.isHidden = true
-        rubberBand.actions = NodeLayer.noActions
-        dropIndicator.fillColor = nil
-        dropIndicator.lineCap = .round
-        dropIndicator.isHidden = true
-        dropIndicator.actions = NodeLayer.noActions
-        world.addSublayer(dropIndicator)
+        pointer = CanvasPointer(controller: controller, renderer: renderer, surface: self)
 
         editor.controller = controller
         editor.isHidden = true
@@ -1041,38 +1029,19 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     public override func mouseExited(with event: NSEvent) {
         super.mouseExited(with: event)
-        setFoldHover(nil)
+        pointer.setFoldHover(nil)
         setFoldCursor(false)
     }
 
     // MARK: Fold control (D215)
 
-    /// Whether a topic offers the "−": it has children showing and isn't the central topic,
-    /// whose branches leave in several directions.
-    func offersFoldButton(_ id: NodeID) -> Bool {
-        let c = controller
-        guard id != c.canvas.root, CanvasController.ghostIndex(id) == nil, let n = c.canvas.nodes[id] else {
-            return false
-        }
-        return !n.children.isEmpty && !n.folded
-    }
+    /// The topic showing its "−" fold control.
+    var foldHover: NodeID? { pointer.foldHover }
+
+    func offersFoldButton(_ id: NodeID) -> Bool { pointer.offersFoldButton(id) }
 
     /// Shows the "−" on the topic under the pointer, and keeps it while the pointer is on it.
-    func updateFoldHover(_ p: CGPoint) {
-        let c = controller
-        guard c.mode == .select, c.present == nil, c.mapShot == nil, !exportMode else {
-            setFoldHover(nil)
-            setFoldCursor(false)
-            return
-        }
-        let w = camera.toWorld(p)
-        if let h = foldHover, foldControl(h)?.contains(w) == true {
-            setFoldCursor(true)
-            return
-        }
-        setFoldHover(node(at: p).flatMap { offersFoldButton($0) ? $0 : nil })
-        setFoldCursor(foldTarget(atWorld: w) != nil)
-    }
+    func updateFoldHover(_ p: CGPoint) { setFoldCursor(pointer.updateFoldHover(p)) }
 
     private func setFoldCursor(_ on: Bool) {
         guard on != foldCursor else { return }
@@ -1080,39 +1049,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         (on ? NSCursor.pointingHand : NSCursor.arrow).set()
     }
 
-    private func setFoldHover(_ id: NodeID?) {
-        guard id != foldHover else { return }
-        if let old = foldHover { renderer.nodeLayers[old]?.showsFoldButton = false }
-        foldHover = id
-        if let id { renderer.nodeLayers[id]?.showsFoldButton = true }
-    }
-
-    /// A topic's fold control ("−" or "+N") in canvas coordinates.
-    func foldControl(_ id: NodeID) -> CGRect? {
-        guard let local = renderer.nodeLayers[id]?.foldControlRect, let f = animatedFrame(id) else { return nil }
-        return local.offsetBy(dx: f.rect.minX, dy: f.rect.minY)
-    }
-
-    /// The topic whose "−" or "+N" is at a canvas point: the hovered topic first, then
-    /// every folded one.
-    func foldTarget(atWorld w: CGPoint) -> NodeID? {
-        if let h = foldHover, foldControl(h)?.contains(w) == true { return h }
-        for (id, layer) in renderer.nodeLayers where !layer.badge.isHidden && !layer.isHidden {
-            if foldControl(id)?.contains(w) == true { return id }
-        }
-        return nil
-    }
-
-    /// Folds or unfolds from the control, one undo step. A selection inside the branch
-    /// moves to the folded topic, as it does in Xmind.
-    func toggleFoldFromControl(_ id: NodeID) {
-        let c = controller
-        guard let n = c.canvas.nodes[id], !n.children.isEmpty else { return }
-        let inside = Set(c.canvas.subtree(id)).subtracting([id])
-        c.restructure(Loc.t(n.folded ? "Unfold" : "Fold")) { try $0.toggleFold(id) }
-        if !n.folded, c.selection.nodes.contains(where: inside.contains) { c.select(id) }
-        setFoldHover(nil)
-    }
+    func foldControl(_ id: NodeID) -> CGRect? { pointer.foldControl(id) }
+    func foldTarget(atWorld w: CGPoint) -> NodeID? { pointer.foldTarget(atWorld: w) }
+    func toggleFoldFromControl(_ id: NodeID) { pointer.toggleFoldFromControl(id) }
 
     // Edit › Cut, Copy, Paste on topics (the text editor handles them while editing).
     @objc public func copy(_ sender: Any?) { controller.copySelection() }
@@ -1151,40 +1090,11 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     // MARK: Mouse and trackpad
 
-    public func node(at viewPoint: CGPoint) -> NodeID? {
-        let p = camera.toWorld(viewPoint)
-        for id in controller.scene.order.reversed() {
-            if let f = animatedFrame(id), f.rect.contains(p) { return id }
-        }
-        return nil
-    }
-
-    private enum DropTarget: Equatable {
-        case child(NodeID)
-        case before(NodeID)
-        case after(NodeID)
-    }
-
-    private enum Drag {
-        case pan(start: CGPoint, offset: CGPoint)
-        /// `zones`: the zones selected when a ⇧-band began, which it adds to.
-        case rubber(start: CGPoint, extend: Bool, zones: [String])
-        case node(
-            id: NodeID, start: CGPoint, subtree: [NodeID], origins: [NodeID: CGPoint], floating: Bool,
-            active: Bool, target: DropTarget?)
-        /// The clicked zone `id`, and every selected zone in `ids`, which move together.
-        case zone(
-            id: String, ids: [String], start: CGPoint, members: [NodeID], origins: [NodeID: CGPoint], active: Bool)
-        /// The legend (M14), moved by its top-left corner.
-        case legend(start: CGPoint, origin: CGPoint, active: Bool)
-    }
-
-    private var drag: Drag?
+    public func node(at viewPoint: CGPoint) -> NodeID? { pointer.node(at: viewPoint) }
 
     public override func mouseDown(with event: NSEvent) {
         controller.stopFollowing()
         let p = convert(event.locationInWindow, from: nil)
-        let w = camera.toWorld(p)
         window?.makeFirstResponder(self)
         // Present: a click advances, as in Keynote (M42); with the laser out it only points.
         if controller.present != nil {
@@ -1198,343 +1108,26 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             presentContextMenu(menu, event)
             return
         }
-        if controller.mode == .connect { controller.cancelConnect() }
-        // The "−" folds a branch; a folded branch's "+N" unfolds it (D215).
-        if controller.mode == .select, event.clickCount == 1, let id = foldTarget(atWorld: w) {
-            toggleFoldFromControl(id)
-            return
-        }
-        // Clicking a ghost accepts it (one undo), like ⌃↩.
-        if let id = node(at: p), let i = CanvasController.ghostIndex(id) {
-            if controller.ghosts != nil { controller.acceptGhost(i) } else { controller.previewPlan(nil) }
-            return
-        }
-        // The legend sits above the topics: drag to move it, double-click to edit it.
-        if let l = controller.scene.legend, l.rect.contains(w), controller.mode != .edit {
-            if event.clickCount == 2 {
-                controller.editLegend()
-            } else {
-                controller.selectLegend()
-                drag = .legend(start: w, origin: l.rect.origin, active: false)
-            }
-            return
-        }
-        controller.deselectLegend()
-        if let id = node(at: p), let n = controller.scene.nodes[id], let f = animatedFrame(id) {
-            let local = CGPoint(x: w.x - f.rect.minX, y: w.y - f.rect.minY)
-            if event.clickCount == 1, handleDecorationClick(id, n, local) { return }
-            if event.clickCount == 2 {
-                controller.beginEditing(id)
-                return
-            }
-            if event.modifierFlags.contains(.command) || event.modifierFlags.contains(.shift) {
-                controller.select(id, extend: true)
-            } else if !controller.selection.contains(id) || controller.selectedElement != nil {
-                controller.select(id)
-                toolbarFor = nil
-            } else if controller.prefs.string("editing.floatingToolbar") == "click",
-                controller.selection.nodes.count == 1
-            {
-                // Click again on the selected topic: the floating toolbar.
-                toolbarFor = id
-                refreshMouseAids()
-            }
-            let floating = controller.canvas.floating.contains(id)
-            let sub = controller.canvas.subtree(id, includeFolded: false)
-            var origins: [NodeID: CGPoint] = [:]
-            for d in sub { origins[d] = renderer.springs[d]?.value }
-            drag = .node(
-                id: id, start: w, subtree: sub, origins: origins, floating: floating, active: false, target: nil)
-            return
-        }
-        if let el = elements.hitTest(w) {
-            if event.clickCount == 2 {
-                controller.selectElement(el)
-                controller.beginEditingElement(el)
-                return
-            }
-            // ⇧- or ⌘-click adds a zone to the selected zones or takes it out (D228); a
-            // click on one of several selected zones keeps them, to drag them together.
-            if case .zone(let zid) = el,
-                event.modifierFlags.contains(.command) || event.modifierFlags.contains(.shift)
-            {
-                controller.toggleZone(zid)
-                return
-            }
-            let zones = controller.selectedZones
-            if !(zones.count > 1 && el == .zone(el.id) && zones.contains(el.id)) { controller.selectElement(el) }
-            if case .zone(let zid) = el, controller.canvas.zones.contains(where: { $0.id == zid }) {
-                if w.y - (controller.scene.zones.first { $0.zone.id == zid }?.rect.minY ?? 0) < 30,
-                    w.x - (controller.scene.zones.first { $0.zone.id == zid }?.rect.minX ?? 0) < 30
-                {
-                    controller.updateZone(zid) { $0.collapsed.toggle() }
-                    return
-                }
-                let ids = controller.selectedZones
-                var members: [NodeID] = []
-                for z in controller.canvas.zones where ids.contains(z.id) {
-                    for m in z.members { members += controller.canvas.subtree(m) }
-                }
-                var origins: [NodeID: CGPoint] = [:]
-                for d in members { origins[d] = renderer.springs[d]?.value }
-                drag = .zone(id: zid, ids: ids, start: w, members: members, origins: origins, active: false)
-            }
-            return
-        }
-        if event.clickCount == 2 {
-            switch controller.doubleClickAction {
-            case "fit": fitToWindow()
-            case "nothing": break
-            default: controller.addFloating(at: w)
-            }
-            return
-        }
-        // A ⇧-band adds to the selected zones, so it remembers them (D258).
-        let extend = event.modifierFlags.contains(.shift)
-        let zones = extend ? controller.selectedZones : []
-        if controller.selectedElement != nil { controller.selectElement(nil) }
-        if event.modifierFlags.contains(.option) {
-            drag = .pan(start: p, offset: camera.offset)
-        } else {
-            drag = .rubber(start: w, extend: extend, zones: zones)
-        }
-    }
-
-    /// Clicks on a topic's indicators, progress ring or to-do box.
-    private func handleDecorationClick(_ id: NodeID, _ n: SceneNode, _ local: CGPoint) -> Bool {
-        for (i, r) in n.indicatorRects.enumerated() where r.insetBy(dx: -2, dy: -2).contains(local) {
-            switch n.indicators[i] {
-            case .note: controller.onRequest?(.note(id))
-            case .comment: controller.onRequest?(.comments(id))
-            case .link, .topicLink, .file: controller.followLink(of: id)
-            case .attachment: controller.onRequest?(.attachment(id, 0))
-            case .audio: controller.onRequest?(.audio(id))
-            case .ai: return false
-            }
-            return true
-        }
-        if n.progress != nil, CGRect(x: n.leadRect.minX, y: n.leadRect.minY, width: 20, height: 18).contains(local) {
-            controller.select(id)
-            controller.toggleBranchTodos(id)
-            return true
-        }
-        if n.todo != nil {
-            var x = n.leadRect.minX + (n.progress != nil ? SceneBuilder.markerWidth : 0)
-            x += n.priority != nil ? SceneBuilder.priorityWidth : 0
-            if CGRect(x: x, y: n.leadRect.minY, width: 18, height: 18).contains(local) {
-                controller.select(id)
-                controller.perform(.toggleTodo)
-                return true
-            }
-        }
-        return false
+        pointer.down(at: p, clickCount: event.clickCount, modifiers: PointerModifiers(event.modifierFlags))
     }
 
     public override func mouseDragged(with event: NSEvent) {
-        let p = convert(event.locationInWindow, from: nil)
-        let w = camera.toWorld(p)
-        switch drag {
-        case .pan(let start, let offset)?:
-            var c = camera
-            c.offset = CGPoint(x: offset.x + p.x - start.x, y: offset.y + p.y - start.y)
-            cameraTween = nil
-            setCamera(c, animated: false)
-        case .rubber(let start, _, _)?:
-            let r = CGRect(
-                x: min(start.x, w.x), y: min(start.y, w.y), width: abs(w.x - start.x), height: abs(w.y - start.y))
-            rubberBand.isHidden = false
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            rubberBand.path = CGPath(rect: r, transform: nil)
-            CATransaction.commit()
-        case .node(let id, let start, let sub, let origins, let floating, var active, _)?:
-            let dx = w.x - start.x
-            let dy = w.y - start.y
-            if !active && hypot(dx, dy) * camera.zoom < 4 { return }
-            guard id != controller.canvas.root else { return }
-            active = true
-            var offset = CGSize(width: dx, height: dy)
-            var target: DropTarget?
-            var guideLines: [(CGPoint, CGPoint)] = []
-            var guideLabel: (String, CGPoint)?
-            let excluded = Set(sub)
-            if floating, let f = controller.scene.nodes[id]?.frame, let o = origins[id] {
-                // Smart guides: snap the dragged topic's centre to neighbours' centres.
-                let moved = CGPoint(x: o.x + dx, y: o.y + dy)
-                let snap: CGFloat = controller.snapDistance / camera.zoom
-                for (nid, n) in controller.scene.nodes where !excluded.contains(nid) {
-                    let c = n.frame.center
-                    if abs(c.x - moved.x) < snap {
-                        offset.width += c.x - moved.x
-                        guideLines.append(
-                            (CGPoint(x: c.x, y: min(c.y, moved.y) - 40), CGPoint(x: c.x, y: max(c.y, moved.y) + 40)))
-                        let gap = abs(c.y - moved.y) - (n.frame.size.height + f.size.height) / 2
-                        if gap > 0 {
-                            guideLabel = (
-                                Loc.f("%lld pt", Int(gap.rounded())), CGPoint(x: c.x + 24, y: (c.y + moved.y) / 2)
-                            )
-                        }
-                    }
-                    if abs(c.y - moved.y) < snap {
-                        offset.height += c.y - moved.y
-                        guideLines.append(
-                            (CGPoint(x: min(c.x, moved.x) - 40, y: c.y), CGPoint(x: max(c.x, moved.x) + 40, y: c.y)))
-                        guideLabel =
-                            guideLabel ?? (Loc.t("aligned centre"), CGPoint(x: (c.x + moved.x) / 2, y: c.y - 12))
-                    }
-                }
-                // Snap to grid (Settings › Editing) when no guide caught the topic.
-                if let g = controller.gridSnap, guideLines.isEmpty {
-                    let target = CGPoint(x: (moved.x / g).rounded() * g, y: (moved.y / g).rounded() * g)
-                    offset.width += target.x - moved.x
-                    offset.height += target.y - moved.y
-                }
-                if controller.canvas.layout.flexibleFloating, let t = treeNode(at: w, excluding: excluded) {
-                    target = .child(t)
-                }
-            } else if controller.alwaysShowGuides, let o = origins[id] {
-                // Settings › Editing › Always show alignment guides: guides (no snapping) in any layout.
-                let moved = CGPoint(x: o.x + dx, y: o.y + dy)
-                let near = controller.snapDistance / camera.zoom
-                for (nid, n) in controller.scene.nodes where !excluded.contains(nid) {
-                    let c = n.frame.center
-                    if abs(c.x - moved.x) < near {
-                        guideLines.append(
-                            (CGPoint(x: c.x, y: min(c.y, moved.y) - 40), CGPoint(x: c.x, y: max(c.y, moved.y) + 40)))
-                    }
-                    if abs(c.y - moved.y) < near {
-                        guideLines.append(
-                            (CGPoint(x: min(c.x, moved.x) - 40, y: c.y), CGPoint(x: max(c.x, moved.x) + 40, y: c.y)))
-                    }
-                }
-                if !event.modifierFlags.contains(.shift), let t = treeNode(at: w, excluding: excluded),
-                    let tf = controller.scene.nodes[t]?.frame
-                {
-                    let rel = (w.y - tf.rect.minY) / max(tf.size.height, 1)
-                    let hasParent = controller.canvas.parent(of: t) != nil
-                    target = hasParent && rel < 0.28 ? .before(t) : hasParent && rel > 0.72 ? .after(t) : .child(t)
-                }
-            } else if !event.modifierFlags.contains(.shift), let t = treeNode(at: w, excluding: excluded),
-                let tf = controller.scene.nodes[t]?.frame
-            {
-                let rel = (w.y - tf.rect.minY) / max(tf.size.height, 1)
-                let hasParent = controller.canvas.parent(of: t) != nil
-                target = hasParent && rel < 0.28 ? .before(t) : hasParent && rel > 0.72 ? .after(t) : .child(t)
-            }
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            for d in sub {
-                guard let o = origins[d] else { continue }
-                let moved = CGPoint(x: o.x + offset.width, y: o.y + offset.height)
-                renderer.springs[d] = SpringValue(moved)
-                renderer.nodeLayers[d]?.zPosition = 10
-                if d == id {
-                    renderer.nodeLayers[d]?.shadowOpacity = 1
-                    renderer.nodeLayers[d]?.shadowColor = RGBA.black.alpha(0.18).cgColor
-                    renderer.nodeLayers[d]?.shadowRadius = 12
-                    renderer.nodeLayers[d]?.shadowOffset = CGSize(width: 0, height: 6)
-                }
-            }
-            renderer.applyFrames(all: false)
-            for d in sub { renderer.moving.insert(d) }
-            renderer.applyFrames(all: true)
-            showDrop(target, floatingLabel: floating)
-            elements.showGuides(guideLines, label: guideLabel?.0, at: guideLabel?.1)
-            elements.updateGeometry(
-                selected: controller.selectedElement, connect: nil,
-                frame: { [weak self] in self?.animatedFrame($0)?.rect })
-            decorRenderer.updateGeometry(frame: { [weak self] in self?.animatedFrame($0)?.rect })
-            CATransaction.commit()
-            renderer.moving.removeAll()
-            drag = .node(
-                id: id, start: start, subtree: sub, origins: origins, floating: floating, active: active, target: target
-            )
-        case .zone(let zid, let ids, let start, let members, let origins, var active)?:
-            let dx = w.x - start.x
-            let dy = w.y - start.y
-            if !active && hypot(dx, dy) * camera.zoom < 4 { return }
-            active = true
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            for d in members {
-                guard let o = origins[d] else { continue }
-                renderer.springs[d] = SpringValue(CGPoint(x: o.x + dx, y: o.y + dy))
-            }
-            renderer.applyFrames(all: true)
-            elements.zonesLayer.sublayers?.forEach { _ in }
-            CATransaction.commit()
-            drag = .zone(id: zid, ids: ids, start: start, members: members, origins: origins, active: active)
-            zoneDragOffset = CGSize(width: dx, height: dy)
-            for id in ids { elements.offsetZone(id, by: zoneDragOffset) }
-            elements.updateGeometry(
-                selected: controller.selectedElement, connect: nil,
-                frame: { [weak self] in self?.animatedFrame($0)?.rect })
-        case .legend(let start, let origin, var active)?:
-            let dx = w.x - start.x
-            let dy = w.y - start.y
-            if !active && hypot(dx, dy) * camera.zoom < 4 { return }
-            active = true
-            CATransaction.begin()
-            CATransaction.setDisableActions(true)
-            legendLayer.frame.origin = CGPoint(x: origin.x + dx, y: origin.y + dy)
-            CATransaction.commit()
-            drag = .legend(start: start, origin: origin, active: active)
-        case nil:
-            break
-        }
+        pointer.dragged(
+            to: convert(event.locationInWindow, from: nil), modifiers: PointerModifiers(event.modifierFlags))
     }
 
-    private var zoneDragOffset = CGSize.zero
-
-    private func treeNode(at w: CGPoint, excluding: Set<NodeID>) -> NodeID? {
-        for id in controller.scene.order.reversed() where !excluding.contains(id) {
-            if let f = controller.scene.nodes[id]?.frame, f.rect.insetBy(dx: -6, dy: -6).contains(w) { return id }
-        }
-        return nil
+    public override func mouseUp(with event: NSEvent) {
+        pointer.up(at: convert(event.locationInWindow, from: nil), modifiers: PointerModifiers(event.modifierFlags))
     }
 
-    /// Drop targets (S3): a glowing line for before / after, a halo for "as child".
-    private func showDrop(_ t: DropTarget?, floatingLabel: Bool) {
-        guard let t else {
-            dropIndicator.isHidden = true
-            dropHint?.removeFromSuperview()
-            dropHint = nil
-            return
-        }
-        let theme = controller.theme
-        dropIndicator.isHidden = false
-        dropIndicator.strokeColor = theme.ring.cgColor
-        dropIndicator.shadowColor = theme.ring.cgColor
-        dropIndicator.shadowOpacity = 0.6
-        dropIndicator.shadowRadius = 6
-        dropIndicator.shadowOffset = .zero
-        switch t {
-        case .child(let id):
-            guard let f = controller.scene.nodes[id]?.frame.rect else { return }
-            let r = f.insetBy(dx: -6, dy: -6)
-            dropIndicator.path = CGPath(roundedRect: r, cornerWidth: 14, cornerHeight: 14, transform: nil)
-            dropIndicator.lineWidth = 3
-            dropIndicator.fillColor = theme.ringSoft.alpha(0.3).cgColor
-            if floatingLabel {
-                let text = controller.canvas.nodes[id]?.text ?? ""
-                showDropHint(Loc.f("Drop to attach under %@", text), below: r)
-            }
-        case .before(let id), .after(let id):
-            guard let f = controller.scene.nodes[id]?.frame.rect else { return }
-            let y: CGFloat = { if case .before = t { return f.minY - 6 } else { return f.maxY + 6 } }()
-            let p = CGMutablePath()
-            p.move(to: CGPoint(x: f.minX, y: y))
-            p.addLine(to: CGPoint(x: f.maxX, y: y))
-            dropIndicator.path = p
-            dropIndicator.lineWidth = 3
-            dropIndicator.fillColor = nil
-        }
-    }
+    func bandZones(_ band: CGRect) -> [String] { pointer.bandZones(band) }
 
     private var dropHint: NSView?
 
-    private func showDropHint(_ text: String, below r: CGRect) {
+    package func showDropHint(_ text: String?, below v: CGRect) {
         dropHint?.removeFromSuperview()
+        dropHint = nil
+        guard let text else { return }
         let label = NSTextField(labelWithString: text)
         label.font = .systemFont(ofSize: 12, weight: .semibold)
         label.textColor = .white
@@ -1543,98 +1136,24 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         label.wantsLayer = true
         label.layer?.cornerRadius = 5
         label.sizeToFit()
-        let v = camera.toView(r)
         label.frame.origin = CGPoint(x: v.maxX + 6, y: v.maxY + 4)
         label.frame.size.width += 10
         addSubview(label)
         dropHint = label
     }
 
-    public override func mouseUp(with event: NSEvent) {
-        let w = camera.toWorld(convert(event.locationInWindow, from: nil))
-        defer {
-            drag = nil
-            rubberBand.isHidden = true
-            dropIndicator.isHidden = true
-            dropHint?.removeFromSuperview()
-            dropHint = nil
-            elements.showGuides([], label: nil, at: nil)
-            for l in renderer.nodeLayers.values where l.zPosition != 0 {
-                l.zPosition = 0
-                l.shadowOpacity = l.node.map { $0.appearance.shadow == nil ? 0 : 1 } ?? 0
-            }
-        }
-        switch drag {
-        case .rubber(let start, let extend, let selectedZones)?:
-            let r = CGRect(
-                x: min(start.x, w.x), y: min(start.y, w.y), width: abs(w.x - start.x), height: abs(w.y - start.y))
-            guard r.width > 3 || r.height > 3 else { return }
-            // A band around whole zones selects those zones; ⌘ keeps it to topics (D258).
-            let zones = event.modifierFlags.contains(.command) ? [] : bandZones(r)
-            if !zones.isEmpty {
-                controller.selectZones(selectedZones + zones.filter { !selectedZones.contains($0) })
-                return
-            }
-            let hits = controller.scene.order.filter { controller.scene.nodes[$0]!.frame.rect.intersects(r) }
-            guard let first = hits.first else { return }
-            let base = extend ? controller.selection.nodes : []
-            controller.setSelection(Selection(primary: first, nodes: base + hits.filter { !base.contains($0) }))
-        case .node(let id, let start, _, _, let floating, let active, let target)?:
-            guard active else { return }
-            let dx = w.x - start.x
-            let dy = w.y - start.y
-            if floating {
-                if case .child(let t)? = target {
-                    controller.moveTopic(id, toParent: t, at: nil)
-                } else if let pos = controller.canvas.nodes[id]?.position, let s = renderer.springs[id] {
-                    _ = pos
-                    controller.moveFloating(id, to: s.value)
-                } else {
-                    controller.moveFloating(id, to: CGPoint(x: dx, y: dy))
-                }
-            } else if event.modifierFlags.contains(.shift) {
-                controller.detachTopic(id, at: renderer.springs[id]?.value ?? w)
-            } else if let target {
-                let dup = event.modifierFlags.contains(.option)
-                switch target {
-                case .child(let t): controller.moveTopic(id, toParent: t, at: nil, duplicate: dup)
-                case .before(let t), .after(let t):
-                    guard let p = controller.canvas.parent(of: t),
-                        let i = controller.canvas.nodes[p]?.children.firstIndex(of: t)
-                    else { break }
-                    let isAfter: Bool = { if case .after = target { return true } else { return false } }()
-                    controller.moveTopic(id, toParent: p, at: isAfter ? i + 1 : i, duplicate: dup)
-                }
-            } else if controller.dragToFloat, hypot(dx, dy) > 80 {
-                // Dragged well off its branch onto empty canvas: it floats there.
-                controller.detachTopic(id, at: renderer.springs[id]?.value ?? w)
-            } else {
-                // Dropped on empty canvas: settle back.
-                update(animated: true)
-            }
-        case .zone(let zid, let ids, _, _, _, let active)?:
-            guard active else {
-                // A plain click on one of several selected zones selects just that one.
-                if ids.count > 1, event.modifierFlags.intersection([.command, .shift]).isEmpty {
-                    controller.selectElement(.zone(zid))
-                }
-                return
-            }
-            for id in ids { elements.offsetZone(id, by: .zero) }
-            controller.moveZones(ids, by: zoneDragOffset)
-        case .legend(let start, let origin, let active)?:
-            guard active else { return }
-            controller.moveLegend(to: CanvasPoint(x: origin.x + w.x - start.x, y: origin.y + w.y - start.y))
-        default:
-            break
-        }
+    package func pointerChangedSelection() { toolbarFor = nil }
+
+    package func pointerClickedSelectedTopic(_ id: NodeID) {
+        // Click again on the selected topic: the floating toolbar.
+        guard controller.prefs.string("editing.floatingToolbar") == "click" else { return }
+        toolbarFor = id
+        refreshMouseAids()
     }
 
-    /// The zones a rubber band wholly encloses, back to front (D258). A band that only
-    /// crosses a zone selects the topics it touches, so a zone's topics can still be
-    /// banded from outside it; ⌘-drag bands topics only.
-    func bandZones(_ band: CGRect) -> [String] {
-        controller.scene.zones.filter { band.contains($0.rect) }.map(\.zone.id)
+    package func panCamera(to c: Camera) {
+        cameraTween = nil
+        setCamera(c, animated: false)
     }
 
     public override func rightMouseDown(with event: NSEvent) {
@@ -1667,23 +1186,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     /// What a right-click at a point in the view lands on (M17), or nil for no menu (AI
     /// suggestions, Present, Map Shot).
-    func menuTarget(at p: CGPoint) -> CanvasMenuTarget? {
-        let c = controller
-        guard c.present == nil, c.mapShot == nil, c.palette == nil, c.jump == nil else { return nil }
-        let w = camera.toWorld(p)
-        if let l = c.scene.legend, l.rect.contains(w) { return .legend }
-        if let id = node(at: p) {
-            guard CanvasController.ghostIndex(id) == nil else { return nil }
-            if let k = c.canvas.callouts.first(where: { $0.topic == id }) { return .element(.callout(k.id)) }
-            if let n = c.scene.nodes[id], n.image != nil, let f = animatedFrame(id) {
-                let local = CGPoint(x: w.x - f.rect.minX, y: w.y - f.rect.minY)
-                if n.imageRect.contains(local) { return .image(id) }
-            }
-            return .topic(id)
-        }
-        if let el = elements.hitTest(w) { return .element(el) }
-        return .canvas(w)
-    }
+    func menuTarget(at p: CGPoint) -> CanvasMenuTarget? { pointer.menuTarget(at: p) }
 
     /// The context menu for whatever is under the pointer (M17): topics, images,
     /// relationships, boundaries, summaries, callouts, zones, the legend and empty canvas.
@@ -2004,5 +1507,14 @@ extension CanvasView {
     }
 
     var laserVisible: Bool { laser.map { !$0.isHidden } ?? false }
+}
+extension PointerModifiers {
+    init(_ flags: NSEvent.ModifierFlags) {
+        self = []
+        if flags.contains(.shift) { insert(.shift) }
+        if flags.contains(.command) { insert(.command) }
+        if flags.contains(.option) { insert(.option) }
+        if flags.contains(.control) { insert(.control) }
+    }
 }
 #endif

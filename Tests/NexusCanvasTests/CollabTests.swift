@@ -258,7 +258,8 @@ func sharedCanonical(_ doc: DocumentModel) -> String {
     @Test func presenceShowsRingsNameTagsAndEditingMarks() async throws {
         let (a, b) = try await pair()
         let pricing = try topic(a, "Pricing")
-        #expect(a.announcements.contains("Ben joined"))
+        // "Joined" lists Ben; his presence, which announces him, follows it.
+        try await waitUntil("Ana hears Ben join") { a.announcements.contains("Ben joined") }
         a.controller.select(pricing)
         b.controller.select(pricing)
         b.controller.beginEditing(pricing)

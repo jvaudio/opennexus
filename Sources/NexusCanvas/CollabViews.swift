@@ -1,11 +1,15 @@
-#if os(macOS)
-import AppKit
 import NexusCore
 import NexusReplica
 import NexusScene
 import NexusTheme
 import QuartzCore
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: Collaborate… sheet (⌃⌘L, M46)
 
@@ -34,11 +38,11 @@ private struct CollabSheet: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("Collaborate").font(.chrome(18, weight: .semibold))
-                Text("Labs").font(.chrome(11, weight: .medium)).foregroundStyle(.secondary)
+                Text("Labs").font(.chrome(11, weight: .medium)).foregroundStyle(.chromeSecondary)
                     .padding(.horizontal, 6).padding(.vertical, 2)
                     .background(Capsule().stroke(.separator))
                 Spacer()
-                Text("File › Collaborate… ⌃⌘L").font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
+                Text("File › Collaborate… ⌃⌘L").font(.chrome(12, design: .monospaced)).foregroundStyle(.chromeSecondary)
             }
             .padding(18)
             Divider()
@@ -49,7 +53,7 @@ private struct CollabSheet: View {
             }
         }
         .frame(width: 600)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
         .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
         .accessibilityElement(children: .contain)
@@ -136,7 +140,7 @@ private struct CollabSheet: View {
                         .textSelection(.enabled)
                         .padding(10)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .textBackgroundColor)))
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color.textBackground))
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(.separator))
                         .accessibilityLabel("Invite link")
                     Text(
@@ -144,7 +148,7 @@ private struct CollabSheet: View {
                             ? Loc.t("Anyone with this link can edit while the session lasts.")
                             : Loc.t("Anyone with this link can watch while the session lasts.")
                     )
-                    .font(.chrome(12.5)).foregroundStyle(.secondary)
+                    .font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                     people(session)
                 }
             }
@@ -239,7 +243,7 @@ struct JoinSheetView: View {
                 .padding(16)
             }
             .frame(width: 520)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
             .accessibilityElement(children: .contain)
@@ -286,7 +290,7 @@ struct CollabNoticeView: View {
                 .padding(16)
             }
             .frame(width: 500)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
             .accessibilityElement(children: .contain)
@@ -351,7 +355,7 @@ struct CollabStatusPill: View {
         }
         .padding(.horizontal, 8)
         .padding(.vertical, 3)
-        .background(Capsule().fill(Color(nsColor: .controlBackgroundColor)))
+        .background(Capsule().fill(Color.controlBackground))
         .overlay(Capsule().stroke(.separator))
         .accessibilityElement(children: .combine)
         .accessibilityLabel(Loc.f("Live session: %@", session.statusText))
@@ -370,7 +374,7 @@ struct PersonDot: View {
             .foregroundStyle(.white)
             .frame(width: 22, height: 22)
             .background(Circle().fill(Color(cgColor: RGBA(hex: colour).cgColor)))
-            .overlay(Circle().stroke(ring ? Color.primary : Color(nsColor: .windowBackgroundColor), lineWidth: 2))
+            .overlay(Circle().stroke(ring ? Color.primary : Color.windowBackground, lineWidth: 2))
             .accessibilityLabel(name)
     }
 }
@@ -419,10 +423,14 @@ final class PresenceLayer: CALayer {
             let tag = CATextLayer()
             tag.actions = NodeLayer.noActions
             let text = m.editing != nil ? "\(m.name) ✎" : m.name
+            #if os(macOS)
             let font = NSFont.chrome(11, weight: .semibold)
+            #else
+            let font = UIFont.systemFont(ofSize: 11 * ChromeText.shared.scale, weight: .semibold)
+            #endif
             let w = (text as NSString).size(withAttributes: [.font: font]).width + 12
             tag.string = NSAttributedString(
-                string: text, attributes: [.font: font, .foregroundColor: NSColor.white])
+                string: text, attributes: [.font: font, .foregroundColor: PlatformColor.white])
             tag.alignmentMode = .center
             tag.contentsScale = scale * max(1, zoom)
             tag.backgroundColor = colour.cgColor
@@ -436,4 +444,3 @@ final class PresenceLayer: CALayer {
         }
     }
 }
-#endif

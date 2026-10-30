@@ -1,5 +1,3 @@
-#if os(macOS)
-import AppKit
 import NexusAI
 import NexusCore
 import NexusFormat
@@ -7,6 +5,12 @@ import NexusInterchange
 import NexusScene
 import Observation
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// A recent document as Home shows it.
 public struct RecentItem: Identifiable, Sendable, Equatable {
@@ -97,9 +101,19 @@ public final class HomeModel {
         var seen: [URL] = []
         for r in recents {
             let d = r.url.deletingLastPathComponent()
-            if !seen.contains(d) { seen.append(d) }
+            if !seen.contains(d), !Self.isPrivate(d) { seen.append(d) }
         }
         return Array(seen.prefix(4))
+    }
+
+    /// The iPad app's own Application Support (where its Inbox lives): Files can't show it,
+    /// so it isn't a location. The Mac lists every folder.
+    static func isPrivate(_ folder: URL) -> Bool {
+        #if os(macOS)
+        false
+        #else
+        folder.standardizedFileURL.path.hasPrefix(URL.applicationSupportDirectory.standardizedFileURL.path)
+        #endif
     }
 
     public var savedFilters: [(URL, String)] {
@@ -133,6 +147,16 @@ public struct HomeView: View {
 
     static func tint(_ t: DiagramType) -> Color { Color(hex: DiagramDescriptor[t].tint) }
 
+    /// A colour for small text: on the iPad, moved toward the text colour so it keeps
+    /// 4.5:1 in either appearance (D402).
+    static func readable(_ c: Color) -> Color {
+        #if os(macOS)
+        c
+        #else
+        c.mix(with: .primary, by: 0.4)
+        #endif
+    }
+
     var greeting: String {
         let h = Calendar.current.component(.hour, from: Date())
         return h < 12 ? Loc.t("Good morning") : h < 18 ? Loc.t("Good afternoon") : Loc.t("Good evening")
@@ -148,9 +172,9 @@ public struct HomeView: View {
                 main
             }
         }
-        .frame(minWidth: 1100, minHeight: 760)
+        .windowMinSize(width: 1100, height: 760)
         .chromeControls()
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(Color.windowBackground)
         .dropDestination(for: URL.self) { urls, _ in
             model.onDropFiles(urls)
             return !urls.isEmpty
@@ -202,10 +226,11 @@ public struct HomeView: View {
                     Text("Inbox map").font(.chrome(13.5))
                     Spacer()
                     if model.inboxCount > 0 {
-                        Text("\(model.inboxCount)").font(.chrome(12.5)).foregroundStyle(.secondary)
+                        Text("\(model.inboxCount)").font(.chrome(12.5, weight: .semibold)).foregroundStyle(
+                            .chromeSecondary)
                     }
                 }
-                .padding(.horizontal, 10).frame(height: 30).contentShape(Rectangle())
+                .padding(.horizontal, 10).frame(minHeight: 30).contentShape(Rectangle())
             }
             .buttonStyle(.plain)
             if !model.locations.isEmpty || model.syncCenter?.libraries.isEmpty == false {
@@ -241,13 +266,13 @@ public struct HomeView: View {
             HStack(spacing: 8) {
                 Circle().fill(model.aiStatus.canRun ? Color.teal : Color.orange).frame(width: 7, height: 7)
                 Text(model.aiStatus.canRun ? Loc.t("On-device AI ready") : model.aiStatus.chip).font(.chrome(13))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.chromeSecondary)
             }
             .padding(10)
         }
         .padding(12)
         .frame(width: .chromeWidth(230))
-        .background(Color(nsColor: .underPageBackgroundColor).opacity(0.5))
+        .background(Color.underPageBackground.opacity(0.5))
     }
 
     static func problem(_ s: SyncStatus) -> Bool {
@@ -264,8 +289,15 @@ public struct HomeView: View {
                 + (p.components(separatedBy: "com~apple~CloudDocs/").last ?? "").replacingOccurrences(
                     of: "/", with: " › ")
         }
+        #if os(macOS)
         let home = FileManager.default.homeDirectoryForCurrentUser.path
         return p.hasPrefix(home) ? "~" + p.dropFirst(home.count) : p
+        #else
+        // The app's own Documents folder is "On My iPad › OpenNexus" in Files.
+        let docs = URL.documentsDirectory.path
+        return p.hasPrefix(docs)
+            ? Loc.t("On My iPad › OpenNexus") + p.dropFirst(docs.count).replacingOccurrences(of: "/", with: " › ") : p
+        #endif
     }
 
     func sideItem(_ id: String, _ title: String) -> some View {
@@ -275,7 +307,7 @@ public struct HomeView: View {
             model.choosingStarter = false
         } label: {
             Text(title).font(.chrome(13.5, weight: model.section == id ? .semibold : .regular))
-                .foregroundStyle(model.section == id ? Self.accent : .primary)
+                .foregroundStyle(model.section == id ? Self.readable(Self.accent) : .primary)
                 .frame(maxWidth: .infinity, minHeight: 32, alignment: .leading)
                 .padding(.horizontal, 10)
                 .background(
@@ -287,7 +319,7 @@ public struct HomeView: View {
     }
 
     func sideHeader(_ t: String) -> some View {
-        Text(t).font(.chrome(11.5, weight: .semibold)).foregroundStyle(.secondary).padding(.horizontal, 10)
+        Text(t).font(.chrome(11.5, weight: .semibold)).foregroundStyle(.chromeSecondary).padding(.horizontal, 10)
             .padding(.top, 18).padding(.bottom, 4)
     }
 
@@ -298,10 +330,13 @@ public struct HomeView: View {
             Text(model.section == "recents" ? Loc.t("Recents") : greeting)
                 .font(.chrome(27, weight: .bold))
             Spacer()
+            // The iPad's search field is the navigation bar's (`.searchable`, D404).
+            #if os(macOS)
             TextField("Search maps and nodes", text: $model.query).textFieldStyle(.roundedBorder).controlSize(.large)
                 .font(.chrome(13))
                 .frame(width: 300)
                 .accessibilityLabel("Search maps and nodes")
+            #endif
             Button("Import…") { model.onImport() }.controlSize(.large)
         }
     }
@@ -312,25 +347,32 @@ public struct HomeView: View {
                 Text("New").font(.chrome(16, weight: .semibold))
                 Spacer()
                 keycap("⌘N")
-                Text("blank mind map ·").foregroundStyle(.secondary)
+                Text("blank mind map ·").foregroundStyle(.chromeSecondary)
                 keycap("⇧⌘N")
-                Text("choose a starter").foregroundStyle(.secondary)
+                Text("choose a starter").foregroundStyle(.chromeSecondary)
             }
             .font(.chrome(12.5))
-            HStack(spacing: 14) {
-                ForEach(Array(Self.newTypes.enumerated()), id: \.offset) { i, item in
-                    newCard(item.0, item.1, highlighted: i == 0)
-                }
-                // The eighth card opens the starter picker: every type and template (M40).
-                Button {
-                    model.choosingStarter = true
-                } label: {
-                    cardBody(.treeTable, "More…", highlighted: false)
-                }
-                .buttonStyle(.plain)
-                .accessibilityLabel("More diagram types and templates")
-            }
+            #if os(macOS)
+            HStack(spacing: 14) { newCards }
+            #else
+            // The iPad's column is narrower: the cards wrap rather than shrink their names.
+            LazyVGrid(columns: [GridItem(.adaptive(minimum: 160), spacing: 14)], spacing: 14) { newCards }
+            #endif
         }
+    }
+
+    @ViewBuilder var newCards: some View {
+        ForEach(Array(Self.newTypes.enumerated()), id: \.offset) { i, item in
+            newCard(item.0, item.1, highlighted: i == 0)
+        }
+        // The eighth card opens the starter picker: every type and template (M40).
+        Button {
+            model.choosingStarter = true
+        } label: {
+            cardBody(.treeTable, "More…", highlighted: false)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel("More diagram types and templates")
     }
 
     func newCard(_ t: DiagramType, _ title: String, highlighted: Bool) -> some View {
@@ -346,11 +388,16 @@ public struct HomeView: View {
     func cardBody(_ t: DiagramType, _ title: String, highlighted: Bool) -> some View {
         VStack(spacing: 10) {
             TypeGlyph(type: t, color: highlighted ? Self.accent : .primary).frame(width: 64, height: 44)
-            Text(title).font(.chrome(13.5, weight: .medium)).lineLimit(1).minimumScaleFactor(0.75)
+            Text(title).font(.chrome(13.5, weight: .medium))
+                #if os(macOS)
+            .lineLimit(1).minimumScaleFactor(0.75)
+                #else
+            .lineLimit(2).multilineTextAlignment(.center)
+                #endif
                 .padding(.horizontal, 6)
         }
         .frame(maxWidth: .infinity, minHeight: 108)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .textBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.textBackground))
         .overlay(
             RoundedRectangle(cornerRadius: 14).stroke(
                 highlighted ? Self.accent : Color.secondary.opacity(0.2), lineWidth: highlighted ? 2.5 : 1)
@@ -361,7 +408,7 @@ public struct HomeView: View {
     func recents(_ items: [RecentItem]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             if model.section == "home" { Text("Recents").font(.chrome(16, weight: .semibold)) }
-            if items.isEmpty { Text("Documents you open appear here.").foregroundStyle(.secondary) }
+            if items.isEmpty { Text("Documents you open appear here.").foregroundStyle(.chromeSecondary) }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 20), count: 4), spacing: 20) {
                 ForEach(items) { r in
                     Button {
@@ -377,7 +424,7 @@ public struct HomeView: View {
                             HStack {
                                 Text(r.title).font(.chrome(13.5, weight: .semibold)).lineLimit(1)
                                 Spacer()
-                                Text(Self.relative(r.date)).font(.chrome(12)).foregroundStyle(.secondary)
+                                Text(Self.relative(r.date)).font(.chrome(12)).foregroundStyle(.chromeSecondary)
                             }
                             HStack(spacing: 6) {
                                 if model.downloading.contains(r.url) {
@@ -385,7 +432,7 @@ public struct HomeView: View {
                                     Text("Downloading from iCloud Drive…").font(.chrome(12.5)).foregroundStyle(
                                         .secondary)
                                 } else {
-                                    Text(r.detail).font(.chrome(12.5)).foregroundStyle(.secondary)
+                                    Text(r.detail).font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                                 }
                                 if let s = model.syncCenter?.status(of: r.url) {
                                     Text(verbatim: "\(s.glyph) \(s.label)").font(.chrome(12))
@@ -414,46 +461,79 @@ public struct HomeView: View {
 
     var shelf: some View {
         VStack(alignment: .leading, spacing: 12) {
+            #if os(macOS)
             HStack(spacing: 8) {
                 Text(model.role.shelfTitle).font(.chrome(16, weight: .semibold)).padding(.trailing, 8)
-                ForEach(Starter.Shelf.allCases, id: \.self) { cat in
-                    Button(cat.title) { model.shelf = cat }
-                        .buttonStyle(.plain)
-                        .font(.chrome(13, weight: model.shelf == cat ? .semibold : .regular))
-                        .foregroundStyle(model.shelf == cat ? Color.white : .primary)
-                        .padding(.horizontal, 12).frame(height: 30)
-                        .background(Capsule().fill(model.shelf == cat ? Color.black : Color.secondary.opacity(0.1)))
+                shelfChips
+            }
+            #else
+            // The chips scroll sideways when they don't fit beside the title (D404).
+            HStack(spacing: 8) {
+                Text(model.role.shelfTitle).font(.chrome(16, weight: .semibold)).padding(.trailing, 8)
+                    .fixedSize()
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) { shelfChips }
                 }
             }
+            #endif
             templateRow(StarterLibrary.shelf(model.shelf))
             Button("All templates and blank diagrams…") { model.choosingStarter = true }
-                .buttonStyle(.link).font(.chrome(13))
+                .linkButton().font(.chrome(13))
+        }
+    }
+
+    @ViewBuilder var shelfChips: some View {
+        ForEach(Starter.Shelf.allCases, id: \.self) { cat in
+            Button {
+                model.shelf = cat
+            } label: {
+                Text(cat.title)
+                    .font(.chrome(13, weight: model.shelf == cat ? .semibold : .regular))
+                    .foregroundStyle(model.shelf == cat ? Color.white : .primary)
+                    .padding(.horizontal, 12).frame(height: 30)
+                    .background(Capsule().fill(model.shelf == cat ? Color.black : Color.secondary.opacity(0.1)))
+                    .touchTarget()
+            }
+            .buttonStyle(.plain)
         }
     }
 
     func templateRow(_ ts: [Starter]) -> some View {
-        HStack(alignment: .top, spacing: 16) {
-            ForEach(ts) { t in
-                Button {
-                    model.onTemplate(t)
-                } label: {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(Loc.t(t.kicker)).font(.chrome(10.5, weight: .semibold, design: .monospaced))
-                            .foregroundStyle(
-                                Self.tint(t.type))
-                        Text(Loc.t(t.name)).font(.chrome(14, weight: .semibold))
-                        Text(Loc.t(t.summary)).font(.chrome(12.5)).foregroundStyle(.secondary).lineLimit(2)
-                    }
-                    .frame(maxWidth: .infinity, minHeight: 90, maxHeight: .infinity, alignment: .topLeading)
-                    .padding(16)
-                    .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .textBackgroundColor)))
-                    .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.2)))
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-            }
+        #if os(macOS)
+        HStack(alignment: .top, spacing: 16) { templateCards(ts) }
+            .fixedSize(horizontal: false, vertical: true)
+        #else
+        // As many as fit across, so each summary has room (D404).
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 200), spacing: 16, alignment: .top)], spacing: 16) {
+            templateCards(ts)
         }
-        .fixedSize(horizontal: false, vertical: true)
+        #endif
+    }
+
+    func templateCards(_ ts: [Starter]) -> some View {
+        ForEach(ts) { t in
+            Button {
+                model.onTemplate(t)
+            } label: {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(Loc.t(t.kicker)).font(.chrome(10.5, weight: .semibold, design: .monospaced))
+                        .foregroundStyle(Self.readable(Self.tint(t.type)))
+                    Text(Loc.t(t.name)).font(.chrome(14, weight: .semibold))
+                    Text(Loc.t(t.summary)).font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
+                        #if os(macOS)
+                    .lineLimit(2)
+                        #else
+                    .fixedSize(horizontal: false, vertical: true)
+                        #endif
+                }
+                .frame(maxWidth: .infinity, minHeight: 90, maxHeight: .infinity, alignment: .topLeading)
+                .padding(16)
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color.textBackground))
+                .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.2)))
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+        }
     }
 
     var searchResults: some View {
@@ -474,12 +554,12 @@ public struct HomeView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(r.title).font(.chrome(15, weight: .semibold))
                             Text(nodes.isEmpty ? r.detail : nodes.joined(separator: " · ")).font(.chrome(13))
-                                .foregroundStyle(.secondary).lineLimit(1)
+                                .foregroundStyle(.chromeSecondary).lineLimit(1)
                         }
                         Spacer()
                     }
                     .padding(12)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .textBackgroundColor)))
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.textBackground))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
@@ -491,7 +571,7 @@ public struct HomeView: View {
         VStack(alignment: .leading, spacing: 0) {
             Text("EMPTY STATE · FIRST LAUNCH AFTER TOUR").font(
                 .chrome(12, weight: .semibold, design: .monospaced)
-            ).foregroundStyle(.secondary)
+            ).foregroundStyle(.chromeSecondary)
                 .padding(14)
             Divider()
             VStack(spacing: 14) {
@@ -507,13 +587,13 @@ public struct HomeView: View {
                 .buttonStyle(.plain)
                 (Text("Your tutorial map is here. Press ") + Text("⌘N").font(.chrome(12, design: .monospaced))
                     + Text(" to start fresh, or drop an .xmind file or a picture anywhere."))
-                    .multilineTextAlignment(.center).font(.chrome(13.5)).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center).font(.chrome(13.5)).foregroundStyle(.chromeSecondary)
             }
             .padding(20)
         }
         .frame(width: 420)
         .background(
-            RoundedRectangle(cornerRadius: 16).fill(Color(nsColor: .textBackgroundColor)).shadow(
+            RoundedRectangle(cornerRadius: 16).fill(Color.textBackground).shadow(
                 color: .black.opacity(0.12), radius: 18, y: 6))
     }
 
@@ -521,7 +601,7 @@ public struct HomeView: View {
         // Explicit colours: the audit measured the inherited ones at 2.2:1 in dark mode.
         Text(s).font(.chrome(11, weight: .medium, design: .monospaced)).foregroundStyle(Color.primary)
             .padding(.horizontal, 5).frame(height: 20)
-            .background(RoundedRectangle(cornerRadius: 4).fill(Color(nsColor: .controlBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 4).fill(Color.controlBackground))
             .overlay(RoundedRectangle(cornerRadius: 4).stroke(.separator))
     }
 }
@@ -641,4 +721,3 @@ struct TypeGlyph: View {
         .accessibilityHidden(true)
     }
 }
-#endif

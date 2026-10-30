@@ -91,7 +91,10 @@ package final class SceneRenderer {
     package var asset: (String) -> Data? = { _ in nil }
 
     package init() {
+        // The canvas has y down: AppKit's layers have y up, UIKit's already have it down (D410).
+        #if os(macOS)
         rootLayer.isGeometryFlipped = true
+        #endif
         rootLayer.actions = NodeLayer.noActions
         rootLayer.contentsScale = backingScale
         grid.contentsScale = backingScale

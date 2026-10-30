@@ -1,9 +1,13 @@
-#if os(macOS)
-import AppKit
 import NexusCore
 import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// The starter picker (M40): a sidebar of sections, a search field that filters as you
 /// type while the arrow keys move through the cards, and Create. A sheet on ⌘T and the tab
@@ -40,12 +44,12 @@ public struct StarterGalleryView: View {
         }
         .frame(minWidth: embedded ? nil : 900, minHeight: embedded ? nil : 600)
         .chromeControls()
-        .background(Color(nsColor: .windowBackgroundColor))
+        .background(Color.windowBackground)
         .onAppear {
             model.columns = columns
             searchFocused = true
         }
-        .onExitCommand { if !embedded { model.cancel() } }
+        .onEscape { if !embedded { model.cancel() } }
     }
 
     // MARK: Sidebar
@@ -54,7 +58,7 @@ public struct StarterGalleryView: View {
         VStack(alignment: .leading, spacing: 2) {
             ForEach(model.sections, id: \.self) { s in
                 if s == .category(StarterCategory.allCases[0]) {
-                    Text("CATEGORIES").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.secondary)
+                    Text("CATEGORIES").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.chromeSecondary)
                         .padding(.horizontal, 10).padding(.top, 14).padding(.bottom, 4)
                 }
                 sideItem(s)
@@ -63,7 +67,7 @@ public struct StarterGalleryView: View {
         }
         .padding(12)
         .frame(width: .chromeWidth(190))
-        .background(Color(nsColor: .underPageBackgroundColor).opacity(0.5))
+        .background(Color.underPageBackground.opacity(0.5))
     }
 
     func sideItem(_ s: StarterGallery.Section) -> some View {
@@ -75,7 +79,7 @@ public struct StarterGalleryView: View {
                 Text(s.title).font(.chrome(13.5, weight: on ? .semibold : .regular))
                 Spacer()
                 Text("\(StarterGallery.search(model.query, in: model.starters(in: s)).count)").font(.chrome(12))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.chromeSecondary)
             }
             .foregroundStyle(on ? Self.accent : .primary)
             .padding(.horizontal, 10)
@@ -145,8 +149,10 @@ public struct StarterGalleryView: View {
         return ScrollViewReader { proxy in
             ScrollView {
                 if items.isEmpty {
-                    Text(Loc.f("No starter matches “%@”", model.query)).font(.chrome(14)).foregroundStyle(.secondary)
-                        .frame(maxWidth: .infinity).padding(.top, 60)
+                    Text(Loc.f("No starter matches “%@”", model.query)).font(.chrome(14)).foregroundStyle(
+                        .chromeSecondary
+                    )
+                    .frame(maxWidth: .infinity).padding(.top, 60)
                 }
                 LazyVGrid(
                     columns: Array(repeating: GridItem(.flexible(), spacing: 14, alignment: .top), count: columns),
@@ -179,13 +185,13 @@ public struct StarterGalleryView: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(Loc.t(s.name)).font(.chrome(13.5, weight: .semibold))
                     Text("\(s.isBlank ? Loc.t("Blank") : HomeView.typeName(s.type)) · \(Loc.t(s.category.title))")
-                        .font(.chrome(12)).foregroundStyle(.secondary)
+                        .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 }
             }
             Spacer()
             if let s = model.selected, GuideLibrary.guide(for: s.type) != nil {
                 Toggle("Start with Guide", isOn: $model.startsWithGuide)
-                    .toggleStyle(.checkbox)
+                    .checkboxToggle()
                     .font(.chrome(13))
                     .help("Opens Guide mode (⌃⌘G) beside the new map")
             }
@@ -239,7 +245,7 @@ struct StarterCard: View {
                 if guided {
                     Text("GUIDED").font(.chrome(9.5, weight: .bold, design: .monospaced)).foregroundStyle(tint)
                         .padding(.horizontal, 6).frame(height: 18)
-                        .background(Capsule().fill(Color(nsColor: .textBackgroundColor)))
+                        .background(Capsule().fill(Color.textBackground))
                         .overlay(Capsule().stroke(tint.opacity(0.4)))
                         .padding(8)
                 }
@@ -251,11 +257,11 @@ struct StarterCard: View {
             Text(Loc.t(starter.kicker)).font(.chrome(10.5, weight: .semibold, design: .monospaced))
                 .foregroundStyle(tint).padding(.top, 4)
             Text(Loc.t(starter.name)).font(.chrome(13.5, weight: .semibold)).lineLimit(1)
-            Text(Loc.t(starter.summary)).font(.chrome(12)).foregroundStyle(.secondary).lineLimit(2)
+            Text(Loc.t(starter.summary)).font(.chrome(12)).foregroundStyle(.chromeSecondary).lineLimit(2)
                 .frame(minHeight: 30, alignment: .topLeading)
         }
         .padding(10)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .textBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.textBackground))
         .overlay(
             RoundedRectangle(cornerRadius: 12).stroke(
                 selected ? StarterGalleryView.accent : Color.secondary.opacity(0.2), lineWidth: selected ? 2.5 : 1)
@@ -310,11 +316,16 @@ enum StarterThumbnails {
         // Fit the map in the card at the screen's scale (never enlarge a small one past 1:1).
         o.scale = Double(min(scale, size.width * scale / r.width, size.height * scale / r.height))
         var img: CGImage?
+        #if os(macOS)
         NSAppearance(named: dark ? .darkAqua : .aqua)?.performAsCurrentDrawingAppearance {
             img = ImageExporter.image(doc, canvas: id, o)
         }
+        #else
+        UITraitCollection(userInterfaceStyle: dark ? .dark : .light).performAsCurrent {
+            img = ImageExporter.image(doc, canvas: id, o)
+        }
+        #endif
         cache[k] = img
         return img
     }
 }
-#endif

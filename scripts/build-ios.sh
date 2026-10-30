@@ -1,6 +1,8 @@
 #!/bin/zsh
 # Builds the modules the iPad and iPhone app shares with the Mac for the iOS Simulator
-# (M47a), so a Mac-only import or API in them fails here rather than in M47b.
+# (M47a), so a Mac-only import or API in them fails here rather than in the app; and the
+# iPad's own (M47b): NexusTouch, the network service it runs in process, and the widgets'
+# views. The iPad app itself builds with `scripts/test-ipad.sh`.
 #
 #   scripts/build-ios.sh
 #
@@ -15,7 +17,7 @@ sdk=$(xcrun --sdk iphonesimulator --show-sdk-path)
 arch=$(uname -m)
 targets=(
     NexusCore NexusLayout NexusFormat NexusTheme NexusKeys NexusScene NexusAI
-    NexusInterchange NexusSync NexusReplica NexusCanvas
+    NexusInterchange NexusSync NexusReplica NexusCanvas NexusTouch NexusNet NexusWidgetsUI
 )
 
 for m in $targets; do

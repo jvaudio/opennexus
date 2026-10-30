@@ -1,9 +1,13 @@
-#if os(macOS)
-import AppKit
 import NexusCore
 import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// The trailing slot: the guide or the AI panel, never both, so the canvas never squeezes
 /// between three panels (M41).
@@ -66,12 +70,12 @@ struct GuidePanelView: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Guide").font(.chrome(15, weight: .semibold))
-                Text(HomeView.typeName(controller.canvas.type)).font(.chrome(12)).foregroundStyle(.secondary)
+                Text(HomeView.typeName(controller.canvas.type)).font(.chrome(12)).foregroundStyle(.chromeSecondary)
             }
             Spacer()
             if let p = controller.guideProgress {
                 Text(Loc.f("%lld of %lld", p.done, p.total)).font(.chrome(12.5, weight: .medium))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.chromeSecondary)
                     .accessibilityLabel(Loc.f("%lld of %lld steps done", p.done, p.total))
             }
             Button {
@@ -120,7 +124,7 @@ struct GuidePanelView: View {
                             .foregroundStyle(s.state == .skipped ? .secondary : .primary)
                             .fixedSize(horizontal: false, vertical: true)
                             if let detail = detail(step, s) {
-                                Text(detail).font(.chrome(11.5)).foregroundStyle(.secondary)
+                                Text(detail).font(.chrome(11.5)).foregroundStyle(.chromeSecondary)
                             }
                         }
                         Spacer(minLength: 0)
@@ -130,7 +134,7 @@ struct GuidePanelView: View {
                             Text(Loc.t(info.name).uppercased()).font(
                                 .chrome(9.5, weight: .semibold, design: .monospaced)
                             )
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.chromeSecondary)
                         }
                     }
                     .padding(.horizontal, 8)
@@ -227,7 +231,7 @@ struct GuidePanelView: View {
             if !ideas.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(Array(ideas.enumerated()), id: \.offset) { _, idea in
-                        Text("\(idea.0.rawValue) · \(idea.1)").font(.chrome(12)).foregroundStyle(.secondary)
+                        Text("\(idea.0.rawValue) · \(idea.1)").font(.chrome(12)).foregroundStyle(.chromeSecondary)
                     }
                 }
             }
@@ -237,7 +241,7 @@ struct GuidePanelView: View {
     var completion: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Every step is done").font(.chrome(13.5, weight: .semibold))
-            Text("Present it, or hide the guide and keep going.").font(.chrome(13)).foregroundStyle(.secondary)
+            Text("Present it, or hide the guide and keep going.").font(.chrome(13)).foregroundStyle(.chromeSecondary)
             HStack {
                 Button("Present") {
                     controller.guideVisible = false
@@ -256,9 +260,8 @@ struct GuidePanelView: View {
             Text(Loc.f("A guide for %@ is coming soon.", HomeView.typeName(controller.canvas.type)))
                 .font(.chrome(13.5, weight: .semibold))
             Text("Guides cover mind maps, flowcharts, data flows, architecture and threat models so far.")
-                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
         }
         .padding(16)
     }
 }
-#endif

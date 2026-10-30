@@ -1,7 +1,11 @@
-#if os(macOS)
-import AppKit
 import NexusScene
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: Welcome (artboard 14)
 
@@ -150,19 +154,19 @@ public struct RolePickerView: View {
 
     public var body: some View {
         ZStack {
-            Color(nsColor: .windowBackgroundColor)
+            Color.windowBackground
             DotGrid().opacity(0.6)
             VStack(alignment: .leading, spacing: 0) {
                 Text("STEP 2 OF 9 · PICK YOUR WORLD").font(.chrome(12.5, weight: .medium, design: .monospaced))
                     .kerning(2)
-                    .foregroundStyle(.secondary).padding(.bottom, 10)
+                    .foregroundStyle(.chromeSecondary).padding(.bottom, 10)
                 Text("What will you map first?").font(.chrome(36, weight: .heavy)).kerning(-1).padding(
                     .bottom, 10)
                 HStack {
                     Text(
                         "This sets the tour’s example and your template shelf. You can change it any time in Settings."
                     )
-                    .font(.chrome(16)).foregroundStyle(.secondary)
+                    .font(.chrome(16)).foregroundStyle(.chromeSecondary)
                     Spacer()
                     HStack(spacing: 6) {
                         key("1")
@@ -174,7 +178,7 @@ public struct RolePickerView: View {
                         Text("then")
                         key("↩")
                     }
-                    .font(.chrome(14)).foregroundStyle(.secondary)
+                    .font(.chrome(14)).foregroundStyle(.chromeSecondary)
                 }
                 .padding(.bottom, 28)
                 HStack(alignment: .top, spacing: 18) {
@@ -203,9 +207,9 @@ public struct RolePickerView: View {
                 .padding(.top, 34)
             }
             .padding(42)
-            .frame(width: 1040)
+            .sheetWidth(1040)
             .background(
-                RoundedRectangle(cornerRadius: 30).fill(Color(nsColor: .textBackgroundColor)).shadow(
+                RoundedRectangle(cornerRadius: 30).fill(Color.textBackground).shadow(
                     color: .black.opacity(0.1), radius: 30, y: 10))
         }
         .background {
@@ -225,7 +229,7 @@ public struct RolePickerView: View {
 
     func key(_ s: String) -> some View {
         Text(s).font(.chrome(13, weight: .medium, design: .monospaced)).padding(.horizontal, 7).frame(height: 26)
-            .background(RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 6).fill(Color.textBackground))
             .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
     }
 
@@ -250,7 +254,7 @@ public struct RolePickerView: View {
                     key("\(number)")
                 }
                 Text(r.title).font(.chrome(19, weight: .bold)).padding(.top, 6)
-                Text(r.blurb).font(.chrome(13.5)).foregroundStyle(.secondary).fixedSize(
+                Text(r.blurb).font(.chrome(13.5)).foregroundStyle(.chromeSecondary).fixedSize(
                     horizontal: false, vertical: true)
                 Divider().padding(.vertical, 6)
                 detail(Loc.t("Tour example"), r.tourExample)
@@ -259,7 +263,7 @@ public struct RolePickerView: View {
             }
             .padding(22)
             .frame(maxWidth: .infinity, minHeight: 340, alignment: .topLeading)
-            .background(RoundedRectangle(cornerRadius: 18).fill(Color(nsColor: .textBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 18).fill(Color.textBackground))
             .overlay(
                 RoundedRectangle(cornerRadius: 18).stroke(
                     on ? Color(hex: "#5850EC") : Color.secondary.opacity(0.12), lineWidth: on ? 3 : 1)
@@ -273,7 +277,7 @@ public struct RolePickerView: View {
     }
 
     func detail(_ k: String, _ v: String) -> some View {
-        (Text(k).fontWeight(.semibold) + Text(" · " + v).foregroundStyle(.secondary)).font(.chrome(12.5))
+        (Text(k).fontWeight(.semibold) + Text(" · " + v).foregroundStyle(.chromeSecondary)).font(.chrome(12.5))
             .fixedSize(horizontal: false, vertical: true)
     }
 }
@@ -301,18 +305,17 @@ public struct XmindSwitcherCard: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("XMIND SWITCHERS · ON .XMIND IMPORT").font(.chrome(12, weight: .semibold, design: .monospaced))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.chromeSecondary)
             Text("Your keys already work here.").font(.chrome(19, weight: .bold))
             (Text("Same: ").bold() + Text("⇥ ↩ ⇧↩ ⌘↩, structures, markers, Pitch → Present")).font(.chrome(12.5))
             (Text("New: ").bold() + Text("⇧⌘L Connect mode, typed diagrams, ⌥⌘T convert")).font(.chrome(12.5))
             (Text("New: ").bold() + Text("AI that runs on this Mac, no credits")).font(.chrome(12.5))
-            Text(report).font(.chrome(13.5)).foregroundStyle(.secondary)
+            Text(report).font(.chrome(13.5)).foregroundStyle(.chromeSecondary)
         }
         .padding(22)
         .frame(width: 460, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 16).fill(Color(nsColor: .windowBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 16).fill(Color.windowBackground))
         .overlay(RoundedRectangle(cornerRadius: 16).stroke(.separator))
         .shadow(color: .black.opacity(0.15), radius: 24, y: 10)
     }
 }
-#endif

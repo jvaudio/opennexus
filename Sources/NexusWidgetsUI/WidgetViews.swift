@@ -1,6 +1,19 @@
-import AppKit
+import ImageIO
 import NexusFormat
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
+
+#if os(macOS)
+/// A map's Quick Look preview, as the widget shows it.
+public typealias WidgetImage = NSImage
+#else
+public typealias WidgetImage = UIImage
+#endif
 
 /// The widgets' content (artboard 33), shared by the Widgets extension and the snapshot
 /// tests. The extension adds the WidgetKit container background and links.
@@ -39,10 +52,10 @@ public struct InboxWidgetView: View {
 public struct RecentMapsWidgetView: View {
     public static let background = Color(white: 0.84)
     var snapshot: WidgetSnapshot?
-    var thumbnails: [String: NSImage]
+    var thumbnails: [String: WidgetImage]
     var large: Bool
 
-    public init(snapshot: WidgetSnapshot?, thumbnails: [String: NSImage], large: Bool) {
+    public init(snapshot: WidgetSnapshot?, thumbnails: [String: WidgetImage], large: Bool) {
         self.snapshot = snapshot
         self.thumbnails = thumbnails
         self.large = large
@@ -57,11 +70,21 @@ public struct RecentMapsWidgetView: View {
                     .font(.system(size: 13)).foregroundStyle(.black.opacity(0.55))
                 Spacer(minLength: 0)
             } else {
-                LazyVGrid(
-                    columns: [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)], spacing: 10
-                ) {
-                    ForEach(maps, id: \.token) { m in
-                        Link(destination: URL(string: "opennexus://open/\(m.token)")!) { tile(m) }
+                // Rows share the height that's left, so a tall preview fits its tile rather
+                // than pushing the header and titles out of the widget.
+                VStack(spacing: 10) {
+                    ForEach(0..<(large ? 2 : 1), id: \.self) { row in
+                        HStack(spacing: 10) {
+                            ForEach(row * 2..<row * 2 + 2, id: \.self) { i in
+                                if i < maps.count {
+                                    Link(destination: URL(string: "opennexus://open/\(maps[i].token)")!) {
+                                        tile(maps[i])
+                                    }
+                                } else {
+                                    Color.clear
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -73,7 +96,7 @@ public struct RecentMapsWidgetView: View {
         VStack(spacing: 0) {
             Group {
                 if let img = thumbnails[m.token] {
-                    Image(nsImage: img).resizable().aspectRatio(contentMode: .fit).padding(6)
+                    Self.image(img).resizable().aspectRatio(contentMode: .fit).padding(6)
                 } else {
                     Color.white
                 }
@@ -88,5 +111,34 @@ public struct RecentMapsWidgetView: View {
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(m.title), \(m.detail)")
+    }
+}
+
+extension RecentMapsWidgetView {
+    /// A map's `preview.png`, at most `maxPixels` on its longer side. WidgetKit won't
+    /// archive a timeline with the full-size preview in it, and the widget stays a
+    /// placeholder; a tile is about 170 points wide.
+    public nonisolated static func thumbnail(contentsOf url: URL, maxPixels: Int = 400) -> WidgetImage? {
+        let options: [CFString: Any] = [
+            kCGImageSourceCreateThumbnailFromImageAlways: true,
+            kCGImageSourceThumbnailMaxPixelSize: maxPixels,
+            kCGImageSourceCreateThumbnailWithTransform: true,
+        ]
+        guard let source = CGImageSourceCreateWithURL(url as CFURL, nil),
+            let cg = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary)
+        else { return nil }
+        #if os(macOS)
+        return NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
+        #else
+        return UIImage(cgImage: cg)
+        #endif
+    }
+
+    static func image(_ img: WidgetImage) -> Image {
+        #if os(macOS)
+        Image(nsImage: img)
+        #else
+        Image(uiImage: img)
+        #endif
     }
 }

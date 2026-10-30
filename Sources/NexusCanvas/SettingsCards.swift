@@ -1,11 +1,15 @@
-#if os(macOS)
-import AppKit
 import NexusAI
 import NexusCore
 import NexusFormat
 import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// The composite rows and preview cards of the settings artboards.
 struct CardView: View {
@@ -48,7 +52,7 @@ private struct Card<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 14).fill(
-                    dark ? Color(white: 0.1) : Color(nsColor: .controlBackgroundColor))
+                    dark ? Color(white: 0.1) : Color.controlBackground)
             )
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator.opacity(dark ? 0 : 0.6)))
             .environment(\.colorScheme, dark ? .dark : .light)
@@ -75,7 +79,7 @@ private struct AboutCard: View {
                                 "Build %@ · Open source · MIT",
                                 Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1")
                         )
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.chromeSecondary)
                     }
                 }
                 HStack {
@@ -84,7 +88,7 @@ private struct AboutCard: View {
                     Button("Report an issue…") { onAction("about.issue") }
                 }
                 Text("Usage statistics are off. See Privacy & Data.").font(.chrome(13)).foregroundStyle(
-                    .secondary)
+                    .chromeSecondary)
             }
         }
     }
@@ -97,31 +101,32 @@ private struct MouseAidsPreview: View {
                 HStack(alignment: .top, spacing: 18) {
                     ZStack(alignment: .topLeading) {
                         HStack(spacing: 4) {
-                            Text("✦ Ideas").font(.chrome(12, weight: .semibold)).foregroundStyle(.teal)
+                            Text("✦ Ideas").font(.chrome(12, weight: .semibold)).foregroundStyle(Color.statusTeal)
                             ForEach(["⇢", "↗", "▣", "≡", "☐", "Aa"], id: \.self) {
                                 Text($0).font(.chrome(12)).frame(width: 22)
                             }
                         }
                         .padding(.horizontal, 8).frame(height: 28)
                         .background(
-                            RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .textBackgroundColor)).shadow(
+                            RoundedRectangle(cornerRadius: 8).fill(Color.textBackground).shadow(
                                 color: .black.opacity(0.12), radius: 6, y: 2)
                         )
                         .offset(x: 0, y: 0)
                         Text("Pricing").font(.chrome(15, weight: .medium))
                             .padding(.horizontal, 18).frame(height: 38)
-                            .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .textBackgroundColor)))
+                            .background(RoundedRectangle(cornerRadius: 10).fill(Color.textBackground))
                             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "#E4572E"), lineWidth: 2))
                             .offset(x: 30, y: 44)
                         plus.offset(x: 132, y: 53)
                         plus.offset(x: 62, y: 92)
                     }
                     .frame(width: 240, height: 120, alignment: .topLeading)
+                    .illustration(Loc.t("A topic with its two + buttons, and the floating toolbar above it"))
                 }
                 Text(
                     "Right + adds a child (⇥), lower + a sibling (↩). The floating toolbar offers AI ideas, connect, link, image, note, to-do and style. It never appears while typing."
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -179,7 +184,7 @@ private struct ThemeGrid: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Themes")
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator.opacity(0.6)))
     }
 }
@@ -194,11 +199,12 @@ private struct LookPreview: View {
                 RoundedRectangle(cornerRadius: 12).fill(Color.secondary.opacity(0.06))
                 if let image {
                     Image(decorative: image, scale: 2).resizable().aspectRatio(contentMode: .fit).padding(10)
+                        .illustration(Loc.t("A sample map in the chosen theme, node style and colour theme"))
                 }
             }
             .frame(height: 170)
             Text("Live preview of theme + node style + colour theme. Documents keep their own look once created.")
-                .font(.chrome(13)).foregroundStyle(.secondary)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary)
         }
         .task(id: prefs.revision) { render() }
     }
@@ -223,11 +229,11 @@ private struct SnapshotUsageRow: View {
         HStack {
             Text("Using").font(.chrome(14.5))
             Spacer()
-            Text(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)).foregroundStyle(.secondary)
+            Text(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)).foregroundStyle(.chromeSecondary)
                 .monospacedDigit()
         }
         .padding(.horizontal, 18).padding(.vertical, 11)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
         .task { bytes = SnapshotStore.usage() }
     }
 }
@@ -239,13 +245,13 @@ private struct RecoveryList: View {
         Card {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("RECOVERY").font(.chrome(12, weight: .semibold)).foregroundStyle(.secondary)
+                    Text("RECOVERY").font(.chrome(12, weight: .semibold)).foregroundStyle(.chromeSecondary)
                     Spacer()
                     Text(Loc.n("%lld snapshot", "%lld snapshots", items.count)).font(.chrome(12.5))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.chromeSecondary)
                 }
                 if items.isEmpty {
-                    Text("No snapshots yet. They appear as you edit.").foregroundStyle(.secondary)
+                    Text("No snapshots yet. They appear as you edit.").foregroundStyle(.chromeSecondary)
                 }
                 ForEach(items.prefix(4)) { s in
                     HStack {
@@ -260,7 +266,7 @@ private struct RecoveryList: View {
                                     : Loc.n("Crash recovery · %lld topic", "Crash recovery · %lld topics", s.topics)
                             ).font(
                                 .chrome(12.5)
-                            ).foregroundStyle(.secondary)
+                            ).foregroundStyle(.chromeSecondary)
                         }
                         Spacer()
                         Button("Compare") { onAction("snapshot.compare:\(s.url.path)") }
@@ -308,7 +314,7 @@ private struct FramePicker: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Frames")
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
     }
 }
 
@@ -323,7 +329,7 @@ struct FrameSample: View {
                     colors: [mat, Color(hex: "#BFE7E3")], startPoint: .topLeading, endPoint: .bottomTrailing)
             case "paper": Color(hex: "#F4EFE4")
             case "darkMat": Color(white: 0.12)
-            default: Color(nsColor: .textBackgroundColor)
+            default: Color.textBackground
             }
             VStack(spacing: 0) {
                 if frame == "window" {
@@ -360,12 +366,12 @@ private struct MatColorRow: View {
                 selection: Binding(
                     get: { Color(hex: prefs.string("export.matColor")) },
                     set: { c in
-                        if let ns = NSColor(c).usingColorSpace(.sRGB) {
+                        if let rgb = c.srgbComponents {
                             prefs.set(
                                 "export.matColor",
                                 String(
-                                    format: "#%02X%02X%02X", Int(ns.redComponent * 255), Int(ns.greenComponent * 255),
-                                    Int(ns.blueComponent * 255)))
+                                    format: "#%02X%02X%02X", Int(rgb.red * 255), Int(rgb.green * 255),
+                                    Int(rgb.blue * 255)))
                         }
                     })
             )
@@ -373,7 +379,7 @@ private struct MatColorRow: View {
             .accessibilityLabel("Custom colour")
         }
         .padding(.horizontal, 18).padding(.vertical, 11)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
     }
 }
 
@@ -385,7 +391,7 @@ private struct AgentCard: View {
         Card {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 6) {
-                    Text("CONNECT AN AGENT").font(.chrome(12.5, weight: .semibold)).foregroundStyle(.secondary)
+                    Text("CONNECT AN AGENT").font(.chrome(12.5, weight: .semibold)).foregroundStyle(.chromeSecondary)
                     Spacer()
                     Circle().fill(on ? Color.green : Color.gray.opacity(0.6)).frame(width: 7, height: 7)
                     Text(
@@ -393,12 +399,13 @@ private struct AgentCard: View {
                             ? (folders > 0 ? Loc.t("Server on · local only") : Loc.t("On · allow a folder first"))
                             : Loc.t("Server off · local only")
                     )
-                    .font(.chrome(12.5)).foregroundStyle(on ? Color.green : .secondary)
+                    .font(.chrome(12.5)).foregroundStyle(
+                        on ? AnyShapeStyle(Color.statusGreen) : AnyShapeStyle(.chromeSecondary))
                 }
                 Text(
                     "Any MCP client on this Mac (Claude, Codex, Cursor…) can read and edit maps in the folders you allow. Nothing is uploaded."
                 )
-                .font(.chrome(12.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(12.5)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
                 Self.code(
                     """
                     $ nexus mcp            # stdio server
@@ -500,7 +507,7 @@ private struct MaskPreviewCard: View {
                 Text(
                     "Detected on-device with the Natural Language framework plus your patterns. Masking applies to the export copy; your document is unchanged."
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -529,14 +536,14 @@ private struct VoiceOverPreview: View {
                     Text("Pricing").font(.chrome(15, weight: .medium))
                         .padding(.horizontal, 16).frame(height: 36)
                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.teal, lineWidth: 2))
-                    Text("→").foregroundStyle(.secondary)
+                    Text("→").foregroundStyle(.chromeSecondary)
                 }
                 Text("“\(Spoken.sample(prefs))”").font(.chrome(14)).italic()
                     .fixedSize(horizontal: false, vertical: true)
                 Text(
                     "Rotor categories: Nodes, Edges, Boundaries, Notes, AI suggestions. Connect mode reads targets by hint letter."
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -545,5 +552,3 @@ private struct VoiceOverPreview: View {
 extension RGBA {
     var swiftUI: Color { Color(.sRGB, red: r, green: g, blue: b, opacity: a) }
 }
-
-#endif

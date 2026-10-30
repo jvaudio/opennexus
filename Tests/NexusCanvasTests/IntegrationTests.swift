@@ -1,4 +1,6 @@
+import AppKit
 import Foundation
+import NexusWidgetsUI
 import Testing
 
 @testable import NexusCanvas
@@ -119,6 +121,27 @@ import Testing
             recents: [.init(token: "t1", title: "Checkout DFD", detail: "DFD · 12 topics", thumbnail: "t1.png")])
         try snap.write(to: dir)
         #expect(WidgetSnapshot.read(from: dir)?.inbox == snap.inbox)
+    }
+
+    /// WidgetKit won't archive a timeline with a full-size `preview.png` in it: Recent Maps
+    /// stayed a placeholder on the iPad's home screen. And a map that's no longer recent
+    /// takes its thumbnail with it.
+    @Test func widgetThumbnailsAreSmallAndPruned() throws {
+        let dir = FileManager.default.temporaryDirectory.appending(path: "widgets-\(UUID().uuidString)")
+        defer { try? FileManager.default.removeItem(at: dir) }
+        let widgets = WidgetSnapshot.directory(in: dir)
+        try FileManager.default.createDirectory(at: widgets, withIntermediateDirectories: true)
+        let png = try #require(HeadlessExport.previewPNG(launchPlanDocument()))
+        #expect((NSImage(data: png)?.representations.first?.pixelsWide ?? 0) > 1000)
+        for name in ["kept.png", "stale.png"] { try png.write(to: widgets.appending(path: name)) }
+        try WidgetSnapshot(
+            inbox: [], inboxCount: 0, recents: [.init(token: "k", title: "Plan", detail: "", thumbnail: "kept.png")]
+        ).write(to: dir)
+        let files = try FileManager.default.contentsOfDirectory(atPath: widgets.path)
+        #expect(Set(files) == ["snapshot.json", "kept.png"])
+
+        let thumb = try #require(RecentMapsWidgetView.thumbnail(contentsOf: widgets.appending(path: "kept.png")))
+        #expect(max(thumb.size.width, thumb.size.height) == 400)
     }
 
     @Test func previewIsNeverWrittenForEncryptedDocuments() {

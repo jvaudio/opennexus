@@ -1,4 +1,3 @@
-#if os(macOS)
 import NexusCore
 import NexusScene
 import SwiftUI
@@ -39,9 +38,9 @@ private struct TaskEditorSheet: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text("Task").font(.chrome(18, weight: .semibold))
-                Text(title).font(.chrome(15)).foregroundStyle(.secondary).lineLimit(1)
+                Text(title).font(.chrome(15)).foregroundStyle(.chromeSecondary).lineLimit(1)
                 Spacer()
-                Text("Topic › Task…  ⌃⌘T").font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
+                Text("Topic › Task…  ⌃⌘T").font(.chrome(12, design: .monospaced)).foregroundStyle(.chromeSecondary)
             }
             .padding(18)
             Divider()
@@ -75,7 +74,7 @@ private struct TaskEditorSheet: View {
                 Text(
                     "Type a date, today, tomorrow, +3 (working days), fri or 2 Nov. Only a due date makes a milestone."
                 )
-                .font(.chrome(12.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(12.5)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
                 Text("Owner").font(.chrome(14, weight: .medium)).padding(.top, 4)
                 TextField("", text: text(\.owner)).textFieldStyle(.roundedBorder)
                     .accessibilityLabel(Loc.t("Owner")).focused($focus, equals: .owner)
@@ -116,7 +115,7 @@ private struct TaskEditorSheet: View {
                                 }
                             })
                     )
-                    .toggleStyle(.checkbox)
+                    .checkboxToggle()
                     Picker(
                         "Priority",
                         selection: Binding(get: { state.priority }, set: { v in set { $0.priority = v } })
@@ -155,7 +154,7 @@ private struct TaskEditorSheet: View {
             .padding(16)
         }
         .frame(width: 600)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
         .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
         .onAppear { focus = .start }
@@ -221,9 +220,8 @@ private struct TaskEditorSheet: View {
                     }
                 }
                 .padding(4)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .textBackgroundColor)))
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.textBackground))
             }
         }
     }
 }
-#endif

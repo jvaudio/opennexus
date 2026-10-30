@@ -194,6 +194,39 @@ public struct AppIconTile: View {
         }
     }
 }
+#else
+/// The app icon as a tile, for Welcome and the About card, drawn as the icon is (BRAND.md
+/// §4): the Iris gradient with the app-icon mark spanning 78/112 of the tile. iOS gives an
+/// app no API for its own icon.
+public struct AppIconTile: View {
+    var size: CGFloat
+    var decorative: Bool
+
+    public init(size: CGFloat, decorative: Bool = true) {
+        self.size = size
+        self.decorative = decorative
+    }
+
+    public var body: some View {
+        let iris = LinearGradient(
+            colors: [
+                Color(red: 0x6E / 255, green: 0x67 / 255, blue: 0xF6 / 255),
+                Color(red: 0x4C / 255, green: 0x43 / 255, blue: 0xDB / 255),
+            ],
+            startPoint: .top, endPoint: .bottom)
+        let tile = RoundedRectangle(cornerRadius: size * 0.225, style: .continuous)
+            .fill(iris)
+            .overlay(
+                ApertureMark(palette: .appIcon, decorative: true).frame(width: size * 78 / 112, height: size * 78 / 112)
+            )
+            .frame(width: size, height: size)
+        if decorative {
+            tile.accessibilityHidden(true)
+        } else {
+            tile.accessibilityElement().accessibilityLabel("OpenNexus").accessibilityAddTraits(.isImage)
+        }
+    }
+}
 #endif
 
 /// The horizontal lockup from the kit (`BrandLockup` in the app's catalog, light and dark).

@@ -1,9 +1,13 @@
-#if os(macOS)
-import AppKit
 import NexusCore
 import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// Text with matched characters in the accent colour (palette and jump rows).
 struct Highlighted: View {
@@ -37,7 +41,7 @@ struct PaletteView: View {
             let rows = controller.paletteRows
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                    Image(systemName: "magnifyingglass").foregroundStyle(.chromeSecondary)
                     Text(p.query.isEmpty ? Loc.t("Type a command…") : p.query)
                         .font(.chrome(20))
                         .foregroundStyle(p.query.isEmpty ? .tertiary : .primary)
@@ -65,7 +69,8 @@ struct PaletteView: View {
                                     .accessibleTap { controller.runPaletteRow(row) }
                             }
                             if rows.isEmpty {
-                                Text(Loc.f("No command matches “%@”", p.query)).foregroundStyle(.secondary).padding(16)
+                                Text(Loc.f("No command matches “%@”", p.query)).foregroundStyle(.chromeSecondary)
+                                    .padding(16)
                             }
                         }
                         .padding(.bottom, 8)
@@ -84,7 +89,7 @@ struct PaletteView: View {
                     Text("Recent first, then fuzzy match")
                 }
                 .font(.chrome(12))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.chromeSecondary)
                 .padding(.horizontal, 16)
                 .padding(.vertical, 10)
             }
@@ -106,12 +111,12 @@ struct PaletteView: View {
             VStack(alignment: .leading, spacing: 1) {
                 Highlighted(text: row.title, matched: row.matched, size: 14.5)
                 if !row.subtitle.isEmpty {
-                    Text(row.subtitle).font(.chrome(12)).foregroundStyle(.secondary).lineLimit(details ? 3 : 1)
+                    Text(row.subtitle).font(.chrome(12)).foregroundStyle(.chromeSecondary).lineLimit(details ? 3 : 1)
                 }
             }
             Spacer()
             if case .rebind = row.action {
-                Text("Rebind").font(.chrome(12)).foregroundStyle(.secondary)
+                Text("Rebind").font(.chrome(12)).foregroundStyle(.chromeSecondary)
             } else {
                 Keycap(text: row.keys ?? "—")
                 Text(row.hyper ?? "—")
@@ -156,7 +161,7 @@ struct JumpView: View {
                         [Loc.n("%lld node", "%lld nodes", nodes), Loc.n("%lld canvas", "%lld canvases", canvases)]
                             .joined(separator: " · ")
                     )
-                    .font(.chrome(12)).foregroundStyle(.secondary)
+                    .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 }
                 .padding(16)
                 Divider()
@@ -165,15 +170,15 @@ struct JumpView: View {
                         ForEach(Array(rows.enumerated()), id: \.element.id) { i, row in
                             HStack(spacing: 12) {
                                 RoundedRectangle(cornerRadius: 2)
-                                    .fill(Color(nsColor: NSColor(cgColor: row.color.cgColor) ?? .gray))
+                                    .fill(Color(cgColor: row.color.cgColor))
                                     .frame(width: 9, height: 9)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Highlighted(text: row.title, matched: row.matched, size: 14.5)
-                                    Text(row.path).font(.chrome(12)).foregroundStyle(.secondary).lineLimit(1)
+                                    Text(row.path).font(.chrome(12)).foregroundStyle(.chromeSecondary).lineLimit(1)
                                 }
                                 Spacer()
                                 Text(row.badge).font(.chrome(10.5, weight: .medium, design: .monospaced))
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.chromeSecondary)
                             }
                             .padding(.horizontal, 14)
                             .padding(.vertical, 8)
@@ -192,7 +197,7 @@ struct JumpView: View {
                 .frame(maxHeight: 420)
                 Divider()
                 Text("↩ flies the camera there and selects the node · ⇧↩ adds to selection")
-                    .font(.chrome(12)).foregroundStyle(.secondary).padding(12)
+                    .font(.chrome(12)).foregroundStyle(.chromeSecondary).padding(12)
             }
             .frame(width: 560)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
@@ -239,14 +244,15 @@ struct FilterBarView: View {
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
                         .overlay(
-                            Capsule().stroke(style: StrokeStyle(lineWidth: 1, dash: [3, 3])).foregroundStyle(.secondary)
+                            Capsule().stroke(style: StrokeStyle(lineWidth: 1, dash: [3, 3])).foregroundStyle(
+                                .chromeSecondary)
                         )
                         .focused($focused)
                         .onSubmit {
                             controller.addFilterClause(draft)
                             draft = ""
                         }
-                        .onExitCommand { controller.toggleFilterBar() }
+                        .onEscape { controller.toggleFilterBar() }
                     Spacer()
                     Picker(
                         "", selection: Binding(get: { controller.filterHides }, set: { controller.setFilterHides($0) })
@@ -278,7 +284,7 @@ struct FilterBarView: View {
 
     func chipColor(_ c: NodeFilter.Clause) -> Color {
         switch c.field {
-        case "type", "risk": Color(nsColor: NSColor(cgColor: controller.theme.critical.cgColor) ?? .red)
+        case "type", "risk": Color(cgColor: controller.theme.critical.cgColor)
         default: .primary
         }
     }
@@ -292,7 +298,7 @@ struct FocusBreadcrumbView: View {
         if !path.isEmpty {
             HStack(spacing: 8) {
                 ForEach(Array(path.enumerated()), id: \.offset) { i, id in
-                    if i > 0 { Text("›").foregroundStyle(.secondary) }
+                    if i > 0 { Text("›").foregroundStyle(.chromeSecondary) }
                     Text(controller.canvas.nodes[id]?.text ?? "")
                         .font(.chrome(13, weight: i == path.count - 1 ? .semibold : .regular))
                         .accessibleTap {
@@ -306,7 +312,7 @@ struct FocusBreadcrumbView: View {
                 }
                 Spacer().frame(width: 24)
                 Keycap(text: "esc")
-                Text("climbs out").font(.chrome(12)).foregroundStyle(.secondary)
+                Text("climbs out").font(.chrome(12)).foregroundStyle(.chromeSecondary)
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
@@ -321,27 +327,54 @@ struct FocusBreadcrumbView: View {
 struct CountsControl: View {
     var controller: CanvasController
 
+    #if os(macOS)
+    static let verticalPadding: CGFloat = 6
+    #else
+    /// The buttons' 44-point areas make the bar's height.
+    static let verticalPadding: CGFloat = 0
+    #endif
+
     var body: some View {
         if !controller.zen && controller.present == nil {
             let all = controller.canvasCounts
             HStack(spacing: 10) {
-                Button("−") { _ = controller.perform(.zoomOut) }.buttonStyle(.plain).accessibilityLabel("Zoom out")
+                Button {
+                    _ = controller.perform(.zoomOut)
+                } label: {
+                    Text("−").touchTarget()
+                }
+                .buttonStyle(.plain).accessibilityLabel("Zoom out")
                 Text("\(Int((controller.zoom * 100).rounded()))%").font(.chrome(12.5, design: .monospaced))
-                Button("+") { _ = controller.perform(.zoomIn) }.buttonStyle(.plain).accessibilityLabel("Zoom in")
+                Button {
+                    _ = controller.perform(.zoomIn)
+                } label: {
+                    Text("+").touchTarget()
+                }
+                .buttonStyle(.plain).accessibilityLabel("Zoom in")
                 Divider().frame(height: 14)
-                Button(Loc.n("%lld topic", "%lld topics", all.topics)) { controller.countsVisible.toggle() }
-                    .buttonStyle(.plain)
-                    .foregroundStyle(Color.accentColor)
-                    .popover(
-                        isPresented: Binding(get: { controller.countsVisible }, set: { controller.countsVisible = $0 })
-                    ) {
-                        CountsCard(controller: controller)
-                    }
+                Button {
+                    controller.countsVisible.toggle()
+                } label: {
+                    Text(Loc.n("%lld topic", "%lld topics", all.topics)).touchTarget()
+                }
+                .buttonStyle(.plain)
+                .foregroundStyle(Color.accentColor)
+                .popover(
+                    isPresented: Binding(get: { controller.countsVisible }, set: { controller.countsVisible = $0 })
+                ) {
+                    CountsCard(controller: controller)
+                }
             }
             .font(.chrome(13))
             .padding(.horizontal, 12)
-            .padding(.vertical, 6)
+            .padding(.vertical, Self.verticalPadding)
+            #if os(macOS)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 9))
+            #else
+            // Solid on the iPad: over a material, the text's contrast depends on the map
+            // behind it, which the audit reports (D408).
+            .background(Color.textBackground, in: RoundedRectangle(cornerRadius: 9))
+            #endif
             .overlay(RoundedRectangle(cornerRadius: 9).stroke(.separator))
         }
     }
@@ -355,7 +388,7 @@ struct CountsCard: View {
         let all = CanvasCounts(c)
         let sel = CanvasCounts(c, nodes: controller.selection.nodes.flatMap { c.subtree($0) })
         VStack(alignment: .leading, spacing: 8) {
-            Text("THIS CANVAS · SELECTION").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+            Text("THIS CANVAS · SELECTION").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
             Grid(alignment: .leading, horizontalSpacing: 28, verticalSpacing: 6) {
                 row(Loc.t("Topics"), "\(all.topics) · \(sel.topics)")
                 row(Loc.t("Words"), "\(all.words.formatted()) · \(sel.words.formatted())")
@@ -470,7 +503,7 @@ struct SearchTab: View {
         let s = controller.search
         VStack(alignment: .leading, spacing: 10) {
             HStack {
-                Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
+                Image(systemName: "magnifyingglass").foregroundStyle(.chromeSecondary)
                 TextField("Find", text: Binding(get: { s.query }, set: { controller.updateSearch(query: $0) }))
                     .textFieldStyle(.plain)
                     .focused($focused)
@@ -480,18 +513,18 @@ struct SearchTab: View {
                         controller.stepSearch(-1)
                         return .handled
                     }
-                    .onExitCommand {
+                    .onEscape {
                         controller.navTab = nil; controller.refreshView()
                     }
                 if !s.query.isEmpty {
                     Text(Loc.f("%lld of %lld", s.matches.isEmpty ? 0 : s.current + 1, s.matches.count))
-                        .font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
+                        .font(.chrome(12, design: .monospaced)).foregroundStyle(.chromeSecondary)
                 }
             }
             .padding(9)
             .background(RoundedRectangle(cornerRadius: 8).stroke(.separator))
             HStack {
-                Image(systemName: "arrow.left.arrow.right").foregroundStyle(.secondary)
+                Image(systemName: "arrow.left.arrow.right").foregroundStyle(.chromeSecondary)
                 TextField(
                     "Replace with",
                     text: Binding(get: { s.replacement }, set: { controller.updateSearch(replacement: $0) })
@@ -532,7 +565,7 @@ struct SearchTab: View {
             }
             .accessibilityLabel(Loc.t("Matches"))
             Text("↩ next · ⇧↩ previous · matches glow on canvas · esc closes")
-                .font(.chrome(11)).foregroundStyle(.secondary)
+                .font(.chrome(11)).foregroundStyle(.chromeSecondary)
         }
         .padding(12)
         .onAppear { focused = true }
@@ -548,7 +581,7 @@ struct SearchTab: View {
             Text(title).font(.chrome(11.5)).lineLimit(1)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
-                .foregroundStyle(on ? Color(nsColor: .textBackgroundColor) : .primary)
+                .foregroundStyle(on ? Color.textBackground : .primary)
                 .background(Capsule().fill(on ? Color.primary : Color.secondary.opacity(0.12)))
         }
         .buttonStyle(.plain)
@@ -583,7 +616,7 @@ struct SearchTab: View {
                 .top, 5)
             VStack(alignment: .leading, spacing: 2) {
                 Highlighted(text: String(source.prefix(60)), matched: matched.filter { $0 < 60 }, size: 13.5)
-                Text(path).font(.chrome(11.5)).foregroundStyle(.secondary).lineLimit(1)
+                Text(path).font(.chrome(11.5)).foregroundStyle(.chromeSecondary).lineLimit(1)
             }
         }
         .padding(.vertical, 8)
@@ -648,7 +681,7 @@ struct NotesTab: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 if notes.isEmpty {
-                    Text("No notes or comments yet. ⇧⌘N adds a note, ⌃⌘N a comment.").foregroundStyle(.secondary)
+                    Text("No notes or comments yet. ⇧⌘N adds a note, ⌃⌘N a comment.").foregroundStyle(.chromeSecondary)
                         .padding(12)
                 }
                 ForEach(notes, id: \.self) { id in
@@ -661,15 +694,15 @@ struct NotesTab: View {
                         )
                         .font(.chrome(13.5, weight: .semibold))
                         if let note = c.nodes[id]?.note?.text {
-                            Text(note).font(.chrome(12.5)).foregroundStyle(.secondary).lineLimit(3)
+                            Text(note).font(.chrome(12.5)).foregroundStyle(.chromeSecondary).lineLimit(3)
                         }
                         ForEach(Array((c.nodes[id]?.comments ?? []).enumerated()), id: \.offset) { _, cm in
                             HStack(alignment: .firstTextBaseline, spacing: 6) {
-                                Text("❝").font(.chrome(12.5, weight: .semibold)).foregroundStyle(.secondary)
+                                Text("❝").font(.chrome(12.5, weight: .semibold)).foregroundStyle(.chromeSecondary)
                                     .accessibilityHidden(true)
                                 VStack(alignment: .leading, spacing: 1) {
                                     Text(CanvasController.commentByline(cm)).font(.chrome(11.5, weight: .medium))
-                                        .foregroundStyle(.secondary)
+                                        .foregroundStyle(.chromeSecondary)
                                     Text(cm.text).font(.chrome(12.5)).lineLimit(3)
                                 }
                             }
@@ -707,26 +740,26 @@ struct TagsTab: View {
                         .padding(.vertical, 5)
                         .foregroundStyle(
                             on
-                                ? Color(nsColor: .textBackgroundColor)
-                                : Color(nsColor: NSColor(cgColor: t.color.cgColor) ?? .labelColor)
+                                ? Color.textBackground
+                                : Color(cgColor: t.color.cgColor)
                         )
                         .background(
                             Capsule().fill(
                                 on
                                     ? Color.primary
-                                    : Color(nsColor: NSColor(cgColor: t.color.alpha(0.12).cgColor) ?? .gray))
+                                    : Color(cgColor: t.color.alpha(0.12).cgColor))
                         )
                         .accessibleTap {
-                            controller.toggleTag(t.key, combine: NSEvent.modifierFlags.contains(.shift))
+                            controller.toggleTag(t.key, combine: PlatformOpen.shiftHeld)
                         }
                 }
             }
-            if tags.isEmpty { Text("No markers or labels yet.").foregroundStyle(.secondary) }
+            if tags.isEmpty { Text("No markers or labels yet.").foregroundStyle(.chromeSecondary) }
             Text("Click to highlight related topics; the rest fade to 30%. ⇧-click combines.")
-                .font(.chrome(11.5)).foregroundStyle(.secondary)
+                .font(.chrome(11.5)).foregroundStyle(.chromeSecondary)
             if !controller.canvas.filters.isEmpty {
                 Divider()
-                Text("SAVED FILTERS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                Text("SAVED FILTERS").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
                 ForEach(controller.canvas.filters, id: \.name) { f in
                     Button(f.name) { controller.applySavedFilter(f) }.buttonStyle(.plain)
                 }
@@ -759,7 +792,7 @@ struct TodosTab: View {
                         .font(.chrome(12.5))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 5)
-                        .foregroundStyle(which == k ? Color(nsColor: .textBackgroundColor) : .primary)
+                        .foregroundStyle(which == k ? Color.textBackground : .primary)
                         .background(Capsule().fill(which == k ? Color.primary : Color.secondary.opacity(0.12)))
                         .accessibleTap { which = k }
                 }
@@ -779,7 +812,7 @@ struct TodosTab: View {
                                 .strikethrough(c.nodes[id]?.todo?.done == true)
                             Spacer()
                             Text(c.parent(of: id).flatMap { c.nodes[$0]?.text } ?? "")
-                                .font(.chrome(12)).foregroundStyle(.secondary)
+                                .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                         }
                         .padding(.vertical, 7)
                         .contentShape(Rectangle())
@@ -836,4 +869,3 @@ struct FlowLayout: Layout {
         }
     }
 }
-#endif

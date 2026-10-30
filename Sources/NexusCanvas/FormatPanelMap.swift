@@ -1,11 +1,15 @@
-#if os(macOS)
-import AppKit
 import NexusCore
 import NexusLayout
 import NexusScene
 import NexusTheme
 import SwiftUI
 import UniformTypeIdentifiers
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: - Map tab (FMT-3)
 
@@ -58,7 +62,7 @@ struct MapTab: View {
                 .sheet(isPresented: $showingGallery) {
                     VStack(alignment: .leading) {
                         Text("Skeletons").font(.title2.bold())
-                        Text("Structure + node style + branch line.").foregroundStyle(.secondary)
+                        Text("Structure + node style + branch line.").foregroundStyle(.chromeSecondary)
                         ScrollView { skeletonGrid(Skeleton.gallery, labels: true) }.accessibilityLabel(
                             Loc.t("Skeletons"))
                         HStack {
@@ -97,7 +101,7 @@ struct MapTab: View {
             Loc.t("Node style"), key: "nodestyle",
             accessory: {
                 Text(Loc.f("%@ cycles", controller.bindings(for: .cycleNodeStyle).first?.glyphs ?? ""))
-                    .font(.chrome(11)).foregroundStyle(.secondary)
+                    .font(.chrome(11)).foregroundStyle(.chromeSecondary)
             }
         ) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
@@ -143,21 +147,21 @@ struct MapTab: View {
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Themes")
             if !lib.themes.isEmpty {
-                Text("CUSTOM THEMES").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary).padding(
+                Text("CUSTOM THEMES").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary).padding(
                     .top, 6)
                 ForEach(lib.themes) { t in
                     HStack {
                         ThemeSwatch(theme: t).frame(width: 18, height: 18).clipShape(Circle())
                         Text(t.name).font(.chrome(13))
                         Spacer()
-                        Button("Edit") { editingTheme = t }.buttonStyle(.plain).foregroundStyle(.secondary)
+                        Button("Edit") { editingTheme = t }.buttonStyle(.plain).foregroundStyle(.chromeSecondary)
                         Button("Rename") {
                             renaming = t
                             newName = t.name
                         }
-                        .buttonStyle(.plain).foregroundStyle(.secondary)
+                        .buttonStyle(.plain).foregroundStyle(.chromeSecondary)
                         Button("Duplicate") { controller.saveCurrentAsTheme(named: t.name + " copy", base: t) }
-                            .buttonStyle(.plain).foregroundStyle(.secondary)
+                            .buttonStyle(.plain).foregroundStyle(.chromeSecondary)
                         Button("Delete") { controller.deleteTheme(t.id) }.buttonStyle(.plain).foregroundStyle(
                             .secondary)
                     }
@@ -193,11 +197,24 @@ struct MapTab: View {
     }
 
     func importTheme() {
+        let types = [UTType(filenameExtension: ThemeCodec.fileExtension) ?? .json, .json]
+        #if os(macOS)
         let panel = NSOpenPanel()
-        panel.allowedContentTypes = [UTType(filenameExtension: ThemeCodec.fileExtension) ?? .json, .json]
-        guard panel.runModal() == .OK, let url = panel.url, let data = try? Data(contentsOf: url),
-            var t = try? ThemeCodec.decode(data)
-        else { return }
+        panel.allowedContentTypes = types
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        importTheme(from: url)
+        #else
+        PlatformOpen.choose(types) { urls in
+            guard let url = urls.first else { return }
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            importTheme(from: url)
+        }
+        #endif
+    }
+
+    func importTheme(from url: URL) {
+        guard let data = try? Data(contentsOf: url), var t = try? ThemeCodec.decode(data) else { return }
         if Theme.builtIn.contains(where: { $0.id == t.id }) { t.id = "custom-\(t.id)" }
         controller.saveTheme(t)
         controller.setTheme(t.id)
@@ -256,7 +273,7 @@ struct MapTab: View {
                 .buttonStyle(.plain)
             }
             HStack {
-                Text("MY COLOURS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                Text("MY COLOURS").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
                 Spacer()
                 Button {
                     editingPalette = ColorPalette(
@@ -296,7 +313,7 @@ struct MapTab: View {
         .padding(6)
         .background(RoundedRectangle(cornerRadius: 8).fill(on ? Color.accentColor.opacity(0.1) : .clear))
         .overlay(
-            RoundedRectangle(cornerRadius: 8).strokeBorder(on ? Color.accentColor : Color(nsColor: .separatorColor))
+            RoundedRectangle(cornerRadius: 8).strokeBorder(on ? Color.accentColor : Color.separatorLine)
         )
         .contentShape(Rectangle())
     }
@@ -316,7 +333,7 @@ struct MapTab: View {
                             Circle().fill(c.color).frame(width: 20, height: 20)
                                 .overlay(
                                     Circle().strokeBorder(
-                                        style.background == hex ? Color.primary : Color(nsColor: .separatorColor),
+                                        style.background == hex ? Color.primary : Color.separatorLine,
                                         lineWidth: style.background == hex ? 2 : 1))
                         }
                         .buttonStyle(.plain)
@@ -529,11 +546,12 @@ struct DataTab: View {
             if let line = TaskFormat.line(c, id, today: controller.todayDate) {
                 Text(line).font(.chrome(12.5)).fixedSize(horizontal: false, vertical: true)
             } else {
-                Text("No dates, owner or progress yet.").font(.chrome(12)).foregroundStyle(.secondary)
+                Text("No dates, owner or progress yet.").font(.chrome(12)).foregroundStyle(.chromeSecondary)
             }
             let after = c.nodes[id]?.todo?.after.compactMap { c.nodes[$0.task]?.text } ?? []
             if !after.isEmpty {
-                Text(Loc.f("After %@", after.joined(separator: ", "))).font(.chrome(12)).foregroundStyle(.secondary)
+                Text(Loc.f("After %@", after.joined(separator: ", "))).font(.chrome(12)).foregroundStyle(
+                    .chromeSecondary)
             }
             Button("Edit Task…  ⌃⌘T") { controller.openTaskEditor() }.buttonStyle(.bordered)
         }
@@ -573,9 +591,8 @@ struct DataTab: View {
                 Text(link).font(.chrome(12)).lineLimit(1).truncationMode(.middle)
             } else {
                 Text("Add a hyperlink with ⇧⌘K or drop a file on the topic.")
-                    .font(.chrome(12)).foregroundStyle(.secondary)
+                    .font(.chrome(12)).foregroundStyle(.chromeSecondary)
             }
         }
     }
 }
-#endif

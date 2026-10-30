@@ -134,7 +134,38 @@ public enum SettingsSchema {
         accessibility,
     ]
 
-    public static func pane(_ id: String) -> SettingPane? { panes.first { $0.id == id } }
+    /// The rows only the Mac has (M47b, D407): windows and tabs, updates, the Hyper key,
+    /// Quick Capture's hot key, Services, code links, the MCP server and the CLI.
+    public static let macOnly: Set<String> = [
+        "general.openIn", "general.restoreWindows", "general.updatesCheck", "general.updatesInstall",
+        "general.updatesChannel", "general.updatesCheckNow", "general.updatesWhere", "shortcuts.hyper",
+        "shortcuts.hyperKey", "shortcuts.hyperTap", "accessibility.stickyHyper", "integrations.captureKey",
+        "integrations.captureAtLogin", "integrations.services", "integrations.codeLinks", "integrations.mcp",
+        "integrations.folders", "integrations.mcpRead", "integrations.mcpEdit", "integrations.mcpFiles",
+        "integrations.cli", "integrations.agentCard",
+    ]
+
+    /// The panes this platform shows: on the iPad, without `macOnly`'s rows and the sections
+    /// they leave empty.
+    public static let shown: [SettingPane] = {
+        #if os(macOS)
+        panes
+        #else
+        panes.map { p in
+            var p = p
+            p.sections = p.sections.compactMap { s in
+                guard !s.rows.isEmpty else { return s }
+                var s = s
+                s.rows.removeAll { macOnly.contains($0.key) }
+                if s.title == "macOS" { s.title = "iPadOS" }
+                return s.rows.isEmpty ? nil : s
+            }
+            return p
+        }
+        #endif
+    }()
+
+    public static func pane(_ id: String) -> SettingPane? { shown.first { $0.id == id } }
 
     public static let allRows: [(SettingPane, SettingSection, SettingRow)] = panes.flatMap { p in
         p.sections.flatMap { s in s.rows.map { (p, s, $0) } }
@@ -149,7 +180,8 @@ public enum SettingsSchema {
         let words = query.lowercased().folding(options: .diacriticInsensitive, locale: nil).split(separator: " ").map(
             String.init)
         guard !words.isEmpty else { return [] }
-        return allRows.filter { p, s, r in
+        let rows = shown.flatMap { p in p.sections.flatMap { s in s.rows.map { (p, s, $0) } } }
+        return rows.filter { p, s, r in
             var hay = [r.title, r.detail ?? "", s.title, p.title] + r.keywords
             switch r.kind {
             case .segmented(let o), .menu(let o): hay += o.map(\.label)

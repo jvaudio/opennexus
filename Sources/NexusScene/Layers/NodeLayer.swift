@@ -6,6 +6,19 @@ import NexusLayout
 import NexusTheme
 @preconcurrency import QuartzCore
 
+extension CGSize {
+    /// A layer's shadow offset as the Mac casts it. Core Animation's y points up on macOS
+    /// and down on iOS, so the iPad negates it and its shadows fall where the Mac's do
+    /// (M47b, D387; the goldens are the Mac's).
+    package static func layerShadow(_ dx: CGFloat, _ dy: CGFloat) -> CGSize {
+        #if os(macOS)
+        CGSize(width: dx, height: dy)
+        #else
+        CGSize(width: dx, height: -dy)
+        #endif
+    }
+}
+
 /// Draws styled text with the platform's engine, the same one that measured it.
 package final class TextLayer: CALayer {
     package var attributed = StyledText() {
@@ -331,7 +344,7 @@ package final class NodeLayer: CALayer {
         if let sh = a.shadow {
             shape.shadowColor = sh.color.alpha(1).cgColor
             shape.shadowOpacity = Float(sh.color.a)
-            shape.shadowOffset = CGSize(width: sh.dx, height: sh.dy)
+            shape.shadowOffset = .layerShadow(sh.dx, sh.dy)
             shape.shadowRadius = CGFloat(sh.radius)
             shape.shadowPath = a.isUnderline ? nil : outline
         } else {
@@ -443,7 +456,7 @@ package final class NodeLayer: CALayer {
         ring.shadowColor = theme.ringSoft.cgColor
         ring.shadowOpacity = selected ? 1 : 0
         ring.shadowRadius = 12
-        ring.shadowOffset = CGSize(width: 0, height: 8)
+        ring.shadowOffset = .layerShadow(0, 8)
         halo.isHidden = !editing
         halo.path = path(6.5)
         halo.lineWidth = 5

@@ -73,10 +73,10 @@ struct OutlineHints: View {
             ForEach([("↩", "sibling"), ("⇥", "indent"), ("⇧⇥", "outdent"), ("⌥⌘↑↓", "reorder")], id: \.0) { k, v in
                 HStack(spacing: 5) {
                     Keycap(text: k)
-                    Text(v).foregroundStyle(.secondary)
+                    Text(v).foregroundStyle(.chromeSecondary)
                 }
             }
-            Text("Notes edit inline").foregroundStyle(.secondary)
+            Text("Notes edit inline").foregroundStyle(.chromeSecondary)
         }
         .font(.chrome(12.5))
     }

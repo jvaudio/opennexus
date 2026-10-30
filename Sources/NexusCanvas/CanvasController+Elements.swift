@@ -76,7 +76,7 @@ extension CanvasController {
     /// take them all.
     public func selectAllZones() { selectZones(canvas.zones.map(\.id)) }
 
-    func selectElement(_ ref: ElementRef?, zones: [String]) {
+    package func selectElement(_ ref: ElementRef?, zones: [String]) {
         if mode == .edit { commitEdit() }
         selectedElement = ref
         zoneGroup = zones.count > 1 ? zones : []

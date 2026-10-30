@@ -1,5 +1,3 @@
-#if os(macOS)
-import AppKit
 import NexusCore
 import NexusFormat
 import NexusInterchange
@@ -7,6 +5,12 @@ import NexusScene
 import NexusTheme
 import PDFKit
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// The indigo accent of artboards 30 and 50.
 let fileAccent = Color(red: 0.345, green: 0.314, blue: 0.925)
@@ -34,7 +38,7 @@ struct FileSegments<T: Hashable>: View {
                 if i < items.count - 1 { Divider().frame(height: 30) }
             }
         }
-        .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .controlBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 8).fill(Color.controlBackground))
         .overlay(RoundedRectangle(cornerRadius: 8).stroke(.separator))
         .clipShape(RoundedRectangle(cornerRadius: 8))
     }
@@ -52,7 +56,7 @@ struct FileButtonStyle: ButtonStyle {
                 if prominent {
                     RoundedRectangle(cornerRadius: 8).fill(fileAccent)
                 } else {
-                    RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .controlBackgroundColor))
+                    RoundedRectangle(cornerRadius: 8).fill(Color.controlBackground)
                     RoundedRectangle(cornerRadius: 8).stroke(.separator)
                 }
             }
@@ -110,7 +114,7 @@ private struct ExportSheet: View {
                     options
                 }
                 .padding(24)
-                .frame(width: 940)
+                .sheetWidth(940)
             }
             Divider()
             HStack(spacing: 10) {
@@ -122,11 +126,11 @@ private struct ExportSheet: View {
                             "Mask %lld emails, keys or names in this export", hits),
                         isOn: Binding(get: { state.mask }, set: { v in set { $0.mask = v } })
                     )
-                    .toggleStyle(.checkbox)
+                    .checkboxToggle()
                     .font(.chrome(13))
                 } else {
                     Text("Preview updates as options change · last used settings remembered per format")
-                        .font(.chrome(13)).foregroundStyle(.secondary)
+                        .font(.chrome(13)).foregroundStyle(.chromeSecondary)
                 }
                 Spacer()
                 Button("Copy") { controller.copyExport(state) }.buttonStyle(FileButtonStyle())
@@ -138,8 +142,8 @@ private struct ExportSheet: View {
             .padding(.horizontal, 24)
             .padding(.vertical, 14)
         }
-        .frame(width: 1200)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+        .sheetWidth(1200)
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
         .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
         .task(id: state) { refresh() }
@@ -159,7 +163,7 @@ private struct ExportSheet: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 2) {
                 ForEach(ExportFormat.Group.allCases, id: \.self) { g in
-                    Text(g.rawValue).font(.chrome(12.5, weight: .semibold)).foregroundStyle(.secondary)
+                    Text(g.rawValue).font(.chrome(12.5, weight: .semibold)).foregroundStyle(.chromeSecondary)
                         .padding(.horizontal, 14).padding(.top, g == .visual ? 4 : 18).padding(.bottom, 6)
                     ForEach(ExportFormat.allCases.filter { $0.group == g }) { f in
                         Button {
@@ -184,7 +188,7 @@ private struct ExportSheet: View {
             .padding(10)
         }
         .accessibilityLabel(Loc.t("Formats"))
-        .background(Color(nsColor: .underPageBackgroundColor).opacity(0.5))
+        .background(Color.underPageBackground.opacity(0.5))
     }
 
     var previewArea: some View {
@@ -212,17 +216,17 @@ private struct ExportSheet: View {
                         ProgressView()
                     }
                 }
-                .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .textBackgroundColor)))
+                .background(RoundedRectangle(cornerRadius: 12).fill(Color.textBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 12))
                 .task(id: state) {
                     if state.format == .svg { preview = controller.exportPreview(svgAsPNG(state)) }
                 }
             }
             if !sizeLine.isEmpty {
-                Text(sizeLine).font(.chrome(12.5, design: .monospaced)).foregroundStyle(.secondary)
+                Text(sizeLine).font(.chrome(12.5, design: .monospaced)).foregroundStyle(.chromeSecondary)
                     .padding(.horizontal, 10).padding(.vertical, 5)
                     .background(
-                        RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor).opacity(0.9))
+                        RoundedRectangle(cornerRadius: 6).fill(Color.textBackground.opacity(0.9))
                     )
                     .padding(12)
             }
@@ -249,10 +253,10 @@ private struct ExportSheet: View {
                         "Every canvas as an Xmind sheet, for Xmind 2020 or later: topics, structure, notes, labels, markers, relationships, boundaries, summaries, images, comments, the legend, task info, styles and the theme."
                     )
             )
-            .font(.chrome(13)).foregroundStyle(.secondary)
+            .font(.chrome(13)).foregroundStyle(.chromeSecondary)
             .fixedSize(horizontal: false, vertical: true)
             if !r.lines.isEmpty {
-                Text("NOT CARRIED OVER").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                Text("NOT CARRIED OVER").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
                     .padding(.top, 4)
                 ForEach(r.lines, id: \.self) { Text("· " + $0).font(.chrome(12.5)) }
             }
@@ -332,7 +336,7 @@ private struct ExportSheet: View {
                     )
                     .frame(width: 480)
                 }
-                Text("Round-trips: paste Mermaid back to rebuild").font(.chrome(13)).foregroundStyle(.secondary)
+                Text("Round-trips: paste Mermaid back to rebuild").font(.chrome(13)).foregroundStyle(.chromeSecondary)
             } else if state.format == .json {
                 HStack(spacing: 18) {
                     FileSegments(
@@ -347,13 +351,13 @@ private struct ExportSheet: View {
                     }
                     Text("OpenNexus schema · the whole document · assets stay in the .nexus package").font(
                         .chrome(13)
-                    ).foregroundStyle(.secondary)
+                    ).foregroundStyle(.chromeSecondary)
                 }
             } else if state.format == .xmind {
                 xmindOptions
             } else if state.format == .drawio {
                 Text("Keeps positions and branch colours from the canvas layout.").font(.chrome(13))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.chromeSecondary)
             } else {
                 scopeOnly
             }
@@ -392,7 +396,7 @@ private struct ExportSheet: View {
                             "Every topic, with its task fields: status, priority, owner, dates, progress, dependencies."
                         )
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary)
             } else if state.format == .excel {
                 Text(
                     DiagramCatalog.isTechnical(controller.canvas.type)
@@ -403,7 +407,7 @@ private struct ExportSheet: View {
                             "One sheet per canvas, a row per topic in outline order: level, path, topic, note, labels, markers and to-do."
                         )
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary)
             } else {
                 Text(
                     state.format == .word
@@ -412,7 +416,7 @@ private struct ExportSheet: View {
                             ? Loc.t("A PowerPoint deck Keynote opens directly, one slide per step.")
                             : Loc.t("One slide per step, as in Present.")
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary)
             }
         }
     }
@@ -460,7 +464,7 @@ private struct ExportSheet: View {
                 }
             }
             Text("The timeline scale follows the Gantt view (⌘= and ⌘- while it shows).").font(.chrome(13))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.chromeSecondary)
         } else {
             Text(
                 state.format == .ics
@@ -468,7 +472,7 @@ private struct ExportSheet: View {
                     : Loc.t(
                         "Only to-dos and tasks: status, priority, owner, dates, working days, progress, dependencies.")
             )
-            .font(.chrome(13)).foregroundStyle(.secondary)
+            .font(.chrome(13)).foregroundStyle(.chromeSecondary)
         }
     }
 
@@ -539,7 +543,7 @@ private struct ExportSheet: View {
             Text(
                 "One file that opens in any browser, offline: pan, zoom, search, the outline and each topic's details. It makes no network requests."
             )
-            .font(.chrome(13)).foregroundStyle(.secondary)
+            .font(.chrome(13)).foregroundStyle(.chromeSecondary)
             .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -597,7 +601,7 @@ private struct ExportSheet: View {
                     )
                     .textFieldStyle(.roundedBorder).frame(width: 90)
                     .accessibilityLabel(Loc.f("Padding in %@", unit))
-                    Text(unit).foregroundStyle(.secondary)
+                    Text(unit).foregroundStyle(.chromeSecondary)
                     Menu(
                         state.image.theme.map { Loc.f("Use %@", Theme.named($0).name) }
                             ?? Loc.f("Keep %@", controller.theme.name)
@@ -680,7 +684,7 @@ struct MapShotBar: View {
                 ) {
                     Text("Shadow").foregroundStyle(.white)
                 }
-                .toggleStyle(.checkbox)
+                .checkboxToggle()
                 Divider().frame(height: 24).overlay(Color.white.opacity(0.2))
                 Button("Copy & Save ↩") { controller.commitMapShot() }
                     .buttonStyle(.plain)
@@ -729,7 +733,7 @@ struct PrintSheetView: View {
 private struct PrintSheet: View {
     var controller: CanvasController
     @State var options: PrintLayout.Options
-    @State private var pages: [NSImage] = []
+    @State private var pages: [PlatformImage] = []
     @State private var count = 0
 
     var body: some View {
@@ -737,7 +741,7 @@ private struct PrintSheet: View {
             HStack {
                 Text("Print").font(.chrome(18, weight: .semibold))
                 Spacer()
-                Text("⌘P").font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
+                Text("⌘P").font(.chrome(11, design: .monospaced)).foregroundStyle(.chromeSecondary)
             }
             .padding(18)
             Divider()
@@ -747,10 +751,10 @@ private struct PrintSheet: View {
                     let cols = max(1, min(4, Int(Double(pages.count).squareRoot().rounded(.up))))
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 3), count: cols), spacing: 3) {
                         ForEach(Array(pages.prefix(16).enumerated()), id: \.offset) { i, img in
-                            Image(nsImage: img).resizable().aspectRatio(contentMode: .fit)
+                            Image(platform: img).resizable().aspectRatio(contentMode: .fit)
                                 .background(Color.white)
                                 .overlay(alignment: .bottomTrailing) {
-                                    Text("\(i + 1)").font(.chrome(9)).foregroundStyle(.secondary).padding(4)
+                                    Text("\(i + 1)").font(.chrome(9)).foregroundStyle(.chromeSecondary).padding(4)
                                 }
                         }
                     }
@@ -762,12 +766,12 @@ private struct PrintSheet: View {
                             ? Loc.n("%lld page · cut marks on", "%lld pages · cut marks on", count)
                             : Loc.n("%lld page", "%lld pages", count)
                     )
-                    .font(.chrome(12.5, design: .monospaced)).foregroundStyle(.secondary)
+                    .font(.chrome(12.5, design: .monospaced)).foregroundStyle(.chromeSecondary)
                     Spacer(minLength: 0)
                 }
                 .frame(width: 380)
                 .padding(16)
-                .background(Color(nsColor: .underPageBackgroundColor).opacity(0.6))
+                .background(Color.underPageBackground.opacity(0.6))
                 Divider()
                 VStack(alignment: .leading, spacing: 12) {
                     section("CONTENT")
@@ -794,7 +798,7 @@ private struct PrintSheet: View {
                     Toggle("Notes as appendix", isOn: $options.notesAppendix)
                     Toggle("Header: title · date", isOn: $options.header)
                     Text("Print Branch… and Print Zone… (⌘K, or right-click a zone) print only that part.")
-                        .font(.chrome(13)).foregroundStyle(.secondary)
+                        .font(.chrome(13)).foregroundStyle(.chromeSecondary)
                     Spacer()
                 }
                 .toggleStyle(.switch)
@@ -817,14 +821,14 @@ private struct PrintSheet: View {
             .padding(16)
         }
         .frame(width: 700, height: 640)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
         .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
         .task(id: options) { render() }
     }
 
     func section(_ t: String) -> some View {
-        Text(t).font(.chrome(12.5, weight: .semibold)).foregroundStyle(.secondary).padding(.top, 4)
+        Text(t).font(.chrome(12.5, weight: .semibold)).foregroundStyle(.chromeSecondary).padding(.top, 4)
     }
 
     func render() {
@@ -848,7 +852,7 @@ struct MergeSheetView: View {
                 HStack {
                     Text("Merge documents").font(.chrome(18, weight: .semibold))
                     Spacer()
-                    Text("Tools › Merge…").font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
+                    Text("Tools › Merge…").font(.chrome(12, design: .monospaced)).foregroundStyle(.chromeSecondary)
                 }
                 .padding(18)
                 Divider()
@@ -866,12 +870,12 @@ struct MergeSheetView: View {
                                 .foregroundStyle(s.kind == "XM" ? Color.red : s.kind == "MD" ? .teal : fileAccent)
                                 .frame(width: 34, height: 34)
                                 .background(
-                                    RoundedRectangle(cornerRadius: 6).fill(Color(nsColor: .textBackgroundColor))
+                                    RoundedRectangle(cornerRadius: 6).fill(Color.textBackground)
                                 )
                                 .overlay(RoundedRectangle(cornerRadius: 6).stroke(.separator))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(s.name).font(.chrome(15))
-                                Text(s.detail).font(.chrome(13)).foregroundStyle(.secondary)
+                                Text(s.detail).font(.chrome(13)).foregroundStyle(.chromeSecondary)
                                 if let p = s.progress { ReadingProgressBar(name: s.name, value: p, detail: s.detail) }
                             }
                             Spacer()
@@ -898,7 +902,7 @@ struct MergeSheetView: View {
                             ? Loc.t("Each document’s central topic becomes a branch of this canvas’s central topic.")
                             : "Each root becomes a branch on a new index canvas, with topic links to the merged canvases. Styles keep their source theme. .xmind, OPML and Markdown are accepted too."
                     )
-                    .font(.chrome(13.5)).foregroundStyle(.secondary)
+                    .font(.chrome(13.5)).foregroundStyle(.chromeSecondary)
                     .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding(20)
@@ -916,7 +920,7 @@ struct MergeSheetView: View {
             }
             .frame(width: 520)
             .frame(minHeight: 560)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
         }
@@ -967,7 +971,7 @@ public struct ImageImportView: View {
                 .lineLimit(1).truncationMode(.middle)
             ReadingProgressBar(
                 name: progress.name, value: progress.indeterminate ? nil : progress.fraction, detail: progress.detail)
-            Text(progress.detail).font(.chrome(13)).foregroundStyle(.secondary)
+            Text(progress.detail).font(.chrome(13)).foregroundStyle(.chromeSecondary)
                 .contentTransition(.opacity)
                 .animation(UIMotion.animation(.easeInOut(duration: 0.2)), value: progress.grouping)
                 .accessibilityHidden(true)
@@ -1054,7 +1058,7 @@ struct PasswordSheetView: View {
                 .padding(16)
             }
             .frame(width: 520)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
         }
@@ -1096,7 +1100,7 @@ struct ImportReportView: View {
                     tile("\(r.notConverted)", "not converted", ok: r.notConverted == 0)
                 }
                 if r.lines.isEmpty {
-                    Text("Everything converted.").font(.chrome(14.5)).foregroundStyle(.secondary)
+                    Text("Everything converted.").font(.chrome(14.5)).foregroundStyle(.chromeSecondary)
                 } else {
                     VStack(alignment: .leading, spacing: 6) {
                         ForEach(r.lines, id: \.self) { Text("· " + $0).font(.chrome(14.5)) }
@@ -1105,7 +1109,7 @@ struct ImportReportView: View {
                 Text(
                     "Also imports MindNode, Word (.docx), TextBundle, OPML, Markdown, Mermaid, PlantUML subset, draw.io, FreeMind and MindManager (best effort), and indented text."
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary)
                 .fixedSize(horizontal: false, vertical: true)
                 HStack {
                     Spacer()
@@ -1115,7 +1119,7 @@ struct ImportReportView: View {
             }
             .padding(24)
             .frame(width: 560)
-            .background(RoundedRectangle(cornerRadius: 16).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 16).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
             .accessibilityElement(children: .contain)
@@ -1146,13 +1150,13 @@ struct SnapshotsSheetView: View {
                 HStack {
                     Text("Recovery snapshots").font(.chrome(18, weight: .semibold))
                     Spacer()
-                    Text("File › Revert To").font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
+                    Text("File › Revert To").font(.chrome(12, design: .monospaced)).foregroundStyle(.chromeSecondary)
                 }
                 .padding(18)
                 Divider()
                 if list.isEmpty {
                     Text("No snapshots yet. OpenNexus keeps one every five minutes while you edit, and when you close.")
-                        .foregroundStyle(.secondary).padding(20)
+                        .foregroundStyle(.chromeSecondary).padding(20)
                 } else {
                     ScrollView {
                         VStack(spacing: 0) {
@@ -1167,7 +1171,7 @@ struct SnapshotsSheetView: View {
                                                 : Loc.n("%lld topic", "%lld topics", s.topics)
                                         ).font(
                                             .chrome(12.5)
-                                        ).foregroundStyle(.secondary)
+                                        ).foregroundStyle(.chromeSecondary)
                                     }
                                     Spacer()
                                     Button("Restore") {
@@ -1187,7 +1191,7 @@ struct SnapshotsSheetView: View {
                 HStack {
                     Text("Restore is one undo. Older versions: File › Revert To › Browse All Versions.").font(
                         .chrome(12.5)
-                    ).foregroundStyle(.secondary)
+                    ).foregroundStyle(.chromeSecondary)
                     Spacer()
                     Button("Close") { controller.snapshots = nil }.buttonStyle(FileButtonStyle()).keyboardShortcut(
                         .cancelAction)
@@ -1195,10 +1199,9 @@ struct SnapshotsSheetView: View {
                 .padding(16)
             }
             .frame(width: 560)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
         }
     }
 }
-#endif

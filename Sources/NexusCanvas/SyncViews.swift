@@ -1,11 +1,15 @@
-#if os(macOS)
-import AppKit
 import CoreImage.CIFilterBuiltins
 import NexusCore
 import NexusFormat
 import NexusScene
 import NexusSync
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: Settings › Sync › Libraries
 
@@ -23,7 +27,7 @@ struct SyncLibrariesCard: View {
                 Text(
                     "A library is a folder of documents kept the same on each Mac through an S3-compatible bucket you own (AWS, Cloudflare R2, Backblaze B2, MinIO…). It’s encrypted on this Mac first, unless you turn that off."
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
                 .padding(.bottom, 12)
             }
             ForEach(center.libraries) { lib in
@@ -37,7 +41,7 @@ struct SyncLibrariesCard: View {
                 Spacer()
                 if !center.networkOn {
                     Text("Turn on “Sync libraries” in Privacy & Data to sync.")
-                        .font(.chrome(12)).foregroundStyle(.secondary)
+                        .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 }
             }
             .padding(.top, 10)
@@ -65,7 +69,7 @@ struct SyncLibrariesCard: View {
                         verbatim:
                             "\((lib.folder as NSString).abbreviatingWithTildeInPath) ⇄ \(lib.bucket.bucket)/\(lib.bucket.prefix)"
                     )
-                    .font(.chrome(12)).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+                    .font(.chrome(12)).foregroundStyle(.chromeSecondary).lineLimit(1).truncationMode(.middle)
                     Text(verbatim: "\(s.glyph) \(s.label)" + (lib.encrypted ? "" : " · " + Loc.t("Not encrypted")))
                         .font(.chrome(12)).foregroundStyle(isProblem(s) ? Color.orange : .secondary)
                 }
@@ -186,9 +190,10 @@ private struct LibraryEditor: View {
                     Text(error).font(.chrome(12)).foregroundStyle(.red)
                 } else if library.bucket.hasInsecureAddress {
                     Text("Use an https:// address; http:// works only for this Mac.").font(.chrome(12))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.chromeSecondary)
                 } else if !library.isComplete {
-                    Text("Choose a folder and fill in the bucket first.").font(.chrome(12)).foregroundStyle(.secondary)
+                    Text("Choose a folder and fill in the bucket first.").font(.chrome(12)).foregroundStyle(
+                        .chromeSecondary)
                 }
                 Spacer()
                 Button("Cancel") { onClose() }.keyboardShortcut(.cancelAction)
@@ -209,6 +214,7 @@ private struct LibraryEditor: View {
     }
 
     func chooseFolder() {
+        #if os(macOS)
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
@@ -219,6 +225,17 @@ private struct LibraryEditor: View {
         library.bookmark = try? url.bookmarkData(
             options: .withSecurityScope, includingResourceValuesForKeys: nil, relativeTo: nil)
         if library.name == Loc.t("Library") || library.name.isEmpty { library.name = url.lastPathComponent }
+        #else
+        // The picker grants the folder; its bookmark keeps the grant across launches.
+        PlatformOpen.choose([.folder]) { urls in
+            guard let url = urls.first else { return }
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            library.folder = url.path(percentEncoded: false)
+            library.bookmark = try? url.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil)
+            if library.name == Loc.t("Library") || library.name.isEmpty { library.name = url.lastPathComponent }
+        }
+        #endif
     }
 }
 
@@ -234,7 +251,7 @@ struct RecoveryKeySheet: View {
             Divider()
             HStack(alignment: .top, spacing: 18) {
                 if let qr = Self.qr(key) {
-                    Image(nsImage: qr).interpolation(.none).resizable().frame(width: 150, height: 150)
+                    Image(platform: qr).interpolation(.none).resizable().frame(width: 150, height: 150)
                         .accessibilityLabel("QR code of the recovery key")
                 }
                 VStack(alignment: .leading, spacing: 10) {
@@ -243,17 +260,14 @@ struct RecoveryKeySheet: View {
                     Text(
                         "Enter it when you add this library on another Mac. Anyone with it and access to the bucket can read the library, so keep it somewhere safe, like a password manager."
                     )
-                    .font(.chrome(12)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    .font(.chrome(12)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
                 }
             }
             .padding(20)
             Divider()
             HStack {
                 Spacer()
-                Button("Copy") {
-                    NSPasteboard.general.clearContents()
-                    NSPasteboard.general.setString(key, forType: .string)
-                }
+                Button("Copy") { PlatformOpen.copy(key) }
                 Button("Done") { onClose() }.keyboardShortcut(.defaultAction)
             }
             .padding(16)
@@ -261,15 +275,19 @@ struct RecoveryKeySheet: View {
         .frame(width: 560)
     }
 
-    static func qr(_ text: String) -> NSImage? {
+    static func qr(_ text: String) -> PlatformImage? {
         let f = CIFilter.qrCodeGenerator()
         f.message = Data(text.utf8)
         f.correctionLevel = "M"
         guard let out = f.outputImage?.transformed(by: CGAffineTransform(scaleX: 6, y: 6)) else { return nil }
+        #if os(macOS)
         let rep = NSCIImageRep(ciImage: out)
         let img = NSImage(size: rep.size)
         img.addRepresentation(rep)
         return img
+        #else
+        return CIContext().createCGImage(out, from: out.extent).map(PlatformImage.from)
+        #endif
     }
 }
 
@@ -292,7 +310,8 @@ private struct DeletedDocumentsSheet: View {
                 } else if let error {
                     Text(error).foregroundStyle(.red).padding(20)
                 } else if items.isEmpty {
-                    Text("Nothing deleted.").foregroundStyle(.secondary).frame(maxWidth: .infinity, minHeight: 120)
+                    Text("Nothing deleted.").foregroundStyle(.chromeSecondary).frame(
+                        maxWidth: .infinity, minHeight: 120)
                 } else {
                     List(items) { d in
                         HStack {
@@ -303,7 +322,7 @@ private struct DeletedDocumentsSheet: View {
                                         "Deleted %@ on %@", d.date.formatted(date: .abbreviated, time: .shortened),
                                         d.device)
                                 )
-                                .font(.chrome(12)).foregroundStyle(.secondary)
+                                .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                             }
                             Spacer()
                             Button("Restore") {
@@ -320,7 +339,7 @@ private struct DeletedDocumentsSheet: View {
             Divider()
             HStack {
                 Text(Loc.f("Kept for %@ days after deleting", center.prefs.string("sync.keepDeleted")))
-                    .font(.chrome(12)).foregroundStyle(.secondary)
+                    .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 Spacer()
                 Button("Done") { onClose() }.keyboardShortcut(.defaultAction)
             }
@@ -348,12 +367,12 @@ struct SyncLogCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             if center.log.isEmpty {
-                Text("Nothing synced yet.").font(.chrome(13)).foregroundStyle(.secondary)
+                Text("Nothing synced yet.").font(.chrome(13)).foregroundStyle(.chromeSecondary)
             }
             ForEach(center.log.prefix(40)) { line in
                 HStack(alignment: .firstTextBaseline) {
                     Text(line.date.formatted(date: .omitted, time: .shortened))
-                        .font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
+                        .font(.chrome(12, design: .monospaced)).foregroundStyle(.chromeSecondary)
                         .frame(width: 70, alignment: .leading)
                     Text(verbatim: line.library).font(.chrome(12, weight: .medium)).frame(
                         width: 110, alignment: .leading
@@ -391,7 +410,7 @@ struct ResolveConflictsView: View {
                             "%@ · both sides changed %@. This Mac’s version is in the document until you choose.",
                             s.title, Loc.n("%lld thing", "%lld things", s.clashes.count))
                     )
-                    .font(.chrome(12.5)).foregroundStyle(.secondary)
+                    .font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                 }
                 .padding(18)
                 Divider()
@@ -418,7 +437,7 @@ struct ResolveConflictsView: View {
                 .padding(16)
             }
             .frame(width: 680)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
             .accessibilityElement(children: .contain)
@@ -451,11 +470,12 @@ struct ResolveConflictsView: View {
 
     func side(_ title: String, _ text: String?, _ changes: [String]) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+            Text(title).font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
             Text(text.map { "“\($0)”" } ?? Loc.t("Deleted")).font(.chrome(13))
                 .foregroundStyle(text == nil ? .secondary : .primary)
             if !changes.isEmpty {
-                Text(changes.map(Self.change).joined(separator: ", ")).font(.chrome(11.5)).foregroundStyle(.secondary)
+                Text(changes.map(Self.change).joined(separator: ", ")).font(.chrome(11.5)).foregroundStyle(
+                    .chromeSecondary)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -515,12 +535,12 @@ struct SyncHistoryView: View {
                                                     }
                                                         ?? "")
                                             )
-                                            .font(.chrome(12)).foregroundStyle(.secondary)
+                                            .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                                         }
                                         Spacer()
                                         if h.restoring == r.revision { ProgressView().controlSize(.small) }
                                         if i == 0 {
-                                            Text("Current").font(.chrome(12)).foregroundStyle(.secondary)
+                                            Text("Current").font(.chrome(12)).foregroundStyle(.chromeSecondary)
                                         } else {
                                             Button("Restore") { controller.restoreRevision(r) }
                                                 .disabled(h.restoring != nil)
@@ -538,7 +558,7 @@ struct SyncHistoryView: View {
                 Divider()
                 HStack {
                     Text("Restoring puts that version in the document as one undo step.")
-                        .font(.chrome(12)).foregroundStyle(.secondary)
+                        .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                     Spacer()
                     Button("Done") { controller.closeSyncHistory() }
                         .buttonStyle(FileButtonStyle(prominent: true)).keyboardShortcut(.defaultAction)
@@ -547,7 +567,7 @@ struct SyncHistoryView: View {
                 .padding(16)
             }
             .frame(width: 560)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
             .accessibilityElement(children: .contain)
@@ -582,13 +602,13 @@ struct ConflictCopiesNotice: View {
                             verbatim: "• " + c.label
                                 + (c.modified.map { " · " + $0.formatted(date: .abbreviated, time: .shortened) } ?? "")
                         )
-                        .font(.chrome(12.5)).foregroundStyle(.secondary)
+                        .font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                     }
                 }
                 .padding(20)
                 Divider()
                 HStack {
-                    Text("Merged copies go to the Trash.").font(.chrome(12)).foregroundStyle(.secondary)
+                    Text("Merged copies go to the Trash.").font(.chrome(12)).foregroundStyle(.chromeSecondary)
                     Spacer()
                     Button("Not Now") { controller.dismissConflictCopies() }.buttonStyle(FileButtonStyle())
                         .keyboardShortcut(.cancelAction)
@@ -598,7 +618,7 @@ struct ConflictCopiesNotice: View {
                 .padding(16)
             }
             .frame(width: 520)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
             .accessibilityElement(children: .contain)
@@ -606,4 +626,3 @@ struct ConflictCopiesNotice: View {
         }
     }
 }
-#endif

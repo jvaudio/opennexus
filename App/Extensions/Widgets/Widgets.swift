@@ -49,7 +49,9 @@ struct SnapshotProvider: TimelineProvider {
         let dir = WidgetSnapshot.directory(in: group)
         var thumbs: [String: NSImage] = [:]
         for m in snap.recents {
-            if let t = m.thumbnail, let img = NSImage(contentsOf: dir.appending(path: t)) { thumbs[m.token] = img }
+            if let t = m.thumbnail, let img = RecentMapsWidgetView.thumbnail(contentsOf: dir.appending(path: t)) {
+                thumbs[m.token] = img
+            }
         }
         return SnapshotEntry(date: snap.updated, snapshot: snap, thumbnails: thumbs)
     }

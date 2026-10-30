@@ -229,6 +229,11 @@ struct ShareFixtures {
 struct ShareLive {
     struct RealNetwork: ShareTransport {
         func perform(_ job: NetJob, body: Data) async -> NetReply { await NetService().perform(job, body: body) }
+
+        // Sync reads objects through this; the protocol's default returns no bytes.
+        func exchange(_ job: NetJob, body: Data) async -> (reply: NetReply, body: Data) {
+            await NetService().exchange(job, body: body)
+        }
     }
 
     static let env = ProcessInfo.processInfo.environment

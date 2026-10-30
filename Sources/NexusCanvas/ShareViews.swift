@@ -1,11 +1,15 @@
-#if os(macOS)
-import AppKit
 import CoreImage
 import NexusCore
 import NexusFormat
 import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: Share Link sheet (⌃⌘S, M44)
 
@@ -39,7 +43,7 @@ private struct ShareSheet: View {
             HStack {
                 Text("Share Link").font(.chrome(18, weight: .semibold))
                 Spacer()
-                Text("File › Share Link… ⌃⌘S").font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
+                Text("File › Share Link… ⌃⌘S").font(.chrome(12, design: .monospaced)).foregroundStyle(.chromeSecondary)
             }
             .padding(18)
             Divider()
@@ -52,7 +56,7 @@ private struct ShareSheet: View {
             }
         }
         .frame(width: 640)
-        .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
         .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
         .accessibilityElement(children: .contain)
@@ -95,7 +99,7 @@ private struct ShareSheet: View {
                     "Every layout",
                     isOn: Binding(get: { e.html.expanded }, set: { v in set { $0.export.html.expanded = v } }))
             }
-            .toggleStyle(.checkbox)
+            .checkboxToggle()
             mask
             Divider()
             HStack(alignment: .top, spacing: 24) {
@@ -150,7 +154,7 @@ private struct ShareSheet: View {
                     .frame(width: 320)
                     .accessibilityLabel("Link password")
                     Text("The password isn’t in the link. Send it another way.")
-                        .font(.chrome(12.5)).foregroundStyle(.secondary)
+                        .font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                 }
                 Toggle(
                     "Update the link when I save",
@@ -160,13 +164,13 @@ private struct ShareSheet: View {
                 .disabled(controller.documentPath == nil)
                 if controller.documentPath == nil {
                     Text("Save the document first to keep its links up to date.")
-                        .font(.chrome(12.5)).foregroundStyle(.secondary)
+                        .font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                 }
             }
             Text(
                 "Sealed on this Mac with AES-256-GCM before it leaves. The key is in the link after the #, which browsers never send, so where it’s stored can’t read it."
             )
-            .font(.chrome(12.5)).foregroundStyle(.secondary)
+            .font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
             .fixedSize(horizontal: false, vertical: true)
             if case .failed(let why) = state.phase {
                 Text(why).font(.chrome(13)).foregroundStyle(.red).fixedSize(horizontal: false, vertical: true)
@@ -184,7 +188,7 @@ private struct ShareSheet: View {
                     "Mask %lld email, key or name in this link", "Mask %lld emails, keys or names in this link", hits),
                 isOn: Binding(get: { state.export.mask }, set: { v in set { $0.export.mask = v } })
             )
-            .toggleStyle(.checkbox)
+            .checkboxToggle()
         } else if state.export.mask {
             Text("Emails, keys and names are masked (Settings › Export).").font(.chrome(12.5)).foregroundStyle(
                 .secondary)
@@ -195,7 +199,7 @@ private struct ShareSheet: View {
         HStack(spacing: 10) {
             if state.phase == .working {
                 ProgressView().controlSize(.small)
-                Text("Sealing and uploading…").font(.chrome(13)).foregroundStyle(.secondary)
+                Text("Sealing and uploading…").font(.chrome(13)).foregroundStyle(.chromeSecondary)
             }
             Spacer()
             Button("Cancel") { controller.closeShare() }.buttonStyle(FileButtonStyle()).keyboardShortcut(.cancelAction)
@@ -241,11 +245,11 @@ private struct ShareResult: View {
                         .textSelection(.enabled)
                         .padding(10)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .textBackgroundColor)))
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color.textBackground))
                         .overlay(RoundedRectangle(cornerRadius: 8).stroke(.separator))
                         .accessibilityLabel("Link")
                     ForEach(notes, id: \.self) { n in
-                        Text(n).font(.chrome(12.5)).foregroundStyle(.secondary)
+                        Text(n).font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -255,7 +259,7 @@ private struct ShareResult: View {
             HStack(spacing: 10) {
                 if let url = URL(string: link) {
                     ShareLink(item: url) { Text("Share…") }.buttonStyle(FileButtonStyle())
-                    Button("Open in Browser") { NSWorkspace.shared.open(url) }.buttonStyle(FileButtonStyle())
+                    Button("Open in Browser") { PlatformOpen.url(url) }.buttonStyle(FileButtonStyle())
                 }
                 Spacer()
                 Button("Copy Link") { controller.copyShareLink(record) }.buttonStyle(FileButtonStyle())
@@ -340,7 +344,7 @@ struct ShareNoticeView: View {
                 .padding(16)
             }
             .frame(width: 500)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
             .accessibilityElement(children: .contain)
@@ -371,7 +375,7 @@ struct ManageLinksView: View {
                 HStack {
                     if !controller.shareCenter.networkOn {
                         Text("The network is off: links can be copied, not updated or revoked.")
-                            .font(.chrome(12.5)).foregroundStyle(.secondary)
+                            .font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                     }
                     Spacer()
                     Button("Done") { controller.closeManageLinks() }
@@ -382,7 +386,7 @@ struct ManageLinksView: View {
                 .padding(16)
             }
             .frame(width: 720)
-            .background(RoundedRectangle(cornerRadius: 14).fill(Color(nsColor: .windowBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 14).fill(Color.windowBackground))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 30, y: 12)
             .accessibilityElement(children: .contain)
@@ -404,7 +408,7 @@ struct ShareLinkList: View {
         let links = center.store.links
         if links.isEmpty {
             Text("No share links yet. Choose File › Share Link… to make one.")
-                .font(.chrome(13.5)).foregroundStyle(.secondary)
+                .font(.chrome(13.5)).foregroundStyle(.chromeSecondary)
                 .frame(maxWidth: .infinity, minHeight: 80)
         } else {
             ScrollView {
@@ -423,7 +427,7 @@ struct ShareLinkList: View {
         let destination = center.store.destination(r.destination)
         return VStack(alignment: .leading, spacing: 6) {
             HStack(alignment: .firstTextBaseline) {
-                Image(systemName: r.password ? "lock.fill" : "link").foregroundStyle(.secondary)
+                Image(systemName: r.password ? "lock.fill" : "link").foregroundStyle(.chromeSecondary)
                     .accessibilityHidden(true)
                 Text(r.scope.kind == .document ? r.document : "\(r.scope.title) · \(r.document)")
                     .font(.chrome(14, weight: .medium)).lineLimit(1)
@@ -441,14 +445,14 @@ struct ShareLinkList: View {
                 }
             }
             HStack(spacing: 14) {
-                Text(details(r, destination)).font(.chrome(12.5)).foregroundStyle(.secondary)
+                Text(details(r, destination)).font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                 Spacer()
                 if mine {
                     Toggle(
                         "Update when I save",
                         isOn: Binding(get: { r.autoUpdate }, set: { center.setAutoUpdate(r, $0) })
                     )
-                    .toggleStyle(.checkbox).font(.chrome(12.5))
+                    .checkboxToggle().font(.chrome(12.5))
                 }
             }
             if let p = problem[r.id] {
@@ -476,8 +480,7 @@ struct ShareLinkList: View {
         if let controller {
             controller.copyShareLink(r)
         } else if let link = center.link(r) {
-            NSPasteboard.general.clearContents()
-            NSPasteboard.general.setString(link, forType: .string)
+            PlatformOpen.copy(link)
         }
     }
 
@@ -529,7 +532,7 @@ struct ShareDestinationsCard: View {
                 Text(
                     "Links are stored where you choose: an S3-compatible bucket (AWS, Cloudflare R2, Backblaze B2, MinIO…), a secret GitHub gist, or your own OpenNexus Server."
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
                 .padding(.bottom, 12)
             }
             ForEach(center.store.destinations) { d in
@@ -546,7 +549,7 @@ struct ShareDestinationsCard: View {
                 Spacer()
                 if !center.networkOn {
                     Text("Turn on the network in Privacy & Data to test or use these.")
-                        .font(.chrome(12)).foregroundStyle(.secondary)
+                        .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 }
             }
             .padding(.top, 10)
@@ -565,7 +568,7 @@ struct ShareDestinationsCard: View {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
                     Text(d.name).font(.chrome(14, weight: .medium))
-                    Text("\(d.kind.title) · \(d.hosts.first ?? "")").font(.chrome(12)).foregroundStyle(.secondary)
+                    Text("\(d.kind.title) · \(d.hosts.first ?? "")").font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 }
                 Spacer()
                 if working == d.id { ProgressView().controlSize(.small) }
@@ -653,14 +656,14 @@ private struct DestinationEditor: View {
                     Text(
                         "Readers fetch the sealed map from the bucket, so it needs public read for the folder and CORS for the viewer (Set Up CORS does that)."
                     )
-                    .font(.chrome(12)).foregroundStyle(.secondary)
+                    .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 case .gist:
                     SecureField(
                         "Token", text: $secret, prompt: Text(hasSecret ? Loc.t("Saved in the Keychain") : ""))
                     Text(
                         "A GitHub token with permission to create gists (fine-grained: Gists, read and write). Links are secret gists: unlisted, but anyone with the address can fetch the sealed file."
                     )
-                    .font(.chrome(12)).foregroundStyle(.secondary)
+                    .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 case .server:
                     TextField(
                         "Server address", text: $destination.server, prompt: Text(verbatim: "https://share.example.com")
@@ -668,7 +671,7 @@ private struct DestinationEditor: View {
                     SecureField(
                         "Upload token", text: $secret, prompt: Text(hasSecret ? Loc.t("Saved in the Keychain") : ""))
                     Text("The token set as OPENNEXUS_UPLOAD_TOKEN on your server.")
-                        .font(.chrome(12)).foregroundStyle(.secondary)
+                        .font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 }
             }
             .formStyle(.grouped)
@@ -677,9 +680,9 @@ private struct DestinationEditor: View {
             HStack {
                 if destination.hasInsecureAddress {
                     Text("Use an https:// address; http:// works only for this Mac.").font(.chrome(12))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.chromeSecondary)
                 } else if !destination.isComplete {
-                    Text("Fill in the address fields first.").font(.chrome(12)).foregroundStyle(.secondary)
+                    Text("Fill in the address fields first.").font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 }
                 Spacer()
                 Button("Cancel") { onClose() }.keyboardShortcut(.cancelAction)
@@ -703,8 +706,7 @@ struct ShareLinksCard: View {
     var body: some View {
         ShareLinkList(center: center, controller: nil)
             .frame(maxHeight: 360)
-            .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .controlBackgroundColor)))
+            .background(RoundedRectangle(cornerRadius: 10).fill(Color.controlBackground))
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(.separator.opacity(0.6)))
     }
 }
-#endif

@@ -182,7 +182,7 @@ extension CanvasController {
         return v
     }
 
-    func refreshView(frame ids: [NodeID]? = nil, aspect: Double? = nil) {
+    package func refreshView(frame ids: [NodeID]? = nil, aspect: Double? = nil) {
         rebuildScene()
         onSceneChange?(true)
         if let ids { onFrame?(ids, aspect) }

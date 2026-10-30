@@ -52,12 +52,12 @@ public struct QuickCaptureView: View {
                     .accessibilityLabel("Quick Capture")
             }
             HStack(spacing: 6) {
-                Text("→").foregroundStyle(.secondary)
+                Text("→").foregroundStyle(.chromeSecondary)
                 Text(model.saved ?? targetLine)
                     .foregroundStyle(model.saved == nil ? Color.primary.opacity(0.75) : Color.green)
                     .lineLimit(1)
                 Spacer(minLength: 12)
-                Text("↩ save · ⇥ choose map").foregroundStyle(.secondary)
+                Text("↩ save · ⇥ choose map").foregroundStyle(.chromeSecondary)
             }
             .font(.chrome(13))
         }

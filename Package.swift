@@ -22,8 +22,11 @@ let package = Package(
         .library(name: "NexusWidgetsKit", targets: ["NexusWidgetsUI"]),
         // The CLI's code, for the app's embedded `nexus` tool target.
         .library(name: "NexusAgentKit", targets: ["NexusAgent"]),
-        // For OpenNexusNet.xpc only (M44): the one process that may use the network.
+        // For OpenNexusNet.xpc only (M44): the one process that may use the network. On iOS,
+        // the app itself (M47b).
         .library(name: "NexusNetKit", targets: ["NexusNet"]),
+        // The iPad's canvas (M47b).
+        .library(name: "NexusTouchKit", targets: ["NexusTouch"]),
         .executable(name: "nexus", targets: ["nexus"]),
     ],
     targets: [
@@ -85,6 +88,16 @@ let package = Package(
             resources: [.copy("Starters"), .copy("Guides"), .copy("Viewer")],
             swiftSettings: strict
         ),
+        // The iPad's canvas (M47b): UIKit's text engine, the touch canvas, its keyboard,
+        // editor and accessibility. iOS only: on the Mac its files compile to nothing.
+        .target(
+            name: "NexusTouch",
+            dependencies: [
+                "NexusCore", "NexusLayout", "NexusTheme", "NexusKeys", "NexusFormat", "NexusInterchange", "NexusScene",
+                "NexusCanvas",
+            ],
+            swiftSettings: strict
+        ),
         // The `nexus` CLI and MCP server (M9): commands, map tools, permissions. Uses the
         // canvas offscreen for exports so they match the app exactly.
         .target(
@@ -113,7 +126,7 @@ let package = Package(
         // Mac's TextKit engine to compare against.
         .testTarget(
             name: "NexusSceneTests", dependencies: ["NexusScene", "NexusCore", "NexusTheme", "NexusCanvas"],
-            exclude: ["Titles.json"]),
+            exclude: ["Titles.json", "MacMeasures.json"]),
         // The share tests run the network service in process, against stubs and Docker (M44).
         .testTarget(
             name: "NexusCanvasTests",

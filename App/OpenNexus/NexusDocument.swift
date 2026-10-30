@@ -12,7 +12,7 @@ import NexusSync
 /// writes recovery snapshots, and encrypts when a password is set (M7).
 final class NexusDocument: NSDocument {
     let store = DocumentStore(model: .blank())
-    private let undoBridge = DocumentUndoRegistrar()
+    private lazy var undoBridge = UndoManagerRegistrar { [weak self] in self?.undoManager }
     /// True for a brand-new untitled document, so the window opens with the root in Edit mode.
     private(set) var isFreshBlank = true
     /// The derived key while the document is password-protected (kept in memory only).
@@ -27,7 +27,6 @@ final class NexusDocument: NSDocument {
 
     override init() {
         super.init()
-        undoBridge.document = self
         store.undoRegistrar = undoBridge
         // A new document takes Settings › Editing › New documents and Appearance › Default look.
         store.replace(with: CanvasController.newDocumentModel(prefs: .shared))
@@ -446,49 +445,6 @@ final class NexusDocument: NSDocument {
         snapshotTimer?.invalidate()
         snapshotTimer = nil
         super.close()
-    }
-}
-
-/// Registers canvas patches with the document's `NSUndoManager`, so Edit › Undo, the
-/// change count, autosave and versions all see every model change.
-final class DocumentUndoRegistrar: UndoRegistrar {
-    weak var document: NexusDocument?
-
-    func register(_ patch: Patch, store: DocumentStore) {
-        guard let um = document?.undoManager else { return }
-        if let session = store.collab as? CollabSession {
-            registerSelective(session, name: patch.actionName, undoManager: um, store: store)
-        } else {
-            registerInverse(of: patch, undoManager: um, store: store)
-        }
-        um.setActionName(Loc.t(patch.actionName))
-    }
-
-    /// In a live session (M46) undo is selective: the session puts back only what still
-    /// holds this person's own change, never someone else's later one. Each registration
-    /// here is one of the session's undo steps, so the two stacks stay in step.
-    private func registerSelective(
-        _ session: CollabSession, name: String, undoManager um: UndoManager, store: DocumentStore
-    ) {
-        um.registerUndo(withTarget: store) { [weak self, weak session] store in
-            MainActor.assumeIsolated {
-                guard let session, store.collab === session else { return }
-                if um.isUndoing { session.undo() } else { session.redo() }
-                self?.registerSelective(session, name: name, undoManager: um, store: store)
-                um.setActionName(Loc.t(name))
-            }
-        }
-    }
-
-    private func registerInverse(of patch: Patch, undoManager um: UndoManager, store: DocumentStore) {
-        let inverse = patch.inverted
-        um.registerUndo(withTarget: store) { [weak self] store in
-            MainActor.assumeIsolated {
-                store.applyFromUndo(inverse, kind: um.isUndoing ? .undone : .redone)
-                self?.registerInverse(of: inverse, undoManager: um, store: store)
-                um.setActionName(Loc.t(patch.actionName))
-            }
-        }
     }
 }
 

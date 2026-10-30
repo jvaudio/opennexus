@@ -1,10 +1,14 @@
-#if os(macOS)
-import AppKit
 import NexusCore
 import NexusKeys
 import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: Drawing
 
@@ -53,11 +57,11 @@ struct LegendPopover: View {
                 isOn: Binding(
                     get: { controller.canvas.legend?.visible ?? false }, set: { controller.setLegendVisible($0) })
             )
-            .toggleStyle(.checkbox)
-            Text("MARKERS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+            .checkboxToggle()
+            Text("MARKERS").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
             ScrollView {
                 VStack(alignment: .leading, spacing: 6) {
-                    if markers.isEmpty { Text("No markers on this canvas yet.").foregroundStyle(.secondary) }
+                    if markers.isEmpty { Text("No markers on this canvas yet.").foregroundStyle(.chromeSecondary) }
                     ForEach(markers, id: \.self) { m in
                         HStack(spacing: 8) {
                             MarkerDisc(id: m).frame(width: 18, height: 18).accessibilityHidden(true)
@@ -74,12 +78,12 @@ struct LegendPopover: View {
             }
             .accessibilityLabel(Loc.t("Marker descriptions"))
             if !labels.isEmpty {
-                Text("LABELS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                Text("LABELS").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
                 Text(labels.joined(separator: " · ")).font(.chrome(12.5)).lineLimit(3)
             }
             HStack {
                 Text("An empty description shows the marker's own name. Drag the legend to move it.")
-                    .font(.chrome(11)).foregroundStyle(.secondary)
+                    .font(.chrome(11)).foregroundStyle(.chromeSecondary)
                 Spacer()
                 if controller.canvas.legend?.position != nil {
                     Button("Reset Position") { controller.moveLegend(to: nil) }
@@ -99,6 +103,7 @@ struct LegendPopover: View {
 }
 
 /// A marker drawn as on topics, for SwiftUI.
+#if os(macOS)
 struct MarkerDisc: NSViewRepresentable {
     let id: String
     func makeNSView(context: Context) -> NSView { DiscView(id: id) }
@@ -114,6 +119,26 @@ struct MarkerDisc: NSViewRepresentable {
         override var isFlipped: Bool { true }
         override func draw(_ dirtyRect: NSRect) {
             if let ctx = NSGraphicsContext.current?.cgContext { LegendLayer.drawMarker(id, in: bounds, context: ctx) }
+        }
+    }
+}
+#else
+struct MarkerDisc: UIViewRepresentable {
+    let id: String
+    func makeUIView(context: Context) -> UIView { DiscView(id: id) }
+    func updateUIView(_ v: UIView, context: Context) {}
+
+    final class DiscView: UIView {
+        let id: String
+        init(id: String) {
+            self.id = id
+            super.init(frame: CGRect(x: 0, y: 0, width: 18, height: 18))
+            isOpaque = false
+            backgroundColor = .clear
+        }
+        required init?(coder: NSCoder) { fatalError() }
+        override func draw(_ rect: CGRect) {
+            if let ctx = UIGraphicsGetCurrentContext() { LegendLayer.drawMarker(id, in: bounds, context: ctx) }
         }
     }
 }

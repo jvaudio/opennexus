@@ -72,6 +72,41 @@ import Testing
         }
     }
 
+    /// The iPad (M47b): iOS has no XPC services for apps, so NexusNet runs in the app's own
+    /// process behind one adapter. Only that file imports it, only the app's target links
+    /// it (not the extensions), nothing loosens App Transport Security, the App Group is the
+    /// only entitlement, and the privacy manifest declares no tracking and no collected data.
+    @Test func theIPadHasOneNetworkAdapter() throws {
+        // What ships: the test bundles may reach the network code directly.
+        let sources = NetworkPrivacyTests.files(under: "App/iOS", ext: ["swift"]).filter {
+            !$0.path.contains("/App/iOS/Tests/") && !$0.path.contains("/App/iOS/UITests/")
+        }
+        #expect(sources.count > 10)
+        let importers = try sources.filter { try String(contentsOf: $0, encoding: .utf8).contains("import NexusNet") }
+        #expect(importers.map(\.lastPathComponent) == ["InProcessNetwork.swift"])
+        let project = try String(
+            contentsOf: NetworkPrivacyTests.repo.appending(path: "App/tools/make_ios_project.py"), encoding: .utf8)
+        #expect(project.components(separatedBy: "\"NexusNetKit\"").count == 2, "one target uses NexusNetKit")
+        #expect(project.contains(#"folder="iOS/OpenNexus", packages=["OpenNexusKit", "NexusTouchKit", "NexusNetKit"]"#))
+        func plist(_ url: URL) throws -> [String: Any] {
+            try #require(
+                PropertyListSerialization.propertyList(from: Data(contentsOf: url), format: nil) as? [String: Any])
+        }
+        for f in NetworkPrivacyTests.files(under: "App/iOS/Support", ext: ["plist"]) {
+            #expect(try plist(f)["NSAppTransportSecurity"] == nil, "\(f.lastPathComponent) loosens ATS")
+        }
+        let ents = NetworkPrivacyTests.files(under: "App/iOS/Support", ext: ["entitlements"])
+        #expect(ents.count == 5, "the app and four extensions")
+        for f in ents {
+            #expect(try plist(f).keys.sorted() == ["com.apple.security.application-groups"], "\(f.lastPathComponent)")
+        }
+        let manifest = try plist(NetworkPrivacyTests.repo.appending(path: "App/iOS/OpenNexus/PrivacyInfo.xcprivacy"))
+        #expect(manifest["NSPrivacyTracking"] as? Bool == false)
+        #expect((manifest["NSPrivacyTrackingDomains"] as? [Any])?.isEmpty == true)
+        #expect((manifest["NSPrivacyCollectedDataTypes"] as? [Any])?.isEmpty == true)
+        #expect((manifest["NSPrivacyAccessedAPITypes"] as? [Any])?.isEmpty == false, "the required-reason APIs")
+    }
+
     /// Every switch under Privacy & Data › Network is off on a fresh install.
     @Test @MainActor func theNetworkIsOffByDefault() {
         let rows = SettingsSchema.allRows.map(\.2).filter { $0.key.hasPrefix("network.") }

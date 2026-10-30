@@ -1,8 +1,12 @@
-#if os(macOS)
-import AppKit
 import NexusKeys
 import NexusScene
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: Keycap coach (artboard 31)
 
@@ -18,7 +22,7 @@ struct CoachKey: View {
             switch state {
             case .success: Color(hex: "#CFEFE0")
             case .wrong: Color(hex: "#FCE7B6")
-            default: Color(nsColor: .textBackgroundColor)
+            default: Color.textBackground
             }
         let edge: Color =
             switch state {
@@ -68,7 +72,7 @@ struct TourCoachView: View {
                 if case .wrong(let what) = t.coach {
                     Text(what).font(.chrome(12.5, weight: .medium)).foregroundStyle(Color(hex: "#8A5A00"))
                 }
-                Text(s.prompt).font(.chrome(large ? 15 : 13)).foregroundStyle(.secondary)
+                Text(s.prompt).font(.chrome(large ? 15 : 13)).foregroundStyle(.chromeSecondary)
             }
             .padding(10)
             .animation(UIMotion.animation(.snappy(duration: 0.2)), value: t.coach)
@@ -99,8 +103,8 @@ struct TourOverlay: View {
         HStack(spacing: 14) {
             Text("\(t.lesson + 1) · \(t.lessons[t.lesson].title)").font(.chrome(13.5, weight: .semibold))
             dots(t)
-            Button("Skip lesson") { t.skipLesson() }.buttonStyle(.link)
-            Button("Pause") { t.pause() }.buttonStyle(.link)
+            Button("Skip lesson") { t.skipLesson() }.linkButton()
+            Button("Pause") { t.pause() }.linkButton()
         }
         .padding(.horizontal, 16).frame(height: 40)
         .background(Capsule().fill(.regularMaterial))
@@ -126,11 +130,11 @@ struct TourOverlay: View {
         HStack(spacing: 10) {
             Circle().fill(Color(hex: "#5850EC")).frame(width: 8, height: 8)
             Text(Loc.f("Tour paused · lesson %lld of %lld", t.lesson + 1, t.lessons.count)).font(.chrome(14))
-            Button("Resume") { t.resume() }.buttonStyle(.link).font(.chrome(14, weight: .semibold))
+            Button("Resume") { t.resume() }.linkButton().font(.chrome(14, weight: .semibold))
         }
         .padding(.horizontal, 16).frame(height: 40)
         .background(
-            Capsule().fill(Color(nsColor: .textBackgroundColor)).shadow(color: .black.opacity(0.12), radius: 10, y: 3))
+            Capsule().fill(Color.textBackground).shadow(color: .black.opacity(0.12), radius: 10, y: 3))
     }
 
     func finish(_ t: TourController) -> some View {
@@ -179,7 +183,7 @@ struct TourOverlay: View {
             }
         }
         .padding(32)
-        .frame(width: 860)
+        .sheetWidth(860)
         .background(RoundedRectangle(cornerRadius: 22).fill(Color(white: 0.1)))
         .shadow(color: .black.opacity(0.3), radius: 30, y: 12)
     }
@@ -202,13 +206,13 @@ struct TipView: View {
                     controller.prefs.set("general.tips", false)
                     controller.tip = nil
                 }
-                .buttonStyle(.link)
+                .linkButton()
                 .font(.chrome(13))
                 .padding(.leading, 12)
             }
             .padding(.horizontal, 16).frame(height: 44)
             .background(
-                RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .textBackgroundColor)).shadow(
+                RoundedRectangle(cornerRadius: 12).fill(Color.textBackground).shadow(
                     color: .black.opacity(0.12), radius: 10, y: 3)
             )
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator.opacity(0.6)))
@@ -241,8 +245,7 @@ struct EmptyCanvasHints: View {
                 height: 24
             )
             .overlay(RoundedRectangle(cornerRadius: 5).stroke(.separator))
-            Text(t).font(.chrome(13)).foregroundStyle(.secondary)
+            Text(t).font(.chrome(13)).foregroundStyle(.chromeSecondary)
         }
     }
 }
-#endif

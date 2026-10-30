@@ -25,26 +25,31 @@ extension ShareTransport {
     }
 }
 
-/// What the network centres are built with on this platform (M47a): on the Mac, the
-/// `OpenNexusNet.xpc` service and the login Keychain. Elsewhere nothing reaches the network
-/// until the app supplies its own (M47b): requests fail, sockets close at once, and
-/// secrets stay in memory.
+/// The way to the network an app supplies where NexusCanvas has none of its own: on iOS,
+/// `NexusNet` in the app's process (M47b), behind the same switches and request log.
 @MainActor
-enum PlatformNetwork {
+public protocol NetworkProvider {
+    func transport() -> any ShareTransport
+    func connector(purpose: String, log: NetworkLog) -> any RoomConnector
+}
+
+/// What the network centres are built with on this platform (M47a): on the Mac, the
+/// `OpenNexusNet.xpc` service. Elsewhere the provider the app installs (M47b); without
+/// one, requests fail and sockets close at once. Secrets are in the Keychain on both.
+@MainActor
+public enum PlatformNetwork {
+    public static var provider: (any NetworkProvider)?
+
     static func transport() -> any ShareTransport {
         #if os(macOS)
         XPCShareTransport()
         #else
-        NoNetwork()
+        provider?.transport() ?? NoNetwork()
         #endif
     }
 
     static func secrets(service: String = "org.opennexus.sharing") -> any SecretStore {
-        #if os(macOS)
         KeychainSecrets(service: service)
-        #else
-        MemorySecrets()
-        #endif
     }
 
     static func connector(purpose: String, log: NetworkLog) -> any RoomConnector {
@@ -53,7 +58,7 @@ enum PlatformNetwork {
             Task { @MainActor in log.append(entries) }
         }
         #else
-        NoNetwork()
+        provider?.connector(purpose: purpose, log: log) ?? NoNetwork()
         #endif
     }
 }

@@ -85,7 +85,7 @@ public final class CanvasController {
     }
     public internal(set) var aiAvailability: AIAvailability = .ready
     /// Ghost suggestions under a topic (⌥Space).
-    public internal(set) var ghosts: GhostState?
+    public package(set) var ghosts: GhostState?
     /// The prompt bar (⇧⌘Space), anchored to a topic.
     public internal(set) var promptBar: PromptBarState?
     /// The AI panel and the guide share the trailing slot: opening one closes the other.
@@ -281,7 +281,7 @@ public final class CanvasController {
     public internal(set) var present: PresentState?
     public var countsVisible = false
     /// The camera zoom, for the zoom control.
-    public internal(set) var zoom: Double = 1
+    public package(set) var zoom: Double = 1
     @ObservationIgnored public var onViewMode: ((CanvasViewMode) -> Void)?
     /// The outline pane has keyboard focus (its key scope is active).
     @ObservationIgnored public var outlineFocused = false
