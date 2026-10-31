@@ -124,6 +124,10 @@ public struct NetJob: Codable, Equatable, Sendable {
         case endRoom
         /// A live session's WebSocket, opened with `openSocket`: `object` is its address.
         case socket
+        /// Read a share link's sealed map for Open in OpenNexus (M47d, D441): `object` is the
+        /// link's locator and `source` its kind. The service reaches only the hosts the link
+        /// names, worked out from the link itself; the reply's body is the sealed bytes.
+        case read
     }
 
     public var action: Action
@@ -145,6 +149,8 @@ public struct NetJob: Codable, Equatable, Sendable {
     public var ifMatch: String?
     /// `put`: `*` creates only. `get`: an ETag, as for `ifMatch`.
     public var ifNoneMatch: String?
+    /// `read`: where the link's locator points (a URL, or a gist).
+    public var source: ShareLinkCode.Source?
 
     public init(
         action: Action, purpose: String, destination: ShareDestination, secret: String, allowedHosts: [String],
@@ -162,6 +168,17 @@ public struct NetJob: Codable, Equatable, Sendable {
         self.origin = origin
         self.ifMatch = ifMatch
         self.ifNoneMatch = ifNoneMatch
+    }
+
+    /// Reads `link`'s sealed map (D441). It has no destination of the user's: the link is
+    /// what the user opened, and its hosts are the only ones the service may reach.
+    public static func read(_ link: ShareLinkCode, purpose: String) -> NetJob {
+        var j = NetJob(
+            action: .read, purpose: purpose,
+            destination: ShareDestination(id: "link", kind: link.source == .gist ? .gist : .server, name: purpose),
+            secret: "", allowedHosts: [], object: link.locator)
+        j.source = link.source
+        return j
     }
 }
 

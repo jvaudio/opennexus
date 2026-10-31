@@ -193,8 +193,8 @@ public final class TouchScene {
     // MARK: Links
 
     /// `opennexus://inbox`, `inbox/add` (Quick Capture), `new`, `open/<token>` (widgets),
-    /// `join#<invite>` (M46); file URLs of documents (open in place) and of other formats
-    /// (import).
+    /// `join#<invite>` (M46), `view#<link>` (Open in OpenNexus, M47d); file URLs of
+    /// documents (open in place) and of other formats (import).
     public func handle(_ url: URL, token: (String) -> URL? = { _ in nil }) {
         if url.isFileURL {
             if ["nexus", "nexusjson"].contains(url.pathExtension.lowercased()) { open(url) } else { importFile(url) }
@@ -209,7 +209,34 @@ public final class TouchScene {
         case "new": home.onNew(.mindmap)
         case "open": if let u = token(url.lastPathComponent) { open(u) }
         case "join": join(url.absoluteString)
+        case "view": openShareLink(url.absoluteString)
         default: break
+        }
+    }
+
+    /// A share link from the viewer site's Open in OpenNexus (D441): a new document from the
+    /// map it carries, with its import report.
+    public func openShareLink(_ link: String) {
+        let center = ShareCenter.shared
+        guard center.networkOn else {
+            error =
+                Loc.t("Opening a share link uses the network")
+                + "\n"
+                + Loc.t(
+                    "Turn on “Use the network” and “Share links” in Settings › Privacy & Data, then open the link again."
+                )
+            return
+        }
+        Task { @MainActor in
+            do {
+                let imported = try await center.importLink(link)
+                self.newDocument(imported.document, named: imported.report.source, fresh: false) { m in
+                    if let first = imported.document.canvasOrder.first { m.controller.switchCanvas(to: first) }
+                    m.controller.showImportReport(imported.report)
+                }
+            } catch {
+                self.error = Loc.t("Couldn’t open the share link") + "\n" + String(describing: error)
+            }
         }
     }
 }

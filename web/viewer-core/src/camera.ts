@@ -71,6 +71,22 @@ export class Camera {
     this.frame = requestAnimationFrame(step);
   }
 
+  /** Follows `path` from 0 to 1 over `ms` milliseconds, eased (or jumps to its end with reduced motion). */
+  follow(path: (t: number) => View, ms: number): void {
+    cancelAnimationFrame(this.frame);
+    if (this.reducedMotion() || ms <= 0) {
+      this.apply(path(1));
+      return;
+    }
+    const start = performance.now();
+    const step = (now: number): void => {
+      const t = Math.min(1, (now - start) / ms);
+      this.apply(path(t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2));
+      if (t < 1) this.frame = requestAnimationFrame(step);
+    };
+    this.frame = requestAnimationFrame(step);
+  }
+
   private apply(v: View): void {
     this.view = v;
     this.stage.style.transform = `translate(${String(v.x)}px, ${String(v.y)}px) scale(${String(v.k)})`;

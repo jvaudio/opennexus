@@ -47,4 +47,12 @@ export default tseslint.config(
     },
   },
   { files: ["**/*.mjs", "**/*.js"], ...tseslint.configs.disableTypeChecked },
+  // MathJax for JavaScriptCore (M48) is glue around MathJax's own classes, whose typings
+  // don't hold under the strict base config, so it's linted without type information.
+  { files: ["math/src/**/*.ts"], ...tseslint.configs.disableTypeChecked },
+  {
+    // The site's service worker runs in the worker's scope, not a page's.
+    files: ["viewer-app/site/sw.js"],
+    languageOptions: { globals: { self: "readonly", caches: "readonly", fetch: "readonly", URL: "readonly" } },
+  },
 );

@@ -62,6 +62,8 @@ const BUNDLED = new Set([
   "arrows", "marrows", "accents", "shapes", "mshapes", "variants", "PUA",
 ]);
 const files = MathJaxNewcmFont.dynamicFiles as Record<string, unknown>;
+// MathJax keeps the font's files in a plain object, by name.
+// eslint-disable-next-line @typescript-eslint/no-dynamic-delete
 for (const name of Object.keys(files)) if (!BUNDLED.has(name)) delete files[name];
 MathJaxNewcmFont.addExtension(MathJaxMhchemFontExtension);
 

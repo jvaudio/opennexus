@@ -174,7 +174,35 @@ public enum ViewerBundle {
                 "rows": .array(threats.map { .array(Stride.row($0).map(JSONValue.string)) }),
             ])
         }
+        // The deck, for the web viewer's Present (M47d). A branch or a zone has none.
+        switch o.scope {
+        case .document, .canvas: out["deck"] = deck(c)
+        case .branch, .zone: break
+        }
         return .object(out)
+    }
+
+    /// The slides that play, as Present plays them: after the author's order, merges and
+    /// skips, with the deck's camera and aspect. Notes come with the canvas (gone when the
+    /// export leaves notes out). A slide that frames every topic says so with no focus.
+    static func deck(_ c: Canvas) -> JSONValue {
+        let s = c.presentation
+        let hidden = Set(c.nodes.filter { $0.value.presentHidden }.keys)
+        let all = Set(c.tops.flatMap { c.subtree($0, includeFolded: false) }.filter { !hidden.contains($0) })
+        let ids: ([NodeID]) -> JSONValue = { .array($0.map { .string($0.rawValue) }) }
+        let slides = Deck.slides(c).filter { !$0.skipped }.map { slide -> JSONValue in
+            var out: [String: JSONValue] = [
+                "kicker": .string(slide.kicker), "title": .string(slide.title),
+                "focus": Set(slide.focus) == all ? .array([]) : ids(slide.focus),
+                "highlight": ids(slide.highlight),
+            ]
+            if let note = slide.note, !note.isEmpty { out["note"] = .string(note) }
+            return .object(out)
+        }
+        return .object([
+            "move": .string(s.cameraMove), "aspect": .number((s.aspectRatio * 10000).rounded() / 10000),
+            "slides": .array(slides),
+        ])
     }
 
     /// One drawing and where each topic sits in it.
@@ -356,6 +384,11 @@ public enum ViewerBundle {
             "previous": Loc.t("Previous match"),
             "next": Loc.t("Next match"),
             "topic": Loc.t("Topic"),
+            "present": Loc.t("Present"),
+            "previousSlide": Loc.t("Previous Slide"),
+            "nextSlide": Loc.t("Next Slide"),
+            "endPresentation": Loc.t("End Presentation"),
+            "slideCount": Loc.t("%d of %d"),
         ]
     }
 }

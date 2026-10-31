@@ -2,6 +2,7 @@ import CryptoKit
 import Foundation
 import NexusCore
 import NexusFormat
+import NexusInterchange
 import NexusReplica
 import NexusScene
 import Observation
@@ -515,5 +516,65 @@ public final class ShareCenter {
     static func seal(_ bundle: JSONValue, _ s: LinkSecrets, expires: Date?) throws -> Data {
         try Sealed.seal(
             bundle: bundle, header: Sealed.Header(expires: expires, kdf: s.kdf), key: SymmetricKey(data: s.key))
+    }
+
+    // MARK: Open in OpenNexus (M47d, D441)
+
+    /// The code in what the user opened: `opennexus://view#…`, a share page's link, or the
+    /// part after its `#`.
+    public static func linkCode(_ text: String) -> ShareLinkCode? {
+        let t = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        let fragment = t.firstIndex(of: "#").map { String(t[t.index(after: $0)...]) } ?? t
+        return ShareLinkCode(fragment: fragment)
+    }
+
+    /// Reads and opens a share link someone sent: the map it carries, as the viewer site
+    /// opens it. The network service reaches only the link's own hosts, behind both switches,
+    /// and logs every request. A password link needs the key its password derives, which the
+    /// viewer site's Open in OpenNexus puts in the link.
+    public func openLink(_ text: String, now: Date = Date()) async throws -> JSONValue {
+        guard let code = Self.linkCode(text) else {
+            throw Failure.failed(Loc.t("This isn’t a share link, or part of it is missing."))
+        }
+        guard networkOn else { throw Failure.networkOff }
+        guard let key = code.key else {
+            throw Failure.failed(
+                Loc.t(
+                    "This link opens with a password. Open it in your browser, enter the password, then choose Open in OpenNexus."
+                ))
+        }
+        busy += 1
+        defer { busy -= 1 }
+        let (reply, sealed) = await transport.exchange(
+            NetJob.read(code, purpose: Loc.t("Open share link")), body: Data())
+        log.append(reply.log)
+        guard reply.ok else {
+            if let status = reply.status, [403, 404, 410].contains(status) {
+                throw Failure.failed(Loc.t("This link is turned off. Ask whoever shared it for a new link."))
+            }
+            throw Failure.failed(Loc.f("Couldn’t read the link: %@", reply.error ?? ""))
+        }
+        let opened: (header: Sealed.Header, bundle: JSONValue)
+        do {
+            opened = try Sealed.openBundle(sealed, key: SymmetricKey(data: key))
+        } catch Sealed.SealError.newer {
+            throw Failure.failed(
+                Loc.t("This map was shared from a newer version of OpenNexus. Update OpenNexus to open it."))
+        } catch {
+            throw Failure.failed(Loc.t("This link is damaged: part of it is missing or was changed."))
+        }
+        if let e = opened.header.expires, (Sealed.date(e) ?? .distantPast) <= now {
+            throw Failure.failed(Loc.t("This link has expired. Ask whoever shared it for a new link."))
+        }
+        return opened.bundle
+    }
+
+    /// The link's map as a new document's content, with its import report (File › Import…'s).
+    public func importLink(_ text: String) async throws -> Imported {
+        let bundle = try await openLink(text)
+        let title = bundle["title"]?.stringValue ?? ""
+        return try ViewerBundleImport.parse(
+            bundle, name: title.isEmpty ? Loc.t("Shared map") : title, done: Array(Set([Loc.t("Done"), "Done"])),
+            localized: { Loc.t($0) })
     }
 }

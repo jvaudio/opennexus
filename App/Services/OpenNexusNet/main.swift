@@ -4,8 +4,9 @@ import NexusNet
 
 /// OpenNexusNet.xpc (M44): the one OpenNexus process with the network entitlement (D313).
 /// The app hands it one job at a time; it makes the requests that job needs, only to the
-/// hosts the job allows, and replies with the outcome, a log entry for every request, and
-/// the bytes a sync read (M45). A live session's socket (M46) is a connection of its own.
+/// hosts the job allows (for a share link the user opens, the link's own hosts, D441), and
+/// replies with the outcome, a log entry for every request, and the bytes a sync or a link
+/// read (M45, M47d). A live session's socket (M46) is a connection of its own.
 /// An app's XPC service can be reached only by that app.
 final class Service: NSObject, NetServiceProtocol, @unchecked Sendable {
     weak var connection: NSXPCConnection?

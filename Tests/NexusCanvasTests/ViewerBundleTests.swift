@@ -147,6 +147,52 @@ import Testing
         #expect(SchemaValidator.viewer.validate(b).isEmpty)
     }
 
+    /// M47d: a document or canvas carries its deck: the slides that play, in the app's
+    /// order, each framing its focus (none: the whole map), with the deck's move and aspect.
+    @Test func theDeckIsInTheBundle() throws {
+        var doc = Self.richDocument()
+        var canvas = doc.canvases["c1"]!
+        let ids = Deck.generated(canvas).map(\.id)
+        canvas.presentation.order = [ids[0], ids[2], ids[1]]
+        canvas.presentation.skipped = [ids[3]]
+        doc.canvases["c1"] = canvas
+        let b = ViewerBundle.build(doc, Self.options())
+        #expect(SchemaValidator.viewer.validate(b).isEmpty)
+        let deck = Self.object(Self.canvases(b).first?["deck"])
+        let slides = Self.array(deck["slides"]).map { Self.object($0) }
+        let want = Deck.slides(canvas).filter { !$0.skipped }
+        #expect(want.count == ids.count - 1)
+        #expect(slides.map { $0["title"] } == want.map { .string($0.title) })
+        #expect(slides.map { $0["kicker"] } == want.map { .string($0.kicker) })
+        #expect(slides.first?["focus"] == .array([]), "the title slide frames the whole map")
+        for (s, w) in zip(slides.dropFirst(), want.dropFirst()) {
+            #expect(s["focus"] == .array(w.focus.map { .string($0.rawValue) }))
+            #expect(s["highlight"] == .array(w.highlight.map { .string($0.rawValue) }))
+        }
+        #expect(deck["move"] == .string("fly") && deck["aspect"] == .number(1.7778))
+        #expect(slides.contains { $0["note"] == .string("Secret pricing note") })
+        // Without notes, no slide has one.
+        let quiet = ViewerBundle.build(doc, Self.options { $0.notes = false })
+        #expect(!CanonicalJSON.compact(quiet).contains("Secret pricing note"))
+        // Calm with Glide glides; Cut cuts; the aspect is the deck's.
+        canvas.presentation.style = "calm"
+        canvas.presentation.aspect = "4:3"
+        doc.canvases["c1"] = canvas
+        var d = Self.object(Self.canvases(ViewerBundle.build(doc, Self.options())).first?["deck"])
+        #expect(d["move"] == .string("glide") && d["aspect"] == .number(1.3333))
+        canvas.presentation.transition = "cut"
+        doc.canvases["c1"] = canvas
+        d = Self.object(Self.canvases(ViewerBundle.build(doc, Self.options())).first?["deck"])
+        #expect(d["move"] == .string("cut"))
+        // A branch or a zone has no deck of its own.
+        let branch = ViewerBundle.build(doc, Self.options { $0.scope = .branch("c1", Self.node(canvas, "Pricing")) })
+        #expect(Self.canvases(branch).first?["deck"] == nil)
+        let zone = try #require(canvas.zones.first)
+        #expect(
+            Self.canvases(ViewerBundle.build(doc, Self.options { $0.scope = .zone("c1", zone.id) })).first?["deck"]
+                == nil)
+    }
+
     @Test func branchAndZoneScopes() throws {
         let doc = Self.richDocument()
         let canvas = doc.canvases["c1"]!

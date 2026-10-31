@@ -153,3 +153,89 @@ test.describe("share links against MinIO and the server", () => {
 test.describe("share links made on the iPad", () => {
   cases("share-ipad");
 });
+
+// M47d: `?embed` on a share link, in a wiki's iframe (A5), and the bar's Open in OpenNexus,
+// which hands the app the link with its key (A6).
+test.describe("embed and Open in OpenNexus", () => {
+  const manifest = load("share");
+  test.skip(manifest === undefined, "share/ isn't made (npm run fixtures)");
+  const named = (name: string): Case => {
+    const c = manifest?.cases.find((x) => x.name === name);
+    if (c === undefined) throw new Error(`no ${name} case`);
+    return c;
+  };
+
+  test("?embed shows the map alone, with pan, zoom and a link to the full view", async ({ page }) => {
+    const c = named("bucket");
+    const stray: string[] = [];
+    await serve(page, "share", c.routes, stray);
+    const [base, fragment] = c.link.split("#");
+    // A wiki page framing the link. (On the site's own origin: Chromium refuses a routed page
+    // framing 127.0.0.1, and the frame needs a secure context for Web Crypto.)
+    const wiki =
+      `<!doctype html><html lang="en"><head><title>Team wiki</title></head><body><main><h1>Plans</h1>` +
+      `<iframe title="Launch plan" src="${base ?? ""}?embed#${fragment ?? ""}" style="width:800px;height:500px;border:0"></iframe></main></body></html>`;
+    await page.route(`${viewer}/wiki/**`, (r) => r.fulfill({ contentType: "text/html", body: wiki }));
+    await page.goto(`${viewer}/wiki/plans`);
+    const frame = page.frameLocator("iframe");
+    await expect(frame.locator("html")).toHaveAttribute("data-onx-state", "ready", { timeout: 20_000 });
+    await expect(frame.locator(".onx")).toHaveClass(/onx-embed/);
+    for (const part of [".onx-bar", ".onx-outline", ".onx-details", ".onx-keys"]) await expect(frame.locator(part)).toBeHidden();
+    const full = frame.getByRole("link", { name: "Open Full View" });
+    await expect(full).toHaveAttribute("href", c.link);
+    await expect(full).toHaveAttribute("target", "_blank");
+    await expect(full).toHaveAttribute("rel", /noopener/);
+    await expect(frame.getByRole("link", { name: "Open in OpenNexus" })).toHaveCount(0);
+    // Pan by dragging, zoom with the wheel.
+    const stage = frame.locator(".onx-stage");
+    const box = await frame.locator(".onx-viewport").boundingBox();
+    if (box === null) throw new Error("no viewport");
+    const at = (): Promise<string> => stage.evaluate((e) => e.style.transform);
+    const start = await at();
+    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width / 2 + 80, box.y + box.height / 2 + 40, { steps: 5 });
+    await page.mouse.up();
+    await expect.poll(at).not.toBe(start);
+    const panned = await at();
+    await page.keyboard.down("Control");
+    await page.mouse.wheel(0, -200);
+    await page.keyboard.up("Control");
+    await expect.poll(at).not.toBe(panned);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    expect(stray).toEqual([]);
+  });
+
+  test("Open in OpenNexus hands the app the link with its key", async ({ page }) => {
+    const c = named("bucket");
+    const stray: string[] = [];
+    await serve(page, "share", c.routes, stray);
+    await page.goto(c.link);
+    expect(await state(page)).toBe("ready");
+    const open = page.getByRole("link", { name: "Open in OpenNexus" });
+    await expect(open).toHaveAttribute("href", `opennexus://view#${c.link.split("#")[1] ?? ""}`);
+    expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([]);
+    expect(stray).toEqual([]);
+  });
+
+  test("a password link hands the app the key the password made", async ({ page }) => {
+    const c = named("password");
+    const stray: string[] = [];
+    await serve(page, "share", c.routes, stray);
+    await page.goto(c.link);
+    expect(await state(page)).toBe("password");
+    await page.fill("#share-password", c.password ?? "");
+    await page.press("#share-password", "Enter");
+    await expect(page.locator("html")).toHaveAttribute("data-onx-state", "ready", { timeout: 20_000 });
+    const href = (await page.getByRole("link", { name: "Open in OpenNexus" }).getAttribute("href")) ?? "";
+    const parts = (c.link.split("#")[1] ?? "").split(".");
+    const sent = href.replace(/^opennexus:\/\/view#/, "").split(".");
+    expect(href.startsWith("opennexus://view#")).toBe(true);
+    expect(sent.slice(0, 3)).toEqual(parts.slice(0, 3));
+    // 32 bytes of key, in base64url: never the password or its salt.
+    expect(sent[3]).toMatch(/^[A-Za-z0-9_-]{43}$/);
+    expect(sent[3]).not.toBe(parts[3]);
+    expect(href).not.toContain(c.password ?? "");
+    expect(stray).toEqual([]);
+  });
+});

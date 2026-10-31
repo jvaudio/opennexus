@@ -338,4 +338,100 @@ import Testing
         #expect(why?.contains("isn’t the session’s server") == true)
         #expect(log.purpose == "Live session (refused)" && log.host == "elsewhere.example.com" && log.sent == 0)
     }
+
+    // MARK: Reading a link (M47d, D441)
+
+    static func link(_ source: ShareLinkCode.Source, _ locator: String) -> NetJob {
+        NetJob.read(
+            ShareLinkCode(source: source, locator: locator, key: Data(repeating: 7, count: 32)),
+            purpose: "Open share link")
+    }
+
+    /// A link's job names no destination, secret or hosts: the service works the hosts out
+    /// from the link, reads without credentials and logs it.
+    @Test func readsALinkFromItsOwnHost() async throws {
+        let job = Self.link(.url, "https://maps.example.org/opennexus/abc.onx")
+        #expect(job.secret.isEmpty && job.allowedHosts.isEmpty && job.writeSecret == nil)
+        Stub.reset { _ in (200, [:], Data("sealed".utf8)) }
+        let (reply, body) = await Self.service.exchange(job, body: Data())
+        #expect(reply.ok && body == Data("sealed".utf8))
+        #expect(Stub.requests.map(\.url.absoluteString) == ["https://maps.example.org/opennexus/abc.onx"])
+        #expect(Stub.requests.allSatisfy { $0.method == "GET" && $0.header("Authorization") == nil })
+        #expect(reply.log.map(\.host) == ["maps.example.org"] && reply.log[0].purpose == "Open share link")
+        #expect(reply.log[0].received == 6)
+
+        // A redirect off the link's host is refused, and logged.
+        Stub.reset { _ in (302, ["Location": "https://evil.example/x.onx"], Data()) }
+        let moved = await Self.service.exchange(job, body: Data()).reply
+        #expect(!moved.ok && moved.error?.contains("evil.example") == true)
+        #expect(Stub.requests.map(\.url.host) == ["maps.example.org"])
+        #expect(moved.log.map(\.host) == ["maps.example.org", "evil.example"])
+        #expect(moved.log[1].purpose == "Open share link (refused)")
+    }
+
+    /// 403, 404 and 410 mean the link is off; anything else is an error with its status.
+    @Test func aTurnedOffLink() async throws {
+        let job = Self.link(.url, "https://maps.example.org/opennexus/abc.onx")
+        for status in [403, 404, 410, 500] {
+            Stub.reset { _ in (status, [:], Data()) }
+            let reply = await Self.service.exchange(job, body: Data()).reply
+            #expect(!reply.ok && reply.status == status)
+            #expect(reply.error?.contains("turned off") == LinkReader.off.contains(status), "\(status)")
+        }
+    }
+
+    /// A gist through GitHub's API, and from its raw host when the API cuts it short.
+    @Test func readsAGist() async throws {
+        let sealed = Data((0..<300).map { UInt8($0 & 0xFF) })
+        func gist(_ file: JSONValue) -> Data {
+            Data(
+                CanonicalJSON.compact(
+                    .object(["id": .string("aa5a315d61ae9438b18d"), "files": .object(["opennexus-share.b64": file])])
+                ).utf8)
+        }
+        let whole = gist(.object(["content": .string(sealed.base64EncodedString()), "truncated": .bool(false)]))
+        Stub.reset { _ in (200, ["Content-Type": "application/json"], whole) }
+        let job = Self.link(.gist, "aa5a315d61ae9438b18d")
+        let (reply, body) = await Self.service.exchange(job, body: Data())
+        #expect(reply.ok && body == sealed)
+        let get = try #require(Stub.requests.first)
+        #expect(get.url.absoluteString == "https://api.github.com/gists/aa5a315d61ae9438b18d")
+        #expect(get.header("Authorization") == nil && get.header("User-Agent") == "OpenNexus")
+
+        let raw = "https://gist.githubusercontent.com/someone/aa5a315d61ae9438b18d/raw/abc/opennexus-share.b64"
+        let cut = gist(.object(["content": .string("AAAA"), "truncated": .bool(true), "raw_url": .string(raw)]))
+        Stub.reset { seen in
+            seen.url.host() == "api.github.com" ? (200, [:], cut) : (200, [:], Data(sealed.base64EncodedString().utf8))
+        }
+        let (long, longBody) = await Self.service.exchange(job, body: Data())
+        #expect(long.ok && longBody == sealed)
+        #expect(Stub.requests.map(\.url.absoluteString) == ["https://api.github.com/gists/aa5a315d61ae9438b18d", raw])
+
+        // A raw address anywhere else isn't fetched.
+        let elsewhere = gist(
+            .object([
+                "content": .string("AAAA"), "truncated": .bool(true), "raw_url": .string("https://evil.example/x"),
+            ]))
+        Stub.reset { _ in (200, [:], elsewhere) }
+        #expect(!(await Self.service.exchange(job, body: Data())).reply.ok)
+        #expect(Stub.requests.map(\.url.host) == ["api.github.com"])
+    }
+
+    /// A link that can't be read safely sends nothing.
+    @Test func unsafeLinksSendNothing() async throws {
+        Stub.reset { _ in (200, [:], Data("sealed".utf8)) }
+        for job in [
+            Self.link(.url, "http://maps.example.org/a.onx"), Self.link(.url, "https://user:pw@maps.example.org/a.onx"),
+            Self.link(.url, "file:///etc/passwd"), Self.link(.gist, "../user"),
+        ] {
+            let reply = await Self.service.exchange(job, body: Data()).reply
+            #expect(!reply.ok && reply.log.isEmpty)
+        }
+        #expect(Stub.requests.isEmpty)
+        #expect(LinkReader.hosts(source: .url, locator: "http://127.0.0.1:9000/a.onx") == ["127.0.0.1"])
+        #expect(
+            LinkReader.hosts(source: .gist, locator: "aa5a315d61ae9438b18d") == [
+                "api.github.com", "gist.githubusercontent.com",
+            ])
+    }
 }

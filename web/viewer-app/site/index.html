@@ -2,17 +2,18 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: blob:; worker-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="referrer" content="no-referrer">
+<meta name="theme-color" content="#5b45c2">
 <title>OpenNexus Viewer</title>
-<link rel="stylesheet" href="s/share.css">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="stylesheet" href="open.css">
+<script src="open.js" defer></script>
 </head>
 <body>
-<main class="share">
-<h1>OpenNexus Viewer</h1>
-<p>This site opens maps shared from OpenNexus. A share link carries its key after the <code>#</code>, which your browser never sends to any server, so the map is decrypted here, on your device.</p>
-<p>OpenNexus is a free mind-mapping and diagramming app for the Mac: <a href="https://github.com/jvaudio/opennexus">github.com/jvaudio/opennexus</a>.</p>
-</main>
+<noscript><main class="share"><h1>OpenNexus Viewer</h1><p>This site opens maps saved and shared from OpenNexus, in your browser. It needs JavaScript to read them.</p><p>OpenNexus is a free mind-mapping and diagramming app for the Mac, iPad and iPhone: <a href="https://github.com/jvaudio/opennexus">github.com/jvaudio/opennexus</a>.</p></main></noscript>
 </body>
 </html>

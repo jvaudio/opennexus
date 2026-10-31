@@ -44,7 +44,9 @@ App/                   Xcode projects (thin shells): OpenNexus.xcodeproj for the
                        (App/iOS)
   tools/               make_project.py, make_ios_project.py, release.sh, axaudit.swift
 schema/                published JSON Schema for .nexus files
-web/                   the interactive viewer (viewer-core) and the share-link site (viewer-app)
+web/                   the interactive viewer (viewer-core) and the viewer site (viewer-app):
+                       opens documents in the browser, share links and invites; an
+                       offline PWA
 server/                OpenNexus Server: stores share links, relays live sessions (Swift, Docker)
 brand/                 the Aperture brand kit: spec (BRAND.md), icons, marks, lockups
 scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints),

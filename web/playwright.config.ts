@@ -15,7 +15,9 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: true,
   reporter: [["list"]],
-  use: { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 },
+  // Page routes don't see what a service worker answers, so only the PWA tests let the
+  // viewer site's worker run (open.spec.ts).
+  use: { viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1, serviceWorkers: "block" },
   projects: [
     { name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },
     { name: "webkit", use: { ...devices["Desktop Safari"], viewport: { width: 1280, height: 800 }, deviceScaleFactor: 1 } },

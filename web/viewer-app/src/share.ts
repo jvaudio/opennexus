@@ -3,9 +3,9 @@
 // never leaves the page: browsers don't send the fragment, and nothing here does.
 
 import { BundleError, parseBundle } from "../../viewer-core/src/bundle";
-import { mount } from "../../viewer-core/src/viewer";
-import { isFetchable, parseFragment, type ShareCode } from "./link";
-import { base64, header as readHeader, importKey, openBundle, passwordKey, SealedError, type Header } from "./sealed";
+import { mount, type ViewerAction } from "../../viewer-core/src/viewer";
+import { appLink, isFetchable, parseFragment, type ShareCode } from "./link";
+import { base64, header as readHeader, importKey, openBundle, passwordKeyBytes, SealedError, type Header } from "./sealed";
 
 export const GITHUB_API = "https://api.github.com";
 /** The one file in a share gist (`GistTarget.file`). */
@@ -127,7 +127,22 @@ function expired(h: Header, now = Date.now()): boolean {
   return Number.isNaN(t) || t <= now;
 }
 
-function draw(text: string): void {
+/** `?embed` (M47d): the map alone, for an iframe in a wiki, with a link to the full view. */
+export function isEmbed(search = location.search): boolean {
+  return new URLSearchParams(search).has("embed");
+}
+
+/** The share page's links: the full view when embedded, else Open in OpenNexus (D441). */
+export function actions(code: ShareCode, key: Uint8Array, embed: boolean, here = location.href): ViewerAction[] {
+  if (embed) {
+    const full = new URL(here);
+    full.searchParams.delete("embed");
+    return [{ label: "Open Full View", href: full.href, newWindow: true }];
+  }
+  return [{ label: "Open in OpenNexus", href: appLink(code, key) }];
+}
+
+function draw(text: string, code: ShareCode, key: Uint8Array): void {
   let bundle;
   try {
     bundle = parseBundle(text);
@@ -137,7 +152,8 @@ function draw(text: string): void {
   const host = el("div");
   host.id = "opennexus-viewer";
   document.body.replaceChildren(host);
-  mount(host, bundle);
+  const embed = isEmbed();
+  mount(host, bundle, { chrome: embed ? "none" : "full", actions: actions(code, key, embed) });
   document.title = bundle.title === "" ? "OpenNexus" : `${bundle.title} · OpenNexus`;
   window.OpenNexusShare = { text };
   document.documentElement.dataset.onxState = "ready";
@@ -145,7 +161,7 @@ function draw(text: string): void {
 }
 
 /** Asks for the password until it opens the map (each try derives the key afresh). */
-function askPassword(sealed: Uint8Array, h: Header): void {
+function askPassword(sealed: Uint8Array, h: Header, code: ShareCode): void {
   const kdf = h.kdf;
   if (kdf === undefined) throw new Stop("damaged");
   const form = el("form");
@@ -177,8 +193,9 @@ function askPassword(sealed: Uint8Array, h: Header): void {
     error.textContent = "";
     void (async () => {
       try {
-        const opened = await openBundle(sealed, await passwordKey(input.value, kdf));
-        draw(opened.text);
+        const key = await passwordKeyBytes(input.value, kdf);
+        const opened = await openBundle(sealed, await importKey(key));
+        draw(opened.text, code, key);
       } catch (e) {
         if (e instanceof SealedError && e.kind === "damaged") {
           error.textContent = "That password doesn’t open this map.";
@@ -208,11 +225,11 @@ export async function start(fragment = location.hash): Promise<void> {
     const h = readHeader(sealed);
     if (expired(h)) throw new Stop("expired");
     if (code.key === undefined) {
-      askPassword(sealed, h);
+      askPassword(sealed, h, code);
       return;
     }
     const opened = await openBundle(sealed, await importKey(code.key));
-    draw(opened.text);
+    draw(opened.text, code, code.key);
   } catch (e) {
     fail(e);
   }

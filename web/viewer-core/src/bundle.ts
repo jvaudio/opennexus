@@ -75,6 +75,26 @@ export interface Theme {
   dark: boolean;
 }
 
+/** One slide of the canvas's deck (M47d): what the camera frames and what the caption says. */
+export interface Slide {
+  kicker: string;
+  title: string;
+  /** Topics the camera frames; the rest dims. Empty frames the whole map, dimming nothing. */
+  focus: string[];
+  /** Topics drawn with the step's ring. */
+  highlight: string[];
+  note?: string;
+}
+
+/** The deck as the app plays it: its slides after the user's order, merges and skips. */
+export interface Deck {
+  /** How the camera moves between slides: at once, a short glide, or flying. */
+  move: "cut" | "glide" | "fly";
+  /** Width over height. */
+  aspect: number;
+  slides: Slide[];
+}
+
 export interface Canvas {
   id: string;
   title: string;
@@ -86,6 +106,7 @@ export interface Canvas {
   topics: Map<string, Topic>;
   legend?: { title: string; rows: { text: string; marker?: string }[] };
   threats?: { columns: string[]; rows: string[][] };
+  deck?: Deck;
 }
 
 export interface Asset {
@@ -292,7 +313,30 @@ function canvas(v: unknown, path: string): Canvas {
       rows: arr(own(to, "rows"), `${path}.threats.rows`).map((r, i) => strings(r, `${path}.threats.rows[${String(i)}]`)),
     };
   }
+  if (own(o, "deck") !== undefined) c.deck = deck(own(o, "deck"), `${path}.deck`);
   return c;
+}
+
+function deck(v: unknown, path: string): Deck {
+  const o = obj(v, path);
+  const move = str(own(o, "move"), `${path}.move`);
+  if (move !== "cut" && move !== "glide" && move !== "fly") fail(`${path}.move`, "expected cut, glide or fly");
+  const aspect = num(own(o, "aspect"), `${path}.aspect`);
+  if (aspect <= 0) fail(`${path}.aspect`, "expected a positive number");
+  const slides = arr(own(o, "slides"), `${path}.slides`).map((s, i) => {
+    const sp = `${path}.slides[${String(i)}]`;
+    const so = obj(s, sp);
+    const slide: Slide = {
+      kicker: str(own(so, "kicker"), `${sp}.kicker`),
+      title: str(own(so, "title"), `${sp}.title`),
+      focus: strings(own(so, "focus"), `${sp}.focus`),
+      highlight: strings(own(so, "highlight"), `${sp}.highlight`),
+    };
+    const note = optStr(so, "note", sp);
+    if (note !== undefined) slide.note = note;
+    return slide;
+  });
+  return { move, aspect, slides };
 }
 
 /** Reads a bundle from its JSON text; throws `BundleError` naming the first bad field. */

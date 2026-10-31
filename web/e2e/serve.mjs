@@ -1,12 +1,19 @@
 // The viewer site (viewer-app/dist) on http://127.0.0.1:4310, as GitHub Pages serves it,
-// for the share-link tests. No dependencies: node:http and the files.
+// for the open, share and join tests. No dependencies: node:http and the files.
 import { readFile } from "node:fs/promises";
 import { createServer } from "node:http";
 import path from "node:path";
 import { URL } from "node:url";
 
 const root = path.resolve(import.meta.dirname, "../viewer-app/dist");
-const types = { ".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css" };
+const types = {
+  ".html": "text/html; charset=utf-8",
+  ".js": "text/javascript",
+  ".css": "text/css",
+  ".webmanifest": "application/manifest+json",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
+};
 
 createServer((req, res) => {
   const url = new URL(req.url ?? "/", "http://127.0.0.1");

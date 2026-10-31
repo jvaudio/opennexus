@@ -15,6 +15,7 @@ import {
   open,
   openBundle,
   passwordKey,
+  passwordKeyBytes,
   seal,
   SealedError,
   toBase64,
@@ -105,6 +106,10 @@ describe("the sealed envelope", () => {
       256,
     );
     expect(Buffer.from(bits).toString("hex")).toBe("c5e478d59288c841aa530db6845c4c8d962893a001ce4e11a4963873aa98134a");
+    // The same key as bytes, for Open in OpenNexus (M47d): it opens what the password opens.
+    const raw = await passwordKeyBytes("password", { iterations: 4096, salt: new TextEncoder().encode("salt") });
+    expect(Buffer.from(raw).toString("hex")).toBe("c5e478d59288c841aa530db6845c4c8d962893a001ce4e11a4963873aa98134a");
+    expect(JSON.parse((await openBundle(sealed, await importKey(await passwordKeyBytes("tiger lily", kdf)))).text)).toEqual(BUNDLE);
   });
 
   it("bounds inflating", async () => {

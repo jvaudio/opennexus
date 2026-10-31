@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchSealed, GIST_FILE } from "../src/share";
+import { appLink } from "../src/link";
+import { actions, fetchSealed, GIST_FILE, isEmbed } from "../src/share";
 
 const sealed = new Uint8Array([0x4f, 0x4e, 0x58, 0x31, 9, 8, 7]);
 const b64 = Buffer.from(sealed).toString("base64");
@@ -56,5 +57,23 @@ describe("fetching a sealed map", () => {
     await expect(fetchSealed({ source: "g", locator: "abc123" })).rejects.toMatchObject({ state: "damaged" });
     respond({ "https://api.github.com/gists/abc123": Response.json({ files: {} }) });
     await expect(fetchSealed({ source: "g", locator: "abc123" })).rejects.toMatchObject({ state: "damaged" });
+  });
+});
+
+describe("the share page's links (M47d)", () => {
+  const code = { source: "u" as const, locator: "https://maps.example/x.onx" };
+  const key = new Uint8Array(32).fill(9);
+
+  it("embedded, links to the full view in a new window", () => {
+    expect(isEmbed("?embed")).toBe(true);
+    expect(isEmbed("?other=1")).toBe(false);
+    const [full] = actions(code, key, true, "https://viewer.example/s/?embed#1.u.abc.def");
+    expect(full).toEqual({ label: "Open Full View", href: "https://viewer.example/s/#1.u.abc.def", newWindow: true });
+  });
+
+  it("otherwise offers Open in OpenNexus, with the key", () => {
+    const [open] = actions(code, key, false, "https://viewer.example/s/#1.u.abc.pw");
+    expect(open?.label).toBe("Open in OpenNexus");
+    expect(open?.href).toBe(appLink(code, key));
   });
 });

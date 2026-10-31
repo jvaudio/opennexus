@@ -368,6 +368,139 @@ body {
   visibility: visible;
 }
 
+/* Host actions (M47d): links in the bar, or in the map's corner when embedded */
+
+.onx-actions {
+  display: flex;
+  gap: 6px;
+}
+
+a.onx-button {
+  display: inline-flex;
+  align-items: center;
+  color: inherit;
+  text-decoration: none;
+}
+
+.onx-embed .onx-actions {
+  position: absolute;
+  z-index: 1;
+  right: 8px;
+  bottom: 8px;
+}
+
+.onx-embed .onx-bar,
+.onx-embed .onx-outline,
+.onx-embed .onx-details,
+.onx-embed .onx-keys {
+  display: none !important;
+}
+
+/* Present (M47d) */
+
+.onx.onx-presenting {
+  position: fixed;
+  z-index: 2147483000;
+  inset: 0;
+  height: auto;
+}
+
+.onx-presenting .onx-bar,
+.onx-presenting .onx-outline,
+.onx-presenting .onx-details,
+.onx-presenting .onx-keys,
+.onx-presenting .onx-ring,
+.onx-presenting .onx-hits {
+  display: none !important;
+}
+
+.onx-dim {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.onx-dim-shade {
+  fill: var(--onx-canvas);
+  opacity: 0.72;
+}
+
+.onx-step {
+  position: absolute;
+  border: 3px solid var(--onx-accent);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+.onx-caption {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 96px;
+  max-height: 50%;
+  overflow: auto;
+  padding: 12px 20px;
+  border-top: 1px solid var(--onx-line);
+  background: var(--onx-panel);
+}
+
+.onx-caption-words {
+  flex: 1;
+  min-width: 0;
+}
+
+.onx-kicker {
+  margin: 0 0 2px;
+  color: var(--onx-muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.onx-slide-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  white-space: pre-wrap;
+}
+
+.onx-slide-note {
+  margin: 6px 0 0;
+  white-space: pre-wrap;
+}
+
+.onx-caption-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.onx-slide-count {
+  min-width: 4.5em;
+  color: var(--onx-muted);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.onx-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 /* Details */
 
 .onx-details {

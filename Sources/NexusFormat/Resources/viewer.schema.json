@@ -50,6 +50,73 @@
       "additionalProperties": false,
       "description": "One canvas (a tab).",
       "properties": {
+        "deck": {
+          "additionalProperties": false,
+          "description": "The canvas's deck as Present plays it (M47d): the slides that play, after the author's order, merges and skips. Document and canvas exports only.",
+          "properties": {
+            "aspect": {
+              "description": "The slides' width over their height.",
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            "move": {
+              "description": "How the camera moves between slides.",
+              "enum": [
+                "cut",
+                "fly",
+                "glide"
+              ],
+              "type": "string"
+            },
+            "slides": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "focus": {
+                    "description": "Topics the camera frames; the rest dims. Empty frames the whole map.",
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "highlight": {
+                    "description": "Topics the slide rings.",
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "kicker": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "description": "The presenter's note, when notes are included.",
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "focus",
+                  "highlight",
+                  "kicker",
+                  "title"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "aspect",
+            "move",
+            "slides"
+          ],
+          "type": "object"
+        },
         "id": {
           "minLength": 1,
           "type": "string"

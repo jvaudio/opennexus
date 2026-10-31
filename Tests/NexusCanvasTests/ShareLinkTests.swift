@@ -90,6 +90,11 @@ final class FakeDestinations: URLProtocol, @unchecked Sendable {
         let key = s.url.absoluteString
         switch s.url.host {
         case "s3.example":
+            // A public-read bucket, as a reader's browser or the app opening a link reads it
+            // (M47d): an object without signing, 403 for one that isn't there.
+            if s.method == "GET", header(s, "Authorization") == nil {
+                return objects[key].map { (200, $0) } ?? (403, Data())
+            }
             guard header(s, "Authorization")?.hasPrefix("AWS4-HMAC-SHA256 Credential=AKIDTEST/") == true else {
                 return (403, Data("<Error><Message>Bad signature</Message></Error>".utf8))
             }
@@ -103,6 +108,15 @@ final class FakeDestinations: URLProtocol, @unchecked Sendable {
             default: return objects[key].map { (200, $0) } ?? (404, Data())
             }
         case "api.github.com":
+            // A secret gist is anyone's to read who has its id (a link opened in the app, M47d).
+            if s.method == "GET", header(s, "Authorization") == nil, let stored = objects[key] {
+                let file: JSONValue = .object([
+                    "content": .string(String(decoding: stored, as: UTF8.self)), "truncated": .bool(false),
+                ])
+                return (
+                    200, Data(CanonicalJSON.compact(.object(["files": .object(["opennexus-share.b64": file])])).utf8)
+                )
+            }
             guard header(s, "Authorization") == "Bearer \(gistToken)" else {
                 return (401, Data(#"{"message":"Bad credentials"}"#.utf8))
             }
@@ -168,8 +182,12 @@ struct LocalTransport: ShareTransport {
     let jobs = Jobs()
 
     func perform(_ job: NetJob, body: Data) async -> NetReply {
+        await exchange(job, body: body).reply
+    }
+
+    func exchange(_ job: NetJob, body: Data) async -> (reply: NetReply, body: Data) {
         jobs.lock.withLock { jobs.all.append(job) }
-        return await NetService(protocolClasses: [FakeDestinations.self]).perform(job, body: body)
+        return await NetService(protocolClasses: [FakeDestinations.self]).exchange(job, body: body)
     }
 }
 

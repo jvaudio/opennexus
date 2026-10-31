@@ -2,7 +2,10 @@
 
 import "../../viewer-core/src/viewer.css";
 import "./share.css";
+import { registerServiceWorker } from "./pwa";
 import { start } from "./share";
+
+registerServiceWorker("../");
 
 // A new fragment is a new link (pasted into the same tab).
 window.addEventListener("hashchange", () => {

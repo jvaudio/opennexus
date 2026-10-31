@@ -2,6 +2,7 @@ import Foundation
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusFormat
 @testable import NexusScene
 
 /// README §12: "Network traffic with default settings: none". The network rule (D313):
@@ -144,6 +145,25 @@ import Testing
             }
         }
         #expect(hits.isEmpty, "network code in the viewer: \(hits)")
+    }
+
+    /// Open in OpenNexus (M47d, D441) is the one request a click on a link starts rather than
+    /// a destination the user set up. Its job names no hosts and no secret: the service reads
+    /// the link only from the hosts the link itself names (NexusNetTests), behind the sharing
+    /// switches (ShareLinkTests), and only `ShareCenter.openLink` makes one.
+    @Test func aLinkIsReadOnlyFromItsOwnHosts() throws {
+        let service = try String(
+            contentsOf: Self.repo.appending(path: "Sources/NexusNet/NetService.swift"), encoding: .utf8)
+        #expect(service.contains("let hosts = LinkReader.hosts(source: source, locator: locator)"))
+        #expect(service.contains("HTTPClient(allowed: hosts, purpose: job.purpose"))
+        let code = ShareLinkCode(source: .url, locator: "https://maps.example.org/a.onx", key: Data(count: 32))
+        let job = NetJob.read(code, purpose: "Open share link")
+        #expect(job.allowedHosts.isEmpty && job.secret.isEmpty && job.writeSecret == nil)
+        let callers = try (Self.files(under: "Sources", ext: ["swift"]) + Self.files(under: "App", ext: ["swift"]))
+            .filter { try String(contentsOf: $0, encoding: .utf8).contains("NetJob.read(") }
+            .map { $0.path.replacingOccurrences(of: Self.repo.path + "/", with: "") }
+            .filter { !$0.contains("/Tests/") }
+        #expect(callers == ["Sources/NexusCanvas/Sharing.swift"])
     }
 
     @Test func onlyTheServiceHasANetworkEntitlement() throws {

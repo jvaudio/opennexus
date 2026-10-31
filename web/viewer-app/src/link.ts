@@ -27,6 +27,22 @@ export function fromBase64URL(s: string): Uint8Array | null {
   }
 }
 
+export function toBase64URL(b: Uint8Array): string {
+  let s = "";
+  for (const c of b) s += String.fromCharCode(c);
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+/** The link's fragment with its key: what Open in OpenNexus hands the app (M47d). */
+export function keyedFragment(code: ShareCode, key: Uint8Array): string {
+  return `1.${code.source}.${toBase64URL(new TextEncoder().encode(code.locator))}.${toBase64URL(key)}`;
+}
+
+/** The app's link for a share link (`opennexus://view#…`, D441). */
+export function appLink(code: ShareCode, key: Uint8Array): string {
+  return `opennexus://view#${keyedFragment(code, key)}`;
+}
+
 export function parseFragment(fragment: string): ShareCode | null {
   const parts = fragment.replace(/^#/, "").split(".");
   if (parts.length !== 4 || parts[0] !== "1") return null;

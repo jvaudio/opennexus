@@ -3989,12 +3989,20 @@
       "comment" : "UI text (Collaboration.swift)",
       "extractionState" : "migrated"
     },
+    "Couldn’t open the share link" : {
+      "comment" : "UI text (TouchScene.swift)",
+      "extractionState" : "migrated"
+    },
     "Couldn’t open the snapshot" : {
       "comment" : "UI text (AppDelegate.swift)",
       "extractionState" : "migrated"
     },
     "Couldn’t read the %@" : {
       "comment" : "Text with values filled in (CanvasController+Sync.swift)",
+      "extractionState" : "migrated"
+    },
+    "Couldn’t read the link: %@" : {
+      "comment" : "Text with values filled in (Sharing.swift)",
       "extractionState" : "migrated"
     },
     "Couldn’t restore: %@" : {
@@ -4855,6 +4863,10 @@
     },
     "End on this slide's topic" : {
       "comment" : "UI text (PresentViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "End Presentation" : {
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "End Session" : {
@@ -7981,6 +7993,10 @@
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
       "extractionState" : "migrated"
     },
+    "Next Slide" : {
+      "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
     "next step" : {
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
@@ -8469,6 +8485,10 @@
       "comment" : "UI text (CollabViews.swift)",
       "extractionState" : "migrated"
     },
+    "Open share link" : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
     "Open source" : {
       "comment" : "UI text (OnboardingViews.swift)",
       "extractionState" : "migrated"
@@ -8482,6 +8502,10 @@
       "extractionState" : "migrated"
     },
     "Open…" : {
+      "comment" : "UI text (TouchScene.swift)",
+      "extractionState" : "migrated"
+    },
+    "Opening a share link uses the network" : {
       "comment" : "UI text (TouchScene.swift)",
       "extractionState" : "migrated"
     },
@@ -8499,6 +8523,10 @@
     },
     "OpenNexus doesn’t use the network unless you turn it on. Turn on “Use the network” and “Share links” in Settings › Privacy & Data, then add a place to store links in Settings › Sharing." : {
       "comment" : "UI text (ShareViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "OpenNexus doesn’t use the network unless you turn it on. Turn on “Use the network” and “Share links” in Settings › Privacy & Data, then open the link again." : {
+      "comment" : "UI text (Integrations.swift)",
       "extractionState" : "migrated"
     },
     "OpenNexus follows macOS settings first; these refine or override them." : {
@@ -8963,6 +8991,10 @@
     },
     "Previous Row" : {
       "comment" : "Command title (menus, palette, cheat sheet, Settings › Shortcuts)",
+      "extractionState" : "migrated"
+    },
+    "Previous Slide" : {
+      "comment" : "UI text (ViewerBundle.swift)",
       "extractionState" : "migrated"
     },
     "Previous step" : {
@@ -10437,6 +10469,10 @@
       "comment" : "UI text (CollabViews.swift)",
       "extractionState" : "migrated"
     },
+    "Shared map" : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
     "Sharing" : {
       "comment" : "Settings pane",
       "extractionState" : "migrated"
@@ -11497,6 +11533,26 @@
       "comment" : "UI text (CanvasController+Sync.swift)",
       "extractionState" : "migrated"
     },
+    "This isn’t a share link, or part of it is missing." : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
+    "This link has expired. Ask whoever shared it for a new link." : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
+    "This link is damaged: part of it is missing or was changed." : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
+    "This link is turned off. Ask whoever shared it for a new link." : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
+    "This link opens with a password. Open it in your browser, enter the password, then choose Open in OpenNexus." : {
+      "comment" : "UI text (Sharing.swift)",
+      "extractionState" : "migrated"
+    },
     "This link’s key is missing from the Keychain." : {
       "comment" : "UI text (Sharing.swift)",
       "extractionState" : "migrated"
@@ -11511,6 +11567,10 @@
     },
     "This map needs JavaScript to show." : {
       "comment" : "UI text (ViewerBundle.swift)",
+      "extractionState" : "migrated"
+    },
+    "This map was shared from a newer version of OpenNexus. Update OpenNexus to open it." : {
+      "comment" : "UI text (Sharing.swift)",
       "extractionState" : "migrated"
     },
     "This map’s colours" : {
@@ -11879,6 +11939,10 @@
     },
     "Turn on “Sync libraries” in Privacy & Data to sync." : {
       "comment" : "UI text (SyncViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Turn on “Use the network” and “Share links” in Settings › Privacy & Data, then open the link again." : {
+      "comment" : "UI text (TouchScene.swift)",
       "extractionState" : "migrated"
     },
     "Turn on the network in Privacy & Data to test or use these." : {

@@ -14,7 +14,7 @@
   },
   "scripts": {
     "build": "npm run build -w viewer-core && npm run build -w viewer-app",
-    "fixtures": "cd .. && NEXUS_WRITE_VIEWER_FIXTURES=1 swift test --filter \"ViewerFixtures|ShareFixtures|JoinFixtures\"",
+    "fixtures": "cd .. && NEXUS_WRITE_VIEWER_FIXTURES=1 swift test --filter \"ViewerFixtures|ShareFixtures|JoinFixtures|OpenFixtures\"",
     "typecheck": "tsc -p viewer-core --noEmit && tsc -p viewer-app --noEmit && tsc -p e2e --noEmit",
     "lint": "eslint .",
     "test": "vitest run",

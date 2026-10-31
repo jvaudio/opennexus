@@ -163,6 +163,16 @@ export async function passwordKey(password: string, kdf: KDF): Promise<CryptoKey
   );
 }
 
+/**
+ * The same key's 32 bytes, for the page to hand the app with Open in OpenNexus (M47d) once
+ * the password has opened the map, so the app never asks for the password again.
+ */
+export async function passwordKeyBytes(password: string, kdf: KDF): Promise<Uint8Array> {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+  const bits = await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: buf(kdf.salt), iterations: kdf.iterations }, base, 256);
+  return new Uint8Array(bits);
+}
+
 /** The content as sealed (still encoded). */
 export async function open(bytes: Uint8Array, key: CryptoKey): Promise<{ header: Header; content: Uint8Array }> {
   const p = parts(bytes);

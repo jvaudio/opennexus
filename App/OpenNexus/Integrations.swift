@@ -229,7 +229,8 @@ final class Integrations: NSObject {
     // MARK: opennexus:// links
 
     /// `opennexus://capture` (the Share extension queued something), `quick-capture`,
-    /// `inbox`, `open/<token>` (widgets), `new`, `join#<invite>` (M46).
+    /// `inbox`, `open/<token>` (widgets), `new`, `join#<invite>` (M46), `view#<link>` (the
+    /// viewer site's Open in OpenNexus, M47d).
     @objc func handleURL(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
         guard let s = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue, let url = URL(string: s) else {
             return
@@ -251,7 +252,32 @@ final class Integrations: NSObject {
         case "new": NewDocument.make()
         // An invite to a live session (M46), from the join page while universal links wait.
         case "join": CollabJoin.join(url.absoluteString)
+        // A share link, as a new untitled document with its import report (D441).
+        case "view": openShareLink(url.absoluteString)
         default: break
+        }
+    }
+
+    func openShareLink(_ link: String) {
+        let center = ShareCenter.shared
+        guard center.networkOn else {
+            let a = NSAlert()
+            a.messageText = Loc.t("Opening a share link uses the network")
+            a.informativeText = Loc.t(
+                "OpenNexus doesn’t use the network unless you turn it on. Turn on “Use the network” and “Share links” in Settings › Privacy & Data, then open the link again."
+            )
+            a.addButton(withTitle: Loc.t("Open Settings…"))
+            a.addButton(withTitle: Loc.t("Cancel"))
+            if a.runModal() == .alertFirstButtonReturn { AppPreferences.shared.showSettings(pane: "privacy") }
+            return
+        }
+        Task {
+            do {
+                let imported = try await center.importLink(link)
+                (NSApp.delegate as? AppDelegate)?.openImported(imported)
+            } catch {
+                CollabJoin.alert(Loc.t("Couldn’t open the share link"), String(describing: error))
+            }
         }
     }
 

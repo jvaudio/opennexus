@@ -5,22 +5,40 @@
 import type { Bundle, Canvas, Layout, Placement, Rect } from "./bundle";
 import { Camera, fit, reveal, zoomAt, type View } from "./camera";
 import { renderDetails } from "./details";
+import { format } from "./format";
 import { ancestors, initiallyOpen, treeKey, visibleRows, type TreeKey } from "./outline";
 import { sanitizeSVG } from "./sanitize";
+import { Presentation } from "./present";
 import { defaultOptions, find, type Match, type SearchOptions } from "./search";
 import { center, next, type Direction, type Point } from "./spatial";
 
 export type LayoutName = "saved" | "expanded";
 
+/** A link or button the host adds: to the bar, or with no chrome to the map's corner. */
+export interface ViewerAction {
+  label: string;
+  /** Where it goes: a relative, http(s) or `opennexus:` URL. */
+  href?: string;
+  /** Follows `href` in a new window. */
+  newWindow?: boolean;
+  /** Runs when there's no `href`. */
+  run?: () => void;
+}
+
 export interface MountOptions {
   /** A URL for an asset the bundle names but doesn't carry (a document's viewer copy). */
   asset?: (name: string) => string | undefined;
+  /** "none" shows the map alone, with its pan and zoom: no bar, outline or details (embeds). */
+  chrome?: "full" | "none";
+  actions?: ViewerAction[];
 }
 
 export interface ViewerHandle {
   readonly element: HTMLElement;
   show(canvas: number, layout?: LayoutName): void;
   select(topic: string): void;
+  /** Plays the current canvas's deck; false when it has none. */
+  present(): boolean;
   destroy(): void;
 }
 
@@ -35,13 +53,23 @@ const english: Record<string, string> = {
   type: "Type", fields: "Fields", threats: "Threats", legend: "Legend", print: "Print",
   keys: "Arrow keys move between topics · Return opens details · / searches · Esc closes",
   showHidden: "Show %d hidden topics", previous: "Previous match", next: "Next match", topic: "Topic",
+  present: "Present", previousSlide: "Previous Slide", nextSlide: "Next Slide", endPresentation: "End Presentation",
+  slideCount: "%d of %d",
 };
 
 const rasterTypes = /^image\/(?:png|jpeg|gif|webp)$/;
 
-export function format(s: string, ...args: (string | number)[]): string {
-  let i = 0;
-  return s.replace(/%(?:\d\$)?(?:lld|d|@)/g, () => String(args[i++] ?? ""));
+export { format };
+
+/** An action's link, if it's one a host may add (never `javascript:` or `data:`). */
+export function actionHref(href: string, base: string): string | null {
+  let u: URL;
+  try {
+    u = new URL(href, base);
+  } catch {
+    return null;
+  }
+  return ["http:", "https:", "opennexus:"].includes(u.protocol) ? u.href : null;
 }
 
 function decode(base64: string): Uint8Array | null {
@@ -73,6 +101,8 @@ class Viewer {
   private readonly layoutGroup: HTMLElement;
   private readonly layoutButtons: Record<LayoutName, HTMLButtonElement>;
   private readonly infoButtons: HTMLElement;
+  private readonly presentButton: HTMLButtonElement;
+  private readonly embed: boolean;
   private readonly searchInput: HTMLInputElement;
   private readonly countEl: HTMLElement;
   private readonly searchChecks = new Map<keyof SearchOptions, HTMLInputElement>();
@@ -87,6 +117,7 @@ class Viewer {
   private readonly asideTitle: HTMLElement;
   private readonly asideBody: HTMLElement;
   private readonly camera: Camera;
+  private presentation: Presentation | null = null;
   private readonly reducedMotion = (): boolean =>
     typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -131,6 +162,8 @@ class Viewer {
 
     this.root = make("div", "onx");
     this.root.lang = bundle.lang;
+    this.embed = options_.chrome === "none";
+    this.root.classList.toggle("onx-embed", this.embed);
 
     // Bar: title, canvas tabs, layout, zoom, print, search.
     const bar = make("header", "onx-bar");
@@ -184,6 +217,26 @@ class Viewer {
     this.infoButtons = make("div", "onx-info");
     const print = button(t("print"), t("print"));
     print.addEventListener("click", () => { window.print(); });
+    this.presentButton = button(t("present"), t("present"));
+    this.presentButton.addEventListener("click", () => { this.present(); });
+    const actions = make("div", "onx-actions");
+    for (const a of options_.actions ?? []) {
+      const href = a.href === undefined ? null : actionHref(a.href, doc.baseURI);
+      if (href !== null) {
+        const link = make("a", "onx-button", a.label);
+        link.href = href;
+        if (a.newWindow === true) {
+          link.target = "_blank";
+          link.rel = "noopener";
+        }
+        actions.append(link);
+      } else if (a.run !== undefined) {
+        const run = a.run;
+        const b = button(a.label, a.label);
+        b.addEventListener("click", () => { run(); });
+        actions.append(b);
+      }
+    }
     const outlineToggle = button(t("outline"), t("outline"), "onx-button onx-outline-toggle");
     outlineToggle.setAttribute("aria-expanded", "true");
     outlineToggle.setAttribute("aria-controls", `${this.uid}-outline`);
@@ -196,7 +249,8 @@ class Viewer {
       this.root.classList.add("onx-no-outline");
       outlineToggle.setAttribute("aria-expanded", "false");
     }
-    tools.append(outlineToggle, this.layoutGroup, zoomOut, fitButton, zoomIn, this.infoButtons, print);
+    tools.append(outlineToggle, this.layoutGroup, zoomOut, fitButton, zoomIn, this.infoButtons, this.presentButton, print);
+    if (!this.embed) tools.append(actions);
 
     const search = make("form", "onx-search");
     search.setAttribute("role", "search");
@@ -270,6 +324,8 @@ class Viewer {
     this.stage.append(this.drawing, this.hits, this.ring, this.textLayer);
     const keys = make("p", "onx-keys", t("keys"));
     this.viewport.append(this.stage, keys);
+    // Embedded, the host's links sit in the map's corner.
+    if (this.embed && actions.childElementCount > 0) this.viewport.append(actions);
 
     this.aside = make("aside", "onx-details");
     this.aside.id = `${this.uid}-details`;
@@ -287,7 +343,7 @@ class Viewer {
     body.append(nav, this.viewport, this.aside);
     this.root.append(bar, body);
 
-    this.camera = new Camera(this.stage, this.reducedMotion);
+    this.camera = new Camera(this.stage, this.reducedMotion, (v) => { this.presentation?.moved(v); });
     this.wireViewport();
     this.root.addEventListener("keydown", (e) => { this.onKey(e); });
     host.replaceChildren(this.root);
@@ -347,6 +403,7 @@ class Viewer {
     if (c === undefined) return;
     const canvasChanged = index !== this.canvasIndex;
     if (canvasChanged) {
+      this.presentation?.end();
       this.canvasIndex = index;
       this.selected = null;
       this.open = initiallyOpen(c.outline);
@@ -354,6 +411,7 @@ class Viewer {
       this.applyTheme(c);
       this.buildTree();
       this.buildInfo();
+      this.presentButton.hidden = this.embed || (c.deck?.slides.length ?? 0) === 0;
       Array.from(this.tabs.children).forEach((tab, i) => {
         tab.setAttribute("aria-selected", String(i === index));
         (tab as HTMLElement).tabIndex = i === index ? 0 : -1;
@@ -539,8 +597,8 @@ class Viewer {
     const end = (e: PointerEvent): void => {
       pointers.delete(e.pointerId);
       if (pointers.size < 2) pinch = null;
-      if (start !== null && !panning && !start.badge && e.type === "pointerup" && start.topic !== null) {
-        this.select(start.topic, { details: true, focus: true });
+      if (start !== null && !panning && !start.badge && e.type === "pointerup" && start.topic !== null && this.presentation === null) {
+        this.select(start.topic, { details: !this.embed, focus: true });
       }
       if (pointers.size === 0) {
         start = null;
@@ -574,7 +632,7 @@ class Viewer {
         e.preventDefault();
         const to = next(id, dir, this.centers);
         if (to !== null) this.select(to, { focus: true, fly: true });
-      } else if (e.key === "Enter" || e.key === " ") {
+      } else if ((e.key === "Enter" || e.key === " ") && !this.embed) {
         e.preventDefault();
         this.select(id, { details: true });
         this.asideTitle.focus();
@@ -582,11 +640,13 @@ class Viewer {
     });
     this.textLayer.addEventListener("focusin", (e) => {
       const id = (e.target as HTMLElement).dataset.id;
-      if (id !== undefined && id !== this.selected) this.select(id, { fly: true });
+      if (id !== undefined && id !== this.selected && this.presentation === null) this.select(id, { fly: true });
     });
   }
 
   private onKey(e: KeyboardEvent): void {
+    // Presenting, the presentation has the keys.
+    if (this.presentation !== null) return;
     const target = e.target as HTMLElement;
     const typing = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target.isContentEditable;
     if (e.key === "Escape") {
@@ -597,10 +657,12 @@ class Viewer {
       return;
     }
     if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
-    if (e.key === "/") {
+    if (e.key === "/" && !this.embed) {
       e.preventDefault();
       this.searchInput.focus();
       this.searchInput.select();
+    } else if ((e.key === "p" || e.key === "P") && !this.embed) {
+      if (this.present()) e.preventDefault();
     } else if (e.key === "+" || e.key === "=") {
       e.preventDefault();
       this.zoomBy(1.25);
@@ -656,7 +718,7 @@ class Viewer {
 
   private openDetails(id: string): void {
     const topic = this.canvas.topics.get(id);
-    if (topic === undefined) return;
+    if (topic === undefined || this.embed) return;
     this.asideTitle.textContent = topic.text === "" ? this.t("topic") : topic.text;
     renderDetails(this.asideBody, topic, {
       doc: this.doc,
@@ -890,7 +952,45 @@ class Viewer {
     this.hits.replaceChildren(...els);
   }
 
+  // MARK: Present
+
+  /** Plays the canvas's deck, in a layout that places its slides, and comes back as it was. */
+  present(): boolean {
+    const c = this.canvas;
+    const deck = c.deck;
+    if (deck === undefined || deck.slides.length === 0 || this.presentation !== null || this.embed) return false;
+    const before = { layout: this.layoutName, view: this.camera.view };
+    // A slide can frame topics the saved layout folds away: then it plays on Everything.
+    const placed = (l: Layout): boolean => deck.slides.every((s) => s.focus.every((id) => l.topics.has(id)));
+    if (!placed(this.layout)) {
+      const other = this.layoutName === "saved" ? c.layouts.expanded : c.layouts.saved;
+      if (other !== undefined && placed(other)) this.show(this.canvasIndex, this.layoutName === "saved" ? "expanded" : "saved");
+    }
+    this.closeDetails(false);
+    this.presentation = new Presentation(
+      {
+        root: this.root,
+        viewport: this.viewport,
+        stage: this.stage,
+        camera: this.camera,
+        opener: this.presentButton,
+        layout: () => this.layout,
+        t: (k) => this.t(k),
+        ended: () => {
+          this.presentation = null;
+          if (this.canvasIndex >= 0 && this.canvas === c) {
+            this.show(this.canvasIndex, before.layout);
+            this.camera.set(before.view);
+          }
+        },
+      },
+      deck,
+    );
+    return true;
+  }
+
   destroy(): void {
+    this.presentation?.end();
     for (const url of this.urls.values()) if (url?.startsWith("blob:") === true) URL.revokeObjectURL(url);
     for (const f of this.cleanup) f();
     this.host.replaceChildren();
@@ -904,6 +1004,7 @@ export function mount(host: HTMLElement, bundle: Bundle, options: MountOptions =
     element: v.root,
     show: (canvas, layout) => { v.show(canvas, layout); },
     select: (topic) => { v.select(topic, { fly: true, details: true }); },
+    present: () => v.present(),
     destroy: () => { v.destroy(); },
   };
 }

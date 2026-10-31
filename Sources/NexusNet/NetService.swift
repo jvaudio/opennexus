@@ -16,8 +16,9 @@ public struct NetService: Sendable {
         await exchange(job, body: body).reply
     }
 
-    /// The reply, and the bytes a `get` read.
+    /// The reply, and the bytes a `get` or a `read` read.
     public func exchange(_ job: NetJob, body: Data) async -> (reply: NetReply, body: Data) {
+        if job.action == .read { return await read(job) }
         let client = HTTPClient(allowed: job.allowedHosts, purpose: job.purpose, protocolClasses: protocolClasses)
         var out = Data()
         do {
@@ -54,6 +55,8 @@ public struct NetService: Sendable {
                 }
             case .socket:
                 throw NetError.unexpected("a socket is opened with openSocket")
+            case .read:
+                throw NetError.unexpected("a link is read on its own hosts")
             case .get, .put, .list, .syncTest:
                 guard let s3 = target as? S3Target else { throw NetError.unexpected("only buckets sync libraries") }
                 switch job.action {
@@ -68,6 +71,25 @@ public struct NetService: Sendable {
             }
             reply.log = await client.log
             return (reply, out)
+        } catch {
+            return (.failed(String(describing: error), log: await client.log), Data())
+        }
+    }
+
+    /// A share link's sealed map (D441). The hosts come from the link, not the job's list:
+    /// the user opening the link is what names them, and nothing else is reachable.
+    func read(_ job: NetJob) async -> (reply: NetReply, body: Data) {
+        guard let source = job.source, let locator = job.object,
+            let hosts = LinkReader.hosts(source: source, locator: locator)
+        else { return (.failed("The link is damaged."), Data()) }
+        let client = HTTPClient(allowed: hosts, purpose: job.purpose, protocolClasses: protocolClasses)
+        do {
+            let data = try await LinkReader.read(source: source, locator: locator, client: client)
+            return (NetReply(ok: true, log: await client.log), data)
+        } catch NetError.status(let status, let why) {
+            var reply = NetReply.failed(NetError.status(status, why).description, log: await client.log)
+            reply.status = status
+            return (reply, Data())
         } catch {
             return (.failed(String(describing: error), log: await client.log), Data())
         }
