@@ -15,6 +15,8 @@ public final class TouchCanvasView: UIView, PointerSurface {
     package let renderer = SceneRenderer()
     package private(set) var pointer: CanvasPointer!
     let editor = TouchTextEditor()
+    /// The edited topic's formulas, typeset beneath the editor (M48).
+    let mathPreview = MathPreviewView()
 
     public var camera: Camera { renderer.camera }
     private var cameraTween: CameraTween?
@@ -79,6 +81,8 @@ public final class TouchCanvasView: UIView, PointerSurface {
         editor.keyTarget = self
         editor.isHidden = true
         addSubview(editor)
+        mathPreview.isHidden = true
+        addSubview(mathPreview)
 
         accessibilityIdentifier = "canvas"
         wireController()
@@ -99,6 +103,10 @@ public final class TouchCanvasView: UIView, PointerSurface {
             guard let self else { return }
             self.editor.text = text
             self.positionEditor()
+        }
+        controller.onEditorCaret = { [weak self] at in
+            guard let self, at <= ((self.editor.text ?? "") as NSString).length else { return }
+            self.editor.selectedRange = NSRange(location: at, length: 0)
         }
         controller.viewCommandHandler = { [weak self] id in self?.performViewCommand(id) ?? false }
         controller.viewCommandValidator = { id in Self.viewCommands.contains(id) }
@@ -406,6 +414,7 @@ public final class TouchCanvasView: UIView, PointerSurface {
                 editor.end()
                 editor.isHidden = true
             }
+            mathPreview.isHidden = true
             controller.onOutlineEditChange?(session)
             return
         }
@@ -422,6 +431,7 @@ public final class TouchCanvasView: UIView, PointerSurface {
             return
         }
         guard let session, let n = controller.scene.nodes[session.node] else {
+            mathPreview.isHidden = true
             if !editor.isHidden {
                 editor.end()
                 editor.isHidden = true
@@ -451,6 +461,7 @@ public final class TouchCanvasView: UIView, PointerSurface {
     /// scaled with the camera.
     func positionEditor() {
         var local: CGRect
+        var topic: CGRect?
         if let session = controller.edit, let ref = session.element {
             guard let r = renderer.elements.editorRect(for: ref) else { return }
             let measured = NodeMeasurer.measure(
@@ -467,12 +478,29 @@ public final class TouchCanvasView: UIView, PointerSurface {
             let origin = CGPoint(
                 x: n.frame.center.x - n.frame.size.width / 2, y: n.frame.center.y - n.frame.size.height / 2)
             local = n.textRect.offsetBy(dx: origin.x, dy: origin.y).insetBy(dx: -1, dy: 0)
+            topic = camera.toView(n.frame.rect)
         }
         let view = camera.toView(local)
         editor.transform = .identity
         if editor.bounds.size != local.size { editor.bounds = CGRect(origin: .zero, size: local.size) }
         editor.transform = CGAffineTransform(scaleX: camera.zoom, y: camera.zoom)
         editor.center = CGPoint(x: view.midX, y: view.midY)
+        placeMathPreview(below: topic)
+    }
+
+    /// The edited topic's formulas, typeset on a card beneath it (M48); MathJax's message
+    /// shows there too, and is the card's accessibility value.
+    private func placeMathPreview(below topic: CGRect?) {
+        guard let topic, let p = controller.mathPreview() else {
+            mathPreview.isHidden = true
+            return
+        }
+        mathPreview.zoom = camera.zoom
+        mathPreview.preview = p
+        let s = p.size(zoom: camera.zoom)
+        let frame = CGRect(x: topic.midX - s.width / 2, y: topic.maxY + 8, width: s.width, height: s.height)
+        if mathPreview.frame != frame { mathPreview.frame = frame }
+        mathPreview.isHidden = false
     }
 }
 

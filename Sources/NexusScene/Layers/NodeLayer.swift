@@ -75,6 +75,38 @@ package final class NodeLayer: CALayer {
     package let glowLayer = CAShapeLayer()
     package private(set) var node: SceneNode?
     private var state: (selected: Bool, editing: Bool, connectTarget: Bool) = (false, false, false)
+    /// What the title was styled from: a topic that only moved keeps it. Styling a title
+    /// with formulas costs some 20 µs, and a new topic moves most of a map (M48).
+    private var titleInputs: TitleInputs?
+
+    struct TitleInputs: Equatable {
+        var text: String
+        var marks: [TextMark]
+        var style: NodeTextStyle
+        var appearance: NodeAppearance
+        var placeholder: Bool
+        var todo: Todo?
+        var matches: [NSRange]
+        var theme: Theme
+        var canvas: RGBA
+        /// The engine's generation for text with maths: formulas that land restyle it.
+        var math: Int
+
+        init(_ n: SceneNode, theme: Theme, canvas: RGBA) {
+            text = n.displayText
+            marks = n.marks
+            style = n.textStyle
+            appearance = n.appearance
+            placeholder = n.isPlaceholder
+            todo = n.todo
+            matches = n.matchRanges
+            self.theme = theme
+            self.canvas = canvas
+            math =
+                style.format == "math" || (style.typesetsMath && MathMarkup.mayContain(text))
+                ? MathEngine.shared.generation : -1
+        }
+    }
     package var textScale: CGFloat = 2 {
         didSet {
             guard textScale != oldValue else { return }
@@ -183,22 +215,11 @@ package final class NodeLayer: CALayer {
         }
 
         if contentChanged {
-            var color = n.appearance.text
-            if n.isPlaceholder { color = color.alpha(0.4) }
-            let rich = NSMutableAttributedString(
-                attributedString: n.textStyle.attributed(
-                    n.displayText, marks: n.marks, color: .fixed(color.cgColor), linkColor: .fixed(theme.ring.cgColor)))
-            // Search matches: the substring is highlighted (artboard 47).
-            for r in n.matchRanges where r.location + r.length <= rich.length {
-                rich.addAttribute(
-                    TextKey.background, value: CGColor(srgbRed: 1, green: 0.86, blue: 0.3, alpha: 0.75), range: r)
+            let inputs = TitleInputs(n, theme: theme, canvas: canvas)
+            if inputs != titleInputs {
+                text.attributed = n.styledTitle(theme: theme, canvas: canvas)
+                titleInputs = inputs
             }
-            if n.todo?.done == true {
-                let all = NSRange(location: 0, length: rich.length)
-                rich.addAttribute(TextKey.strikethrough, value: 1, range: all)
-                rich.addAttribute(TextKey.color, value: n.appearance.text.alpha(0.55).cgColor, range: all)
-            }
-            text.attributed = rich
             text.frame = n.textRect
             lead.isHidden = true
             decor.node = n
@@ -653,5 +674,33 @@ package final class DecorLayer: CALayer {
                 "!", TextAttributes(font: Fonts.system(10, .heavy), color: .system(.white), paragraph: .centered)
             ).draw(in: r.offsetBy(dx: 0, dy: 1), context: ctx)
         }
+    }
+}
+
+extension SceneNode {
+    /// The title as the topic draws it: its rich-text runs, search matches (highlighted,
+    /// artboard 47), formulas, and a done to-do struck through.
+    package func styledTitle(theme: Theme, canvas: RGBA) -> StyledText {
+        var color = appearance.text
+        if isPlaceholder { color = color.alpha(0.4) }
+        let rich = NSMutableAttributedString(
+            attributedString: textStyle.attributed(
+                displayText, marks: marks, color: .fixed(color.cgColor), linkColor: .fixed(theme.ring.cgColor),
+                errorColor: .fixed(mathErrorColor(theme: theme, canvas: canvas).cgColor), highlights: matchRanges))
+        if todo?.done == true {
+            let all = NSRange(location: 0, length: rich.length)
+            rich.addAttribute(TextKey.strikethrough, value: 1, range: all)
+            rich.addAttribute(TextKey.color, value: appearance.text.alpha(0.55).cgColor, range: all)
+        }
+        return rich
+    }
+
+    /// The title's formulas, each with its baseline's left end in world points (M48).
+    package func formulas(theme: Theme, canvas: RGBA) -> [MathLayout.Placed] {
+        guard textStyle.typesetsMath || textStyle.format == "math" else { return [] }
+        let title = styledTitle(theme: theme, canvas: canvas)
+        guard MathText.contains(title) else { return [] }
+        let r = textRect.offsetBy(dx: frame.rect.minX, dy: frame.rect.minY)
+        return MathLayout(title, width: r.width).placed(in: r, flipped: true)
     }
 }

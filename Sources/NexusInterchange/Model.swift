@@ -22,6 +22,8 @@ public struct ITopic: Sendable, Equatable {
     /// Review comments, oldest first (M14).
     public var comments: [TopicComment] = []
     public var nodeType: NodeType?
+    /// math for a topic that is one display formula (M48).
+    public var textFormat: String?
     public var edgeLabel: String?
     public var structure: LayoutStructure?
     /// The topic's own style (Xmind's style properties, M18).
@@ -309,6 +311,7 @@ public enum CanvasBuilder {
             n.comments = t.comments
             report.comments += t.comments.count
             n.nodeType = t.nodeType
+            if let f = t.textFormat { n.textFormat = f }
             n.edgeLabel = t.edgeLabel
             n.structure = t.structure
             n.style = t.style

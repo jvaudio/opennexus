@@ -126,24 +126,44 @@ extension NSAttributedString {
     }
 }
 
-/// Measuring and drawing styled text through the installed engine.
+/// Measuring and drawing styled text through the installed engine; text with typeset
+/// formulas goes through `MathLayout` instead (M48).
 extension NSAttributedString {
     public func boundingRect(size: CGSize, options: TextOptions) -> CGRect {
-        Graphics.platform.boundingRect(self, size: size, options: options)
+        if MathText.contains(self) {
+            let wraps = options.contains(.lineFragmentOrigin) && size.width < 1e6
+            return CGRect(origin: .zero, size: MathLayout(self, width: wraps ? size.width : nil).size)
+        }
+        return Graphics.platform.boundingRect(self, size: size, options: options)
     }
 
     /// The unwrapped size of one line (`size()`).
-    public var lineSize: CGSize { Graphics.platform.size(self) }
+    public var lineSize: CGSize {
+        MathText.contains(self) ? MathLayout(self, width: nil).size : Graphics.platform.size(self)
+    }
 
     public func draw(with rect: CGRect, options: TextOptions, in ctx: CGContext, flipped: Bool = true) {
+        if MathText.contains(self) {
+            MathLayout(self, width: rect.width).draw(in: rect, context: ctx, flipped: flipped)
+            return
+        }
         Graphics.platform.draw(self, with: rect, options: options, in: ctx, flipped: flipped)
     }
 
     public func draw(in rect: CGRect, context ctx: CGContext, flipped: Bool = true) {
+        if MathText.contains(self) {
+            MathLayout(self, width: rect.width).draw(in: rect, context: ctx, flipped: flipped)
+            return
+        }
         Graphics.platform.draw(self, in: rect, context: ctx, flipped: flipped)
     }
 
     public func draw(at point: CGPoint, in ctx: CGContext, flipped: Bool = true) {
+        if MathText.contains(self) {
+            let l = MathLayout(self, width: nil)
+            l.draw(in: CGRect(origin: point, size: l.size), context: ctx, flipped: flipped)
+            return
+        }
         Graphics.platform.draw(self, at: point, in: ctx, flipped: flipped)
     }
 }

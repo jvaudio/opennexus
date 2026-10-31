@@ -307,6 +307,8 @@ public final class CanvasController {
     @ObservationIgnored public var onSaveText: ((String, String) -> Void)?
     /// Replaces the live editor's text (slash menu picks clear their `/query`).
     @ObservationIgnored public var onEditorReplaceText: ((String) -> Void)?
+    /// Puts the editor's caret at a UTF-16 offset (`/chem`, M48).
+    @ObservationIgnored public var onEditorCaret: ((Int) -> Void)?
     public private(set) var toast: Toast?
     public var cheatSheetVisible = false
     public private(set) var scene = Scene()
@@ -318,6 +320,8 @@ public final class CanvasController {
         didSet { observePreferences() }
     }
     @ObservationIgnored var prefsObserver: (any NSObjectProtocol)?
+    /// Formulas typeset in the background redraw the canvas (M48).
+    @ObservationIgnored var mathObserver: (any NSObjectProtocol)?
     /// Bumps when preferences change (overlays read it).
     public internal(set) var prefsRevision = 0
     @ObservationIgnored public var profile: KeyProfile = .openNexus {

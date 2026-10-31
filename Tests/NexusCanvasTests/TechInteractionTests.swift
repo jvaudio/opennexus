@@ -88,7 +88,8 @@ import Testing
         #expect(h.canvas.nodes[id]?.text == "x^2 + \\alpha")
         let rendered = h.controller.scene.nodes[id]!.textStyle.attributed(
             "x^2 + \\alpha", marks: [], color: .fixed(CGColor(gray: 0, alpha: 1)))
-        #expect(rendered.string.contains("α"))
+        // Typeset by MathJax since M48: one formula stands in for the source.
+        #expect(MathText.runs(in: rendered).map(\.0.source) == ["x^2 + \\alpha"])
     }
 
     /// S5: Tab from a decision opens the branch's label pre-filled "Yes", then "No".
@@ -262,10 +263,11 @@ import Testing
         let ns = s.string as NSString
         let comment = s.attribute(TextKey.color, at: ns.range(of: "// again").location, effectiveRange: nil)
         #expect(TextColorValue(attribute: comment)?.cgColor == CodeText.comment)
-        let m = MathText.render(
-            "E[X] = \\sum_i x_i \\cdot p(x_i)", size: 16, color: .fixed(CGColor(gray: 0, alpha: 1)),
-            paragraph: TextParagraph())
-        #expect(m.string.contains("Σ") && m.string.contains("·") && !m.string.contains("\\"))
+        // Equations are typeset by MathJax since M48: one formula stands in for the source.
+        let font = Fonts.system(16)
+        let m = MathText.block(
+            "E[X] = \\sum_i x_i \\cdot p(x_i)", base: [TextKey.font: font], font: font, errorColor: .system(.red))
+        #expect(MathText.runs(in: m).count == 1 && !m.string.contains("\\"))
     }
 }
 

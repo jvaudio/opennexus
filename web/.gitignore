@@ -4,3 +4,4 @@ test-results/
 playwright-report/
 fixtures/
 viewer-app/dist/
+math/dist/

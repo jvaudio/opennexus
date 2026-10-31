@@ -6,7 +6,8 @@
   "type": "module",
   "workspaces": [
     "viewer-core",
-    "viewer-app"
+    "viewer-app",
+    "math"
   ],
   "engines": {
     "node": ">=20"

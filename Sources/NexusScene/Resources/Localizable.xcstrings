@@ -1745,6 +1745,10 @@
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
+    "$…$ and $$…$$ in topics and notes show as formulas; \\$ is a dollar sign" : {
+      "comment" : "Settings row detail",
+      "extractionState" : "migrated"
+    },
     "1 2 3 … ↩" : {
       "comment" : "UI text (PresentViews.swift)",
       "extractionState" : "migrated"
@@ -2119,6 +2123,10 @@
     },
     "Accessibility" : {
       "comment" : "Settings pane",
+      "extractionState" : "migrated"
+    },
+    "Acknowledgements" : {
+      "comment" : "UI text (SettingsCards.swift)",
       "extractionState" : "migrated"
     },
     "Actions" : {
@@ -3359,6 +3367,10 @@
     },
     "Checkable steps with a progress ring" : {
       "comment" : "Command note (palette subtitle)",
+      "extractionState" : "migrated"
+    },
+    "Chemistry" : {
+      "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
     "Children move up a level" : {
@@ -4909,6 +4921,10 @@
       "comment" : "UI text (CanvasController+Diagrams.swift)",
       "extractionState" : "migrated"
     },
+    "Equation, %@" : {
+      "comment" : "Text with values filled in (Spoken.swift)",
+      "extractionState" : "migrated"
+    },
     "Esc" : {
       "comment" : "Settings option",
       "extractionState" : "migrated"
@@ -5595,6 +5611,14 @@
     },
     "Formats" : {
       "comment" : "UI text (FileViews.swift)",
+      "extractionState" : "migrated"
+    },
+    "Formula error: %@" : {
+      "comment" : "Text with values filled in (CanvasView.swift)",
+      "extractionState" : "migrated"
+    },
+    "Formula preview" : {
+      "comment" : "UI text (MathPreview.swift)",
       "extractionState" : "migrated"
     },
     "Foundation Models framework. Text and images, tool calling for diagram actions. No download." : {
@@ -7097,7 +7121,7 @@
       "comment" : "Command note (palette subtitle)",
       "extractionState" : "migrated"
     },
-    "Markdown: # headings, - lists, ``` code, | tables |" : {
+    "Markdown: # headings, - lists, ``` code, | tables |, $math$" : {
       "comment" : "UI text (CanvasPopovers.swift)",
       "extractionState" : "migrated"
     },
@@ -11887,6 +11911,10 @@
     },
     "Type to filter" : {
       "comment" : "UI text (DiagramOverlays.swift)",
+      "extractionState" : "migrated"
+    },
+    "Typeset math in text" : {
+      "comment" : "Settings row",
       "extractionState" : "migrated"
     },
     "Typing" : {

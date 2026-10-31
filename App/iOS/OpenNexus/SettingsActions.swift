@@ -3,6 +3,7 @@ import NexusCore
 import NexusFormat
 import NexusScene
 import NexusTouch
+import SwiftUI
 import UIKit
 
 /// Settings' buttons on the iPad (Report an issue, delete snapshots, clear chats, the
@@ -14,6 +15,9 @@ enum SettingsActions {
         switch action {
         case "about.source", "about.notes", "general.whatsNew":
             UIApplication.shared.open(URL(string: "https://github.com/jvaudio/opennexus#readme")!)
+        case "about.acknowledgements":
+            PlatformOpen.topViewController()?.present(
+                UIHostingController(rootView: AcknowledgementsPage()), animated: true)
         case "about.issue":
             let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
             UIPasteboard.general.string = """
@@ -50,5 +54,24 @@ enum SettingsActions {
         a.addAction(UIAlertAction(title: button, style: .destructive) { _ in MainActor.assumeIsolated { action() } })
         a.addAction(UIAlertAction(title: Loc.t("Cancel"), style: .cancel))
         PlatformOpen.topViewController()?.present(a, animated: true)
+    }
+}
+
+/// MathJax's notice and licence (Settings › About › Acknowledgements, M48).
+private struct AcknowledgementsPage: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                Text(verbatim: Acknowledgements.text).font(.footnote).textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading).padding()
+            }
+            .navigationTitle(Loc.t("Acknowledgements"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) { Button(Loc.t("Done")) { dismiss() } }
+            }
+        }
     }
 }

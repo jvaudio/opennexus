@@ -248,6 +248,21 @@ func reviewDocument() -> DocumentModel {
         }
     }
 
+    /// M48's A2: a document 0.3 wrote (built from the v0.3 tag), with `/math` topics,
+    /// inline formulas, `\$`, prices and a note with formulas, reads and writes back byte
+    /// for byte. The package's `.gitignore` gains the viewer copy's `render/` (M43, D314).
+    @Test func mathFromV03RoundTrips() throws {
+        let files = try fixtureFiles("MathV03")
+        let doc = try NexusPackage.read(files: files)
+        #expect(doc.canvases["c1"]?.nodes.values.filter { $0.textFormat == "math" }.count == 6)
+        let out = NexusPackage.files(for: doc)
+        #expect(out.keys.sorted() == files.keys.sorted())
+        for (path, data) in files where path != ".gitignore" {
+            #expect(out[path] == data, "\(path) changed on round trip")
+        }
+        #expect(out[".gitignore"] == files[".gitignore"].map { $0 + Data("render/\n".utf8) })
+    }
+
     @Test func generatedDocumentMatchesGolden() throws {
         let files = try fixtureFiles("LaunchPlan")
         let out = NexusPackage.files(for: launchPlanDocument())

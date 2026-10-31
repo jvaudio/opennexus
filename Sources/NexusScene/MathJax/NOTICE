@@ -1,0 +1,17 @@
+OpenNexus typesets formulas with MathJax, bundled in nexus-math.js (built from web/math by
+scripts/build-math.sh). Each part is licensed under the Apache License, Version 2.0 (LICENSE).
+
+MathJax 4.1.3
+Copyright (c) 2009-2026 The MathJax Consortium
+https://www.mathjax.org
+
+MathJax New Computer Modern font data (@mathjax/mathjax-newcm-font 4.1.3)
+Copyright (c) 2022-2026 The MathJax Consortium
+Glyph outlines derived from the New Computer Modern fonts by Antonis Tsolomitis,
+distributed under the GUST Font License.
+
+MathJax mhchem font extension (@mathjax/mathjax-mhchem-font-extension 4.1.3)
+Copyright (c) 2022-2026 The MathJax Consortium
+
+mhchemparser 4.2.1 (\ce and \pu chemistry)
+Copyright (c) 2015-2023 Martin Hensel

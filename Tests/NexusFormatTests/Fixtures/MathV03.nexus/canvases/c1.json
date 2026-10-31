@@ -1,0 +1,92 @@
+{
+  "floating": [],
+  "id": "c1",
+  "layout": {
+    "mode": "auto",
+    "structure": "mindmap.balanced"
+  },
+  "nodes": {
+    "n1": {
+      "children": [
+        "n2",
+        "n3",
+        "n4",
+        "n5",
+        "n6",
+        "n7",
+        "n8",
+        "n10"
+      ],
+      "kind": "root",
+      "text": "Physics notes"
+    },
+    "n10": {
+      "children": [],
+      "kind": "topic",
+      "text": "let x = 1",
+      "textFormat": "code"
+    },
+    "n2": {
+      "children": [],
+      "kind": "topic",
+      "text": "x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}",
+      "textFormat": "math"
+    },
+    "n3": {
+      "children": [],
+      "kind": "topic",
+      "text": "E[X] = \\sum_i x_i \\cdot p(x_i)",
+      "textFormat": "math"
+    },
+    "n4": {
+      "children": [],
+      "kind": "topic",
+      "text": "\\int_0^\\infty e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}",
+      "textFormat": "math"
+    },
+    "n5": {
+      "children": [],
+      "kind": "topic",
+      "text": "\\mathbb{R}^n \\to \\mathbb{R}",
+      "textFormat": "math"
+    },
+    "n6": {
+      "children": [],
+      "kind": "topic",
+      "text": "\\lim_{n \\to \\infty} \\left(1 + \\frac{1}{n}\\right)^n = e",
+      "textFormat": "math"
+    },
+    "n7": {
+      "children": [],
+      "kind": "topic",
+      "text": "\\alpha + \\beta \\leq \\gamma",
+      "textFormat": "math"
+    },
+    "n8": {
+      "children": [
+        "n9"
+      ],
+      "kind": "topic",
+      "note": {
+        "format": "md",
+        "text": "Derivation: $$E^2 = (pc)^2 + (mc^2)^2$$ with $p = 0$."
+      },
+      "text": "Energy $E = mc^2$ costs \\$5"
+    },
+    "n9": {
+      "children": [],
+      "kind": "topic",
+      "text": "Prices $5 and $10 stay text"
+    }
+  },
+  "relationships": [],
+  "root": "n1",
+  "style": {
+    "colorTheme": "rainbow",
+    "nodeStyle": "outline",
+    "palette": "theme",
+    "theme": "classic"
+  },
+  "title": "Equations",
+  "type": "mindmap"
+}

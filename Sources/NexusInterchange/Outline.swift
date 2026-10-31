@@ -18,7 +18,7 @@ public enum MarkdownFormat {
     }
 
     static func line(_ n: Node) -> String {
-        var t = n.text.replacingOccurrences(of: "\n", with: " ")
+        var t = MathInterchange.text(n).replacingOccurrences(of: "\n", with: " ")
         if let link = n.link, !link.hasPrefix("#") { t = "[\(t)](\(link))" }
         if !n.labels.isEmpty { t += " " + n.labels.map { "`\($0)`" }.joined(separator: " ") }
         if let p = n.priority { t += " (P\(p))" }
@@ -442,9 +442,11 @@ public enum MarkdownFormat {
             text = text.replacingCharacters(in: m.range, with: String(m.1))
             t.link = t.link ?? String(m.2)
         }
-        text = text.replacingOccurrences(of: "**", with: "").replacingOccurrences(of: "__", with: "")
-            .replacingOccurrences(of: "`", with: "")
-        t.text = text
+        t.text = MathInterchange.outsideFormulas(text) {
+            $0.replacingOccurrences(of: "**", with: "").replacingOccurrences(of: "__", with: "")
+                .replacingOccurrences(of: "`", with: "")
+        }
+        MathInterchange.read(&t)
         return t
     }
 }

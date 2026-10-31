@@ -49,6 +49,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     private var hasPlacedCamera = false
 
     let editor = NodeTextView()
+    /// The edited topic's formulas, typeset beneath the editor (M48).
+    let mathPreview = MathPreviewView()
     /// Clicks and drags (shared with the iPad's touches, M47b).
     private(set) var pointer: CanvasPointer!
     private var connectField: NSView?
@@ -154,6 +156,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         editor.controller = controller
         editor.isHidden = true
         addSubview(editor)
+        mathPreview.isHidden = true
+        addSubview(mathPreview)
 
         setAccessibilityElement(true)
         setAccessibilityRole(.group)
@@ -172,6 +176,10 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             guard let self else { return }
             self.editor.string = text
             self.positionEditor()
+        }
+        controller.onEditorCaret = { [weak self] at in
+            guard let self, at <= (self.editor.string as NSString).length else { return }
+            self.editor.setSelectedRange(NSRange(location: at, length: 0))
         }
         controller.viewCommandHandler = { [weak self] id in self?.performViewCommand(id) ?? false }
         controller.viewCommandValidator = { id in Self.viewCommands.contains(id) }
@@ -675,6 +683,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
                 editor.end()
                 editor.isHidden = true
             }
+            mathPreview.isHidden = true
             controller.onOutlineEditChange?(session)
             return
         }
@@ -692,6 +701,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             return
         }
         guard let session, let n = controller.scene.nodes[session.node] else {
+            mathPreview.isHidden = true
             if !editor.isHidden {
                 editor.end()
                 editor.isHidden = true
@@ -735,6 +745,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             if editor.frame != frame { editor.frame = frame }
             if editor.bounds.size != local.size { editor.setBoundsSize(local.size) }
             editor.textContainer?.size = CGSize(width: local.width, height: .greatestFiniteMagnitude)
+            mathPreview.isHidden = true
             return
         }
         guard let session = controller.edit, let n = controller.scene.nodes[session.node],
@@ -751,6 +762,21 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         let size = local.size
         if editor.bounds.size != size { editor.setBoundsSize(size) }
         editor.textContainer?.size = CGSize(width: size.width, height: .greatestFiniteMagnitude)
+        placeMathPreview(below: camera.toView(n.frame.rect))
+    }
+
+    /// The preview card under the topic being edited, while it holds formulas.
+    private func placeMathPreview(below topic: CGRect) {
+        guard let p = controller.mathPreview() else {
+            mathPreview.isHidden = true
+            return
+        }
+        mathPreview.zoom = camera.zoom
+        mathPreview.preview = p
+        let s = p.size(zoom: camera.zoom)
+        let frame = CGRect(x: topic.midX - s.width / 2, y: topic.maxY + 8, width: s.width, height: s.height)
+        if mathPreview.frame != frame { mathPreview.frame = frame }
+        mathPreview.isHidden = false
     }
 
     // MARK: Keyboard
@@ -1014,6 +1040,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
             showLaser(at: convert(event.locationInWindow, from: nil))
         }
         updateFoldHover(convert(event.locationInWindow, from: nil))
+        updateFormulaTip(convert(event.locationInWindow, from: nil))
         guard controller.prefs.string("editing.floatingToolbar") == "rest", controller.mode == .select else { return }
         let p = convert(event.locationInWindow, from: nil)
         let over = node(at: p)
@@ -1025,6 +1052,14 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
                 self?.refreshMouseAids()
             }
         }
+    }
+
+    /// Over a formula MathJax couldn't typeset, its message as the tooltip (M48).
+    private func updateFormulaTip(_ p: CGPoint) {
+        let tip = node(at: p).flatMap { controller.canvas.nodes[$0] }
+            .flatMap { Spoken.mathError($0, prefs: controller.prefs) }
+            .map { Loc.f("Formula error: %@", $0) }
+        if toolTip != tip { toolTip = tip }
     }
 
     public override func mouseExited(with event: NSEvent) {

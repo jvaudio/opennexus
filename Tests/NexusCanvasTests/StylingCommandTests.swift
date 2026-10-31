@@ -143,6 +143,12 @@ import Testing
                     let r = Contrast.ratio(
                         n.appearance.text, n.appearance.textBackground, backdrop: h.controller.scene.canvasColor)
                     #expect(r >= t.contrastTarget - 0.01, "\(t.name)/\(style): \(n.displayText) \(r)")
+                    // A formula with an error reads as well as the text (M48).
+                    let canvas = h.controller.scene.canvasColor
+                    let e = Contrast.ratio(
+                        n.mathErrorColor(theme: h.controller.scene.theme, canvas: canvas), n.appearance.textBackground,
+                        backdrop: canvas)
+                    #expect(e >= t.contrastTarget - 0.01, "\(t.name)/\(style): error on \(n.displayText) \(e)")
                 }
             }
         }

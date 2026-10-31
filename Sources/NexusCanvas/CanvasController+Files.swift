@@ -368,8 +368,7 @@ extension CanvasController {
             case "all":
                 var o = s.image
                 o.scope = .canvas
-                let pages = m.canvasOrder.compactMap { ImageExporter.image(m, canvas: $0, o) }
-                return Self.pdfPages(pages)
+                return Self.pdfPages(m.canvasOrder.compactMap { ImageExporter.pdfPicture(m, canvas: $0, o) })
             default: return PrintLayout.singlePage(m, canvas: canvasID, s.image, links: prefs.bool("export.pdfLinks"))
             }
         case .word:
@@ -382,7 +381,9 @@ extension CanvasController {
                     images[id] = (ImageExporter.png(img), img.width, img.height)
                 }
             }
-            return WordFormat.export(m, images: images.mapValues { (png: $0.0, width: $0.1, height: $0.2) })
+            return WordFormat.export(
+                m, images: images.mapValues { (png: $0.0, width: $0.1, height: $0.2) }, typeset: Self.wordFormula,
+                textMath: prefs.bool("editing.typesetMath"))
         case .ganttPNG: return GanttExporter.data(self, exportCanvas(s), s.gantt)
         case .ganttJPEG: return GanttExporter.data(self, exportCanvas(s), s.gantt, jpeg: s.jpegQuality)
         case .ganttPDF: return GanttExporter.pdf(self, exportCanvas(s), s.gantt)
@@ -462,16 +463,43 @@ extension CanvasController {
         return xmind8 ? XmindWriter.exportXMind8(m, thumbnail: thumb) : XmindWriter.export(m, thumbnail: thumb)
     }
 
-    static func pdfPages(_ images: [CGImage]) -> Data {
+    /// A formula for Word (M48): its glyphs as an SVG, and a PNG at 4× for Word before 2016.
+    static func wordFormula(_ source: String, display: Bool, size: Double) -> WordFormat.Formula? {
+        guard case .glyphs(let g)? = MathEngine.waiting({ MathEngine.shared.result(source, display: display) }) else {
+            return nil
+        }
+        let em = MathText.fontSize(for: Fonts.system(CGFloat(size)))
+        let s = g.size(em)
+        let k: CGFloat = 4
+        guard s.width > 0, s.height > 0,
+            let ctx = CGContext(
+                data: nil, width: Int(ceil(s.width * k)), height: Int(ceil(s.height * k)), bitsPerComponent: 8,
+                bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        else { return nil }
+        ctx.scaleBy(x: k, y: k)
+        let black = CGColor(gray: 0, alpha: 1)
+        g.draw(in: ctx, at: CGPoint(x: 0, y: g.depth * em), fontSize: em, color: black, flipped: false)
+        guard let img = ctx.makeImage() else { return nil }
+        return WordFormat.Formula(
+            svg: Data(g.svg(fontSize: em, color: RGBA(r: 0, g: 0, b: 0, a: 1)).utf8), png: ImageExporter.png(img),
+            width: s.width, height: s.height, depth: g.depth * em)
+    }
+
+    static func pdfPages(_ pictures: [ImageExporter.PDFPicture]) -> Data {
         let data = NSMutableData()
         guard let consumer = CGDataConsumer(data: data as CFMutableData),
             let ctx = CGContext(consumer: consumer, mediaBox: nil, nil)
         else { return Data() }
-        for img in images {
+        for p in pictures {
+            let img = p.image
             var box = CGRect(x: 0, y: 0, width: CGFloat(img.width) / 2, height: CGFloat(img.height) / 2)
             ctx.beginPDFPage(
                 [kCGPDFContextMediaBox as String: Data(bytes: &box, count: MemoryLayout<CGRect>.size)] as CFDictionary)
             ctx.draw(img, in: box)
+            ImageExporter.drawFormulas(
+                p.formulas, in: ctx, from: p.rect, scale: p.scale / 2,
+                topLeft: CGPoint(x: p.topLeft.x / 2, y: p.topLeft.y / 2))
             ctx.endPDFPage()
         }
         ctx.closePDF()
@@ -954,7 +982,9 @@ extension CanvasController {
     }
 
     public func printPDF(_ o: PrintLayout.Options) -> (data: Data, pages: Int) {
-        PrintLayout.pdf(exportModel, canvas: canvasID, o)
+        var o = o
+        o.typesetMath = prefs.bool("editing.typesetMath")
+        return PrintLayout.pdf(exportModel, canvas: canvasID, o)
     }
 
     public func runPrint(_ o: PrintLayout.Options, savePDF: Bool = false) {

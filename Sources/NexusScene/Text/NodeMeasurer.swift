@@ -22,6 +22,8 @@ public struct NodeTextStyle: Hashable, Sendable {
     /// plain (nil), math or code: how the topic's text is typeset (`/math`, `/code`).
     public var format: String?
     public var language: String?
+    /// Typeset `$…$` and `$$…$$` in plain text (Settings › Editing › Typeset math in text, M48).
+    public var typesetsMath = false
 
     public init(typography t: NodeTypography, monospaced: Bool) {
         fontSize = t.fontSize
@@ -146,12 +148,16 @@ public struct NodeTextStyle: Hashable, Sendable {
         return max(0, (lineHeight - natural) / 2)
     }
 
-    /// The title with its rich-text runs applied over the base attributes.
-    public func attributed(_ text: String, marks: [TextMark], color: TextColorValue, linkColor: TextColorValue? = nil)
-        -> StyledText
-    {
+    /// The title with its rich-text runs applied over the base attributes. Formulas become
+    /// typeset runs (M48); `highlights` (search matches) are ranges of `text`, marked
+    /// before formulas replace their source. A formula with an error shows its source in
+    /// `errorColor`.
+    public func attributed(
+        _ text: String, marks: [TextMark], color: TextColorValue, linkColor: TextColorValue? = nil,
+        errorColor: TextColorValue = .system(.red), highlights: [NSRange] = []
+    ) -> StyledText {
         if format == "math" {
-            return MathText.render(text, size: CGFloat(fontSize) * 1.15, color: color, paragraph: paragraphStyle)
+            return MathText.block(text, base: attributes(color: color), font: font, errorColor: errorColor)
         }
         if format == "code" {
             return CodeText.render(text, size: CGFloat(fontSize) * 0.92, color: color, paragraph: paragraphStyle)
@@ -176,8 +182,15 @@ public struct NodeTextStyle: Hashable, Sendable {
                 if let linkColor { s.addAttribute(TextKey.color, value: linkColor.attribute, range: r) }
             }
         }
+        for r in highlights where r.location + r.length <= length {
+            s.addAttribute(TextKey.background, value: Self.highlight, range: r)
+        }
+        if typesetsMath { MathText.typeset(s, font: font, errorColor: errorColor) }
         return s
     }
+
+    /// Search matches' highlight behind the text (artboard 47).
+    public static let highlight = CGColor(srgbRed: 1, green: 0.86, blue: 0.3, alpha: 0.75)
 
     public func attributes(color: TextColorValue) -> [NSAttributedString.Key: Any] {
         var a: [NSAttributedString.Key: Any] = [
@@ -197,6 +210,9 @@ public final class NodeMeasurer {
         var text: String
         var style: NodeTextStyle
         var marks: [TextMark]
+        /// For text with maths, the engine's generation: a size measured with a formula's
+        /// source gives way once the formula is typeset.
+        var math: Int
     }
 
     private var cache: [Key: CGSize] = [:]
@@ -209,7 +225,10 @@ public final class NodeMeasurer {
 
     /// Size of the text block (not including padding).
     public func textSize(_ text: String, style: NodeTextStyle, marks: [TextMark] = []) -> CGSize {
-        let key = Key(text: text, style: style, marks: marks)
+        let math =
+            style.format == "math" || (style.typesetsMath && MathMarkup.mayContain(text))
+            ? MathEngine.shared.generation : -1
+        let key = Key(text: text, style: style, marks: marks, math: math)
         if let s = cache[key] {
             hits += 1
             return s
@@ -233,6 +252,13 @@ public final class NodeMeasurer {
     {
         let string = text.isEmpty ? " " : text
         let attr = style.attributed(string, marks: marks, color: .fixed(CGColor(gray: 0, alpha: 1)))
+        if MathText.contains(attr) {
+            // Formulas: CoreText's layout, which draws them too. A line can't break inside a
+            // formula, so one wider than the topic widens it.
+            var size = MathLayout(attr, width: nil).size
+            if size.width > style.maxWidth { size = MathLayout(attr, width: style.maxWidth).size }
+            return CGSize(width: ceil(max(size.width, 1)), height: ceil(size.height))
+        }
         let options: TextOptions = [.lineFragmentOrigin, .fontLeading]
         // Natural width first, so short titles never wrap.
         let natural = engine.boundingRect(

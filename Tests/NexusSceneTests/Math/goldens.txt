@@ -1,0 +1,43 @@
+# M48's 40 representative formulas (A1): name, a tab, the TeX, typeset in display
+# style. Goldens/<name>.svg is each at 20 pt in black; the Mac's tests and the iOS
+# hosted suite (A9) compare against the same files.
+fraction	\frac{a}{b}
+fraction-nested	\frac{1}{1+\frac{1}{x}}
+fraction-styles	\dfrac{a}{b} + \tfrac{c}{d}
+binomial	\binom{n}{k} = \frac{n!}{k!\,(n-k)!}
+continued-fraction	\cfrac{1}{1+\cfrac{1}{2+\cfrac{1}{3}}}
+quadratic	x = \frac{-b \pm \sqrt{b^2-4ac}}{2a}
+pmatrix	\begin{pmatrix} a & b \\ c & d \end{pmatrix}
+bmatrix	\begin{bmatrix} 1 & 0 & 0 \\ 0 & 1 & 0 \\ 0 & 0 & 1 \end{bmatrix}
+determinant	\det A = \begin{vmatrix} a & b \\ c & d \end{vmatrix} = ad - bc
+smallmatrix	\left(\begin{smallmatrix} a & b \\ c & d \end{smallmatrix}\right)
+array-rules	\begin{array}{c|c} a & b \\ \hline c & d \end{array}
+matrix-dots	\begin{pmatrix} a_{11} & \cdots & a_{1n} \\ \vdots & \ddots & \vdots \\ a_{m1} & \cdots & a_{mn} \end{pmatrix}
+aligned	\begin{aligned} f(x) &= (x+1)^2 \\ &= x^2 + 2x + 1 \end{aligned}
+align	\begin{align} a &= b + c \\ d + e &= f \end{align}
+gathered	\begin{gathered} a = b \\ e = b + c \end{gathered}
+split	\begin{equation}\begin{split} a &= b + c \\ &= e + f \end{split}\end{equation}
+alignat	\begin{alignat}{2} 10&x + &3&y = 2 \\ 3&x + &13&y = 4 \end{alignat}
+cases	|x| = \begin{cases} x & \text{if } x \ge 0 \\ -x & \text{otherwise} \end{cases}
+dcases	f(n) = \begin{dcases} \frac{n}{2} & n \text{ even} \\ 3n+1 & n \text{ odd} \end{dcases}
+rcases	\begin{rcases} a & \text{if } b \\ c & \text{if } d \end{rcases} \Rightarrow e
+reaction	\ce{2H2 + O2 -> 2H2O}
+equilibrium	\ce{N2 + 3H2 <=> 2NH3}
+arrow-above	\ce{A ->[\Delta] B}
+arrow-above-below	\ce{Zn^2+ <=>[+ 2OH-][+ 2H+] Zn(OH)2 v}
+equilibrium-right	\ce{A <=>> B}
+combustion	\ce{CH4 + 2O2 ->[h\nu] CO2 + 2H2O}
+arrow-gas	\ce{CaCO3 -> CaO + CO2 ^}
+states	\ce{NaCl(s) -> Na+(aq) + Cl-(aq)}
+charge	\ce{SO4^2-}
+charge-braces	\ce{Fe^{3+} + e- -> Fe^{2+}}
+isotope	\ce{^{227}_{90}Th+}
+hydrate	\ce{CuSO4*5H2O}
+unit-energy	\pu{123 kJ/mol}
+unit-exponent	\pu{1.2e3 m/s^2}
+unit-degrees	\pu{25 ^\circ C}
+unit-product	\pu{9.81 m s^-2}
+sum	\sum_{i=1}^{n} i^2 = \frac{n(n+1)(2n+1)}{6}
+integral	\int_0^\infty e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
+cancel-colour-box	\cancel{x} + \color{red}{y} + \boxed{z}
+fonts-braces	\mathcal{L}\{f\} + \mathfrak{g} + \mathbb{R}^n + \overbrace{a+b}^{n}

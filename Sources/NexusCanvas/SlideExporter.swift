@@ -20,6 +20,14 @@ public enum SlideExporter {
         _ model: DocumentModel, canvas id: CanvasID, size: CGSize = size, prefs: Preferences? = nil,
         today: TaskDate? = nil, inspect: ((SlideFrame, Slide) -> Void)? = nil
     ) -> [CGImage] {
+        // Exported slides wait for every formula (M48).
+        MathEngine.waiting { slides(model, canvas: id, size: size, prefs: prefs, today: today, inspect: inspect) }
+    }
+
+    private static func slides(
+        _ model: DocumentModel, canvas id: CanvasID, size: CGSize, prefs: Preferences?, today: TaskDate?,
+        inspect: ((SlideFrame, Slide) -> Void)?
+    ) -> [CGImage] {
         let store = DocumentStore(model: model)
         let controller = CanvasController(store: store)
         if let prefs { controller.prefs = prefs }
@@ -47,6 +55,12 @@ public enum SlideExporter {
     /// like an exported one. Nil past the deck's end.
     public static func renderSlide(
         _ model: DocumentModel, canvas id: CanvasID, index: Int, size: CGSize, prefs: Preferences? = nil
+    ) -> CGImage? {
+        MathEngine.waiting { slide(model, canvas: id, index: index, size: size, prefs: prefs) }
+    }
+
+    private static func slide(
+        _ model: DocumentModel, canvas id: CanvasID, index: Int, size: CGSize, prefs: Preferences?
     ) -> CGImage? {
         let store = DocumentStore(model: model)
         let controller = CanvasController(store: store)

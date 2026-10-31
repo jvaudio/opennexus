@@ -178,6 +178,8 @@ final class AppPreferences {
             showInfo(Loc.t("What’s new in OpenNexus 1.0"), WhatsNew.text)
         case "about.source":
             showInfo(Loc.t("OpenNexus is open source"), Self.licence)
+        case "about.acknowledgements":
+            showInfo(Loc.t("Acknowledgements"), Acknowledgements.text, markdown: false)
         case "about.issue":
             let info = """
                 OpenNexus \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"))
@@ -250,7 +252,7 @@ final class AppPreferences {
         }
     }
 
-    func showInfo(_ title: String, _ body: String) {
+    func showInfo(_ title: String, _ body: String, markdown: Bool = true) {
         let w = NSWindow(
             contentRect: CGRect(x: 0, y: 0, width: 560, height: 520), styleMask: [.titled, .closable, .resizable],
             backing: .buffered, defer: false)
@@ -258,7 +260,7 @@ final class AppPreferences {
         w.isReleasedWhenClosed = false
         w.contentView = NSHostingView(
             rootView: ScrollView {
-                Text(.init(body)).font(.chrome(14)).textSelection(.enabled).frame(
+                (markdown ? Text(.init(body)) : Text(verbatim: body)).font(.chrome(14)).textSelection(.enabled).frame(
                     maxWidth: .infinity, alignment: .leading
                 ).padding(24)
             }

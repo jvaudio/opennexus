@@ -415,7 +415,8 @@ public enum XmindWriter {
             report.topics += 1
             // Xmind's quick styles are classes on the topic (D244).
             var t: [String: Any] = [
-                "id": id(nid), "class": XmindStyle.topicClass(quickStyle: n.quickStyle), "title": n.text,
+                "id": id(nid), "class": XmindStyle.topicClass(quickStyle: n.quickStyle),
+                "title": MathInterchange.text(n),
             ]
             if let note = n.note?.text, !note.isEmpty {
                 let html = note.components(separatedBy: "\n").map { "<div>\(XML.escape($0, attribute: false))</div>" }
@@ -514,9 +515,7 @@ public enum XmindWriter {
             if n.nodeType != nil || n.edgeLabel != nil || n.lane != nil {
                 report.skip("Node type, edge label or lane (technical diagrams)")
             }
-            if n.textFormat == "math" || n.textFormat == "code" {
-                report.skip("Math or code formatting (kept as text)")
-            }
+            if n.textFormat == "code" { report.skip("Code formatting (kept as text)") }
             if n.subCanvas != nil { report.skip("Drill-down to another canvas") }
         }
 

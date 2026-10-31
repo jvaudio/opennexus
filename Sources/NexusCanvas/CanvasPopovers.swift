@@ -158,7 +158,15 @@ struct NotePopover: View {
                 .padding(6)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.textBackground))
                 .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.separator))
-            Text("Markdown: # headings, - lists, ``` code, | tables |").font(.chrome(11)).foregroundStyle(
+            if Preferences.shared.bool("editing.typesetMath"), !MathMarkup.scan(text).formulas.isEmpty {
+                // The note's formulas as they'll show (M48).
+                ScrollView { MathNoteText(text: text, size: 13).frame(maxWidth: .infinity, alignment: .leading) }
+                    .frame(maxHeight: 140)
+                    .padding(6)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
+                    .accessibilityLabel(Loc.t("Preview"))
+            }
+            Text("Markdown: # headings, - lists, ``` code, | tables |, $math$").font(.chrome(11)).foregroundStyle(
                 .secondary)
         }
         .padding(14)

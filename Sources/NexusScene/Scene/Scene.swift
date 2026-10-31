@@ -113,6 +113,8 @@ public struct SceneViewState: Equatable {
     public var background: String?
     public var minFontSize: Double = 0
     public var patterns = true
+    /// Settings › Editing › Typeset math in text: `$…$` and `$$…$$` in topics (M48).
+    public var typesetMath = true
     /// Export scope (branch, selection): only these topics and what lies wholly among them
     /// are drawn; positions come from the full layout.
     public var isolate: Set<NodeID>?
@@ -530,6 +532,7 @@ public struct SceneBuilder {
                 if editing?.node != id {
                     style.format = node.textFormat
                     style.language = node.language
+                    style.typesetsMath = view.typesetMath && node.textFormat == nil
                 }
                 if node.textFormat == "code" { style.maxWidth = max(style.maxWidth, 560) }
                 var text = node.text
@@ -546,7 +549,10 @@ public struct SceneBuilder {
                         ? (id == canvas.root ? "Name your idea" : "Topic") : (id == canvas.root ? "Central Topic" : " ")
                 }
                 if !placeholder, editing?.node != id {
-                    text = Self.applyCase(appearance.textCase, text)
+                    // A formula keeps its TeX: case changes only the words around it.
+                    if node.textFormat != "math" {
+                        text = Self.applyCase(appearance.textCase, text, keepingMath: style.typesetsMath)
+                    }
                     if let n = numberLabels[id] {
                         let prefix = "\(n) "
                         text = prefix + text
@@ -1176,8 +1182,22 @@ public struct SceneBuilder {
         return ToDoProgress(done: todos.filter(\.done).count, total: todos.count)
     }
 
-    package static func applyCase(_ c: String, _ s: String) -> String {
-        switch c {
+    package static func applyCase(_ c: String, _ s: String, keepingMath: Bool = false) -> String {
+        if keepingMath, c != "", c != "none", MathMarkup.mayContain(s) {
+            let formulas = MathMarkup.scan(s).formulas
+            if !formulas.isEmpty {
+                let ns = s as NSString
+                var out = ""
+                var at = 0
+                for f in formulas {
+                    out += applyCase(c, ns.substring(with: NSRange(location: at, length: f.range.location - at)))
+                    out += ns.substring(with: f.range)
+                    at = f.range.location + f.range.length
+                }
+                return out + applyCase(c, ns.substring(from: at))
+            }
+        }
+        return switch c {
         case "upper": s.uppercased()
         case "lower": s.lowercased()
         case "title": s.capitalized

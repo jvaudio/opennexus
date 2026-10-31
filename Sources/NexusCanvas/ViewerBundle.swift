@@ -46,6 +46,10 @@ public enum ViewerBundle {
 
     /// The bundle for `model` (already masked and stripped as the export sheet makes it).
     public static func build(_ model: DocumentModel, _ o: Options, prefs: Preferences = .isolated()) -> JSONValue {
+        MathEngine.waiting { make(model, o, prefs: prefs) }
+    }
+
+    private static func make(_ model: DocumentModel, _ o: Options, prefs: Preferences) -> JSONValue {
         var m = model
         for (id, c) in m.canvases {
             for n in c.nodes.keys {

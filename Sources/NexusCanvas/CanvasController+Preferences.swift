@@ -15,6 +15,17 @@ extension CanvasController {
             [weak self] _ in
             MainActor.assumeIsolated { self?.applyPreferences() }
         }
+        if mathObserver == nil {
+            mathObserver = NotificationCenter.default.addObserver(
+                forName: MathEngine.didTypeset, object: nil, queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.rebuildScene()
+                    self.onSceneChange?(false)
+                }
+            }
+        }
         applyPreferences()
     }
 
@@ -77,6 +88,7 @@ extension CanvasController {
         v.minFontSize = max(a, b)
         v.patterns = prefs.bool("accessibility.patterns")
         v.taskDetails = prefs.bool("editing.taskDetails")
+        v.typesetMath = prefs.bool("editing.typesetMath")
         v.today = todayDate
     }
 

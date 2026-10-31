@@ -413,7 +413,7 @@ public struct PresenterView: View {
 
     func note(_ current: Slide?) -> some View {
         ScrollView {
-            Text(current?.note ?? Loc.t("No note on this slide's topic."))
+            MathNoteText(text: current?.note ?? Loc.t("No note on this slide's topic."), size: 24)
                 .font(.chrome(24))
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
@@ -494,7 +494,7 @@ public struct PresenterView: View {
                     .opacity(0.85)
                 }
                 ScrollView {
-                    Text(current?.note ?? Loc.t("No note on this slide's topic."))
+                    MathNoteText(text: current?.note ?? Loc.t("No note on this slide's topic."), size: 24)
                         .font(.chrome(24))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }

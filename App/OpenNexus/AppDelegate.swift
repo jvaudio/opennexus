@@ -38,6 +38,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.mainMenu = MainMenu.build(registry: .standard, profile: .openNexus)
         AppPreferences.shared.start()
         Integrations.shared.start()
+        // Formulas typeset in the background on the canvas; the engine starts now (M48).
+        MathEngine.defersOnMainThread = true
+        MathEngine.shared.warmUp()
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {

@@ -6,6 +6,9 @@ import NexusTouch
 import SwiftUI
 import UIKit
 
+// Only the engine: NexusScene's `Scene` would hide SwiftUI's.
+import class NexusScene.MathEngine
+
 /// OpenNexus for iPad (M47b): one window per scene, each showing Home or a document.
 /// A second display shows the presentation while the iPad shows the presenter view.
 @main
@@ -47,6 +50,9 @@ final class AppDelegate: NSObject, UIApplicationDelegate {
 enum Launch {
     static func start() {
         TouchCanvasHost.install()
+        // Formulas typeset in the background on the canvas; the engine starts now (M48).
+        MathEngine.defersOnMainThread = true
+        MathEngine.shared.warmUp()
         PlatformNetwork.provider = InProcessNetwork()
         let library = TouchLibrary.shared
         library.aiAvailability = { AppleEngine().availability }

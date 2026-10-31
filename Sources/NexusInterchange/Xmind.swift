@@ -296,6 +296,7 @@ public enum XmindFormat {
 
         mutating func topic(_ t: [String: Any]) -> ITopic {
             var it = ITopic(text(t), ref: t["id"] as? String)
+            MathInterchange.read(&it)
             if let notes = t["notes"] as? [String: Any] {
                 it.note = (notes["plain"] as? [String: Any])?["content"] as? String
                 if it.note == nil, notes["realHTML"] != nil { report.skip("Rich-text note without plain text") }
@@ -543,6 +544,7 @@ public enum XmindFormat {
 
         mutating func topic(_ e: XMLElement) -> ITopic {
             var it = ITopic(e.kid("title")?.stringValue ?? "", ref: e.attr("id"))
+            MathInterchange.read(&it)
             if let plain = e.kid("notes")?.kid("plain")?.stringValue { it.note = plain }
             for m in e.kid("marker-refs")?.kids("marker-ref") ?? [] {
                 guard let id = m.attr("marker-id") else { continue }

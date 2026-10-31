@@ -1,0 +1,16 @@
+{
+  "name": "@opennexus/math",
+  "version": "1.0.0",
+  "private": true,
+  "description": "MathJax built for JavaScriptCore: TeX in, SVG out, for topics and notes (M48).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "devDependencies": {
+    "@mathjax/mathjax-mhchem-font-extension": "4.1.3",
+    "@mathjax/mathjax-newcm-font": "4.1.3",
+    "@mathjax/src": "4.1.3"
+  }
+}

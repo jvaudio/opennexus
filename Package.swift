@@ -70,8 +70,8 @@ let package = Package(
         .target(
             name: "NexusScene",
             dependencies: ["NexusCore", "NexusLayout", "NexusTheme", "NexusFormat", "NexusInterchange"],
-            // The String Catalog for every target's `Loc` strings.
-            resources: [.process("Resources")],
+            // The String Catalog for every target's `Loc` strings, and MathJax (M48).
+            resources: [.process("Resources"), .copy("MathJax")],
             swiftSettings: strict
         ),
         // Editing logic (the controller, documents, preferences), shared with iOS, plus the
@@ -126,7 +126,7 @@ let package = Package(
         // Mac's TextKit engine to compare against.
         .testTarget(
             name: "NexusSceneTests", dependencies: ["NexusScene", "NexusCore", "NexusTheme", "NexusCanvas"],
-            exclude: ["Titles.json", "MacMeasures.json"]),
+            exclude: ["Titles.json", "MacMeasures.json", "Math"]),
         // The share tests run the network service in process, against stubs and Docker (M44).
         .testTarget(
             name: "NexusCanvasTests",

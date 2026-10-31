@@ -43,6 +43,12 @@ public enum SVGExporter {
     static func export(
         _ controller: CanvasController, assets: [String: Data], _ io: ImageExporter.Options, _ o: Options
     ) -> String {
+        MathEngine.waiting { write(controller, assets: assets, io, o) }
+    }
+
+    private static func write(
+        _ controller: CanvasController, assets: [String: Data], _ io: ImageExporter.Options, _ o: Options
+    ) -> String {
         let scene = controller.scene
         let canvas = controller.canvas
         let rect = viewBox(scene, io)
@@ -458,7 +464,7 @@ public enum SVGExporter {
         if sn.todo?.done == true { color = a.text.alpha(0.55) }
         w.block(
             sn.displayText, style: sn.textStyle, marks: sn.marks, in: sn.textRect, color: color, link: theme.ring,
-            struck: sn.todo?.done == true)
+            error: sn.mathErrorColor(theme: theme, canvas: scene.canvasColor), struck: sn.todo?.done == true)
         if sn.hiddenCount > 0 { badge(sn, &w, canvas: scene.canvasColor) }
         if let c = sn.tech.caption {
             let font = Fonts.mono(9.5, .medium)
@@ -605,14 +611,19 @@ public enum SVGExporter {
         /// A wrapped text block laid out by Core Text exactly as the canvas lays it out.
         mutating func block(
             _ s: String, style: NodeTextStyle, marks: [TextMark], in r: CGRect, color: RGBA, link: RGBA? = nil,
-            struck: Bool = false
+            error: RGBA? = nil, struck: Bool = false
         ) {
             guard !s.isEmpty, r.width > 0 else { return }
             let attr = NSMutableAttributedString(
                 attributedString: style.attributed(
-                    s, marks: marks, color: .fixed(color.cgColor), linkColor: link.map { .fixed($0.cgColor) }))
+                    s, marks: marks, color: .fixed(color.cgColor), linkColor: link.map { .fixed($0.cgColor) },
+                    errorColor: .fixed((error ?? RGBA(r: 0.85, g: 0.23, b: 0.25)).cgColor)))
             if struck {
                 attr.addAttribute(TextKey.strikethrough, value: 1, range: NSRange(location: 0, length: attr.length))
+            }
+            if MathText.contains(attr) {
+                formulaBlock(attr, in: r, color: color, style: style)
+                return
             }
             // Laid out from the attributes the platform's own text system hands CoreText.
             let setter = CTFramesetterCreateWithAttributedString(Graphics.platform.coreTextString(attr))
@@ -627,46 +638,81 @@ public enum SVGExporter {
                 let base = CGPoint(x: r.minX + o.x, y: r.minY + (total - o.y))
                 if outline {
                     glyphs(line, origin: base, color: color, source: attr)
-                    continue
+                } else {
+                    text(line, origin: base, color: color, source: attr, style: style)
                 }
-                // The first run's position and font go on <text> itself (some renderers ignore
-                // tspan positions); further runs (bold, links) follow as tspans.
-                var head = ""
-                var spans = ""
-                for run in CTLineGetGlyphRuns(line) as? [CTRun] ?? [] {
-                    let range = CTRunGetStringRange(run)
-                    let text = (attr.string as NSString).substring(
-                        with: NSRange(location: range.location, length: range.length)
-                    )
-                    .trimmingCharacters(in: .newlines)
-                    guard !text.isEmpty else { continue }
-                    // The run's style, from the source text.
-                    let attrs = attr.attributes(at: range.location, effectiveRange: nil)
-                    let font = (attrs[TextKey.font] as! CTFont?) ?? style.font
-                    var pos = CGPoint.zero
-                    CTRunGetPositions(run, CFRange(location: 0, length: 1), &pos)
-                    let shift = (attrs[TextKey.baselineOffset] as? NSNumber).map { CGFloat($0.doubleValue) } ?? 0
-                    var deco = ""
-                    if attrs[TextKey.underline] != nil { deco = " text-decoration=\"underline\"" }
-                    if attrs[TextKey.strikethrough] != nil {
-                        deco = " text-decoration=\"line-through\""
-                    }
-                    let italic =
-                        SVGExporter.traits(font).contains(.traitItalic) ? " font-style=\"italic\"" : ""
-                    let at = "x=\"\(n(base.x + pos.x))\" y=\"\(n(base.y - shift))\""
-                    let face =
-                        "font-family=\"\(SVGExporter.family(font))\" font-size=\"\(n(CTFontGetSize(font)))\" font-weight=\"\(SVGExporter.weight(font))\"\(italic)\(deco)"
-                    let runColor = SVGExporter.runColor(attrs).flatMap { $0 == color ? nil : $0 }
-                    if head.isEmpty {
-                        head =
-                            "<text \(at) \(face) \(SVGExporter.paint(runColor ?? color, "fill")) xml:space=\"preserve\">\(esc(text))"
-                    } else {
-                        spans +=
-                            "<tspan \(at) \(face)\(runColor.map { " " + SVGExporter.paint($0, "fill") } ?? "")>\(esc(text))</tspan>"
-                    }
-                }
-                if !head.isEmpty { self.line(head + spans + "</text>") }
             }
+        }
+
+        /// Text with formulas (M48): laid out as `MathLayout` draws it, its words as the rest
+        /// of the export writes them, each formula as paths in its run's colour.
+        mutating func formulaBlock(_ attr: NSAttributedString, in r: CGRect, color: RGBA, style: NodeTextStyle) {
+            // The layout places words on their baselines itself.
+            let source = NSMutableAttributedString(attributedString: attr)
+            source.removeAttribute(TextKey.baselineOffset, range: NSRange(location: 0, length: source.length))
+            let layout = MathLayout(source, width: r.width)
+            let shift = max(0, r.width - layout.size.width)
+            for l in layout.lines {
+                let base = CGPoint(
+                    x: r.minX + l.x + MathLayout.alignmentShift(l, text: source, extra: shift), y: r.minY + l.baseline)
+                if outline {
+                    glyphs(l.line, origin: base, color: color, source: source)
+                } else {
+                    text(l.line, origin: base, color: color, source: source, style: style)
+                }
+            }
+            for f in layout.placed(in: r, flipped: true) {
+                let fill = SVGExporter.runColor(source.attributes(at: f.range.location, effectiveRange: nil)) ?? color
+                let t = CGAffineTransform(translationX: f.origin.x, y: f.origin.y).scaledBy(
+                    x: f.run.fontSize, y: f.run.fontSize)
+                var out = ""
+                for p in f.run.glyphs.pieces { out += MathGlyphs.element(p, transform: t, color: fill) }
+                self.line("<g class=\"math\">\(out)</g>")
+            }
+        }
+
+        /// A line as live `<text>`.
+        mutating func text(
+            _ line: CTLine, origin base: CGPoint, color: RGBA, source attr: NSAttributedString, style: NodeTextStyle
+        ) {
+            // The first run's position and font go on <text> itself (some renderers ignore
+            // tspan positions); further runs (bold, links) follow as tspans.
+            var head = ""
+            var spans = ""
+            for run in CTLineGetGlyphRuns(line) as? [CTRun] ?? [] {
+                let range = CTRunGetStringRange(run)
+                let text = (attr.string as NSString).substring(
+                    with: NSRange(location: range.location, length: range.length)
+                )
+                .trimmingCharacters(in: .newlines)
+                guard !text.isEmpty else { continue }
+                // The run's style, from the source text; formulas are written as paths.
+                let attrs = attr.attributes(at: range.location, effectiveRange: nil)
+                if attrs[TextKey.math] != nil { continue }
+                let font = (attrs[TextKey.font] as! CTFont?) ?? style.font
+                var pos = CGPoint.zero
+                CTRunGetPositions(run, CFRange(location: 0, length: 1), &pos)
+                let shift = (attrs[TextKey.baselineOffset] as? NSNumber).map { CGFloat($0.doubleValue) } ?? 0
+                var deco = ""
+                if attrs[TextKey.underline] != nil { deco = " text-decoration=\"underline\"" }
+                if attrs[TextKey.strikethrough] != nil {
+                    deco = " text-decoration=\"line-through\""
+                }
+                let italic =
+                    SVGExporter.traits(font).contains(.traitItalic) ? " font-style=\"italic\"" : ""
+                let at = "x=\"\(n(base.x + pos.x))\" y=\"\(n(base.y - shift))\""
+                let face =
+                    "font-family=\"\(SVGExporter.family(font))\" font-size=\"\(n(CTFontGetSize(font)))\" font-weight=\"\(SVGExporter.weight(font))\"\(italic)\(deco)"
+                let runColor = SVGExporter.runColor(attrs).flatMap { $0 == color ? nil : $0 }
+                if head.isEmpty {
+                    head =
+                        "<text \(at) \(face) \(SVGExporter.paint(runColor ?? color, "fill")) xml:space=\"preserve\">\(esc(text))"
+                } else {
+                    spans +=
+                        "<tspan \(at) \(face)\(runColor.map { " " + SVGExporter.paint($0, "fill") } ?? "")>\(esc(text))</tspan>"
+                }
+            }
+            if !head.isEmpty { self.line(head + spans + "</text>") }
         }
 
         /// A line's glyphs as outlines in its runs' colours, with underlines and
@@ -681,6 +727,18 @@ public enum SVGExporter {
                     (CTRunGetAttributes(run) as NSDictionary)[kCTFontAttributeName] as! CTFont? ?? Fonts.system(12)
                 let shift = (attrs[TextKey.baselineOffset] as? NSNumber).map { CGFloat($0.doubleValue) } ?? 0
                 let fill = SVGExporter.runColor(attrs) ?? color
+                if let m = attrs[TextKey.math] as? MathRun {
+                    // A formula's room: its paths are written by `formulaBlock`; a done task's
+                    // strikethrough still crosses it.
+                    if attrs[TextKey.strikethrough] != nil {
+                        var x = CGPoint.zero
+                        CTRunGetPositions(run, CFRange(location: 0, length: 1), &x)
+                        bar(
+                            x: origin.x + x.x, y: origin.y - m.fontSize * 0.25, width: m.width, thickness: 1,
+                            color: fill)
+                    }
+                    continue
+                }
                 let count = CTRunGetGlyphCount(run)
                 guard count > 0 else { continue }
                 var gl = [CGGlyph](repeating: 0, count: count)

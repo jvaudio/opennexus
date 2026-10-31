@@ -97,6 +97,7 @@ private struct AboutCard: View {
 
     @ViewBuilder var links: some View {
         Button("Source code") { onAction("about.source") }
+        Button("Acknowledgements") { onAction("about.acknowledgements") }
         Button("Release notes") { onAction("about.notes") }
         Button("Report an issue…") { onAction("about.issue") }
     }

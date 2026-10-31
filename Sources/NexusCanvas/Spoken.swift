@@ -22,7 +22,8 @@ public enum Spoken {
             depth = d.depths[id] ?? c.depth(of: id)
             maxDepth = d.max
         }
-        var parts: [String] = [n.text.isEmpty ? Loc.t("Topic") : n.text]
+        var parts: [String] = [n.text.isEmpty ? Loc.t("Topic") : title(n, prefs: prefs)]
+        if let error = mathError(n, prefs: prefs) { parts.append(Loc.f("Formula error: %@", error)) }
         let role =
             id == c.root
             ? Loc.t("Central topic")
@@ -53,6 +54,28 @@ public enum Spoken {
         }
         if hints && prefs.bool("accessibility.speakHints") { parts.append(Loc.t("Tab adds a child")) }
         return parts.joined(separator: ". ") + "."
+    }
+
+    /// The title as read: formulas as their TeX source (decision #14, D421), a `/math`
+    /// topic as "Equation, …", `\$` as a dollar sign (M48).
+    public static func title(_ n: NexusCore.Node, prefs: Preferences) -> String {
+        if n.textFormat == "math" {
+            return Loc.f("Equation, %@", n.text.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        guard n.textFormat == nil, prefs.bool("editing.typesetMath") else { return n.text }
+        return MathMarkup.plain(n.text)
+    }
+
+    /// MathJax's message for the topic's first formula that failed, once it's known.
+    static func mathError(_ n: NexusCore.Node, prefs: Preferences) -> String? {
+        let keys: [MathEngine.Key] =
+            n.textFormat == "math"
+            ? [MathEngine.Key(n.text.trimmingCharacters(in: .whitespacesAndNewlines), display: true)]
+            : n.textFormat == nil && prefs.bool("editing.typesetMath") ? MathMarkup.keys(n.text) : []
+        for k in keys {
+            if case .error(let message)? = MathEngine.shared.cached(k) { return message }
+        }
+        return nil
     }
 
     /// Depth of every topic in the tree under the root (floating tops start their own).

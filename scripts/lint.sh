@@ -36,4 +36,7 @@ fi
 # The interactive viewer copied into the Swift resources matches web/viewer-core (M43).
 scripts/build-viewer.sh --check || failed=1
 
+# MathJax copied into the Swift resources matches web/math (M48).
+scripts/build-math.sh --check || failed=1
+
 exit $failed
