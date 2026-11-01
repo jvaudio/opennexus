@@ -56,7 +56,8 @@ public enum ImageText {
     /// Vision's lines, in the pixels of a `width` × `height` picture, each with its width
     /// in ems (D283). With the picture's `ink`, a lone mark at either end of a line whose
     /// ink runs out of the line's box is a connector read as a character: it's dropped, and
-    /// the line takes Vision's box for the rest (D284). Each line also notes where its
+    /// the line takes Vision's box for the rest (D284). One between two words, where a
+    /// connector crosses the line, cuts it in two (D483). Each line also notes where its
     /// text's ink runs across it (D285).
     static func read(
         _ image: CGImage, name: String, width w: Double, height h: Double, ink: InkMap? = nil
@@ -79,28 +80,101 @@ public enum ImageText {
             CGRect(x: r.minX * w, y: (1 - r.maxY) * h, width: r.width * w, height: r.height * h)
         }
         let font = CTFontCreateUIFontForLanguage(.system, 12, nil)
-        return (request.results ?? []).compactMap { obs in
-            guard let best = obs.topCandidates(1).first else { return nil }
-            let line = pixels(obs.boundingBox)
-            var text = best.string[...]
-            func connector(_ mark: Range<String.Index>) -> Bool {
-                guard let ink, let m = try? best.boundingBox(for: mark) else { return false }
-                return ink.runsOut(of: line, from: pixels(m.boundingBox))
-            }
-            for last in [true, false] {
-                if let (mark, rest) = endMark(text, last: last), connector(mark) { text = best.string[rest] }
-            }
+        var lines: [TextBox] = []
+        var pieces: Set<Int> = []
+        for obs in request.results ?? [] {
+            guard let best = obs.topCandidates(1).first else { continue }
+            let got = boxes(
+                best.string, line: pixels(obs.boundingBox), confidence: Double(best.confidence), ink: ink, font: font
+            ) { (try? best.boundingBox(for: $0)).map { pixels($0.boundingBox) } }
+            if got.count > 1 { pieces.formUnion(lines.count..<lines.count + got.count) }
+            lines += got
+        }
+        return dropRepeats(lines, pieces: pieces)
+    }
+
+    /// One line Vision read, `string` in `line` (image pixels), as text boxes: without a
+    /// connector read as a mark at either end (D284), and cut in pieces where one crosses it
+    /// (D483). `at` is Vision's box for part of the string.
+    static func boxes(
+        _ string: String, line: CGRect, confidence: Double, ink: InkMap?, font: CTFont?,
+        at: (Range<String.Index>) -> CGRect?
+    ) -> [TextBox] {
+        var text = string[...]
+        func connector(_ mark: Range<String.Index>) -> Bool {
+            guard let ink, let m = at(mark) else { return false }
+            return ink.runsOut(of: line, from: m)
+        }
+        for last in [true, false] {
+            if let (mark, rest) = endMark(text, last: last), connector(mark) { text = string[rest] }
+        }
+        let parts = cut(text, line: line, ink: ink, at: at)
+        return parts.map { part, span in
             var r = line
-            if text.count < best.string.count, let kept = try? best.boundingBox(for: text.startIndex..<text.endIndex) {
-                r = pixels(kept.boundingBox)
-            }
+            if part.count < string.count, let kept = at(part.startIndex..<part.endIndex) { r = kept }
+            // Vision can share a cut line's width out by characters, over the connector.
+            let x0 = max(r.minX, span.lowerBound)
+            let x1 = min(r.maxX, span.upperBound)
+            if parts.count > 1, x1 > x0 { r = CGRect(x: x0, y: r.minY, width: x1 - x0, height: r.height) }
             var b = TextBox(
-                String(text), x: r.minX, y: r.minY, width: r.width, height: r.height,
-                confidence: Double(best.confidence))
-            b.em = font.flatMap { ems(text, in: $0) }
+                String(part), x: r.minX, y: r.minY, width: r.width, height: r.height, confidence: confidence)
+            b.em = font.flatMap { ems(part, in: $0) }
             b.inked = ink.map { $0.inked(r) }.map { $0.minX...$0.maxX }
             return b
         }
+    }
+
+    /// `text` cut where a connector crosses its `line`: at the lone stroke-like mark between
+    /// two words that Vision put nearest each stroke of the picture's ink across the line
+    /// (`InkMap.strokes(across:)`). Vision can read two topics on one row, and the connector
+    /// between them, as one line ("Two nights - Hotel for the team"). Each piece comes with
+    /// the span its box can take, up to the connector. The whole text when there's no cut.
+    static func cut(
+        _ text: Substring, line: CGRect, ink: InkMap?, at: (Range<String.Index>) -> CGRect?
+    ) -> [(text: Substring, span: ClosedRange<Double>)] {
+        let whole: [(text: Substring, span: ClosedRange<Double>)] = [(text, line.minX...max(line.minX, line.maxX))]
+        let words = text.split(whereSeparator: \.isWhitespace)
+        let marks = words.indices.dropFirst().dropLast().filter {
+            words[$0].count == 1 && words[$0].first.map(strokeMarks.contains) == true
+        }
+        guard !marks.isEmpty, let strokes = ink?.strokes(across: line), !strokes.isEmpty else { return whole }
+        let centres = marks.compactMap { k in at(words[k].startIndex..<words[k].endIndex).map { (k, $0.midX) } }
+        var cuts: [Int: ClosedRange<Double>] = [:]
+        for s in strokes {
+            // How far a mark's centre is from the stroke; within a line's height counts.
+            func off(_ x: Double) -> Double { max(0, s.lowerBound - x, x - s.upperBound) }
+            let near = centres.filter { cuts[$0.0] == nil && off($0.1) <= line.height }
+            if let (k, _) = near.min(by: { off($0.1) < off($1.1) }) { cuts[k] = s }
+        }
+        var parts: [(text: Substring, span: ClosedRange<Double>)] = []
+        var first = 0
+        var left = line.minX
+        for (k, s) in cuts.sorted(by: { $0.key < $1.key }) where k > first {
+            parts.append((text[words[first].startIndex..<words[k - 1].endIndex], left...max(left, s.lowerBound)))
+            first = k + 1
+            left = s.upperBound
+        }
+        guard !parts.isEmpty else { return whole }
+        let rest = text[words[first].startIndex..<words[words.count - 1].endIndex]
+        parts.append((rest, min(left, line.maxX)...line.maxX))
+        return parts
+    }
+
+    /// `boxes` without each piece of a cut line (`pieces`) that a whole line already reads
+    /// there: half or more of the piece's box inside the line's, and the piece's text in
+    /// the line's. Vision on one Mac read "Two nights" on its own and again with the
+    /// connector and the topic beside it, as "nights - Hotel for the team" (D483).
+    static func dropRepeats(_ boxes: [TextBox], pieces: Set<Int>) -> [TextBox] {
+        func rect(_ b: TextBox) -> CGRect { CGRect(x: b.x, y: b.y, width: b.width, height: b.height) }
+        return boxes.indices.filter { i in
+            guard pieces.contains(i) else { return true }
+            let r = rect(boxes[i])
+            return !boxes.indices.contains { j in
+                guard !pieces.contains(j), boxes[j].text.contains(boxes[i].text) else { return false }
+                let shared = r.intersection(rect(boxes[j]))
+                return !shared.isNull && shared.width * shared.height >= 0.5 * r.width * r.height
+            }
+        }.map { boxes[$0] }
     }
 
     /// What a connector's line, fork or curve can be read as.
