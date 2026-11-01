@@ -11,6 +11,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import path from "node:path";
 import type { Opened } from "../viewer-app/src/document";
+import { inert } from "./inert";
 
 declare global {
   interface Window {
@@ -255,6 +256,26 @@ test.describe("open", () => {
     const outline = must(cases.find((c) => c.name === "json-outline"), "json-outline");
     await drop(page, outline);
     await checkOpened(page, outline);
+  });
+
+  // M49 (A4): a viewer copy crafted to run script opens inert here too.
+  test("a crafted viewer copy renders inert", async ({ page }) => {
+    let dialogs = 0;
+    page.on("dialog", (d) => {
+      dialogs++;
+      void d.dismiss();
+    });
+    const w = await home(page);
+    await page.locator("#open-file").setInputFiles(path.join(dir, "Crafted.nexusjson"));
+    expect(await state(page)).toBe("ready");
+    await page.locator(".onx-topic").first().click();
+    await page.mouse.move(60, 200);
+    await page.waitForTimeout(300);
+    expect(dialogs).toBe(0);
+    expect(await page.evaluate(() => (window as unknown as { __pwned?: unknown }).__pwned)).toBeUndefined();
+    expect(await page.locator(".onx").first().evaluate(inert)).toEqual({ bad: [], handlers: [], hrefs: [], styles: 0 });
+    await expect(page.getByRole("complementary").locator("code")).toHaveText("javascript:window.__pwned=10");
+    expect(w.requests.filter((u) => !u.startsWith(site) && !u.startsWith("blob:"))).toEqual([]);
   });
 
   test("Present plays the deck in its saved order", async ({ page }) => {

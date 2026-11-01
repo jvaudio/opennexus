@@ -10,6 +10,7 @@ import { gzipSync } from "node:zlib";
 import { PNG } from "pngjs";
 import type { parseBundle } from "../viewer-core/src/bundle";
 import type { find } from "../viewer-core/src/search";
+import { inert } from "./inert";
 
 declare global {
   interface Window {
@@ -282,16 +283,7 @@ test.describe("A4 · scopes and a crafted bundle", () => {
     expect(dialogs).toBe(0);
     expect(await page.evaluate(() => (window as unknown as { __pwned?: unknown }).__pwned)).toBeUndefined();
     expect(o.requests.filter((u) => !u.startsWith("blob:") && !u.startsWith("data:"))).toEqual([fileURL("malicious")]);
-    const report = await page.evaluate(() => {
-      const root = document.querySelector(".onx");
-      const all = Array.from(root?.querySelectorAll("*") ?? []);
-      return {
-        bad: all.filter((e) => ["script", "iframe", "foreignObject", "style", "animate", "set", "object", "embed", "img"].includes(e.localName) || (e.localName === "a" && e.namespaceURI !== "http://www.w3.org/1999/xhtml")).map((e) => e.localName),
-        handlers: all.flatMap((e) => Array.from(e.attributes).filter((a) => a.name.startsWith("on")).map((a) => `${e.localName}[${a.name}]`)),
-        hrefs: all.flatMap((e) => ["href", "src", "xlink:href"].map((n) => e.getAttribute(n) ?? "")).filter((h) => h !== "" && !h.startsWith("#") && !h.startsWith("blob:") && !h.startsWith("data:image/png")),
-        styles: all.filter((e) => (e.getAttribute("style") ?? "").includes("url(")).length,
-      };
-    });
+    const report = await page.locator(".onx").first().evaluate(inert);
     expect(report).toEqual({ bad: [], handlers: [], hrefs: [], styles: 0 });
     // The javascript: link is shown as text, never as a link.
     await expect(page.getByRole("complementary").locator("code")).toHaveText("javascript:window.__pwned=10");

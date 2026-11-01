@@ -1,5 +1,6 @@
 // The join page's entry point (site/join/index.html loads the built join.js and join.css).
 
+import "../../viewer-core/src/page.css";
 import "../../viewer-core/src/viewer.css";
 import "./share.css";
 import "./join.css";

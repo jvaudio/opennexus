@@ -168,6 +168,14 @@
           ],
           "type": "object"
         },
+        "lines": {
+          "additionalProperties": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "description": "For a bundle of Markdown (nexus bundle, M49): each topic's line in the source, counted from 1.",
+          "type": "object"
+        },
         "outline": {
           "description": "The canvas as a tree in outline order: the central topic, then floating topics.",
           "items": {

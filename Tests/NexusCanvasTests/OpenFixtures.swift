@@ -9,8 +9,8 @@ import Testing
 
 /// M47d: documents for the open page's browser tests (`web/e2e/open.spec.ts`), in
 /// `web/fixtures/open/`: a package with and without its viewer copy, a `.nexusjson` with
-/// and without `render`, a Finder zip of a package, an encrypted package and a file that
-/// isn't a document. Build products (git-ignored), made by `npm run fixtures` in web/.
+/// and without `render`, a Finder zip of a package, an encrypted package, a file that
+/// isn't a document, and (M49) a `.nexusjson` whose viewer copy was crafted to run script. Build products (git-ignored), made by `npm run fixtures` in web/.
 @MainActor
 @Suite(.serialized, .enabled(if: ProcessInfo.processInfo.environment["NEXUS_WRITE_VIEWER_FIXTURES"] == "1"))
 struct OpenFixtures {
@@ -112,6 +112,14 @@ struct OpenFixtures {
             NexusPackage.files(for: doc), with: PackageCrypto.derive(password: "correct horse", info: info))
         try Self.writePackage(sealed, "Locked.nexus")
         add("encrypted", "Locked.nexus", "folder", "encrypted", ["hint": .string("The usual one")])
+
+        // A viewer copy crafted to run script (M49, A4): it opens inert. Not a case, as it
+        // opens to its own checks.
+        var crafted = try #require(
+            CanonicalJSON.parse(Data(DocumentJSON.export(launchPlanDocument(), pretty: true, assets: true).utf8))
+                .objectValue)
+        crafted[ViewerCopy.jsonKey] = ViewerFixtures.malicious()
+        try CanonicalJSON.data(.object(crafted)).write(to: Self.dir.appending(path: "Crafted.nexusjson"))
 
         // Not a document.
         try Data("{\"hello\": \"world\"}\n".utf8).write(to: Self.dir.appending(path: "notes.json"))

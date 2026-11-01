@@ -1,0 +1,99 @@
+/* OpenNexus for Obsidian (M49): the viewer's chrome, then the plugin's views, embeds and
+   messages. The export's page rules (page.css) stay out: Obsidian is the page. */
+
+@import "../../viewer-core/src/viewer.css";
+
+.opennexus-view.view-content,
+.workspace-leaf-content .opennexus-view {
+  padding: 0;
+  overflow: hidden;
+}
+
+.opennexus-map {
+  position: relative;
+  height: 100%;
+}
+
+.opennexus-embed {
+  height: var(--opennexus-embed-height, 400px);
+  margin: var(--size-4-2) 0;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: var(--radius-m);
+  overflow: hidden;
+}
+
+.opennexus-embed.opennexus-embed-error {
+  height: auto;
+}
+
+.opennexus-embed .onx {
+  min-height: 0;
+}
+
+.opennexus-embed-placeholder {
+  margin: 0;
+  padding: var(--size-4-4);
+  color: var(--text-muted);
+}
+
+.opennexus-message {
+  height: 100%;
+  margin: 0;
+  padding: var(--size-4-4);
+  overflow: auto;
+  color: var(--text-normal);
+}
+
+.opennexus-message h3 {
+  margin-top: 0;
+}
+
+.opennexus-outline-list {
+  padding-inline-start: var(--size-4-5);
+}
+
+.opennexus-outline-note {
+  margin: var(--size-2-1) 0 var(--size-2-3);
+  color: var(--text-muted);
+  white-space: pre-wrap;
+}
+
+.opennexus-outline-topic {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--text-normal);
+  text-align: start;
+  cursor: pointer;
+}
+
+.opennexus-outline-topic:hover {
+  color: var(--text-accent);
+}
+
+/* Use Obsidian's theme: the chrome takes the app's colours and font; the map keeps its own. */
+.onx-obsidian .onx,
+.onx-obsidian .onx.onx-dark {
+  --onx-chrome: var(--background-secondary);
+  --onx-panel: var(--background-primary);
+  --onx-line: var(--background-modifier-border);
+  --onx-text: var(--text-normal);
+  --onx-muted: var(--text-muted);
+  --onx-hover: var(--background-modifier-hover);
+  --onx-focus: var(--interactive-accent);
+  font-family: var(--font-interface);
+}
+
+/* Obsidian styles every button; links in notes and details stay links. */
+.opennexus-map .onx button.onx-linkbutton,
+.opennexus-map .onx button.onx-linkbutton:hover {
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--onx-focus);
+  font: inherit;
+  text-decoration: underline;
+}

@@ -8,7 +8,7 @@ export default tseslint.config(
   ...tseslint.configs.stylisticTypeChecked,
   {
     languageOptions: {
-      parserOptions: { projectService: { allowDefaultProject: ["*.js", "*.ts", "viewer-core/*.mjs", "viewer-app/*.mjs"] }, tsconfigRootDir: import.meta.dirname },
+      parserOptions: { projectService: { allowDefaultProject: ["*.js", "*.ts", "viewer-core/*.mjs", "viewer-app/*.mjs", "obsidian/*.mjs"] }, tsconfigRootDir: import.meta.dirname },
     },
   },
   {
@@ -41,6 +41,35 @@ export default tseslint.config(
         { property: "insertAdjacentHTML", message: "Build nodes; never parse text as HTML." },
         { object: "navigator", property: "sendBeacon" },
         { object: "document", property: "write" },
+      ],
+      "no-implied-eval": "error",
+      "no-new-func": "error",
+    },
+  },
+  {
+    // The Obsidian plugin (M49) makes no network requests and inserts no HTML: maps come
+    // from anyone. Obsidian's own request helpers are off limits too.
+    files: ["obsidian/src/**/*.ts"],
+    rules: {
+      "no-restricted-globals": ["error", "fetch", "XMLHttpRequest", "WebSocket", "EventSource", "eval"],
+      "no-restricted-properties": [
+        "error",
+        { property: "innerHTML", message: "Build nodes; never parse map text as HTML." },
+        { property: "outerHTML", message: "Build nodes; never parse map text as HTML." },
+        { property: "insertAdjacentHTML", message: "Build nodes; never parse map text as HTML." },
+        { object: "navigator", property: "sendBeacon" },
+        { object: "document", property: "write" },
+      ],
+      "no-restricted-imports": [
+        "error",
+        {
+          paths: [
+            { name: "obsidian", importNames: ["request", "requestUrl", "sanitizeHTMLToDom"], message: "The plugin makes no network requests and inserts no HTML." },
+            { name: "http", message: "The plugin makes no network requests." },
+            { name: "https", message: "The plugin makes no network requests." },
+            { name: "net", message: "The plugin makes no network requests." },
+          ],
+        },
       ],
       "no-implied-eval": "error",
       "no-new-func": "error",

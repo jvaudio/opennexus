@@ -1,0 +1,272 @@
+{
+  "canvases": [
+    {
+      "floating": [],
+      "id": "c1",
+      "layout": {
+        "mode": "auto",
+        "structure": "mindmap.balanced"
+      },
+      "nodes": {
+        "n1": {
+          "children": [
+            "n2",
+            "n5",
+            "n9",
+            "n12",
+            "n15"
+          ],
+          "kind": "root",
+          "text": "Launch plan"
+        },
+        "n10": {
+          "children": [],
+          "kind": "topic",
+          "text": "Product Hunt"
+        },
+        "n11": {
+          "children": [],
+          "kind": "topic",
+          "text": "Newsletter"
+        },
+        "n12": {
+          "children": [
+            "n13",
+            "n14"
+          ],
+          "kind": "topic",
+          "text": "Timeline"
+        },
+        "n13": {
+          "children": [],
+          "kind": "topic",
+          "text": "Beta · Nov"
+        },
+        "n14": {
+          "children": [],
+          "kind": "topic",
+          "text": "GA · Jan"
+        },
+        "n15": {
+          "children": [
+            "n16"
+          ],
+          "kind": "topic",
+          "text": "Risks"
+        },
+        "n16": {
+          "children": [],
+          "kind": "topic",
+          "text": "Competitor response"
+        },
+        "n2": {
+          "children": [
+            "n3",
+            "n4"
+          ],
+          "kind": "topic",
+          "text": "Positioning"
+        },
+        "n3": {
+          "children": [],
+          "kind": "topic",
+          "text": "Developers"
+        },
+        "n4": {
+          "children": [],
+          "kind": "topic",
+          "text": "Teams"
+        },
+        "n5": {
+          "children": [
+            "n6",
+            "n7",
+            "n8"
+          ],
+          "kind": "topic",
+          "text": "Pricing"
+        },
+        "n6": {
+          "children": [],
+          "kind": "topic",
+          "text": "Free tier"
+        },
+        "n7": {
+          "children": [],
+          "kind": "topic",
+          "text": "Pro"
+        },
+        "n8": {
+          "children": [],
+          "kind": "topic",
+          "text": "Annual discount"
+        },
+        "n9": {
+          "children": [
+            "n10",
+            "n11"
+          ],
+          "kind": "topic",
+          "text": "Channels"
+        }
+      },
+      "relationships": [],
+      "root": "n1",
+      "style": {
+        "colorTheme": "rainbow",
+        "nodeStyle": "outline",
+        "palette": "theme",
+        "theme": "classic"
+      },
+      "title": "Launch plan",
+      "type": "mindmap"
+    }
+  ],
+  "manifest": {
+    "app": "1.0",
+    "canvases": [
+      "c1"
+    ],
+    "encrypted": false,
+    "format": "opennexus",
+    "schemaVersion": 1
+  },
+  "render": {
+    "assets": {
+      "evil": {
+        "data": "PHNjcmlwdD53aW5kb3cuX19wd25lZD0xNTwvc2NyaXB0Pg==",
+        "size": 40,
+        "type": "text/html"
+      },
+      "img": {
+        "data": "PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIG9ubG9hZD0id2luZG93Ll9fcHduZWQ9MTIiPjxzY3JpcHQ+d2luZG93Ll9fcHduZWQ9MTM8L3NjcmlwdD48L3N2Zz4=",
+        "size": 107,
+        "type": "image/svg+xml"
+      }
+    },
+    "canvases": [
+      {
+        "id": "c1",
+        "layouts": {
+          "saved": {
+            "svg": "<svg xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" viewBox=\"0 0 400 300\" width=\"400\" height=\"300\" onload=\"window.__pwned=1\">\n<script>window.__pwned=2</script>\n<style>@import url(https://evil.example/x.css); rect{fill:red}</style>\n<rect width=\"400\" height=\"300\" fill=\"#FFFFFF\"/>\n<rect x=\"10\" y=\"10\" width=\"100\" height=\"40\" fill=\"url(https://evil.example/p.svg#g)\" onclick=\"window.__pwned=3\" data-nexus-id=\"t1\"/>\n<image href=\"https://evil.example/track.png\" x=\"0\" y=\"0\" width=\"10\" height=\"10\"/>\n<image xlink:href=\"javascript:window.__pwned=4\" width=\"10\" height=\"10\"/>\n<image data-nexus-asset=\"img\" x=\"20\" y=\"20\" width=\"10\" height=\"10\"/>\n<use href=\"https://evil.example/sprite.svg#a\"/>\n<foreignObject width=\"100\" height=\"100\"><iframe xmlns=\"http://www.w3.org/1999/xhtml\" src=\"https://evil.example/\"></iframe></foreignObject>\n<a href=\"javascript:window.__pwned=5\"><text x=\"20\" y=\"80\">click</text></a>\n<animate attributeName=\"href\" to=\"javascript:window.__pwned=6\"/>\n<set attributeName=\"onmouseover\" to=\"window.__pwned=7\"/>\n<circle cx=\"200\" cy=\"150\" r=\"40\" fill=\"#4466FF\" style=\"background:url(https://evil.example/s.png)\"/>\n<path d=\"M0 0 L10 10\" filter=\"url(https://evil.example/f.svg#f)\" stroke=\"\\75 rl(https://evil.example/)\"/>\n</svg>",
+            "topics": {
+              "t1": {
+                "depth": 0,
+                "frame": [
+                  10,
+                  10,
+                  100,
+                  40
+                ]
+              },
+              "t2": {
+                "depth": 0,
+                "frame": [
+                  10,
+                  60,
+                  100,
+                  40
+                ]
+              },
+              "t3": {
+                "depth": 0,
+                "frame": [
+                  10,
+                  110,
+                  100,
+                  40
+                ]
+              }
+            },
+            "viewBox": [
+              0,
+              0,
+              400,
+              300
+            ]
+          }
+        },
+        "outline": [
+          {
+            "id": "t1"
+          },
+          {
+            "id": "t2"
+          },
+          {
+            "id": "t3"
+          }
+        ],
+        "theme": {
+          "accent": "#6E56CF",
+          "canvas": "#FFFFFF",
+          "dark": false,
+          "ink": "#1D1D1F",
+          "ink2": "#5B5B66"
+        },
+        "title": "<img src=x onerror=\"window.__pwned=8\">",
+        "topics": {
+          "t1": {
+            "attachments": [
+              {
+                "asset": "evil",
+                "name": "<svg onload=alert(1)>.html"
+              }
+            ],
+            "comments": [
+              {
+                "author": "<b onmouseover=\"window.__pwned=11\">Eve</b>",
+                "date": "2026-10-28",
+                "text": "<img src=x onerror=\"window.__pwned=8\">"
+              }
+            ],
+            "fields": [
+              {
+                "key": "<img src=x onerror=\"window.__pwned=8\">",
+                "value": "<img src=x onerror=\"window.__pwned=8\">"
+              }
+            ],
+            "label": "<img src=x onerror=\"window.__pwned=8\">",
+            "labels": [
+              "<img src=x onerror=\"window.__pwned=8\">"
+            ],
+            "link": {
+              "href": "javascript:window.__pwned=10",
+              "kind": "web"
+            },
+            "note": "<script>window.__pwned=9</script> [[<img src=x onerror=\"window.__pwned=16\">]] [[Risks|<b onmouseover=\"window.__pwned=17\">Risks</b>]]",
+            "text": "<img src=x onerror=\"window.__pwned=8\">"
+          },
+          "t2": {
+            "label": "t2",
+            "link": {
+              "href": "obsidian://open?vault=Elsewhere&file=Secrets",
+              "kind": "other"
+            },
+            "text": "t2"
+          },
+          "t3": {
+            "label": "t3",
+            "link": {
+              "href": "obsidian://opennexus?file=..%2F..%2F..%2Fetc%2Fpasswd&topic=%3Cimg%20src%3Dx%3E",
+              "kind": "other"
+            },
+            "text": "t3"
+          }
+        },
+        "type": "mindmap",
+        "typeName": "<img src=x onerror=\"window.__pwned=8\">"
+      }
+    ],
+    "format": "opennexus-viewer",
+    "lang": "en",
+    "strings": {
+      "outline": "<img src=x onerror=\"window.__pwned=8\">",
+      "search": "<img src=x onerror=\"window.__pwned=8\">"
+    },
+    "title": "</title><script>window.__pwned=14</script>",
+    "version": 1
+  },
+  "theme": {}
+}

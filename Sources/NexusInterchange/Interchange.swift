@@ -190,9 +190,11 @@ public enum InterchangeFormat: String, CaseIterable, Sendable {
 
 public enum Interchange {
     /// Imports a file (or a package's files, for `.mindnode` and `.textbundle` folders).
-    /// `timeZone` turns timestamps (Xmind task dates) into calendar days.
+    /// `timeZone` turns timestamps (Xmind task dates) into calendar days. `sourceLines`
+    /// keeps Markdown topics' lines (`MarkdownFormat.takeSourceLines`).
     public static func importFile(
-        name: String, data: Data? = nil, files: [String: Data]? = nil, timeZone: TimeZone = .current
+        name: String, data: Data? = nil, files: [String: Data]? = nil, timeZone: TimeZone = .current,
+        sourceLines: Bool = false
     ) throws -> Imported {
         guard let format = InterchangeFormat.detect(name: name) ?? sniff(data) else {
             throw ImportError.unrecognised(name)
@@ -217,7 +219,7 @@ public enum Interchange {
             guard let data else { throw ImportError.empty(name) }
             return one(try OPMLFormat.parse(data, name: report.source, report: &report))
         case .markdown:
-            return one(MarkdownFormat.parse(try text(), title: base, report: &report))
+            return one(MarkdownFormat.parse(try text(), title: base, report: &report, sourceLines: sourceLines))
         case .text:
             return one(IndentedText.parse(try text(), title: base))
         case .mermaid:

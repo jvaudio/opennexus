@@ -46,11 +46,12 @@ App/                   Xcode projects (thin shells): OpenNexus.xcodeproj for the
 schema/                published JSON Schema for .nexus files
 web/                   the interactive viewer (viewer-core) and the viewer site (viewer-app):
                        opens documents in the browser, share links and invites; an
-                       offline PWA
+                       offline PWA. The Obsidian plugin (obsidian) and its test vault
 server/                OpenNexus Server: stores share links, relays live sessions (Swift, Docker)
 brand/                 the Aperture brand kit: spec (BRAND.md), icons, marks, lockups
 scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints),
-                       build-ios.sh (the shared modules for the iOS Simulator), and the
+                       build-ios.sh (the shared modules for the iOS Simulator),
+                       release-obsidian.sh (the Obsidian plugin's release), and the
                        test-*.sh scripts that run against Docker
 Handoff/               design handoff package (brief, artboards, screenshots, specs)
 ```
@@ -98,6 +99,15 @@ xcodebuild test -project App/OpenNexusiOS.xcodeproj -scheme "OpenNexus iOS" -des
 
 ```bash
 xcodebuild test -project App/OpenNexusiOS.xcodeproj -scheme "OpenNexus iOS" -destination "platform=iOS Simulator,name=iPhone 17 Pro"
+```
+
+The web parts (viewer, site and Obsidian plugin): typecheck, ESLint, Vitest, the builds,
+the browser fixtures and Playwright in Chromium and WebKit. Where Obsidian is installed, it
+also runs the plugin in a throwaway Obsidian with a profile of its own, so it runs beside
+one that's already open:
+
+```bash
+cd web && npm run check
 ```
 
 Share links for real: MinIO and two OpenNexus Servers in Docker, links made against them,
@@ -205,6 +215,22 @@ The command-line tool is inside the app. To use it from Terminal:
 ln -sf /Applications/OpenNexus.app/Contents/Helpers/nexus /usr/local/bin/nexus
 ```
 
+`nexus bundle` prints the viewer bundle that the browser and Obsidian draw: a map's viewer
+copy, or Markdown read as `nexus import` reads it, with each topic's source line.
+
+### Obsidian
+
+The OpenNexus plugin opens maps in an Obsidian vault, read-only: `.nexusjson` files in a
+tab, `.nexus` packages from their folder's menu, and maps in notes with a ```` ```nexus ````
+block. Links in maps open the vault's notes, Copy link to topic makes an `obsidian://` link
+back to a topic, and on a Mac with OpenNexus installed it shows any note as a map, converts
+notes to maps and opens maps in the app to edit. It makes no network requests. See
+`web/obsidian/README.md`; to install it by hand into a vault:
+
+```bash
+scripts/release-obsidian.sh --install ~/path/to/vault
+```
+
 ## Make a release
 
 ```bash
@@ -244,6 +270,23 @@ generate_keys --account opennexus -x ~/opennexus-update-key.txt
 `generate_keys` is in Sparkle's `bin/` folder, under the build's
 `SourcePackages/artifacts/sparkle/Sparkle/bin`. Store the exported file somewhere safe and
 offline, not in Git.
+
+### The Obsidian plugin
+
+```bash
+scripts/release-obsidian.sh
+```
+
+This builds the plugin, checks that `manifest.json`, `versions.json` and `package.json` agree
+on the version and that `main.js` plus `styles.css` is at most 300 KB, and writes
+`dist/obsidian/<version>/`: the three files Obsidian installs and a zip of them. Releases
+live in a mirror repository, `jvaudio/opennexus-obsidian`, because Obsidian's directory reads
+`manifest.json` from a repository's root. Create it once (public, empty), then publish: this
+copies `web/obsidian` into it, tags the version and creates the GitHub release:
+
+```bash
+scripts/release-obsidian.sh --publish
+```
 
 ## File format
 

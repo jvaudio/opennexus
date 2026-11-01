@@ -25,12 +25,25 @@ export interface ViewerAction {
   run?: () => void;
 }
 
+/** Links the host follows itself (Obsidian's vault notes, M49): the viewer shows them as buttons and never navigates to them. */
+export interface HostLinks {
+  /** Whether a topic's hyperlink is one the host opens. */
+  accepts(href: string): boolean;
+  /** Opens an accepted hyperlink, or a wikilink's target ("Note", "Note#Heading"). */
+  open(target: string, wikilink: boolean): void;
+  /** `[[Note]]` and `[[Note|text]]` in topics' notes become buttons. */
+  wikilinks?: boolean;
+}
+
 export interface MountOptions {
   /** A URL for an asset the bundle names but doesn't carry (a document's viewer copy). */
   asset?: (name: string) => string | undefined;
   /** "none" shows the map alone, with its pan and zoom: no bar, outline or details (embeds). */
   chrome?: "full" | "none";
   actions?: ViewerAction[];
+  hostLinks?: HostLinks;
+  /** Told the selected topic (null for none) and its canvas's id whenever either changes. */
+  onSelect?: (canvas: string, topic: string | null) => void;
 }
 
 export interface ViewerHandle {
@@ -39,8 +52,15 @@ export interface ViewerHandle {
   select(topic: string): void;
   /** Plays the current canvas's deck; false when it has none. */
   present(): boolean;
+  /** Frames a topic and the topics under it (a branch); false when the canvas doesn't show it. */
+  focus(topic: string): boolean;
+  /** The camera, to put back after the host draws a new bundle (Obsidian's note as map). */
+  view(): View;
+  setView(view: View): void;
   destroy(): void;
 }
+
+export type { View };
 
 /** English, for bundles that carry no strings. */
 const english: Record<string, string> = {
@@ -406,6 +426,7 @@ class Viewer {
       this.presentation?.end();
       this.canvasIndex = index;
       this.selected = null;
+      this.notified = null;
       this.open = initiallyOpen(c.outline);
       this.closeDetails(false);
       this.applyTheme(c);
@@ -429,6 +450,7 @@ class Viewer {
       this.fitAll(false);
     }
     this.runSearch();
+    this.notifySelection();
   }
 
   private setLayout(name: LayoutName): void {
@@ -684,6 +706,7 @@ class Viewer {
     }
     this.selected = id;
     this.paintSelection();
+    this.notifySelection();
     const p = this.layout.topics.get(id);
     if (p !== undefined && how.fly === true) {
       const { w, h } = this.size();
@@ -698,6 +721,45 @@ class Viewer {
     this.markTree(id);
     if (how.focus === true) this.topicEls.get(id)?.focus({ preventScroll: true });
     if (how.details === true || !this.aside.hidden) this.openDetails(id);
+  }
+
+  /** The selection the host was last told, as "canvas topic". */
+  private notified: string | null = null;
+
+  private notifySelection(): void {
+    const key = `${this.canvas.id} ${this.selected ?? ""}`;
+    if (key === this.notified) return;
+    this.notified = key;
+    this.options_.onSelect?.(this.canvas.id, this.selected);
+  }
+
+  /** Frames `id` and its descendants that the layout shows. */
+  focusBranch(id: string): boolean {
+    const p = this.layout.topics.get(id);
+    if (p === undefined) return false;
+    let [x0, y0, x1, y1] = [p.frame[0], p.frame[1], p.frame[0] + p.frame[2], p.frame[1] + p.frame[3]];
+    const limit = this.layout.topics.size;
+    for (const [, q] of this.layout.topics) {
+      // Up the parents, a bounded number of steps: a crafted bundle may loop.
+      let parent = q.parent;
+      for (let n = 0; parent !== undefined && parent !== id && n < limit; n++) parent = this.layout.topics.get(parent)?.parent;
+      if (parent !== id) continue;
+      x0 = Math.min(x0, q.frame[0]);
+      y0 = Math.min(y0, q.frame[1]);
+      x1 = Math.max(x1, q.frame[0] + q.frame[2]);
+      y1 = Math.max(y1, q.frame[1] + q.frame[3]);
+    }
+    const { w, h } = this.size();
+    this.camera.set(fit([x0, y0, x1 - x0, y1 - y0], w, h, 24));
+    return true;
+  }
+
+  get view(): View {
+    return this.camera.view;
+  }
+
+  set view(v: View) {
+    this.camera.set(v);
   }
 
   private paintSelection(): void {
@@ -723,6 +785,7 @@ class Viewer {
     renderDetails(this.asideBody, topic, {
       doc: this.doc,
       t: (k) => this.t(k),
+      ...(this.options_.hostLinks === undefined ? {} : { host: this.options_.hostLinks }),
       attachment: (name) => this.attachmentURL(name),
       goTo: (canvasID, topicID) => {
         const i = this.bundle.canvases.findIndex((c) => c.id === canvasID);
@@ -1005,6 +1068,9 @@ export function mount(host: HTMLElement, bundle: Bundle, options: MountOptions =
     show: (canvas, layout) => { v.show(canvas, layout); },
     select: (topic) => { v.select(topic, { fly: true, details: true }); },
     present: () => v.present(),
+    focus: (topic) => v.focusBranch(topic),
+    view: () => v.view,
+    setView: (view) => { v.view = view; },
     destroy: () => { v.destroy(); },
   };
 }

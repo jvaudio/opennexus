@@ -1,15 +1,5 @@
 /* The viewer's chrome. The map itself is the app's drawing; these colours only frame it. */
 
-html,
-body {
-  height: 100%;
-  margin: 0;
-}
-
-#opennexus-viewer {
-  height: 100%;
-}
-
 .onx {
   --onx-canvas: #ffffff;
   --onx-ink: #1d1d1f;

@@ -1,5 +1,6 @@
 // The share page's entry point (site/s/index.html loads the built share.js and share.css).
 
+import "../../viewer-core/src/page.css";
 import "../../viewer-core/src/viewer.css";
 import "./share.css";
 import { registerServiceWorker } from "./pwa";

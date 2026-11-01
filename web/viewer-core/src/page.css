@@ -1,0 +1,12 @@
+/* The page around the viewer, for the HTML export and the site: hosts that are pages of
+   their own (Obsidian isn't) include it before viewer.css. */
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
+
+#opennexus-viewer {
+  height: 100%;
+}

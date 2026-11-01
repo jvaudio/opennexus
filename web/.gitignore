@@ -5,3 +5,6 @@ playwright-report/
 fixtures/
 viewer-app/dist/
 math/dist/
+obsidian/dist/
+# Obsidian's own settings, and the plugin when it's installed into the test vault.
+obsidian/test-vault/.obsidian/

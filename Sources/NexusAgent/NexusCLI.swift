@@ -67,6 +67,11 @@ public enum NexusCLI {
                  [--out <path>]
           starters                            List the starters: id, diagram type and name.
           import <file> [--out <path>]        Convert Xmind, OPML, Markdown, Mermaid, … to .nexus.
+                 [--viewer-copy]              Also save the map's viewer copy, a .nexusjson included.
+          bundle <file|->                     Print a viewer bundle: a map's viewer copy, or a file
+                 [--structure <structure>]    as import reads it (- reads Markdown from stdin), each
+                 [--title <text>]             Markdown topic with its line. --structure lays it out
+                                              as mindmap.balanced, logic.right, org.down, ….
           mcp [--config <agent.json>]         Run the MCP server on stdio (enable it in OpenNexus ›
                                               Settings › Integrations).
           git setup                           In a Git repository: merge maps topic by topic and diff
@@ -98,6 +103,7 @@ public enum NexusCLI {
             case "new": return try new(&rest, io: io, env: env)
             case "starters": return starters(io: io)
             case "import": return try importFile(&rest, io: io, env: env)
+            case "bundle": return try bundle(&rest, io: io, env: env)
             case "mcp": return try mcp(&rest, io: io, env: env)
             case "git": return try git(&rest, io: io, env: env)
             case "merge-driver": return try mergeDriver(&rest, io: io, env: env)
@@ -387,6 +393,7 @@ public enum NexusCLI {
 
     static func importFile(_ args: inout [String], io: IO, env: Environment) throws -> Int32 {
         let out = try option("--out", &args)
+        let viewerCopy = flag("--viewer-copy", &args)
         let url = file(try positional(args, "file"), env)
         var isDir: ObjCBool = false
         FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
@@ -402,7 +409,7 @@ public enum NexusCLI {
             io.err("nexus import: \(target.path) already exists (use --out)\n")
             return 1
         }
-        try MapFiles.write(doc, to: target)
+        try MapFiles.write(doc, to: target, prefs: viewerCopy ? withViewerCopy() : .shared)
         let r = imported.report
         let extras = [
             r.tasks > 0 ? "\(r.tasks) tasks" : nil, r.dependencies > 0 ? "\(r.dependencies) dependencies" : nil,
@@ -412,6 +419,85 @@ public enum NexusCLI {
         io.print(
             "\(target.path)\n\(r.canvases) canvases · \(r.topics) topics\(extras) · \(r.notConverted) not converted")
         for item in r.lines { io.print("  · \(item)") }
+        return 0
+    }
+
+    /// The Files settings with the viewer copy on, single-file documents included.
+    static func withViewerCopy() -> Preferences {
+        let p = Preferences.isolated()
+        p.set("files.viewerCopy", true)
+        p.set("files.viewerCopyJSON", true)
+        return p
+    }
+
+    // MARK: bundle
+
+    /// The structures `bundle --structure` takes: the tree layouts a note can have.
+    static let structures: [LayoutStructure] = [
+        .mindmapBalanced, .mindmapRight, .mindmapLeft, .logicRight, .logicLeft, .braceRight, .braceLeft, .orgDown,
+        .treeDown, .treeIndented, .timelineHorizontal, .timelineVertical, .timelineAlternating, .fishboneLeft,
+        .fishboneRight, .matrix, .treeTable,
+    ]
+
+    /// A viewer bundle on stdout (M49, Obsidian): a map's viewer copy as the app saves it, or
+    /// a file read as `import` reads it (Markdown from stdin with `-`). Markdown topics keep
+    /// their source lines, as the first canvas's `lines`.
+    static func bundle(_ args: inout [String], io: IO, env: Environment) throws -> Int32 {
+        let structure = try option("--structure", &args).map(LayoutStructure.init(rawValue:))
+        let title = try option("--title", &args)
+        if let structure, !structures.contains(structure) {
+            throw UsageError(
+                message:
+                    "unknown structure “\(structure.rawValue)”; use \(structures.map(\.rawValue).joined(separator: ", "))"
+            )
+        }
+        let path = try positional(args, "file")
+        let url = path == "-" ? nil : file(path, env)
+        var doc: DocumentModel
+        var lines: [NodeID: Int] = [:]
+        if let url, ["nexus", "nexusjson"].contains(url.pathExtension.lowercased()) {
+            guard structure == nil, title == nil else {
+                throw UsageError(message: "--structure and --title are for files to read, not maps")
+            }
+            doc = try MapFiles.read(url)
+            guard !doc.encrypted else {
+                io.err("nexus bundle: \(url.lastPathComponent) is encrypted; it opens only in OpenNexus\n")
+                return 1
+            }
+        } else {
+            let imported: Imported
+            if let url {
+                var isDir: ObjCBool = false
+                FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
+                let name = title.map { $0 + "." + url.pathExtension } ?? url.lastPathComponent
+                imported =
+                    isDir.boolValue
+                    ? try Interchange.importFile(
+                        name: name, files: NexusPackage.flatten(try FileWrapper(url: url, options: [.immediate])))
+                    : try Interchange.importFile(name: name, data: Data(contentsOf: url), sourceLines: true)
+            } else {
+                var text: [String] = []
+                while let l = io.readLine() { text.append(l) }
+                imported = try Interchange.importFile(
+                    name: (title ?? "Note") + ".md", data: Data(text.joined(separator: "\n").utf8), sourceLines: true)
+            }
+            doc = DocumentModel(canvases: imported.canvases, assets: imported.assets)
+            for id in doc.canvasOrder {
+                if let structure { doc.canvases[id]?.layout.structure = structure }
+                if id == doc.canvasOrder.first { lines = MarkdownFormat.takeSourceLines(&doc.canvases[id]!) }
+            }
+        }
+        guard case .object(var b)? = ViewerCopy.bundle(doc) else {
+            io.err("nexus bundle: couldn't draw the map\n")
+            return 1
+        }
+        if !lines.isEmpty, case .array(var canvases)? = b["canvases"], case .object(var first)? = canvases.first {
+            first["lines"] = .object(
+                Dictionary(uniqueKeysWithValues: lines.map { ($0.key.rawValue, JSONValue.number(Double($0.value))) }))
+            canvases[0] = .object(first)
+            b["canvases"] = .array(canvases)
+        }
+        io.out(Data((CanonicalJSON.compact(.object(b)) + "\n").utf8))
         return 0
     }
 

@@ -3,6 +3,7 @@
 // #opennexus-viewer; other hosts (share links, the web viewer, Obsidian) call
 // window.OpenNexusViewer.mount themselves.
 
+import "./page.css";
 import "./viewer.css";
 import { BundleError, parseBundle } from "./bundle";
 import { find } from "./search";

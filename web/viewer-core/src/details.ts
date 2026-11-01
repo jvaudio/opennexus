@@ -3,6 +3,7 @@
 
 import type { Topic } from "./bundle";
 import { safeLink } from "./sanitize";
+import type { HostLinks } from "./viewer";
 
 export interface DetailsContext {
   doc: Document;
@@ -11,6 +12,8 @@ export interface DetailsContext {
   attachment: (asset: string) => string | undefined;
   /** Shows the topic a topic link points to. */
   goTo: (canvas: string, topic: string) => void;
+  /** Links the host opens itself (Obsidian). */
+  host?: HostLinks;
 }
 
 function el<K extends keyof HTMLElementTagNameMap>(doc: Document, tag: K, text?: string, cls?: string): HTMLElementTagNameMap[K] {
@@ -32,6 +35,34 @@ function chips(c: DetailsContext, items: readonly string[]): HTMLElement {
   return ul;
 }
 
+function linkButton(c: DetailsContext, text: string, open: () => void): HTMLButtonElement {
+  const b = el(c.doc, "button", text, "onx-linkbutton");
+  b.type = "button";
+  b.addEventListener("click", open);
+  return b;
+}
+
+const wikilink = /\[\[([^[\]|\n]+)(?:\|([^[\]\n]+))?\]\]/g;
+
+/** A note's text, with `[[Note]]` and `[[Note|text]]` as buttons when the host opens them. */
+function noteText(c: DetailsContext, text: string): HTMLElement {
+  const p = el(c.doc, "p", undefined, "onx-note");
+  const host = c.host;
+  if (host?.wikilinks !== true) {
+    p.textContent = text;
+    return p;
+  }
+  let at = 0;
+  for (const m of text.matchAll(wikilink)) {
+    const target = (m[1] ?? "").trim();
+    p.append(c.doc.createTextNode(text.slice(at, m.index)));
+    p.append(linkButton(c, (m[2] ?? m[1] ?? "").trim(), () => { host.open(target, true); }));
+    at = m.index + m[0].length;
+  }
+  p.append(c.doc.createTextNode(text.slice(at)));
+  return p;
+}
+
 export function bytes(n: number): string {
   if (n < 1000) return `${String(n)} B`;
   if (n < 1_000_000) return `${(n / 1000).toFixed(n < 10_000 ? 1 : 0)} KB`;
@@ -51,15 +82,16 @@ export function renderDetails(into: HTMLElement, topic: Topic, c: DetailsContext
     for (const f of topic.fields) dl.append(el(doc, "dt", f.key), el(doc, "dd", f.value));
     body.push(section(c, t("fields"), dl));
   }
-  if (topic.note !== undefined) body.push(section(c, t("note"), el(doc, "p", topic.note, "onx-note")));
+  if (topic.note !== undefined) body.push(section(c, t("note"), noteText(c, topic.note)));
   if (topic.link !== undefined) {
     const l = topic.link;
     let node: HTMLElement;
+    const host = c.host;
     if (l.kind === "topic" && l.canvas !== undefined && l.topic !== undefined) {
       const { canvas, topic: target } = l;
-      node = el(doc, "button", l.href, "onx-linkbutton");
-      node.setAttribute("type", "button");
-      node.addEventListener("click", () => { c.goTo(canvas, target); });
+      node = linkButton(c, l.href, () => { c.goTo(canvas, target); });
+    } else if (host?.accepts(l.href) === true) {
+      node = linkButton(c, l.href, () => { host.open(l.href, false); });
     } else {
       const href = safeLink(l.href);
       if (href === null) {
