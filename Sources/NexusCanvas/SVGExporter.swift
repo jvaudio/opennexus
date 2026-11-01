@@ -189,9 +189,7 @@ public enum SVGExporter {
             guard let a = scene.rect(of: r.relationship.from), let bb = scene.rect(of: r.relationship.to) else {
                 continue
             }
-            let g =
-                r.points.map { RelationshipGeometry.polyline($0) }
-                ?? RelationshipGeometry.make(r.relationship, from: a, to: bb)
+            let g = scene.geometry(of: r, from: a, to: bb)
             let dash =
                 r.relationship.dash == "dashed"
                 ? " stroke-dasharray=\"6 5\"" : r.relationship.dash == "dotted" ? " stroke-dasharray=\"1.5 4\"" : ""
@@ -214,14 +212,16 @@ public enum SVGExporter {
                 }
             }
             if !r.relationship.label.isEmpty {
-                let mid = g.point(at: 0.5)
-                let font = Fonts.system(12, .medium)
-                let size = r.relationship.label.size(in: font)
-                let pill = CGRect(x: mid.x - size.width / 2 - 8, y: mid.y - 11, width: size.width + 16, height: 22)
+                // The canvas's chip, where the canvas puts it.
+                let font = Scene.labelFont(r.relationship)
+                let pill = scene.labelRect(of: r, g, size: Scene.labelSize(r.relationship))
+                let textWidth = r.relationship.label.width(in: font)
                 w.line(
                     "<rect x=\"\(n(pill.minX))\" y=\"\(n(pill.minY))\" width=\"\(n(pill.width))\" height=\"\(n(pill.height))\" rx=\"11\" fill=\"\(hex(scene.canvasColor))\" stroke=\"\(hex(r.color))\"/>"
                 )
-                w.text(r.relationship.label, at: CGPoint(x: pill.minX + 8, y: mid.y + 4), font: font, color: r.color)
+                w.text(
+                    r.relationship.label, at: CGPoint(x: pill.midX - textWidth / 2, y: pill.midY + 4), font: font,
+                    color: r.color)
             }
             w.indent -= 1
             w.line("</g>")

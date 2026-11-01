@@ -303,6 +303,29 @@ public struct Scene {
             default: break
             }
         }
+        // Relationships as drawn: a curve can bow past the topics it joins and its label be
+        // nudged past them (exports cut them off). Routing a curve is the costly part, so one
+        // that can't reach past the bounds so far is skipped; a label sits at most 54 pt off
+        // its anchor.
+        var frames: [CGRect]?
+        for r in relationships {
+            guard let from = rect(of: r.relationship.from), let to = rect(of: r.relationship.to) else { continue }
+            let w = CGFloat(r.relationship.width) / 2
+            let size = r.relationship.label.isEmpty ? nil : Self.labelSize(r.relationship)
+            if r.points == nil,
+                let reach = RelationshipGeometry.reach(
+                    r.relationship, from: from, to: to, t: Self.labelAt(r.relationship)),
+                b.contains(reach.line.insetBy(dx: -w, dy: -w)),
+                size.map({ b.contains(reach.anchor.insetBy(dx: -$0.width / 2 - 54, dy: -$0.height / 2 - 54)) }) ?? true
+            {
+                continue
+            }
+            let all = frames ?? topicFrames
+            frames = all
+            let g = geometry(of: r, from: from, to: to, frames: all)
+            b = b.union(g.path.boundingBoxOfPath.insetBy(dx: -w, dy: -w))
+            if let size { b = b.union(labelRect(of: r, g, size: size, frames: all)) }
+        }
         return b
     }
 }

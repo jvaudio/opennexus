@@ -1,4 +1,5 @@
 import CoreGraphics
+import CoreText
 import Foundation
 import NexusCore
 import NexusLayout
@@ -104,14 +105,8 @@ package enum RelationshipGeometry {
                 path: p, start: s, end: e, startAngle: right ? .pi : 0, endAngle: right ? 0 : .pi,
                 control: CGPoint(x: mx, y: (s.y + e.y) / 2))
         default:  // curved
-            let mid = CGPoint(x: (ca.x + cb.x) / 2, y: (ca.y + cb.y) / 2)
-            let dx = cb.x - ca.x
-            let dy = cb.y - ca.y
-            let len = max(hypot(dx, dy), 1)
-            let off = min(140, len * 0.35) + 30
-            var c = CGPoint(x: mid.x - dy / len * off, y: mid.y + dx / len * off)
+            var (c, flipped) = bows(ca, cb)
             if r.bend == nil, !obstacles.isEmpty {
-                let flipped = CGPoint(x: mid.x + dy / len * off, y: mid.y - dx / len * off)
                 if crossings(ca, c, cb, obstacles) > crossings(ca, flipped, cb, obstacles) { c = flipped }
             }
             if let bend = r.bend {
@@ -126,6 +121,48 @@ package enum RelationshipGeometry {
                 path: p, start: s, end: e, startAngle: atan2(s.y - c.y, s.x - c.x),
                 endAngle: atan2(e.y - c.y, e.x - c.x), control: c)
         }
+    }
+
+    /// A curve's control point bowing to one side of the line between its ends' centres,
+    /// then to the other.
+    package static func bows(_ ca: CGPoint, _ cb: CGPoint) -> (CGPoint, CGPoint) {
+        let mid = CGPoint(x: (ca.x + cb.x) / 2, y: (ca.y + cb.y) / 2)
+        let dx = cb.x - ca.x
+        let dy = cb.y - ca.y
+        let len = max(hypot(dx, dy), 1)
+        let off = min(140, len * 0.35) + 30
+        return (
+            CGPoint(x: mid.x - dy / len * off, y: mid.y + dx / len * off),
+            CGPoint(x: mid.x + dy / len * off, y: mid.y - dx / len * off)
+        )
+    }
+
+    /// Where a curve can go whichever side it bows to, found without routing it: the hull
+    /// of its ends' centres and control points, and the box of the points `t` along it
+    /// where its label can anchor. Nil for the other lines, which are cheap to route.
+    package static func reach(
+        _ r: Relationship, from a: CGRect, to b: CGRect, t: CGFloat
+    ) -> (line: CGRect, anchor: CGRect)? {
+        guard !b.contains(a), !a.contains(b),
+            !["straight", "zigzag", "flow-vh", "flow-hv", "elbow"].contains(r.line)
+        else { return nil }
+        let ca = CGPoint(x: a.midX, y: a.midY)
+        let cb = CGPoint(x: b.midX, y: b.midY)
+        var (c, flipped) = bows(ca, cb)
+        if let bend = r.bend {
+            c.x += bend.x
+            c.y += bend.y
+            flipped = c
+        }
+        func box(_ pts: [CGPoint]) -> CGRect { pts.reduce(CGRect.null) { $0.union(CGRect(origin: $1, size: .zero)) } }
+        let anchors = [c, flipped].map { c in
+            let s = clip(ca, a, toward: c)
+            let e = clip(cb, b, toward: c)
+            let u = 1 - t
+            return CGPoint(
+                x: u * u * s.x + 2 * u * t * c.x + t * t * e.x, y: u * u * s.y + 2 * u * t * c.y + t * t * e.y)
+        }
+        return (box([ca, cb, c, flipped]), box(anchors))
     }
 
     /// A topic and the zone around it: a short line from the topic to the zone's nearest
@@ -161,15 +198,17 @@ package enum RelationshipGeometry {
 
     /// How many obstacles a quadratic curve passes through (sampled).
     package static func crossings(_ s: CGPoint, _ c: CGPoint, _ e: CGPoint, _ obstacles: [CGRect]) -> Int {
-        var hit = Set<Int>()
-        for i in 1..<24 {
+        let samples = (1..<24).map { i in
             let t = CGFloat(i) / 24
             let u = 1 - t
-            let p = CGPoint(
+            return CGPoint(
                 x: u * u * s.x + 2 * u * t * c.x + t * t * e.x, y: u * u * s.y + 2 * u * t * c.y + t * t * e.y)
-            for (j, o) in obstacles.enumerated() where o.contains(p) { hit.insert(j) }
         }
-        return hit.count
+        // Only obstacles that reach the samples' box can hold one (on a big map, most can't).
+        let box = samples.reduce(CGRect.null) { $0.union(CGRect(origin: $1, size: .zero)) }.insetBy(dx: -1, dy: -1)
+        var count = 0
+        for o in obstacles where o.intersects(box) && samples.contains(where: { o.contains($0) }) { count += 1 }
+        return count
     }
 
     package static func withLine(_ r: Relationship, _ line: String) -> Relationship {
@@ -358,6 +397,66 @@ package enum BoundaryShapes {
     }
 }
 
+/// A relationship as it's drawn: the canvas, SVG export and `Scene.bounds` all place it
+/// from here.
+extension Scene {
+    /// Every topic's frame: what curves bow away from and labels move off. Placing many
+    /// relationships, take it once and pass it in.
+    package var topicFrames: [CGRect] { nodes.values.map(\.frame.rect) }
+
+    /// The line between its ends' rectangles: through its fixed points (sequence
+    /// messages), else bowing to whichever side crosses fewer other topics.
+    package func geometry(
+        of r: SceneRelationship, from a: CGRect, to b: CGRect, frames: [CGRect]? = nil
+    ) -> RelationshipGeometry.Result {
+        if let pts = r.points { return RelationshipGeometry.polyline(pts) }
+        let obstacles = (frames ?? topicFrames).filter { !$0.intersects(a) && !$0.intersects(b) }
+        return RelationshipGeometry.make(r.relationship, from: a, to: b, obstacles: obstacles)
+    }
+
+    /// How far along its line a label sits.
+    package static func labelAt(_ r: Relationship) -> CGFloat {
+        r.labelPosition == "start" ? 0.22 : r.labelPosition == "end" ? 0.78 : 0.5
+    }
+
+    package static func labelFont(_ r: Relationship) -> CTFont {
+        Fonts.system(12, r.labelStyle == "plain" ? .medium : .semibold)
+    }
+
+    /// The label chip at its place along the line (above a sequence message), nudged
+    /// along the normal off any topic it would cover.
+    package func labelRect(
+        of r: SceneRelationship, _ g: RelationshipGeometry.Result, size: CGSize, frames: [CGRect]? = nil
+    ) -> CGRect {
+        let rel = r.relationship
+        let t = Self.labelAt(rel)
+        var center = g.point(at: t)
+        // Sequence messages read like UML: the label sits above the arrow.
+        if r.points != nil { center.y -= 13 }
+        let tangent = CGPoint(
+            x: g.point(at: min(1, t + 0.01)).x - g.point(at: max(0, t - 0.01)).x,
+            y: g.point(at: min(1, t + 0.01)).y - g.point(at: max(0, t - 0.01)).y)
+        let tl = max(hypot(tangent.x, tangent.y), 1e-3)
+        let normal = CGPoint(x: -tangent.y / tl, y: tangent.x / tl)
+        let blockers = (frames ?? topicFrames).map { $0.insetBy(dx: -4, dy: -4) }
+        for k in [0, 1, -1, 2, -2, 3, -3] as [CGFloat] {
+            let c = CGPoint(x: center.x + normal.x * 18 * k, y: center.y + normal.y * 18 * k)
+            let rect = CGRect(x: c.x - size.width / 2, y: c.y - size.height / 2, width: size.width, height: size.height)
+            if !blockers.contains(where: { $0.intersects(rect) }) {
+                center = c
+                break
+            }
+        }
+        return CGRect(
+            x: center.x - size.width / 2, y: center.y - size.height / 2, width: size.width, height: size.height)
+    }
+
+    /// The chip for a label's text: the text in the label's font, plus its margins.
+    package static func labelSize(_ r: Relationship) -> CGSize {
+        CGSize(width: ceil(r.label.width(in: labelFont(r))) + 18, height: 22)
+    }
+}
+
 /// One relationship: line, caps, label chip, selection halo.
 package final class RelationshipLayer: CALayer {
     package let halo = CAShapeLayer()
@@ -407,7 +506,7 @@ package final class ElementRenderer {
     package let pointersLayer = CALayer()
     package let overlayLayer = CALayer()
 
-    private var relLayers: [String: RelationshipLayer] = [:]
+    package private(set) var relLayers: [String: RelationshipLayer] = [:]
 
     /// Present's flow slides draw their relationship on (M42), as a new one does.
     package func drawOn(relationship id: String, at begin: CFTimeInterval) {
@@ -475,11 +574,12 @@ package final class ElementRenderer {
 
     /// Per-frame geometry for things tied to animated topic frames.
     package func updateGeometry(selected: ElementRef?, connect: ConnectState?, frame: (NodeID) -> CGRect?) {
+        let frames = scene.topicFrames
         for r in scene.relationships {
             guard let l = relLayers[r.relationship.id], let a = rect(r.relationship.from, frame),
                 let b = rect(r.relationship.to, frame)
             else { continue }
-            layoutRelationship(l, r, a, b, selected: selected == .relationship(r.relationship.id))
+            layoutRelationship(l, r, a, b, selected: selected == .relationship(r.relationship.id), frames: frames)
         }
         syncPointers(scene, frame: frame)
         layoutConnect(connect, frame: frame)
@@ -674,6 +774,7 @@ package final class ElementRenderer {
 
     private func syncRelationships(_ scene: Scene, selected: ElementRef?, frame: (NodeID) -> CGRect?, animated: Bool) {
         var seen = Set<String>()
+        let frames = self.scene.topicFrames
         for r in scene.relationships {
             let id = r.relationship.id
             seen.insert(id)
@@ -687,7 +788,7 @@ package final class ElementRenderer {
                     return n
                 }()
             guard let a = rect(r.relationship.from, frame), let b = rect(r.relationship.to, frame) else { continue }
-            layoutRelationship(l, r, a, b, selected: selected == .relationship(id))
+            layoutRelationship(l, r, a, b, selected: selected == .relationship(id), frames: frames)
             if isNew && animated && !drawnRelationships.contains(id) {
                 // The edge draws on from source to target, with a brief glow trail.
                 let draw = CABasicAnimation(keyPath: "strokeEnd")
@@ -725,16 +826,10 @@ package final class ElementRenderer {
 
     private func layoutRelationship(
         _ l: RelationshipLayer, _ r: SceneRelationship, _ a: CGRect, _ b: CGRect,
-        selected: Bool
+        selected: Bool, frames: [CGRect]
     ) {
         let rel = r.relationship
-        let g: RelationshipGeometry.Result
-        if let pts = r.points {
-            g = RelationshipGeometry.polyline(pts)
-        } else {
-            let obstacles = scene.nodes.values.map(\.frame.rect).filter { !$0.intersects(a) && !$0.intersects(b) }
-            g = RelationshipGeometry.make(rel, from: a, to: b, obstacles: obstacles)
-        }
+        let g = scene.geometry(of: r, from: a, to: b, frames: frames)
         let w = CGFloat(rel.width) * (r.glow ? 2 : 1)
         l.opacity = Float(r.opacity)
         l.line.path = g.path
@@ -790,14 +885,14 @@ package final class ElementRenderer {
         l.hitPath = g.path.copy(strokingWithWidth: max(12, w + 10), lineCap: .round, lineJoin: .round, miterLimit: 4)
         // Label chip, nudged off any topic it would cover.
         let text = rel.label
-        let t: CGFloat = rel.labelPosition == "start" ? 0.22 : rel.labelPosition == "end" ? 0.78 : 0.5
+        let t = Scene.labelAt(rel)
         guard !text.isEmpty || selected else {
             l.label.isHidden = true
             l.labelBack.isHidden = true
             l.labelRect = CGRect(origin: g.point(at: t), size: .zero).insetBy(dx: -30, dy: -11)
             return
         }
-        let font = Fonts.system(12, rel.labelStyle == "plain" ? .medium : .semibold)
+        let font = Scene.labelFont(rel)
         let ink = rel.labelStyle == "pill" ? Contrast.adjusted(RGBA(hex: "#17171C"), on: r.color) : r.color
         let attr = StyledText(
             text.isEmpty ? " " : text,
@@ -806,25 +901,7 @@ package final class ElementRenderer {
                 color: .fixed((rel.labelStyle == "pill" ? ink : Contrast.adjusted(ink, on: scene.canvasColor)).cgColor),
                 paragraph: .centered))
         let size = CGSize(width: ceil(attr.lineSize.width) + 18, height: 22)
-        var center = g.point(at: t)
-        // Sequence messages read like UML: the label sits above the arrow.
-        if r.points != nil { center.y -= 13 }
-        let tangent = CGPoint(
-            x: g.point(at: min(1, t + 0.01)).x - g.point(at: max(0, t - 0.01)).x,
-            y: g.point(at: min(1, t + 0.01)).y - g.point(at: max(0, t - 0.01)).y)
-        let tl = max(hypot(tangent.x, tangent.y), 1e-3)
-        let normal = CGPoint(x: -tangent.y / tl, y: tangent.x / tl)
-        let blockers = scene.nodes.values.map { $0.frame.rect.insetBy(dx: -4, dy: -4) }
-        for k in [0, 1, -1, 2, -2, 3, -3] as [CGFloat] {
-            let c = CGPoint(x: center.x + normal.x * 18 * k, y: center.y + normal.y * 18 * k)
-            let rect = CGRect(x: c.x - size.width / 2, y: c.y - size.height / 2, width: size.width, height: size.height)
-            if !blockers.contains(where: { $0.intersects(rect) }) {
-                center = c
-                break
-            }
-        }
-        let rect = CGRect(
-            x: center.x - size.width / 2, y: center.y - size.height / 2, width: size.width, height: size.height)
+        let rect = scene.labelRect(of: r, g, size: size, frames: frames)
         l.labelRect = rect
         // Plain labels keep a canvas-coloured chip so the line doesn't strike through them.
         l.labelBack.isHidden = false
