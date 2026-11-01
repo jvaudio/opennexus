@@ -37,6 +37,13 @@ jobs:
         working-directory: server
         run: swift test
 
+      - uses: actions/setup-node@v7
+        # One Node for the web tools whichever Mac runs the job: they need 22.22.2, 24.15
+        # or 26 (web/package.json), and on an older Node npm quietly skips rolldown's
+        # native binding, so Vitest can't start.
+        with:
+          node-version: 26
+
       - name: Web viewer
         # Typecheck, ESLint, Vitest, and Playwright in Chromium and WebKit (M43); Firefox
         # where it starts, not on macOS 27 (D326, playwright.config.ts).

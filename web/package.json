@@ -11,7 +11,7 @@
     "obsidian"
   ],
   "engines": {
-    "node": ">=20"
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
   "scripts": {
     "build": "npm run build -w viewer-core && npm run build -w viewer-app && npm run build -w obsidian",
