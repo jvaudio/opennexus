@@ -121,6 +121,13 @@ import Testing
             recents: [.init(token: "t1", title: "Checkout DFD", detail: "DFD · 12 topics", thumbnail: "t1.png")])
         try snap.write(to: dir)
         #expect(WidgetSnapshot.read(from: dir)?.inbox == snap.inbox)
+        // Rewritten (and the widgets reloaded) when only the Inbox's count changes, not
+        // when only the time does.
+        var later = snap
+        later.updated = Date(timeIntervalSinceNow: 60)
+        #expect(later.showsTheSame(as: WidgetSnapshot.read(from: dir)))
+        later.inboxCount = 6
+        #expect(!later.showsTheSame(as: WidgetSnapshot.read(from: dir)) && !later.showsTheSame(as: nil))
     }
 
     /// WidgetKit won't archive a timeline with a full-size `preview.png` in it: Recent Maps

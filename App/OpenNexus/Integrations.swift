@@ -213,9 +213,7 @@ final class Integrations: NSObject {
         }
         UserDefaults.standard.set(tokens, forKey: "widgets.tokens")
         let snap = WidgetSnapshot(inbox: Array(inbox.prefix(6)), inboxCount: inbox.count, recents: recents)
-        if snap.inbox != WidgetSnapshot.read(from: group)?.inbox
-            || snap.recents != WidgetSnapshot.read(from: group)?.recents
-        {
+        if !snap.showsTheSame(as: WidgetSnapshot.read(from: group)) {
             try? snap.write(to: group)
             WidgetCenter.shared.reloadAllTimelines()
         }

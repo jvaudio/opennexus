@@ -62,6 +62,9 @@ public enum ImageText {
         _ image: CGImage, name: String, width w: Double, height h: Double, ink: InkMap? = nil
     ) throws -> [TextBox] {
         let request = VNRecognizeTextRequest()
+        // The revision these rules were tuned on (D482): left unset, Vision takes the
+        // newest the SDK knows, so a new Xcode could read the same picture differently.
+        request.revision = VNRecognizeTextRequestRevision3
         request.recognitionLevel = .accurate
         request.usesLanguageCorrection = true
         request.automaticallyDetectsLanguage = true

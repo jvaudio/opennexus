@@ -12949,6 +12949,14 @@
       "comment" : "UI text (NexusDocument.swift)",
       "extractionState" : "migrated"
     },
+    "Updated from sync · kept your version of %@" : {
+      "comment" : "Text with values filled in (NexusDocument.swift)",
+      "extractionState" : "migrated"
+    },
+    "Updated from sync · kept your version of %@ · %@ to resolve: File › Resolve Conflicts…" : {
+      "comment" : "Text with values filled in (NexusDocument.swift)",
+      "extractionState" : "migrated"
+    },
     "Updated with changes made elsewhere · ⌘Z undoes" : {
       "comment" : "UI text (TouchDocumentModel.swift)",
       "extractionState" : "migrated"

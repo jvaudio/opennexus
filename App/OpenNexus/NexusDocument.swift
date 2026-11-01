@@ -194,25 +194,30 @@ final class NexusDocument: NSDocument {
             fileModificationDate = date
         }
         if wasClean && conflicts.isEmpty { updateChangeCount(.changeCleared) }
+        // The topics whose unsaved edits here clashed with the file, and kept.
+        let kept = conflicts.prefix(3).joined(separator: ", ") + (conflicts.count > 3 ? "…" : "")
         // Sync's merges (M45) say so, and point at the clashes they kept this Mac's side of.
+        // One toast replaces another, so the later one names this Mac's clashes too.
         if SyncCenter.shared.fromSync(url) {
-            controller?.showToast(Loc.t("Updated from sync · ⌘Z undoes"))
+            controller?.showToast(
+                conflicts.isEmpty
+                    ? Loc.t("Updated from sync · ⌘Z undoes")
+                    : Loc.f("Updated from sync · kept your version of %@", kept))
             Task {
                 guard let p = await SyncCenter.shared.pendingConflict(for: url), !p.clashes.isEmpty else { return }
+                let count = Loc.n("%lld conflict", "%lld conflicts", p.clashes.count)
                 controller?.showToast(
-                    Loc.f(
-                        "Updated from sync · %@ kept your version: File › Resolve Conflicts…",
-                        Loc.n("%lld conflict", "%lld conflicts", p.clashes.count)))
+                    conflicts.isEmpty
+                        ? Loc.f("Updated from sync · %@ kept your version: File › Resolve Conflicts…", count)
+                        : Loc.f(
+                            "Updated from sync · kept your version of %@ · %@ to resolve: File › Resolve Conflicts…",
+                            kept, count))
             }
             return
         }
         controller?.showToast(
             conflicts.isEmpty
-                ? Loc.t("Updated from disk · ⌘Z undoes")
-                : Loc.f(
-                    "Updated from disk · kept your version of %@",
-                    conflicts.prefix(3).joined(separator: ", ") + (conflicts.count > 3 ? "…" : ""))
-        )
+                ? Loc.t("Updated from disk · ⌘Z undoes") : Loc.f("Updated from disk · kept your version of %@", kept))
     }
 
     nonisolated override func read(from fileWrapper: FileWrapper, ofType typeName: String) throws {

@@ -176,6 +176,13 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
 
     public static func directory(in container: URL) -> URL { container.appending(path: "Widgets") }
 
+    /// Whether the widgets would show the same thing (`updated` aside): the Inbox's
+    /// count changes on its own when an older idea is filed away.
+    public func showsTheSame(as other: WidgetSnapshot?) -> Bool {
+        guard let other else { return false }
+        return inbox == other.inbox && inboxCount == other.inboxCount && recents == other.recents
+    }
+
     public func write(to container: URL) throws {
         let dir = Self.directory(in: container)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
