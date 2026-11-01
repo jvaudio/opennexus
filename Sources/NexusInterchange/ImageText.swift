@@ -81,25 +81,28 @@ public enum ImageText {
         }
         let font = CTFontCreateUIFontForLanguage(.system, 12, nil)
         var lines: [TextBox] = []
-        var pieces: Set<Int> = []
+        var pieces: [Int: ClosedRange<Double>] = [:]
         for obs in request.results ?? [] {
             guard let best = obs.topCandidates(1).first else { continue }
             let got = boxes(
                 best.string, line: pixels(obs.boundingBox), confidence: Double(best.confidence), ink: ink, font: font
             ) { (try? best.boundingBox(for: $0)).map { pixels($0.boundingBox) } }
-            if got.count > 1 { pieces.formUnion(lines.count..<lines.count + got.count) }
-            lines += got
+            for (b, span) in got {
+                if let span { pieces[lines.count] = span }
+                lines.append(b)
+            }
         }
         return dropRepeats(lines, pieces: pieces)
     }
 
     /// One line Vision read, `string` in `line` (image pixels), as text boxes: without a
     /// connector read as a mark at either end (D284), and cut in pieces where one crosses it
-    /// (D483). `at` is Vision's box for part of the string.
+    /// (D483), each piece with the span of the line it can take. `at` is Vision's box for
+    /// part of the string.
     static func boxes(
         _ string: String, line: CGRect, confidence: Double, ink: InkMap?, font: CTFont?,
         at: (Range<String.Index>) -> CGRect?
-    ) -> [TextBox] {
+    ) -> [(box: TextBox, span: ClosedRange<Double>?)] {
         var text = string[...]
         func connector(_ mark: Range<String.Index>) -> Bool {
             guard let ink, let m = at(mark) else { return false }
@@ -112,15 +115,19 @@ public enum ImageText {
         return parts.map { part, span in
             var r = line
             if part.count < string.count, let kept = at(part.startIndex..<part.endIndex) { r = kept }
-            // Vision can share a cut line's width out by characters, over the connector.
-            let x0 = max(r.minX, span.lowerBound)
-            let x1 = min(r.maxX, span.upperBound)
-            if parts.count > 1, x1 > x0 { r = CGRect(x: x0, y: r.minY, width: x1 - x0, height: r.height) }
+            if parts.count > 1 {
+                // Vision can share a cut line's width out by characters, over the connector,
+                // or put a piece's box beyond it: the piece keeps to its span, on the line's row.
+                let x0 = max(r.minX, span.lowerBound)
+                let x1 = min(r.maxX, span.upperBound)
+                let (lo, hi) = x1 > x0 ? (x0, x1) : (span.lowerBound, span.upperBound)
+                r = CGRect(x: lo, y: line.minY, width: hi - lo, height: line.height)
+            }
             var b = TextBox(
                 String(part), x: r.minX, y: r.minY, width: r.width, height: r.height, confidence: confidence)
             b.em = font.flatMap { ems(part, in: $0) }
             b.inked = ink.map { $0.inked(r) }.map { $0.minX...$0.maxX }
-            return b
+            return (b, parts.count > 1 ? span : nil)
         }
     }
 
@@ -160,19 +167,22 @@ public enum ImageText {
         return parts
     }
 
-    /// `boxes` without each piece of a cut line (`pieces`) that a whole line already reads
-    /// there: half or more of the piece's box inside the line's, and the piece's text in
-    /// the line's. Vision on one Mac read "Two nights" on its own and again with the
-    /// connector and the topic beside it, as "nights - Hotel for the team" (D483).
-    static func dropRepeats(_ boxes: [TextBox], pieces: Set<Int>) -> [TextBox] {
-        func rect(_ b: TextBox) -> CGRect { CGRect(x: b.x, y: b.y, width: b.width, height: b.height) }
-        return boxes.indices.filter { i in
-            guard pieces.contains(i) else { return true }
-            let r = rect(boxes[i])
+    /// `boxes` without each piece of a cut line (`pieces`, by index, with their spans) that
+    /// a whole line already reads: one on the same row, with the piece's text, over half of
+    /// the piece's span (or half its own width). Vision on one Mac read "Two nights" on its
+    /// own and again with the connector and the topic beside it, as "nights - Hotel for the
+    /// team" (D483). The span comes from the line's box and the connector's ink, where
+    /// Vision's box for the piece needn't be anywhere near its text.
+    static func dropRepeats(_ boxes: [TextBox], pieces: [Int: ClosedRange<Double>]) -> [TextBox] {
+        boxes.indices.filter { i in
+            guard let span = pieces[i] else { return true }
             return !boxes.indices.contains { j in
-                guard !pieces.contains(j), boxes[j].text.contains(boxes[i].text) else { return false }
-                let shared = r.intersection(rect(boxes[j]))
-                return !shared.isNull && shared.width * shared.height >= 0.5 * r.width * r.height
+                let o = boxes[j]
+                guard pieces[j] == nil, o.text.contains(boxes[i].text), o.verticalOverlap(boxes[i]) >= 0.5 else {
+                    return false
+                }
+                let shared = min(o.maxX, span.upperBound) - max(o.minX, span.lowerBound)
+                return shared >= 0.5 * min(o.width, span.upperBound - span.lowerBound)
             }
         }.map { boxes[$0] }
     }
