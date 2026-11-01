@@ -14,8 +14,10 @@ jobs:
     # Self-hosted on the maintainer's Mac: GitHub's macOS images don't have Xcode 27
     # and the macOS 27 SDK yet. The repo is public, so pull requests from forks never
     # run here (they would run their code on that Mac); only pushes and same-repo PRs.
+    # `gui`: a runner in a logged-in desktop session, which Playwright's WebKit and
+    # Obsidian need to open a window.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
-    runs-on: [self-hosted, macOS, ARM64, xcode27]
+    runs-on: [self-hosted, macOS, ARM64, xcode27, gui]
     steps:
       - uses: actions/checkout@v7
 
