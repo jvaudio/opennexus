@@ -1,0 +1,40 @@
+{
+  "aliases": [
+    "budget",
+    "money",
+    "spending",
+    "savings",
+    "finances"
+  ],
+  "category": "planning",
+  "collection": "personal",
+  "id": "budgetPlan",
+  "kicker": "BRACE MAP",
+  "name": "Budget plan",
+  "note": "Put your monthly take-home pay at the top, split it into needs, wants and savings, then list what each part pays for. Each part's items should add up to its total, and the parts to the whole.",
+  "order": 99,
+  "outline": [
+    "Monthly budget · 2,400",
+    "  Needs · 1,440",
+    "    Rent · 950",
+    "    Energy and water · 130",
+    "    Groceries · 250",
+    "    Phone and internet · 60",
+    "    Travel · 50",
+    "  Wants · 480",
+    "    Eating out · 150",
+    "    Hobbies · 130",
+    "    Streaming and apps · 40",
+    "    Clothes · 80",
+    "    Gifts · 50",
+    "    Haircuts · 30",
+    "  Savings · 480",
+    "    Emergency fund · 200",
+    "    Pension top-up · 100",
+    "    Holiday · 120",
+    "    New laptop · 60"
+  ],
+  "summary": "Needs, wants and savings",
+  "title": "Monthly budget",
+  "type": "brace"
+}

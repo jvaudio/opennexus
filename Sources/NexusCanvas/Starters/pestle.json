@@ -1,0 +1,139 @@
+{
+  "aliases": [
+    "pestle",
+    "pest",
+    "macro environment",
+    "external factors",
+    "environmental scan"
+  ],
+  "category": "thinking",
+  "collection": "business",
+  "details": [
+    {
+      "note": "Government policy, grants, taxes and local council plans.",
+      "topic": "Political"
+    },
+    {
+      "note": "Prices, interest rates, wages and what customers can afford.",
+      "topic": "Economic"
+    },
+    {
+      "note": "Attitudes, habits, age and how people make up their minds.",
+      "topic": "Social"
+    },
+    {
+      "note": "New tools and falling costs that change what's possible.",
+      "topic": "Technological"
+    },
+    {
+      "note": "Laws, standards and permissions you must meet.",
+      "topic": "Legal"
+    },
+    {
+      "note": "Climate, geography and customers' environmental concerns.",
+      "topic": "Environmental"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "topic": "Grant scheme ends next year"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "topic": "Council net-zero pledges"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "topic": "Rising household energy bills"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "topic": "Higher interest on loans"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "topic": "Neighbours copy neighbours"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "topic": "Older owners wary of debt"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "topic": "Cheaper home batteries"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "topic": "Smart meters now common"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "topic": "Planning rules for listed buildings"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "note": "A cost, but it keeps cowboy installers out: an opportunity for a certified firm.",
+      "topic": "Installer certification required"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "topic": "Shaded roofs in terraced streets"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "topic": "Buyers want lower carbon footprints"
+    }
+  ],
+  "id": "pestle",
+  "kicker": "BRACE MAP",
+  "name": "PESTLE",
+  "note": "Name the business or decision at the top, then list two or three outside factors under each letter. Flag each factor green for an opportunity or red for a threat, and turn the strongest into actions.",
+  "order": 30,
+  "outline": [
+    "Home solar installer outlook",
+    "  Political",
+    "    Grant scheme ends next year",
+    "    Council net-zero pledges",
+    "  Economic",
+    "    Rising household energy bills",
+    "    Higher interest on loans",
+    "  Social",
+    "    Neighbours copy neighbours",
+    "    Older owners wary of debt",
+    "  Technological",
+    "    Cheaper home batteries",
+    "    Smart meters now common",
+    "  Legal",
+    "    Planning rules for listed buildings",
+    "    Installer certification required",
+    "  Environmental",
+    "    Shaded roofs in terraced streets",
+    "    Buyers want lower carbon footprints"
+  ],
+  "summary": "Political to environmental forces",
+  "title": "Home solar installer outlook",
+  "type": "brace"
+}

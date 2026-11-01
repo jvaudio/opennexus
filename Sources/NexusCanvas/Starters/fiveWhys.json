@@ -1,0 +1,94 @@
+{
+  "aliases": [
+    "5 whys",
+    "five whys",
+    "root cause",
+    "rca",
+    "why"
+  ],
+  "category": "process",
+  "collection": "process",
+  "details": [
+    {
+      "edge": "Why?",
+      "topic": "Vans leave two hours late"
+    },
+    {
+      "edge": "Why?",
+      "topic": "Loading takes too long"
+    },
+    {
+      "edge": "Why?",
+      "topic": "Orders printed that morning"
+    },
+    {
+      "edge": "Why?",
+      "topic": "Weekend orders aren't batched"
+    },
+    {
+      "edge": "Why?",
+      "markers": [
+        "flag-red"
+      ],
+      "note": "The root cause: something you can change, where asking why again leaves your control.",
+      "topic": "No one owns weekend orders"
+    },
+    {
+      "edge": "Fix",
+      "topic": "Name a Sunday order lead"
+    },
+    {
+      "edge": "Fix",
+      "topic": "Print orders Sunday evening"
+    },
+    {
+      "edge": "Check",
+      "note": "Confirm the fix worked before closing the problem.",
+      "topic": "Check four Mondays running"
+    },
+    {
+      "edge": "Why?",
+      "topic": "Crates don't fit the shelves"
+    },
+    {
+      "edge": "Fix",
+      "topic": "Fit standard crate racks"
+    },
+    {
+      "edge": "Why?",
+      "topic": "Drivers detour round roadworks"
+    },
+    {
+      "edge": "Why?",
+      "topic": "Routes planned for weekdays only"
+    },
+    {
+      "edge": "Fix",
+      "topic": "Plan a Monday route"
+    }
+  ],
+  "id": "fiveWhys",
+  "kicker": "LOGIC",
+  "name": "5 whys",
+  "note": "Write the problem as the root. Ask why and add each answer as a child, until you reach a cause you can act on, usually about five levels down. Follow every answer that holds up, and end each chain with a fix.",
+  "order": 77,
+  "outline": [
+    "Monday deliveries arrive late",
+    "  Vans leave two hours late",
+    "    Loading takes too long",
+    "      Orders printed that morning",
+    "        Weekend orders aren't batched",
+    "          No one owns weekend orders",
+    "            Name a Sunday order lead",
+    "            Print orders Sunday evening",
+    "            Check four Mondays running",
+    "    Crates don't fit the shelves",
+    "      Fit standard crate racks",
+    "  Drivers detour round roadworks",
+    "    Routes planned for weekdays only",
+    "      Plan a Monday route"
+  ],
+  "summary": "Ask why until the root cause",
+  "title": "Monday deliveries arrive late",
+  "type": "logic"
+}

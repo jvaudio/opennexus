@@ -1,0 +1,113 @@
+{
+  "aliases": [
+    "risk register",
+    "risks",
+    "risk log",
+    "likelihood",
+    "impact"
+  ],
+  "category": "security",
+  "collection": "security",
+  "details": [
+    {
+      "note": "Two supplier invoices were redirected last year. This is the risk most likely to cost money.",
+      "topic": "Phishing takes over finance mailbox"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "note": "4 × 4 = 16",
+      "topic": "Likely · severe"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "note": "3 × 4 = 12",
+      "topic": "Possible · severe"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "note": "4 × 3 = 12",
+      "topic": "Likely · major"
+    },
+    {
+      "markers": [
+        "flag-orange"
+      ],
+      "note": "3 × 3 = 9",
+      "topic": "Possible · major"
+    },
+    {
+      "markers": [
+        "flag-orange"
+      ],
+      "note": "2 × 3 = 6",
+      "topic": "Unlikely · major"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "note": "2 × 2 = 4",
+      "topic": "Unlikely · moderate"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "note": "1 × 2 = 2",
+      "topic": "Rare · moderate"
+    },
+    {
+      "note": "A backup you haven't restored isn't a backup. Test one folder every month.",
+      "topic": "Reduce: offline backups, tested restores"
+    },
+    {
+      "note": "Accepting a risk is a decision, not a shrug: write down why and when you'll look again.",
+      "topic": "Accept: review each year"
+    }
+  ],
+  "id": "riskRegister",
+  "kicker": "TREE TABLE",
+  "name": "Risk register",
+  "note": "Each row is one risk: its likelihood and impact, who owns it, and how you'll treat it (avoid, reduce, transfer or accept). Score likelihood 1–5 times impact 1–4 and flag the rating red at 12 or more, orange from 6 and green below. Keep the red rows at the top and review them at every meeting.",
+  "order": 61,
+  "outline": [
+    "Charity IT risk register",
+    "  Phishing takes over finance mailbox",
+    "    Likely · severe",
+    "      Finance lead",
+    "        Reduce: two-factor sign-in, training",
+    "  Ransomware encrypts shared drive",
+    "    Possible · severe",
+    "      IT contractor",
+    "        Reduce: offline backups, tested restores",
+    "  Old file server out of support",
+    "    Likely · major",
+    "      Operations manager",
+    "        Avoid: retire it this quarter",
+    "  Laptop stolen with donor data",
+    "    Possible · major",
+    "      Office manager",
+    "        Reduce: encrypt disks, remote wipe",
+    "  Website down on appeal day",
+    "    Unlikely · major",
+    "      Digital officer",
+    "        Transfer: hosting with uptime guarantee",
+    "  Volunteer shares donor list",
+    "    Unlikely · moderate",
+    "      Data protection lead",
+    "        Reduce: least access, signed agreement",
+    "  Payroll supplier closes",
+    "    Rare · moderate",
+    "      Finance director",
+    "        Accept: review each year"
+  ],
+  "summary": "Rate, own and treat each risk",
+  "title": "Charity IT risk register",
+  "type": "treeTable"
+}

@@ -5,6 +5,7 @@
     "flow"
   ],
   "category": "software",
+  "collection": "engineering",
   "id": "apiFlow",
   "kicker": "FLOW",
   "name": "API request flow",

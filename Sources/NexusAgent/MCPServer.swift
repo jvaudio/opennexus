@@ -1,4 +1,5 @@
 import Foundation
+import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusScene
@@ -39,10 +40,14 @@ public final class MCPServer {
     /// Requests that arrived while waiting for an elicitation answer.
     var pending: [String] = []
 
+    /// The user's own starters, for `list_starters` (M50).
+    var starters = MyStarters(folder: nil)
+
     public init(
         config: Config, input: @escaping () -> String?, output: @escaping (String) -> Void,
-        log: @escaping (String) -> Void = { _ in }
+        log: @escaping (String) -> Void = { _ in }, starters: MyStarters = MyStarters(folder: nil)
     ) {
+        self.starters = starters
         self.config = config
         self.input = input
         self.output = output
@@ -131,6 +136,7 @@ public final class MCPServer {
         }
         var tools = MapTools(policy: policy) { [weak self] q in self?.elicit(q) }
         tools.client = clientName
+        tools.mine = starters
         do {
             let out = try tools.call(name, params["arguments"]?.objectValue ?? [:])
             reply(id, ["content": .array(out.content), "isError": false])

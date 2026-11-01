@@ -5,6 +5,7 @@
     "agenda"
   ],
   "category": "planning",
+  "collection": "meetings",
   "id": "meeting",
   "kicker": "MIND MAP",
   "name": "Meeting notes",

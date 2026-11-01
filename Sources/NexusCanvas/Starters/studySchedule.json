@@ -1,0 +1,77 @@
+{
+  "aliases": [
+    "study",
+    "revision",
+    "exam",
+    "timetable",
+    "schedule"
+  ],
+  "category": "planning",
+  "collection": "thinking",
+  "details": [
+    {
+      "days": 7,
+      "start": 0,
+      "topic": "Week 1 · Atomic structure"
+    },
+    {
+      "days": 7,
+      "start": 7,
+      "topic": "Week 2 · Bonding"
+    },
+    {
+      "days": 7,
+      "start": 14,
+      "topic": "Week 3 · Rates of reaction"
+    },
+    {
+      "days": 7,
+      "start": 21,
+      "topic": "Week 4 · Organic chemistry"
+    },
+    {
+      "days": 7,
+      "start": 28,
+      "topic": "Week 5 · Past papers"
+    },
+    {
+      "days": 6,
+      "start": 35,
+      "topic": "Week 6 · Weak spots"
+    },
+    {
+      "days": 41,
+      "topic": "Exam day"
+    }
+  ],
+  "id": "studySchedule",
+  "kicker": "TIMELINE",
+  "name": "Study schedule",
+  "note": "Each week is one block, dated from today, with its topics beneath. Change the topics and lengths to match your syllabus, keep the last week for weak spots, and set the exam day to the real date.",
+  "order": 94,
+  "outline": [
+    "Chemistry exam in six weeks",
+    "  Week 1 · Atomic structure",
+    "    Electron shells",
+    "    Isotopes and relative mass",
+    "  Week 2 · Bonding",
+    "    Ionic and covalent bonds",
+    "    Metallic bonding",
+    "  Week 3 · Rates of reaction",
+    "    Collision theory",
+    "    Catalysts",
+    "  Week 4 · Organic chemistry",
+    "    Alkanes and alkenes",
+    "    Polymers",
+    "  Week 5 · Past papers",
+    "    Two timed papers",
+    "    Log every mistake",
+    "  Week 6 · Weak spots",
+    "    Topics from the mistake log",
+    "    Rest the day before",
+    "  Exam day"
+  ],
+  "summary": "Weekly topics up to the exam",
+  "title": "Chemistry exam plan",
+  "type": "timeline"
+}

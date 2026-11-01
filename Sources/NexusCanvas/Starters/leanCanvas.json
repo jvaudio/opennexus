@@ -1,0 +1,87 @@
+{
+  "aliases": [
+    "lean canvas",
+    "startup",
+    "business model",
+    "mvp"
+  ],
+  "category": "planning",
+  "collection": "business",
+  "details": [
+    {
+      "note": "The top three problems for this segment, and how people solve them today.",
+      "topic": "Problem"
+    },
+    {
+      "note": "Who has the problem. Name the early adopters who feel it most.",
+      "topic": "Customer segments"
+    },
+    {
+      "note": "One clear sentence on why you're different and worth a look.",
+      "topic": "Unique value proposition"
+    },
+    {
+      "note": "The smallest set of features that answers each problem.",
+      "topic": "Solution"
+    },
+    {
+      "note": "Free and paid paths to reach the early adopters.",
+      "topic": "Channels"
+    },
+    {
+      "note": "How you'll charge, and what you think people will pay.",
+      "topic": "Revenue streams"
+    },
+    {
+      "note": "What it costs each month to build, run and reach customers.",
+      "topic": "Cost structure"
+    },
+    {
+      "note": "The few numbers that show it's working.",
+      "topic": "Key metrics"
+    },
+    {
+      "note": "Something that can't easily be copied or bought. Leave it empty rather than invent one.",
+      "topic": "Unfair advantage"
+    }
+  ],
+  "id": "leanCanvas",
+  "kicker": "MATRIX",
+  "name": "Lean canvas",
+  "note": "Fill the blocks in order, starting with Problem and Customer segments. Treat every point as a guess to test, and keep only the top two or three in each block.",
+  "order": 27,
+  "outline": [
+    "Family meal planner app",
+    "  Problem",
+    "    Deciding dinner every night",
+    "    Food wasted every week",
+    "    Today: paper lists, takeaways",
+    "  Customer segments",
+    "    Working parents of young children",
+    "    Early adopters: new parents",
+    "  Unique value proposition",
+    "    A week of dinners in minutes",
+    "  Solution",
+    "    Plans from what's in cupboards",
+    "    One-tap shopping list",
+    "    Recipes that reuse leftovers",
+    "  Channels",
+    "    Parenting newsletters",
+    "    App store search",
+    "  Revenue streams",
+    "    Family plan at £4.99 monthly",
+    "    Free first week",
+    "  Cost structure",
+    "    Two developers",
+    "    Recipe licences",
+    "    Hosting and support",
+    "  Key metrics",
+    "    Weekly active households",
+    "    Plans cooked per week",
+    "  Unfair advantage",
+    "    Dietitian co-founder"
+  ],
+  "summary": "Problem, solution, metrics, advantage",
+  "title": "Family meal planner app",
+  "type": "matrix"
+}

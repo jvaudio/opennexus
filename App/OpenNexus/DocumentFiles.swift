@@ -18,6 +18,7 @@ extension DocumentWindowController {
         .duplicateCanvas, .deleteCanvas, .copyCanvas, .pasteCanvas, .saveCanvasAsDocument, .mergeDocuments,
         .printDocument, .export, .exportHTML, .shareLink, .manageShareLinks, .mapShot, .splitByBranch, .nextPanel,
         .previousPanel, .syncHistory, .resolveConflicts, .mergeConflictCopies, .collaborate, .joinSession,
+        .saveCanvasAsStarter, .installStarter,
     ]
 
     func runWindowCommand(_ id: CommandID) {
@@ -34,6 +35,8 @@ extension DocumentWindowController {
         case .copyCanvas: controller.copyCanvas()
         case .pasteCanvas: controller.pasteCanvas()
         case .saveCanvasAsDocument: controller.saveCanvasAsDocument()
+        case .saveCanvasAsStarter: saveCanvasAsStarter()
+        case .installStarter: StarterInstaller.choose()
         case .mergeDocuments: controller.openMerge()
         case .printDocument: controller.openPrint()
         case .export: controller.openExport()
@@ -389,6 +392,7 @@ struct CanvasTabMenu: View {
         Button("Paste Canvas") { on { controller.pasteCanvas() } }.disabled(!controller.canPasteCanvas)
         Divider()
         Button("Save Canvas as Document…") { on { controller.saveCanvasAsDocument() } }
+        Button("Save Canvas as Starter…") { on { send(.saveCanvasAsStarter) } }
         Button("Move to New Window") { on { send(.moveCanvasToWindow) } }
         Divider()
         Button("Delete Canvas…", role: .destructive) { on { send(.deleteCanvas) } }

@@ -1,0 +1,64 @@
+{
+  "aliases": [
+    "stakeholders",
+    "power interest",
+    "stakeholder analysis",
+    "influence"
+  ],
+  "category": "planning",
+  "collection": "business",
+  "details": [
+    {
+      "note": "High power, high interest. Involve them in decisions and meet often.",
+      "topic": "Manage closely"
+    },
+    {
+      "note": "High power, low interest. Brief them on what matters to them, without swamping them.",
+      "topic": "Keep satisfied"
+    },
+    {
+      "note": "Low power, high interest. Share progress regularly and ask for their views.",
+      "topic": "Keep informed"
+    },
+    {
+      "note": "Low power, low interest. Check in now and then in case that changes.",
+      "topic": "Monitor"
+    },
+    {
+      "note": "Sunday pay rates and rotas are the sticking point.",
+      "topic": "Library staff union"
+    },
+    {
+      "note": "Could move up to Keep informed if Sunday footfall grows.",
+      "topic": "Neighbouring cafés"
+    }
+  ],
+  "id": "stakeholderMap",
+  "kicker": "MATRIX",
+  "name": "Stakeholder map",
+  "note": "List everyone the change affects, then place each by their power over it and their interest in it: the top row has the most power, the left column the most interest. The note on each quadrant says how to engage.",
+  "order": 29,
+  "outline": [
+    "Library Sunday opening",
+    "  Manage closely",
+    "    Council finance committee",
+    "    Head librarian",
+    "    Library staff union",
+    "  Keep satisfied",
+    "    Ward councillors",
+    "    Building facilities manager",
+    "    Head of leisure services",
+    "  Keep informed",
+    "    Regular readers",
+    "    Parent and toddler groups",
+    "    Volunteer reading helpers",
+    "    Local schools",
+    "  Monitor",
+    "    Neighbouring cafés",
+    "    Local newspaper",
+    "    Cleaning contractor"
+  ],
+  "summary": "Power and interest grid",
+  "title": "Library Sunday opening",
+  "type": "matrix"
+}

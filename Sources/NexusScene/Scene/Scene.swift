@@ -292,7 +292,16 @@ public struct Scene {
         for bd in boundaries { b = b.union(bd.rect) }
         if let l = legend { b = b.union(l.rect) }
         for d in decor {
-            if case .band(let r, _, _) = d { b = b.union(r) }
+            switch d {
+            case .band(let r, _, _): b = b.union(r)
+            // A sequence's lifelines run on below its participants, past the last message
+            // (M50: fitting and exporting cut the messages off).
+            case .lifeline(let id, let bottom, _):
+                if let f = nodes[id]?.frame.rect, bottom > f.maxY {
+                    b = b.union(CGRect(x: f.minX, y: f.maxY, width: f.width, height: bottom - f.maxY))
+                }
+            default: break
+            }
         }
         return b
     }

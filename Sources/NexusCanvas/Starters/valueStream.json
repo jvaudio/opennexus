@@ -1,0 +1,57 @@
+{
+  "aliases": [
+    "value stream",
+    "vsm",
+    "lead time",
+    "lean",
+    "flow efficiency"
+  ],
+  "category": "process",
+  "collection": "process",
+  "details": [
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "note": "The longest wait. Stocking the common parts would remove it for most repairs.",
+      "topic": "Wait: 3 days for delivery"
+    },
+    {
+      "note": "Process time divided by lead time: how much of the elapsed time someone is working on the bike.",
+      "topic": "Flow efficiency: under 2%"
+    }
+  ],
+  "id": "valueStream",
+  "kicker": "TIMELINE",
+  "name": "Value stream",
+  "note": "Each event is a step, in order. Under it, note the hands-on process time and the wait before the next step can start. The totals show where the time goes; the longest waits are where to start.",
+  "order": 76,
+  "outline": [
+    "Bike repair value stream",
+    "  Book in",
+    "    Process: 10 min",
+    "    Wait: 2 days for a slot",
+    "  Inspect and quote",
+    "    Process: 20 min",
+    "    Wait: 1 day for approval",
+    "  Order parts",
+    "    Process: 15 min",
+    "    Wait: 3 days for delivery",
+    "  Repair",
+    "    Process: 90 min",
+    "    Wait: 4 hours in the queue",
+    "  Test ride",
+    "    Process: 25 min",
+    "    Wait: 1 day until collected",
+    "  Hand back",
+    "    Process: 5 min",
+    "    Wait: none",
+    "  Totals",
+    "    Process time: 2 h 45 min",
+    "    Lead time: about 7 days",
+    "    Flow efficiency: under 2%"
+  ],
+  "summary": "Process time and wait time",
+  "title": "Bike repair value stream",
+  "type": "timeline"
+}

@@ -1,0 +1,51 @@
+{
+  "aliases": [
+    "wbs",
+    "work breakdown",
+    "deliverables",
+    "scope",
+    "work packages"
+  ],
+  "category": "planning",
+  "collection": "planning",
+  "details": [
+    {
+      "note": "Every WBS has a branch for running the project itself: planning, money, permissions and people.",
+      "topic": "1 Project management"
+    },
+    {
+      "note": "A work package: small enough to estimate and cost, with one owner and a clear finish.",
+      "topic": "2.1 Soil testing"
+    }
+  ],
+  "id": "wbs",
+  "kicker": "WBS",
+  "name": "Work breakdown structure",
+  "note": "Break the project into deliverables, then each deliverable into work packages small enough to estimate and give to one owner. Number them so everyone can refer to them, and keep to nouns: what gets delivered, not when.",
+  "order": 79,
+  "outline": [
+    "Community garden",
+    "  1 Project management",
+    "    1.1 Volunteer rota",
+    "    1.2 Budget and grants",
+    "    1.3 Council permission",
+    "  2 Site preparation",
+    "    2.1 Soil testing",
+    "    2.2 Clearing and levelling",
+    "    2.3 Water supply",
+    "  3 Structures",
+    "    3.1 Raised beds",
+    "    3.2 Paths and edging",
+    "    3.3 Tool shed",
+    "  4 Planting",
+    "    4.1 Seed and plant order",
+    "    4.2 Plot allocation",
+    "    4.3 Planting day",
+    "  5 Handover",
+    "    5.1 Members' handbook",
+    "    5.2 Opening event"
+  ],
+  "summary": "Deliverables split into work packages",
+  "title": "Community garden",
+  "type": "org"
+}

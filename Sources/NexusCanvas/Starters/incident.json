@@ -5,6 +5,7 @@
     "outage"
   ],
   "category": "process",
+  "collection": "engineering",
   "id": "incident",
   "kicker": "TIMELINE",
   "name": "Incident timeline",

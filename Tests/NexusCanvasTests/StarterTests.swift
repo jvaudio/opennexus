@@ -8,7 +8,8 @@ import Testing
 
 /// Starters build exactly what the Swift templates they replaced built (M39 A3): each
 /// template's canvas, in canonical JSON, was captured into `StarterFixtures/` before the
-/// templates became data. Set REGENERATE_GOLDENS=1 to rewrite them after a deliberate change.
+/// templates became data. The 75 added in M50 have PNG goldens instead
+/// (`StarterContentTests`). Set REGENERATE_GOLDENS=1 to rewrite them after a deliberate change.
 @MainActor
 @Suite struct StarterFixtureTests {
     nonisolated static let dir = URL(fileURLWithPath: #filePath).deletingLastPathComponent()
@@ -22,8 +23,9 @@ import Testing
 
     @Test func everyTemplateBuildsItsFixture() throws {
         if Self.regenerate { try FileManager.default.createDirectory(at: Self.dir, withIntermediateDirectories: true) }
-        #expect(StarterLibrary.templates.count == 25)
-        for t in StarterLibrary.templates {
+        let first = StarterLibrary.templates.filter { $0.order <= 25 }
+        #expect(first.count == 25)
+        for t in first {
             let data = try Self.canvasJSON(t.document())
             let url = Self.dir.appending(path: "\(t.id).json")
             if Self.regenerate {
@@ -42,15 +44,20 @@ import Testing
         .deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
         .appending(path: "schema/starter.schema.json")
 
+    static let bundledSchemaURL = schemaURL.deletingLastPathComponent().deletingLastPathComponent()
+        .appending(path: "Sources/NexusFormat/Resources/starter.schema.json")
+
     /// Every built-in reads, matches the published schema and is written canonically.
     @Test func builtInsReadMatchTheSchemaAndAreCanonical() throws {
         let starters = try StarterLibrary.load()
-        #expect(starters.count == 25)
+        #expect(starters.count == 100)
         #expect(Set(starters.map(\.id)).count == starters.count, "ids are unique")
-        #expect(starters.map(\.order) == Array(1...25), "orders run 1…25")
+        #expect(starters.map(\.order) == Array(1...100), "orders run 1…100")
         let schemaData = try Data(contentsOf: Self.schemaURL)
         #expect(CanonicalJSON.data(try CanonicalJSON.parse(schemaData)) == schemaData, "the schema is canonical")
         let validator = SchemaValidator(schema: try CanonicalJSON.parse(schemaData))
+        // Installing checks files against the copy NexusFormat carries (M50).
+        #expect(try Data(contentsOf: Self.bundledSchemaURL) == schemaData, "the bundled schema is the published one")
         let folder = try #require(StarterLibrary.folder)
         for url in try FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: nil) {
             let data = try Data(contentsOf: url)
@@ -79,6 +86,29 @@ import Testing
         #expect(!valid { $0["id"] = "blank.mindmap" }, "blank ids are generated")
         #expect(!valid { $0["outline"] = ["Root", " Child"] }, "indents are two spaces")
         #expect(!valid { $0["colour"] = "red" }, "unknown keys are typos")
+        // M50's fields.
+        #expect(
+            valid {
+                $0["collection"] = "security"; $0["note"] = "How to use it."
+            })
+        #expect(!valid { $0["collection"] = "learning" }, "collections are listed")
+        #expect(!valid { $0["outline"] = nil }, "an outline or a saved document")
+        #expect(!valid { $0["document"] = .object([:]) }, "not both")
+        #expect(
+            valid {
+                $0["outline"] = nil; $0["document"] = .object([:])
+            })
+        #expect(valid { $0["details"] = [["topic": "Child", "markers": ["flag-red"], "start": 0, "days": 3]] })
+        #expect(!valid { $0["details"] = [["topic": "Child", "progress": 101]] }, "progress is a percentage")
+        #expect(!valid { $0["details"] = [["note": "No topic"]] }, "a detail names its topic")
+        #expect(!valid { $0["details"] = [["topic": "Child", "days": 0]] }, "a task lasts a day or more")
+        #expect(
+            valid { $0["boundaries"] = [["title": "Zone", "topics": ["Child"], "meaning": "trust", "trust": "low"]] })
+        #expect(!valid { $0["boundaries"] = [["title": "Zone", "topics": []]] }, "a boundary holds a topic")
+        #expect(!valid { $0["boundaries"] = [["title": "Zone", "topics": ["Child"], "meaning": "fence"]] })
+        #expect(!valid { $0["lanes"] = [] }, "a lane or none")
+        #expect(valid { $0["structure"] = "timeline.alternating" })
+        #expect(!valid { $0["structure"] = "alternating" }, "a structure names its family")
     }
 
     @Test func relationshipsNameOutlineTopics() {

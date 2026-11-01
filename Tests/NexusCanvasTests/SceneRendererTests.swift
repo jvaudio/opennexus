@@ -42,7 +42,7 @@ struct SceneRendererTests {
     }
 
     @Test func viewFreeRenderMatchesTheCanvas() throws {
-        #expect(StarterLibrary.templates.count == 25)
+        #expect(StarterLibrary.templates.count == 100)
         for s in StarterLibrary.templates {
             let h = CanvasHarness(model: s.document(), width: 1000, height: 680)
             h.host.canvasView.fitToWindow()

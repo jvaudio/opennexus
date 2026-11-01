@@ -1,0 +1,106 @@
+{
+  "aliases": [
+    "decision log",
+    "decisions",
+    "decision record",
+    "minutes"
+  ],
+  "category": "planning",
+  "collection": "meetings",
+  "details": [
+    {
+      "markers": [
+        "symbol-check"
+      ],
+      "note": "The decision, stated so someone who missed the meeting understands it.",
+      "topic": "Fair on Saturday 5 July"
+    },
+    {
+      "note": "When it was decided, and by whom.",
+      "topic": "12 Mar · whole committee"
+    },
+    {
+      "note": "Why, in a line, so nobody has to argue it again.",
+      "topic": "Avoids exam weeks"
+    },
+    {
+      "note": "What would make you look at it again.",
+      "topic": "Revisit if field is booked"
+    },
+    {
+      "markers": [
+        "symbol-check"
+      ],
+      "topic": "Card payments at every stall"
+    },
+    {
+      "markers": [
+        "symbol-cross"
+      ],
+      "topic": "Fireworks finale"
+    },
+    {
+      "markers": [
+        "symbol-check"
+      ],
+      "topic": "No bouncy castle this year"
+    },
+    {
+      "markers": [
+        "symbol-check"
+      ],
+      "topic": "Raffle prizes from local shops"
+    },
+    {
+      "markers": [
+        "symbol-check"
+      ],
+      "topic": "Volunteers sign up online"
+    },
+    {
+      "markers": [
+        "symbol-question"
+      ],
+      "topic": "Entry £2, children free"
+    }
+  ],
+  "id": "decisionLog",
+  "kicker": "TREE TABLE",
+  "name": "Decision log",
+  "note": "Add a row each time the group decides something: the decision, when and by whom, why, and what would make you revisit it. Mark agreed decisions with a tick, open ones with a question mark and reversed ones with a cross.",
+  "order": 40,
+  "outline": [
+    "Summer fair decision log",
+    "  Fair on Saturday 5 July",
+    "    12 Mar · whole committee",
+    "      Avoids exam weeks",
+    "        Revisit if field is booked",
+    "  Card payments at every stall",
+    "    12 Mar · treasurer",
+    "      Fewer cash floats to count",
+    "        Revisit if fees top £50",
+    "  Fireworks finale",
+    "    12 Mar, reversed 2 Apr",
+    "      Neighbours objected to noise",
+    "        Replaced by lantern parade",
+    "  No bouncy castle this year",
+    "    2 Apr · chair",
+    "      Insurance quote doubled",
+    "        Revisit next year",
+    "  Raffle prizes from local shops",
+    "    2 Apr · whole committee",
+    "      Free, and builds goodwill",
+    "        Revisit if under 20 prizes",
+    "  Volunteers sign up online",
+    "    16 Apr · secretary",
+    "      Paper rota went missing",
+    "        Revisit after the fair",
+    "  Entry £2, children free",
+    "    30 Apr · vote next meeting",
+    "      Covers fixed costs",
+    "        Decide by 14 May"
+  ],
+  "summary": "What, when, who and why",
+  "title": "Summer fair decision log",
+  "type": "treeTable"
+}

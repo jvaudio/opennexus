@@ -1,0 +1,116 @@
+{
+  "aliases": [
+    "gantt",
+    "schedule",
+    "project plan",
+    "dates",
+    "milestones"
+  ],
+  "category": "planning",
+  "collection": "planning",
+  "details": [
+    {
+      "days": 5,
+      "start": 0,
+      "topic": "Customer interviews"
+    },
+    {
+      "days": 3,
+      "start": 2,
+      "topic": "Review other shops' websites"
+    },
+    {
+      "days": 7,
+      "topic": "Sitemap agreed"
+    },
+    {
+      "days": 5,
+      "start": 7,
+      "topic": "Wireframes"
+    },
+    {
+      "days": 7,
+      "start": 12,
+      "topic": "Visual design"
+    },
+    {
+      "days": 19,
+      "topic": "Design sign-off"
+    },
+    {
+      "days": 8,
+      "start": 19,
+      "topic": "Page templates"
+    },
+    {
+      "days": 7,
+      "start": 21,
+      "topic": "Repair booking form"
+    },
+    {
+      "days": 5,
+      "start": 26,
+      "topic": "Content and photos"
+    },
+    {
+      "days": 3,
+      "start": 31,
+      "topic": "Phones and tablets"
+    },
+    {
+      "days": 2,
+      "start": 31,
+      "topic": "Accessibility check"
+    },
+    {
+      "days": 3,
+      "start": 34,
+      "topic": "Bug fixes"
+    },
+    {
+      "days": 1,
+      "start": 37,
+      "topic": "Switch the domain"
+    },
+    {
+      "days": 38,
+      "topic": "Website live"
+    },
+    {
+      "days": 1,
+      "start": 38,
+      "topic": "Launch offer email"
+    }
+  ],
+  "id": "ganttProject",
+  "kicker": "GANTT",
+  "name": "Dated project",
+  "note": "Every task has a start and a length counted from today, and the phases follow one another; tasks with a single date are milestones. Open the Gantt view to see the plan as bars, then move the dates to fit your project.",
+  "order": 83,
+  "outline": [
+    "Bike shop website",
+    "  Discovery",
+    "    Customer interviews",
+    "    Review other shops' websites",
+    "    Sitemap agreed",
+    "  Design",
+    "    Wireframes",
+    "    Visual design",
+    "    Design sign-off",
+    "  Build",
+    "    Page templates",
+    "    Repair booking form",
+    "    Content and photos",
+    "  Testing",
+    "    Phones and tablets",
+    "    Accessibility check",
+    "    Bug fixes",
+    "  Launch",
+    "    Switch the domain",
+    "    Website live",
+    "    Launch offer email"
+  ],
+  "summary": "Scheduled phases for the Gantt view",
+  "title": "Bike shop website",
+  "type": "treeTable"
+}

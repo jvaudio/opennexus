@@ -1,0 +1,152 @@
+{
+  "aliases": [
+    "three tier",
+    "3-tier",
+    "n-tier",
+    "web app",
+    "layered"
+  ],
+  "boundaries": [
+    {
+      "meaning": "subnet",
+      "title": "Web tier",
+      "topics": [
+        "Web server 1",
+        "Web server 2"
+      ]
+    },
+    {
+      "meaning": "subnet",
+      "title": "App tier",
+      "topics": [
+        "App load balancer"
+      ]
+    },
+    {
+      "meaning": "subnet",
+      "title": "Data tier",
+      "topics": [
+        "Primary database",
+        "Session cache"
+      ]
+    }
+  ],
+  "category": "architecture",
+  "collection": "architecture",
+  "details": [
+    {
+      "edge": "HTTPS",
+      "note": "Filters common web attacks and rate-limits each address before traffic reaches the load balancer.",
+      "topic": "Edge firewall"
+    },
+    {
+      "edge": "HTTPS",
+      "note": "Ends TLS and spreads requests across the web servers. Its health checks take a failing server out of rotation.",
+      "topic": "Public load balancer"
+    },
+    {
+      "edge": "HTTP",
+      "note": "Renders pages and serves static files. Keep web servers stateless so you can add one behind the load balancer at any time.",
+      "topic": "Web server 1"
+    },
+    {
+      "edge": "HTTP",
+      "topic": "Web server 2"
+    },
+    {
+      "note": "Internal only: nothing outside the web tier can reach it.",
+      "topic": "App load balancer"
+    },
+    {
+      "edge": "HTTP",
+      "note": "Runs the business logic: recipes, ratings, search. Sessions live in the cache, not in memory.",
+      "topic": "App server 1"
+    },
+    {
+      "edge": "HTTP",
+      "topic": "App server 2"
+    },
+    {
+      "note": "The only place recipes, members and ratings are written.",
+      "topic": "Primary database"
+    },
+    {
+      "edge": "Replication",
+      "note": "Takes heavy search and reporting reads off the primary. It can lag by a second or two.",
+      "topic": "Read replica"
+    },
+    {
+      "note": "Sessions and hot recipe pages, so any app server can answer any request.",
+      "topic": "Session cache"
+    },
+    {
+      "note": "Recipe photos as objects; the database stores only their keys.",
+      "topic": "Photo storage"
+    },
+    {
+      "note": "Metrics and logs from every tier. Alert on error rate and slow pages, not on CPU alone.",
+      "topic": "Monitoring"
+    }
+  ],
+  "id": "threeTier",
+  "kicker": "ARCHITECTURE",
+  "name": "Three-tier web app",
+  "note": "Swap the recipe site for your own app but keep the three tiers: web servers handle requests, app servers run the logic, and only the data tier holds state. Each tier talks only to the next one in, so write the protocol on every arrow and keep each tier in its own subnet.",
+  "order": 51,
+  "outline": [
+    "Recipe sharing site",
+    "  Home cook's browser >client",
+    "    Edge firewall >firewall",
+    "      Public load balancer >lb",
+    "        Web server 1 >host",
+    "        Web server 2 >host",
+    "  App load balancer >lb",
+    "    App server 1 >service",
+    "    App server 2 >service",
+    "  Primary database >db",
+    "    Read replica >db",
+    "  Session cache >cache",
+    "  Photo storage >storage",
+    "  Monitoring >monitor"
+  ],
+  "relationships": [
+    {
+      "from": "Web server 1",
+      "label": "HTTP",
+      "to": "App load balancer"
+    },
+    {
+      "from": "Web server 2",
+      "label": "HTTP",
+      "to": "App load balancer"
+    },
+    {
+      "from": "App server 1",
+      "label": "SQL",
+      "to": "Primary database"
+    },
+    {
+      "from": "App server 2",
+      "label": "SQL",
+      "to": "Primary database"
+    },
+    {
+      "from": "App server 2",
+      "label": "TCP",
+      "to": "Session cache"
+    },
+    {
+      "from": "App server 2",
+      "label": "HTTPS",
+      "to": "Photo storage"
+    },
+    {
+      "from": "App server 1",
+      "label": "Metrics",
+      "to": "Monitoring"
+    }
+  ],
+  "summary": "Web, app and data tiers",
+  "title": "Recipe sharing site",
+  "type": "architecture"
+}

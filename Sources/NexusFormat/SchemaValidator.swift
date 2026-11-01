@@ -41,6 +41,16 @@ public struct SchemaValidator: Sendable {
         return SchemaValidator(schema: json)
     }()
 
+    /// A starter's schema (`starter.schema.json`, M39): the built-ins, and the `.nexusstarter`
+    /// files people save and install (M50).
+    public static let starter: SchemaValidator = {
+        guard let url = Bundle.module.url(forResource: "starter.schema", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let json = try? CanonicalJSON.parse(data)
+        else { fatalError("starter.schema.json is missing from the NexusFormat bundle") }
+        return SchemaValidator(schema: json)
+    }()
+
     /// Validates against a named definition (`manifest`, `canvas`, …) or the root schema.
     public func validate(_ value: JSONValue, definition: String? = nil) -> [Issue] {
         var issues: [Issue] = []

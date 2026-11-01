@@ -166,6 +166,8 @@ final class HomeWindow {
         model.role = Role(rawValue: Preferences.shared.string("general.role")) ?? .engineer
         model.shelf = model.role.shelf
         model.gallery.role = model.role
+        // Install from URL… is there while the network is on (M50).
+        model.gallery.readURL = ShareCenter.shared.networkOn ? { try await ShareCenter.shared.readStarter($0) } : nil
         model.aiStatus = AppleEngine().availability
         model.load(NSDocumentController.shared.recentDocumentURLs)
         model.inboxCount =

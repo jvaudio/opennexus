@@ -51,6 +51,9 @@ import Testing
             for i in DiagramCatalog.nodeTypes(for: d.type) { out[i.name] = out[i.name] ?? "Node type (\(d.name))" }
         }
         for c in StarterCategory.allCases { out[c.title] = out[c.title] ?? "Starter category (starter picker)" }
+        for c in StarterCollection.allCases {
+            out[c.title] = out[c.title] ?? "Starter collection (the starter picker's sidebar)"
+        }
         for s in StarterLibrary.all {
             out[s.name] = out[s.name] ?? "Starter name (Home's template shelf, starter picker)"
             out[s.summary] = out[s.summary] ?? "Starter summary (Home's template shelf, starter picker)"

@@ -595,7 +595,7 @@ Each row has a recommendation. Every row starts Pending; before the milestone in
 | 13 | Math engine packaging | Vendor MathJax with a small bridge · depend on MathJaxSwift | Vendor it: keeps the Swift package free of dependencies | M48 | Confirmed: vendor MathJax with a small bridge (2026-10-30) |
 | 14 | Spoken math for VoiceOver | MathJax's speech engine (larger) · TeX source as the label | Measure the speech engine's size in M48, then decide; default to TeX source | M48 | Confirmed: measure the speech engine's size in M48, then decide; TeX source by default (2026-10-30) |
 | 15 | Obsidian plugin repo | Mirror to `jvaudio/opennexus-obsidian` · a monorepo-only release | Mirror repo, as Obsidian's directory expects | M49 | Confirmed: mirror to `jvaudio/opennexus-obsidian` (2026-10-31) |
-| 16 | Starter gallery size | 60 · about 100 · 150 | About 100 (75 new) | M50 | Pending |
+| 16 | Starter gallery size | 60 · about 100 · 150 | About 100 (75 new) | M50 | Confirmed: about 100, 75 new (2026-10-31) |
 
 ## Risks and mitigations
 

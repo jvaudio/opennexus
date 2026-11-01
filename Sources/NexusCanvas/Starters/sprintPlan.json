@@ -1,0 +1,71 @@
+{
+  "aliases": [
+    "sprint",
+    "scrum",
+    "agile",
+    "backlog",
+    "kanban"
+  ],
+  "category": "planning",
+  "collection": "planning",
+  "details": [
+    {
+      "done": false,
+      "topic": "Ingredient filter chips · 3"
+    },
+    {
+      "done": false,
+      "topic": "Empty search state · 2"
+    },
+    {
+      "done": false,
+      "topic": "Search analytics events · 3"
+    },
+    {
+      "progress": 50,
+      "topic": "Ingredient index · 8"
+    },
+    {
+      "progress": 25,
+      "topic": "Results screen · 5"
+    },
+    {
+      "done": true,
+      "topic": "Search API spike · 3"
+    },
+    {
+      "done": true,
+      "topic": "Design review · 2"
+    }
+  ],
+  "id": "sprintPlan",
+  "kicker": "MATRIX",
+  "name": "Sprint plan",
+  "note": "Write one sprint goal the whole team can repeat, then move each story from To do to Done as the work moves. The number after each story is its points; check them against Capacity before adding more.",
+  "order": 84,
+  "outline": [
+    "Sprint 14",
+    "  Sprint goal",
+    "    Search recipes by ingredient",
+    "    Demo on day ten",
+    "  Capacity",
+    "    Four developers, nine days",
+    "    26 of 28 points planned",
+    "  To do",
+    "    Ingredient filter chips · 3",
+    "    Empty search state · 2",
+    "    Search analytics events · 3",
+    "  In progress",
+    "    Ingredient index · 8",
+    "    Results screen · 5",
+    "  Done",
+    "    Search API spike · 3",
+    "    Design review · 2",
+    "  Risks",
+    "    Index build may be slow",
+    "    Designer away in week two"
+  ],
+  "summary": "Goal, board, capacity and risks",
+  "title": "Sprint 14",
+  "type": "matrix"
+}

@@ -1,0 +1,105 @@
+{
+  "aliases": [
+    "purchase",
+    "procurement",
+    "approval",
+    "purchase order",
+    "spend"
+  ],
+  "category": "process",
+  "collection": "process",
+  "details": [
+    {
+      "edge": "No",
+      "topic": "Approve within limit"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Check against budget"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Finance signs off"
+    },
+    {
+      "edge": "No",
+      "topic": "Rework the request"
+    },
+    {
+      "edge": "Yes",
+      "note": "Match the invoice to the order and the delivery before paying.",
+      "topic": "Pay the invoice"
+    },
+    {
+      "edge": "No",
+      "topic": "Chase the supplier"
+    }
+  ],
+  "id": "purchaseApproval",
+  "kicker": "SWIMLANE",
+  "lanes": [
+    {
+      "title": "Requester",
+      "topics": [
+        "Purchase needed",
+        "Goods received?",
+        "Rework the request"
+      ]
+    },
+    {
+      "title": "Manager",
+      "topics": [
+        "Review the request"
+      ]
+    },
+    {
+      "title": "Finance",
+      "topics": [
+        "Raise purchase order",
+        "Pay the invoice",
+        "Check against budget"
+      ]
+    }
+  ],
+  "name": "Purchase approval",
+  "note": "Each lane shows who acts. Set the amount in the decision to your own approval limit, and add a lane if larger purchases need another approver.",
+  "order": 72,
+  "outline": [
+    "Purchase needed >start",
+    "  Get two quotes >process",
+    "    Submit purchase request >document",
+    "      Review the request >process",
+    "        Over £1,000? >decision",
+    "          Approve within limit >process",
+    "            Raise purchase order >process",
+    "              Send order to supplier >io",
+    "                Goods received? >decision",
+    "                  Pay the invoice >process",
+    "                    Purchase closed >end",
+    "                  Chase the supplier >process",
+    "          Check against budget >process",
+    "            Budget available? >decision",
+    "              Finance signs off >process",
+    "              Rework the request >process"
+  ],
+  "relationships": [
+    {
+      "from": "Finance signs off",
+      "label": "Approved",
+      "to": "Raise purchase order"
+    },
+    {
+      "from": "Rework the request",
+      "label": "Resubmit",
+      "to": "Submit purchase request"
+    },
+    {
+      "from": "Chase the supplier",
+      "label": "Check again",
+      "to": "Goods received?"
+    }
+  ],
+  "summary": "Request, approve, order, pay",
+  "title": "Purchase approval",
+  "type": "swimlane"
+}

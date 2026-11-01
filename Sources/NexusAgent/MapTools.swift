@@ -30,6 +30,8 @@ public struct MapTools {
     public var ask: (String) -> Bool?
     /// The MCP client's name, used to sign comments.
     public var client: String?
+    /// The user's own starters, listed after the built-ins (M50).
+    public var mine = MyStarters(folder: nil)
 
     public init(policy: AgentPolicy, ask: @escaping (String) -> Bool? = { _ in nil }) {
         self.policy = policy
@@ -234,7 +236,7 @@ public struct MapTools {
                 ], required: ["path", "format"]), readOnly: true),
         tool(
             "list_starters", "List starters",
-            "Lists the starters a new map can begin from (M40): a Blank one for every diagram type, and the built-in templates, with id, type, category and summary. `nexus new \"<title>\" --starter <id>` creates a map from one.",
+            "Lists the starters a new map can begin from (M40): a Blank one for every diagram type, the built-in templates, and the user's own (M50), with id, type, category and summary. `nexus new \"<title>\" --starter <id>` creates a map from one.",
             schema(
                 [
                     "query": [
@@ -749,10 +751,10 @@ public struct MapTools {
         return Output(text: "Set \(changed.joined(separator: ", ")).")
     }
 
-    /// Built-in data only, so no folder or permission applies.
+    /// Starters only, so no folder or permission applies: the built-ins, then the user's own.
     func listStarters(_ args: [String: JSONValue]) -> Output {
         let q = args["query"]?.stringValue ?? ""
-        let lines = StarterGallery.search(q, in: StarterLibrary.all).map {
+        let lines = StarterGallery.search(q, in: StarterLibrary.all + mine.all).map {
             "\($0.id) — \($0.name) (\($0.type.rawValue), \($0.category.rawValue)): \($0.summary)"
         }
         guard !lines.isEmpty else { return Output(text: "No starter matches “\(q)”.") }

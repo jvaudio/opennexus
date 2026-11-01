@@ -171,7 +171,7 @@ import Testing
 @MainActor
 @Suite struct TemplateTests {
     @Test func everyTemplateIsAValidDocumentAndRolesFilterTheShelf() {
-        #expect(StarterLibrary.templates.count == 25)
+        #expect(StarterLibrary.templates.count == 100)
         for t in StarterLibrary.templates {
             let d = t.document()
             let c = d.orderedCanvases[0]

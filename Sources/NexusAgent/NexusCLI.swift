@@ -65,7 +65,10 @@ public enum NexusCLI {
           new "<title>" [--type <type>]       Create a map (mindmap, flowchart, dfd, architecture, …),
                  [--starter <id>]             or one from a starter: its topics, titled "<title>".
                  [--out <path>]
-          starters                            List the starters: id, diagram type and name.
+          starters                            List the starters: id, diagram type and name; yours
+                                              (saved or installed in OpenNexus) last.
+          starter install <file>              Install a .nexusstarter or .nexusstarters pack into
+                 [--replace|--keep-both]      My Starters; one you have already needs either flag.
           import <file> [--out <path>]        Convert Xmind, OPML, Markdown, Mermaid, … to .nexus.
                  [--viewer-copy]              Also save the map's viewer copy, a .nexusjson included.
           bundle <file|->                     Print a viewer bundle: a map's viewer copy, or a file
@@ -101,7 +104,8 @@ public enum NexusCLI {
             case "read": return try read(&rest, io: io, env: env)
             case "export": return try export(&rest, io: io, env: env)
             case "new": return try new(&rest, io: io, env: env)
-            case "starters": return starters(io: io)
+            case "starters": return starters(io: io, env: env)
+            case "starter": return try starter(&rest, io: io, env: env)
             case "import": return try importFile(&rest, io: io, env: env)
             case "bundle": return try bundle(&rest, io: io, env: env)
             case "mcp": return try mcp(&rest, io: io, env: env)
@@ -348,7 +352,7 @@ public enum NexusCLI {
         }
         let starter: Starter
         if let starterID {
-            guard let s = StarterLibrary.starter(starterID) else {
+            guard let s = StarterLibrary.starter(starterID, mine: myStarters(env: env)) else {
                 throw UsageError(message: "unknown starter “\(starterID)”; nexus starters lists them")
             }
             starter = s
@@ -378,9 +382,24 @@ public enum NexusCLI {
         return 0
     }
 
-    /// One starter per line: id, diagram type and name, in columns. Blank starters first.
-    static func starters(io: IO) -> Int32 {
-        let all = StarterLibrary.all
+    /// The user's own starters, where the app keeps them (M50): $OPENNEXUS_STARTERS, the
+    /// App Group (when this binary is signed by the app's team), then the app's container.
+    public static func myStarters(env: Environment) -> MyStarters {
+        if let v = env.variables["OPENNEXUS_STARTERS"], !v.isEmpty { return MyStarters(folder: file(v, env)) }
+        var candidates: [URL] = []
+        if let team = env.team { candidates.append(AppGroup.container(team: team, home: env.home)) }
+        candidates.append(
+            env.home.appending(
+                path: "Library/Containers/com.opennexus.OpenNexus/Data/Library/Application Support/OpenNexus"))
+        // The first place the app has run, else the App Group.
+        let base = candidates.first { FileManager.default.fileExists(atPath: $0.path) } ?? candidates[0]
+        return MyStarters(folder: base.appending(path: "Starters"))
+    }
+
+    /// One starter per line: id, diagram type and name, in columns. Blank starters first,
+    /// the user's own last.
+    static func starters(io: IO, env: Environment) -> Int32 {
+        let all = StarterLibrary.all + myStarters(env: env).all
         let idWidth = (all.map(\.id.count).max() ?? 0) + 2
         let typeWidth = (all.map(\.type.rawValue.count).max() ?? 0) + 2
         for s in all {
@@ -388,6 +407,35 @@ public enum NexusCLI {
                 s.id.padding(toLength: idWidth, withPad: " ", startingAt: 0)
                     + s.type.rawValue.padding(toLength: typeWidth, withPad: " ", startingAt: 0) + s.name)
         }
+        return 0
+    }
+
+    /// `nexus starter install <file> [--replace|--keep-both]` (M50).
+    static func starter(_ args: inout [String], io: IO, env: Environment) throws -> Int32 {
+        guard args.first == "install" else { throw UsageError(message: "use: nexus starter install <file>") }
+        args.removeFirst()
+        let replace = flag("--replace", &args)
+        let keepBoth = flag("--keep-both", &args)
+        guard !(replace && keepBoth) else { throw UsageError(message: "use --replace or --keep-both, not both") }
+        let url = file(try positional(args, "file"), env)
+        let incoming: [Starter]
+        do {
+            // Mapped, so an oversized file is refused without being read.
+            let data = try Data(contentsOf: url, options: .mappedIfSafe)
+            incoming = try StarterFile.read(data, name: url.lastPathComponent)
+        } catch let r as StarterFile.Refusal {
+            io.err("nexus starter install: \(r.message)\n")
+            return 1
+        }
+        let mine = myStarters(env: env)
+        let clashes = mine.clashes(incoming)
+        if !clashes.isEmpty && !replace && !keepBoth {
+            io.err(
+                "nexus starter install: you already have \(clashes.map { "“\($0.name)” (\($0.id))" }.joined(separator: ", ")); "
+                    + "use --replace or --keep-both\n")
+            return 1
+        }
+        for s in try mine.install(incoming, clash: replace ? .replace : .keepBoth) { io.print("\(s.id)  \(s.name)") }
         return 0
     }
 
@@ -536,7 +584,8 @@ public enum NexusCLI {
         guard args.isEmpty else { throw UsageError(message: "unexpected \(args.joined(separator: " "))") }
         let server = MCPServer(
             config: serverConfig(config: config, env: env), input: io.readLine,
-            output: { io.out(Data(($0 + "\n").utf8)) }, log: { io.err("nexus mcp: \($0)\n") })
+            output: { io.out(Data(($0 + "\n").utf8)) }, log: { io.err("nexus mcp: \($0)\n") },
+            starters: myStarters(env: env))
         if case .disabled(let why) = server.config { io.err("nexus mcp: \(why)\n") }
         server.run()
         return 0

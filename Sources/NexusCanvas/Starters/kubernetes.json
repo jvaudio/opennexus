@@ -1,0 +1,147 @@
+{
+  "aliases": [
+    "kubernetes",
+    "k8s",
+    "pods",
+    "cluster",
+    "containers"
+  ],
+  "boundaries": [
+    {
+      "meaning": "zone",
+      "title": "Production cluster",
+      "topics": [
+        "Ingress controller",
+        "Database service",
+        "Booking config",
+        "Database password",
+        "Metrics collector",
+        "Control plane"
+      ]
+    }
+  ],
+  "category": "architecture",
+  "collection": "architecture",
+  "details": [
+    {
+      "edge": "HTTPS",
+      "topic": "Cloud load balancer"
+    },
+    {
+      "edge": "HTTPS",
+      "note": "Routes by path: / to the web service and /api to the booking service. The TLS certificate lives here.",
+      "topic": "Ingress controller"
+    },
+    {
+      "edge": "HTTP /",
+      "topic": "Web service"
+    },
+    {
+      "edge": "HTTP",
+      "topic": "Web pod 1"
+    },
+    {
+      "edge": "HTTP",
+      "topic": "Web pod 2"
+    },
+    {
+      "edge": "HTTP /api",
+      "note": "A stable name and address in front of the booking pods, which come and go behind it.",
+      "topic": "Booking service"
+    },
+    {
+      "edge": "HTTP",
+      "note": "One replica of the booking deployment. The deployment keeps two running, and an autoscaler adds more when CPU climbs.",
+      "topic": "Booking pod 1"
+    },
+    {
+      "edge": "HTTP",
+      "topic": "Booking pod 2"
+    },
+    {
+      "edge": "SQL",
+      "note": "Runs as a stateful set, so it keeps its name and its volume when it's rescheduled.",
+      "topic": "Database pod"
+    },
+    {
+      "edge": "Volume mount",
+      "note": "Outlives the pod. Snapshot it nightly and test a restore.",
+      "topic": "Persistent volume"
+    },
+    {
+      "note": "A config map: the database host and feature switches, read by every booking pod.",
+      "topic": "Booking config"
+    },
+    {
+      "note": "A secret, mounted into the database pod and every booking pod. Keep it out of the image and out of version control.",
+      "topic": "Database password"
+    },
+    {
+      "note": "Scrapes every pod's metrics endpoint; alert on restarts and on pods stuck pending.",
+      "topic": "Metrics collector"
+    },
+    {
+      "note": "Schedules pods onto nodes, replaces any that fail and rolls out changes a pod at a time. Let a deploy pipeline apply the manifests from version control; nobody changes the cluster by hand.",
+      "topic": "Control plane"
+    }
+  ],
+  "id": "kubernetes",
+  "kicker": "ARCHITECTURE",
+  "name": "Kubernetes deployment",
+  "note": "Follow a request from the rider's phone through the ingress to a service and on to one of its pods; everything in the box runs inside the cluster. Swap the bike-hire services for yours, and keep config, secrets and storage as separate objects so any pod can be replaced.",
+  "order": 52,
+  "outline": [
+    "Bike hire on Kubernetes",
+    "  Rider app >mobile",
+    "    Cloud load balancer >lb",
+    "      Ingress controller >gateway",
+    "        Booking service >service",
+    "          Booking pod 1 >container",
+    "          Booking pod 2 >container",
+    "        Web service >service",
+    "          Web pod 1 >container",
+    "          Web pod 2 >container",
+    "  Database service >service",
+    "    Database pod >container",
+    "      Persistent volume >storage",
+    "  Booking config >doc",
+    "  Database password >secret",
+    "  Metrics collector >monitor",
+    "  Control plane >cluster"
+  ],
+  "relationships": [
+    {
+      "from": "Booking pod 1",
+      "label": "SQL",
+      "to": "Database service"
+    },
+    {
+      "from": "Booking pod 2",
+      "label": "SQL",
+      "to": "Database service"
+    },
+    {
+      "from": "Booking config",
+      "label": "Env vars",
+      "to": "Booking pod 1"
+    },
+    {
+      "from": "Database password",
+      "label": "Mounted file",
+      "to": "Database pod"
+    },
+    {
+      "from": "Metrics collector",
+      "label": "Scrape /metrics",
+      "to": "Web pod 2"
+    },
+    {
+      "from": "Control plane",
+      "label": "Schedules",
+      "to": "Booking pod 2"
+    }
+  ],
+  "summary": "Ingress, services, pods, storage",
+  "title": "Bike hire on Kubernetes",
+  "type": "architecture"
+}

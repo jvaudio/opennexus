@@ -190,6 +190,8 @@ extension CommandID {
     public static let copyCanvas: CommandID = "canvas.copy"
     public static let pasteCanvas: CommandID = "canvas.paste"
     public static let saveCanvasAsDocument: CommandID = "canvas.saveAsDocument"
+    public static let saveCanvasAsStarter: CommandID = "canvas.saveAsStarter"
+    public static let installStarter: CommandID = "file.installStarter"
     public static let moveCanvasToWindow: CommandID = "canvas.moveToWindow"
     public static let copy: CommandID = "edit.copy"
     public static let cut: CommandID = "edit.cut"
@@ -598,6 +600,12 @@ public enum DefaultCommands {
         C(.copyCanvas, "Copy Canvas", .file, scope: .global, menu: .file),
         C(.pasteCanvas, "Paste Canvas", .file, scope: .global, menu: .file),
         C(.saveCanvasAsDocument, "Save Canvas as Document…", .file, scope: .global, menu: .file),
+        C(
+            .saveCanvasAsStarter, "Save Canvas as Starter…", .file, scope: .global, menu: .file,
+            note: "Keep this canvas in My Starters"),
+        C(
+            .installStarter, "Install Starter…", .file, scope: .global, menu: .file,
+            note: "A .nexusstarter file or a pack"),
         C(.moveCanvasToWindow, "Move Canvas to New Window", .file, scope: .global, menu: .file),
         C(.cut, "Cut", .edit, keys: [k("cmd+x")], menu: .edit, xmind: true, standardAction: "cut:"),
         C(.copy, "Copy", .edit, keys: [k("cmd+c")], menu: .edit, xmind: true, standardAction: "copy:"),

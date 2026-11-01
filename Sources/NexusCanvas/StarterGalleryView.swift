@@ -2,6 +2,7 @@ import NexusCore
 import NexusScene
 import NexusTheme
 import SwiftUI
+import UniformTypeIdentifiers
 
 #if os(macOS)
 import AppKit
@@ -17,6 +18,12 @@ public struct StarterGalleryView: View {
     /// Inside Home: no title or Cancel, and a wider grid.
     var embedded: Bool
     @FocusState private var searchFocused: Bool
+    // My Starters (M50): the sheets and panels its commands open.
+    @State private var importing = false
+    @State private var exporting: StarterExport?
+    @State private var installing: StarterGallery.Install?
+    @State private var editing: Starter?
+    @State private var askingURL = false
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
     /// The iPhone's layout (M47c): chips for the sections, two columns, the search field
@@ -44,6 +51,7 @@ public struct StarterGalleryView: View {
                 VStack(spacing: 0) {
                     searchBar
                     if embedded || compact { chips }
+                    mineBar
                     grid
                 }
             }
@@ -58,6 +66,60 @@ public struct StarterGalleryView: View {
             searchFocused = true
         }
         .onEscape { if !embedded { model.cancel() } }
+        .background {
+            // ⌘D: the selected card's star.
+            if !embedded { Button("") { model.toggleFavourite() }.keyboardShortcut("d").hidden() }
+        }
+        .onDrop(of: [.fileURL], isTargeted: nil) { providers in
+            guard let p = providers.first else { return false }
+            _ = p.loadObject(ofClass: URL.self) { url, _ in
+                guard let url, let data = try? Data(contentsOf: url) else { return }
+                Task { @MainActor in installing = model.preview(data, name: url.lastPathComponent) }
+            }
+            return true
+        }
+        .fileImporter(isPresented: $importing, allowedContentTypes: StarterExport.types) { result in
+            guard let url = try? result.get() else { return }
+            let scoped = url.startAccessingSecurityScopedResource()
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+            guard let data = try? Data(contentsOf: url) else { return }
+            installing = model.preview(data, name: url.lastPathComponent)
+        }
+        .fileExporter(
+            isPresented: Binding(get: { exporting != nil }, set: { if !$0 { exporting = nil } }), document: exporting,
+            contentType: exporting?.type ?? .json, defaultFilename: exporting?.name
+        ) { _ in exporting = nil }
+        .sheet(item: $installing) { i in
+            StarterInstallView(install: i) { clash in
+                installing = nil
+                if let clash { model.install(i, clash: clash) }
+            }
+        }
+        .sheet(item: $editing) { s in
+            StarterDetailsForm(
+                title: Loc.t("Edit Details"), action: Loc.t("Save"), values: .init(s)
+            ) { v in
+                editing = nil
+                if let v { model.update(s) { v.apply(to: &$0) } }
+            }
+        }
+        .sheet(isPresented: $askingURL) {
+            StarterURLForm { url in
+                askingURL = false
+                guard let url, let read = model.readURL else { return }
+                Task {
+                    do {
+                        installing = model.preview(try await read(url), name: url.lastPathComponent)
+                    } catch {
+                        model.notice = Loc.f("Couldn’t read %@: %@", url.absoluteString, error.localizedDescription)
+                    }
+                }
+            }
+        }
+    }
+
+    func export(_ starters: [Starter]) {
+        exporting = StarterExport(starters)
     }
 
     // MARK: Sidebar
@@ -65,8 +127,8 @@ public struct StarterGalleryView: View {
     var sidebar: some View {
         VStack(alignment: .leading, spacing: 2) {
             ForEach(model.sections, id: \.self) { s in
-                if s == .category(StarterCategory.allCases[0]) {
-                    Text("CATEGORIES").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.chromeSecondary)
+                if s == .collection(StarterCollection.allCases[0]) {
+                    Text("COLLECTIONS").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.chromeSecondary)
                         .padding(.horizontal, 10).padding(.top, 14).padding(.bottom, 4)
                 }
                 sideItem(s)
@@ -172,7 +234,11 @@ public struct StarterGalleryView: View {
         let items = model.visible
         return ScrollViewReader { proxy in
             ScrollView {
-                if items.isEmpty {
+                if items.isEmpty && model.section == .mine && model.query.isEmpty {
+                    Text("Save a canvas as a starter (File › Save Canvas as Starter…), or install one from a file.")
+                        .font(.chrome(14)).foregroundStyle(.chromeSecondary).multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity).padding(.top, 60).padding(.horizontal, 40)
+                } else if items.isEmpty {
                     Text(Loc.f("No starter matches “%@”", model.query)).font(.chrome(14)).foregroundStyle(
                         .chromeSecondary
                     )
@@ -183,11 +249,15 @@ public struct StarterGalleryView: View {
                     spacing: 14
                 ) {
                     ForEach(items) { s in
-                        StarterCard(starter: s, selected: s.id == model.selection, prefs: model.prefs)
-                            .id(s.id)
-                            .onTapGesture(count: 2) { model.choose(s) }
-                            .simultaneousGesture(TapGesture().onEnded { model.selection = s.id })
-                            .accessibilityAction { model.choose(s) }
+                        StarterCard(
+                            starter: s, selected: s.id == model.selection, prefs: model.prefs,
+                            favourite: model.isFavourite(s)
+                        ) { model.toggleFavourite(s) }
+                        .id(s.id)
+                        .onTapGesture(count: 2) { model.choose(s) }
+                        .simultaneousGesture(TapGesture().onEnded { model.selection = s.id })
+                        .accessibilityAction { model.choose(s) }
+                        .contextMenu { cardMenu(s) }
                     }
                 }
                 .padding(.horizontal, compact ? 16 : 20)
@@ -198,6 +268,45 @@ public struct StarterGalleryView: View {
                 withAnimation(UIMotion.animation(.easeOut(duration: Motion.reducedCrossFade))) { proxy.scrollTo(id) }
             }
             .onAppear { if let id = model.selection { proxy.scrollTo(id, anchor: .center) } }
+        }
+    }
+
+    // MARK: My Starters (M50)
+
+    /// Install from a file or a URL, and export them all as a pack.
+    @ViewBuilder var mineBar: some View {
+        if model.section == .mine {
+            HStack(spacing: 10) {
+                Button("Install Starter…") { importing = true }
+                if model.readURL != nil { Button("Install from URL…") { askingURL = true } }
+                Spacer()
+                if !model.mine.all.isEmpty { Button("Export All…") { export(model.mine.all) } }
+            }
+            .font(.chrome(12.5))
+            .padding(.horizontal, compact ? 16 : 20)
+            .padding(.bottom, 10)
+        }
+    }
+
+    @ViewBuilder func cardMenu(_ s: Starter) -> some View {
+        Button(model.isFavourite(s) ? "Remove from Favourites" : "Add to Favourites") { model.toggleFavourite(s) }
+        if s.mine {
+            Divider()
+            Button("Rename…") { editing = s }
+            Button("Edit Details…") { editing = s }
+            Menu("Move to") {
+                ForEach(StarterCollection.allCases, id: \.self) { c in
+                    Button(Loc.t(c.title)) { model.update(s) { $0.collection = c } }
+                }
+            }
+            Button("Export Starter…") { export([s]) }
+            #if os(macOS)
+            if let url = model.mine.url(of: s.id) {
+                Button("Show in Finder") { NSWorkspace.shared.activateFileViewerSelecting([url]) }
+            }
+            #endif
+            Divider()
+            Button("Delete") { model.delete(s) }
         }
     }
 
@@ -223,11 +332,18 @@ public struct StarterGalleryView: View {
     }
 
     @ViewBuilder var selectedName: some View {
-        if let s = model.selected {
+        if let notice = model.notice {
+            HStack(spacing: 8) {
+                Text(notice).font(.chrome(12.5)).foregroundStyle(.chromeSecondary).lineLimit(2)
+                if model.deleted != nil { Button("Undo") { model.undoDelete() }.linkButton().font(.chrome(12.5)) }
+            }
+        } else if let s = model.selected {
             VStack(alignment: .leading, spacing: 2) {
                 Text(Loc.t(s.name)).font(.chrome(13.5, weight: .semibold))
-                Text("\(s.isBlank ? Loc.t("Blank") : HomeView.typeName(s.type)) · \(Loc.t(s.category.title))")
-                    .font(.chrome(12)).foregroundStyle(.chromeSecondary)
+                Text(
+                    "\(s.isBlank ? Loc.t("Blank") : HomeView.typeName(s.type)) · \(s.mine ? Loc.t("My Starters") : Loc.t(s.collection?.title ?? s.category.title))"
+                )
+                .font(.chrome(12)).foregroundStyle(.chromeSecondary)
             }
         }
     }
@@ -259,6 +375,8 @@ struct StarterCard: View {
     let starter: Starter
     let selected: Bool
     let prefs: Preferences
+    var favourite = false
+    var toggleFavourite: () -> Void = {}
     @State private var hover = false
     @State private var image: CGImage?
     @Environment(\.colorScheme) private var scheme
@@ -285,6 +403,21 @@ struct StarterCard: View {
             }
             .frame(height: StarterThumbnails.size.height)
             .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(alignment: .topLeading) {
+                // The star: shown when it's a favourite, or on hover to make it one.
+                if favourite || hover {
+                    Button(action: toggleFavourite) {
+                        Image(systemName: favourite ? "star.fill" : "star").font(.system(size: 12, weight: .semibold))
+                            .foregroundStyle(favourite ? Color(hex: "#E8A317") : .secondary)
+                            .frame(width: 24, height: 24)
+                            .background(Circle().fill(Color.textBackground.opacity(0.9)))
+                    }
+                    .buttonStyle(.plain)
+                    .padding(6)
+                    .help(favourite ? "Remove from Favourites (⌘D)" : "Add to Favourites (⌘D)")
+                    .accessibilityHidden(true)
+                }
+            }
             .overlay(alignment: .topTrailing) {
                 if guided {
                     Text("GUIDED").font(.chrome(9.5, weight: .bold, design: .monospaced)).foregroundStyle(tint)
@@ -327,9 +460,13 @@ struct StarterCard: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Loc.t(starter.name))
         .accessibilityValue(
-            [Loc.t(starter.summary), Loc.t(starter.category.title), guided ? Loc.t("Guided") : nil].compactMap { $0 }
+            [
+                Loc.t(starter.summary), Loc.t(starter.collection?.title ?? starter.category.title),
+                guided ? Loc.t("Guided") : nil, favourite ? Loc.t("Favourite") : nil,
+            ].compactMap { $0 }
                 .joined(separator: ", ")
         )
+        .accessibilityAction(named: favourite ? "Remove from Favourites" : "Add to Favourites") { toggleFavourite() }
         .accessibilityAddTraits(selected ? [.isButton, .isSelected] : .isButton)
     }
 }

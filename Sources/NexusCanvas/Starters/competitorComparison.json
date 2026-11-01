@@ -1,0 +1,82 @@
+{
+  "aliases": [
+    "competitors",
+    "competitive analysis",
+    "comparison",
+    "market research"
+  ],
+  "category": "thinking",
+  "collection": "business",
+  "details": [
+    {
+      "note": "Compare like with like: the same item, size and time of day.",
+      "topic": "Flat white price"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Station kiosk: £2.80"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Us: roasted in town"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Chain café: 60 seats, busy"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Chain café: 6 am–8 pm"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Bakery café: fresh bread, pies"
+    }
+  ],
+  "id": "competitorComparison",
+  "kicker": "TREE TABLE",
+  "name": "Competitor comparison",
+  "note": "Put one point of comparison in each row of the first column, with a cell for every competitor beside it and your own business first. Star the best in each row to see where you lead and where you lag.",
+  "order": 34,
+  "outline": [
+    "Mill Street café competitors",
+    "  Flat white price",
+    "    Us: £3.20",
+    "    Chain café: £3.60",
+    "    Station kiosk: £2.80",
+    "    Bakery café: £3.00",
+    "  Coffee quality",
+    "    Us: roasted in town",
+    "    Chain café: consistent, mild",
+    "    Station kiosk: filter only",
+    "    Bakery café: decent beans",
+    "  Seating",
+    "    Us: 20 seats, quiet",
+    "    Chain café: 60 seats, busy",
+    "    Station kiosk: standing only",
+    "    Bakery café: 8 stools",
+    "  Opening hours",
+    "    Us: 7 am–4 pm",
+    "    Chain café: 6 am–8 pm",
+    "    Station kiosk: 5.30–10 am",
+    "    Bakery café: 8 am–2 pm",
+    "  Food",
+    "    Us: toasties and cakes",
+    "    Chain café: wrapped sandwiches",
+    "    Station kiosk: pastries only",
+    "    Bakery café: fresh bread, pies"
+  ],
+  "summary": "Rivals side by side",
+  "title": "Mill Street café competitors",
+  "type": "treeTable"
+}

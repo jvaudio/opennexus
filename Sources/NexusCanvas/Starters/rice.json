@@ -1,0 +1,121 @@
+{
+  "aliases": [
+    "rice",
+    "prioritisation",
+    "prioritization",
+    "backlog",
+    "scoring"
+  ],
+  "category": "planning",
+  "collection": "product",
+  "details": [
+    {
+      "markers": [
+        "priority-1"
+      ],
+      "topic": "Shopping list by aisle"
+    },
+    {
+      "markers": [
+        "priority-2"
+      ],
+      "topic": "Recipe import from links"
+    },
+    {
+      "markers": [
+        "priority-3"
+      ],
+      "note": "The biggest impact, but low confidence and high effort pull it down. A small test could raise the confidence.",
+      "topic": "Family sharing"
+    },
+    {
+      "markers": [
+        "priority-4"
+      ],
+      "topic": "Nutrition summaries"
+    },
+    {
+      "markers": [
+        "priority-5"
+      ],
+      "topic": "Pantry tracking"
+    },
+    {
+      "note": "People or events affected in a set period, the same period for every feature.",
+      "topic": "Reach: 4,000 a quarter"
+    },
+    {
+      "note": "3 massive, 2 high, 1 medium, 0.5 low, 0.25 minimal.",
+      "topic": "Impact: high (2)"
+    },
+    {
+      "note": "100% with data, 80% with some evidence, 50% on a hunch.",
+      "topic": "Confidence: 80%"
+    },
+    {
+      "note": "Everyone's time across design, build and test.",
+      "topic": "Effort: 2 person-months"
+    },
+    {
+      "note": "4,000 × 2 × 0.8 ÷ 2",
+      "topic": "Score: 3,200"
+    },
+    {
+      "note": "3,000 × 1 × 1 ÷ 1",
+      "topic": "Score: 3,000"
+    },
+    {
+      "note": "2,500 × 3 × 0.5 ÷ 4, rounded",
+      "topic": "Score: 938"
+    },
+    {
+      "note": "1,000 × 0.25 × 0.9 ÷ 0.5",
+      "topic": "Score: 450"
+    },
+    {
+      "note": "1,500 × 0.5 × 0.7 ÷ 3",
+      "topic": "Score: 175"
+    }
+  ],
+  "id": "rice",
+  "kicker": "TREE TABLE",
+  "name": "RICE prioritisation",
+  "note": "Score each feature as reach × impact × confidence ÷ effort, using the same reach period for all. Rank by score and set the priority markers to match, then sanity-check the order with the team.",
+  "order": 67,
+  "outline": [
+    "Meal app backlog",
+    "  Shopping list by aisle",
+    "    Reach: 4,000 a quarter",
+    "    Impact: high (2)",
+    "    Confidence: 80%",
+    "    Effort: 2 person-months",
+    "    Score: 3,200",
+    "  Recipe import from links",
+    "    Reach: 3,000 a quarter",
+    "    Impact: medium (1)",
+    "    Confidence: 100%",
+    "    Effort: 1 person-month",
+    "    Score: 3,000",
+    "  Family sharing",
+    "    Reach: 2,500 a quarter",
+    "    Impact: massive (3)",
+    "    Confidence: 50%",
+    "    Effort: 4 person-months",
+    "    Score: 938",
+    "  Nutrition summaries",
+    "    Reach: 1,000 a quarter",
+    "    Impact: minimal (0.25)",
+    "    Confidence: 90%",
+    "    Effort: half a person-month",
+    "    Score: 450",
+    "  Pantry tracking",
+    "    Reach: 1,500 a quarter",
+    "    Impact: low (0.5)",
+    "    Confidence: 70%",
+    "    Effort: 3 person-months",
+    "    Score: 175"
+  ],
+  "summary": "Reach, impact, confidence, effort",
+  "title": "Meal app backlog",
+  "type": "treeTable"
+}

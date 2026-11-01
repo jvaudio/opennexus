@@ -1,0 +1,131 @@
+{
+  "aliases": [
+    "event",
+    "event planning",
+    "fundraiser",
+    "schedule",
+    "tasks"
+  ],
+  "category": "planning",
+  "collection": "planning",
+  "details": [
+    {
+      "days": 2,
+      "start": 0,
+      "topic": "Book the park"
+    },
+    {
+      "days": 5,
+      "start": 2,
+      "topic": "Route and risk assessment"
+    },
+    {
+      "days": 5,
+      "start": 7,
+      "topic": "Toilets and first aid"
+    },
+    {
+      "days": 1,
+      "start": 3,
+      "topic": "Open registration"
+    },
+    {
+      "days": 5,
+      "start": 24,
+      "topic": "Race packs and bibs"
+    },
+    {
+      "days": 2,
+      "start": 33,
+      "topic": "Final runner emails"
+    },
+    {
+      "days": 4,
+      "start": 0,
+      "topic": "Sponsorship pitch pack"
+    },
+    {
+      "days": 10,
+      "start": 4,
+      "topic": "Local business visits"
+    },
+    {
+      "days": 10,
+      "start": 14,
+      "topic": "Raffle prizes"
+    },
+    {
+      "days": 14,
+      "start": 7,
+      "topic": "Recruit 30 marshals"
+    },
+    {
+      "days": 1,
+      "start": 34,
+      "topic": "Marshal briefing"
+    },
+    {
+      "days": 3,
+      "start": 5,
+      "topic": "Posters and flyers"
+    },
+    {
+      "days": 1,
+      "start": 10,
+      "topic": "School newsletters"
+    },
+    {
+      "days": 1,
+      "start": 28,
+      "topic": "Local radio interview"
+    },
+    {
+      "days": 1,
+      "start": 35,
+      "topic": "Mark the course"
+    },
+    {
+      "days": 36,
+      "topic": "Race starts at ten"
+    },
+    {
+      "days": 1,
+      "start": 36,
+      "topic": "Pack down and litter pick"
+    }
+  ],
+  "id": "eventPlan",
+  "kicker": "TREE TABLE",
+  "name": "Event plan",
+  "note": "Each workstream holds its tasks, and each task has a start and a length counted from today. Shift the dates to fit your event, then open the Gantt view to check nothing lands too late.",
+  "order": 81,
+  "outline": [
+    "Charity fun run",
+    "  Venue",
+    "    Book the park",
+    "    Route and risk assessment",
+    "    Toilets and first aid",
+    "  Runners",
+    "    Open registration",
+    "    Race packs and bibs",
+    "    Final runner emails",
+    "  Sponsors",
+    "    Sponsorship pitch pack",
+    "    Local business visits",
+    "    Raffle prizes",
+    "  Volunteers",
+    "    Recruit 30 marshals",
+    "    Marshal briefing",
+    "  Publicity",
+    "    Posters and flyers",
+    "    School newsletters",
+    "    Local radio interview",
+    "  On the day",
+    "    Mark the course",
+    "    Race starts at ten",
+    "    Pack down and litter pick"
+  ],
+  "summary": "Workstreams, tasks and dates",
+  "title": "Charity fun run",
+  "type": "treeTable"
+}

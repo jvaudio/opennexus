@@ -1,0 +1,77 @@
+{
+  "aliases": [
+    "story map",
+    "user stories",
+    "backlog",
+    "mvp",
+    "release slice"
+  ],
+  "category": "planning",
+  "collection": "product",
+  "details": [
+    {
+      "note": "An activity: something a person sets out to do. Name it with a verb.",
+      "topic": "Discover recipes"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "topic": "Search by ingredient"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "topic": "Drag a recipe onto a day"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "topic": "Merge ingredients automatically"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "topic": "Step-by-step cooking mode"
+    }
+  ],
+  "id": "storyMap",
+  "kicker": "STORY MAP",
+  "name": "User story map",
+  "note": "Across the top, the activities a person does, left to right in the order they do them. Under each, the steps, and under each step the stories that make it work, most essential first. Green flags mark the stories in the first release.",
+  "order": 63,
+  "outline": [
+    "Meal-planning app",
+    "  Discover recipes",
+    "    Search recipes",
+    "      Search by ingredient",
+    "      Filter by diet",
+    "    Save favourites",
+    "      Heart a recipe",
+    "      Sort saved recipes",
+    "  Plan the week",
+    "    Pick meals",
+    "      Drag a recipe onto a day",
+    "      Suggest from favourites",
+    "    Adjust servings",
+    "      Scale for household size",
+    "  Shop",
+    "    Build a shopping list",
+    "      Merge ingredients automatically",
+    "      Group items by aisle",
+    "    Check off items",
+    "      Tick off in the shop",
+    "  Cook",
+    "    Follow the method",
+    "      Step-by-step cooking mode",
+    "      Hands-free timers",
+    "    Rate the meal",
+    "      Add stars and notes"
+  ],
+  "summary": "Activities, steps and stories",
+  "title": "Meal-planning app",
+  "type": "org"
+}

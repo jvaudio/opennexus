@@ -1,0 +1,95 @@
+{
+  "aliases": [
+    "support",
+    "escalation",
+    "helpdesk",
+    "ticket",
+    "tiers"
+  ],
+  "category": "process",
+  "collection": "process",
+  "details": [
+    {
+      "note": "Urgent: reply within 1 hour. High: 4 hours. Normal: 1 working day.",
+      "topic": "Set priority"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Page on-call engineer"
+    },
+    {
+      "edge": "No",
+      "topic": "Search help articles"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Send article link"
+    },
+    {
+      "edge": "No",
+      "topic": "Tier 1 troubleshoots"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Close the ticket"
+    },
+    {
+      "edge": "No",
+      "note": "Pass on the steps tried, logs and the customer's impact.",
+      "topic": "Escalate to tier 2"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Log a bug report"
+    },
+    {
+      "edge": "No",
+      "topic": "Tier 2 resolves it"
+    }
+  ],
+  "id": "supportEscalation",
+  "kicker": "FLOW",
+  "name": "Support escalation",
+  "note": "Follow a ticket from arrival to close. Replace the tiers and checks with your own, and write down what each tier hands on so the next one doesn't start again.",
+  "order": 73,
+  "outline": [
+    "Ticket received >start",
+    "  Set priority >process",
+    "    Service down for many? >decision",
+    "      Page on-call engineer >process",
+    "        Hand over to incident process >end",
+    "      Search help articles >process",
+    "        Article answers it? >decision",
+    "          Send article link >io",
+    "          Tier 1 troubleshoots >process",
+    "            Solved at tier 1? >decision",
+    "              Close the ticket >end",
+    "              Escalate to tier 2 >process",
+    "                Reproduce the issue >process",
+    "                  Is it a bug? >decision",
+    "                    Log a bug report >document",
+    "                      Engineering fixes it >process",
+    "                        Update the customer >io",
+    "                    Tier 2 resolves it >process"
+  ],
+  "relationships": [
+    {
+      "from": "Send article link",
+      "label": "Customer confirms",
+      "to": "Close the ticket"
+    },
+    {
+      "from": "Update the customer",
+      "label": "Fix released",
+      "to": "Close the ticket"
+    },
+    {
+      "from": "Tier 2 resolves it",
+      "label": "Resolved",
+      "to": "Close the ticket"
+    }
+  ],
+  "summary": "Self-service, tier 1, tier 2",
+  "title": "Support escalation",
+  "type": "flowchart"
+}

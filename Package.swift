@@ -38,7 +38,10 @@ let package = Package(
         .target(
             name: "NexusFormat",
             dependencies: ["NexusCore"],
-            resources: [.copy("Resources/nexus.schema.json"), .copy("Resources/viewer.schema.json")],
+            resources: [
+                .copy("Resources/nexus.schema.json"), .copy("Resources/viewer.schema.json"),
+                .copy("Resources/starter.schema.json"),
+            ],
             swiftSettings: strict
         ),
         // HTTP with an allow-list and a request log, AWS SigV4, and the share destinations

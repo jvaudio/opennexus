@@ -5,6 +5,7 @@
     "containers"
   ],
   "category": "architecture",
+  "collection": "architecture",
   "id": "c4",
   "kicker": "C4 · L1–L2",
   "name": "System context",

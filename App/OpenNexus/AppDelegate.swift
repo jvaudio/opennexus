@@ -34,6 +34,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var launchedAtLogin = false
 
     func applicationWillFinishLaunching(_ notification: Notification) {
+        // First, so it's the shared document controller (starter files, M50).
+        _ = AppDocumentController()
         launchedAtLogin = QuickCapture.launchedAtLogin
         NSApp.mainMenu = MainMenu.build(registry: .standard, profile: .openNexus)
         AppPreferences.shared.start()
@@ -73,6 +75,17 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func showWelcome(_ sender: Any?) { Onboarding.showWelcome() }
+    /// Registry commands with no document window in front: Install Starter… (M50).
+    @objc func performRegistryCommand(_ sender: Any?) {
+        guard let raw = (sender as? NSMenuItem)?.representedObject as? String else { return }
+        if CommandID(rawValue: raw) == .installStarter { StarterInstaller.choose() }
+    }
+
+    func validateMenuItem(_ item: NSMenuItem) -> Bool {
+        guard item.action == #selector(performRegistryCommand(_:)), let raw = item.representedObject as? String
+        else { return true }
+        return CommandID(rawValue: raw) == .installStarter
+    }
     @objc func showHome(_ sender: Any?) { HomeWindow.shared.show() }
     /// File › Sync Now: every library.
     @objc func syncNow(_ sender: Any?) { Task { await SyncCenter.shared.syncNow() } }

@@ -6,6 +6,7 @@
     "wbs"
   ],
   "category": "planning",
+  "collection": "planning",
   "id": "project",
   "kicker": "TREE TABLE",
   "name": "Project plan",

@@ -1,0 +1,101 @@
+{
+  "aliases": [
+    "tech debt",
+    "technical debt",
+    "refactoring",
+    "register",
+    "code health"
+  ],
+  "category": "software",
+  "collection": "engineering",
+  "details": [
+    {
+      "markers": [
+        "priority-1"
+      ],
+      "topic": "Hand-rolled retry logic"
+    },
+    {
+      "markers": [
+        "priority-2"
+      ],
+      "topic": "Hard-coded tax rates"
+    },
+    {
+      "markers": [
+        "priority-3"
+      ],
+      "topic": "Two date libraries"
+    },
+    {
+      "markers": [
+        "priority-3"
+      ],
+      "topic": "Untyped admin screens"
+    },
+    {
+      "markers": [
+        "priority-1"
+      ],
+      "note": "High impact and little effort: fix these first.",
+      "topic": "Flaky checkout end-to-end test"
+    },
+    {
+      "markers": [
+        "priority-2"
+      ],
+      "topic": "40-minute CI pipeline"
+    },
+    {
+      "markers": [
+        "priority-2"
+      ],
+      "topic": "No index on order date"
+    },
+    {
+      "markers": [
+        "priority-3"
+      ],
+      "topic": "Unused legacy tables"
+    }
+  ],
+  "id": "techDebt",
+  "kicker": "TREE TABLE",
+  "name": "Tech debt register",
+  "note": "Each row is one piece of debt: its area, the item, what it costs you now and the effort to fix it. Set a priority marker by weighing impact against effort, and review the register every quarter.",
+  "order": 50,
+  "outline": [
+    "Tech debt register",
+    "  Payments",
+    "    Hand-rolled retry logic",
+    "      Impact · risk of double charges",
+    "        Effort · 3 days",
+    "    Hard-coded tax rates",
+    "      Impact · a release per change",
+    "        Effort · 2 days",
+    "  Frontend",
+    "    Two date libraries",
+    "      Impact · bigger bundle, odd bugs",
+    "        Effort · 1 week",
+    "    Untyped admin screens",
+    "      Impact · errors found by staff",
+    "        Effort · 2 sprints",
+    "  Build and tests",
+    "    Flaky checkout end-to-end test",
+    "      Impact · daily reruns, lost hours",
+    "        Effort · half a day",
+    "    40-minute CI pipeline",
+    "      Impact · slow feedback, big batches",
+    "        Effort · 2 weeks",
+    "  Data",
+    "    No index on order date",
+    "      Impact · monthly reports time out",
+    "        Effort · 1 day",
+    "    Unused legacy tables",
+    "      Impact · confusing for analysts",
+    "        Effort · 4 days"
+  ],
+  "summary": "Areas, items, impact and effort",
+  "title": "Tech debt register",
+  "type": "treeTable"
+}

@@ -1,0 +1,43 @@
+{
+  "aliases": [
+    "research",
+    "research plan",
+    "methodology",
+    "proposal",
+    "study design"
+  ],
+  "category": "thinking",
+  "collection": "thinking",
+  "id": "researchPlan",
+  "kicker": "LOGIC",
+  "name": "Research plan",
+  "note": "Start with one clear question and the result you expect, then work left to right: how you'll answer it, what data you need, what could go wrong and when each part happens.",
+  "order": 91,
+  "outline": [
+    "School streets and air quality",
+    "  Questions",
+    "    Does NO2 fall at school gates?",
+    "    Does traffic move to nearby roads?",
+    "  Hypothesis",
+    "    Gate NO2 falls by a fifth",
+    "  Method",
+    "    Before-and-after comparison",
+    "    Six school streets, six controls",
+    "    Monthly diffusion tubes",
+    "  Data",
+    "    Council traffic counts",
+    "    Parent travel survey",
+    "  Ethics and risks",
+    "    Consent for the survey",
+    "    Tubes lost or vandalised",
+    "  Timeline",
+    "    Baseline in autumn term",
+    "    Follow-up in spring term",
+    "  Outputs",
+    "    Report to the council",
+    "    Map for parents"
+  ],
+  "summary": "Question, method, data, timeline",
+  "title": "School streets and air quality",
+  "type": "logic"
+}

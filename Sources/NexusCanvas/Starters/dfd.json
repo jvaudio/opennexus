@@ -5,6 +5,7 @@
     "login"
   ],
   "category": "security",
+  "collection": "security",
   "id": "dfd",
   "kicker": "DATA FLOW",
   "name": "Data flow diagram",

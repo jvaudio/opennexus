@@ -1,0 +1,118 @@
+{
+  "aliases": [
+    "api",
+    "endpoint",
+    "rest",
+    "request",
+    "api design"
+  ],
+  "category": "software",
+  "collection": "engineering",
+  "details": [
+    {
+      "note": "Sends an idempotency key with the POST, so a retry after a dropped connection doesn't book twice.",
+      "topic": "Mobile app"
+    },
+    {
+      "note": "Turns away calls without a valid token with 401 before they reach a service.",
+      "topic": "API gateway"
+    },
+    {
+      "note": "Validates the body before any write: a missing field or a date in the past returns 422 with the fields at fault.",
+      "topic": "Bookings service"
+    },
+    {
+      "note": "Check and insert in one transaction, or keep a unique index on the slot, so two people can't book the same time.",
+      "topic": "Bookings database"
+    },
+    {
+      "note": "Reminders and invoicing react to the event; the caller doesn't wait for them.",
+      "topic": "Event stream"
+    }
+  ],
+  "id": "apiDesign",
+  "kicker": "SEQUENCE",
+  "name": "API design",
+  "note": "One API call designed end to end, read top to bottom: arrows are calls and replies come back the other way. Rename the participants and messages for your own endpoint, and note the status code each step can return.",
+  "order": 42,
+  "outline": [
+    "Book a repair slot",
+    "  Mobile app >client",
+    "  API gateway >service",
+    "  Auth service >service",
+    "  Bookings service >service",
+    "  Bookings database >db",
+    "  Event stream >participant"
+  ],
+  "relationships": [
+    {
+      "from": "Mobile app",
+      "label": "POST /bookings",
+      "to": "API gateway"
+    },
+    {
+      "from": "API gateway",
+      "label": "Validate token",
+      "to": "Auth service"
+    },
+    {
+      "from": "Auth service",
+      "kind": "return",
+      "label": "Member 1042",
+      "to": "API gateway"
+    },
+    {
+      "from": "API gateway",
+      "label": "Create booking for member",
+      "to": "Bookings service"
+    },
+    {
+      "from": "Bookings service",
+      "label": "Check slot is free",
+      "to": "Bookings database"
+    },
+    {
+      "from": "Bookings database",
+      "kind": "return",
+      "label": "Slot free",
+      "to": "Bookings service"
+    },
+    {
+      "from": "Bookings service",
+      "label": "Insert booking",
+      "to": "Bookings database"
+    },
+    {
+      "from": "Bookings database",
+      "kind": "return",
+      "label": "Booking 4821",
+      "to": "Bookings service"
+    },
+    {
+      "from": "Bookings service",
+      "label": "Publish booking.created",
+      "to": "Event stream"
+    },
+    {
+      "from": "Event stream",
+      "kind": "return",
+      "label": "Acknowledged",
+      "to": "Bookings service"
+    },
+    {
+      "from": "Bookings service",
+      "kind": "return",
+      "label": "201 Created",
+      "to": "API gateway"
+    },
+    {
+      "from": "API gateway",
+      "kind": "return",
+      "label": "201 with the booking",
+      "to": "Mobile app"
+    }
+  ],
+  "summary": "One call, end to end",
+  "title": "Book a repair slot",
+  "type": "sequence"
+}

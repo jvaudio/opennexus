@@ -110,6 +110,41 @@
 				</array>
 			</dict>
 		</dict>
+		<!-- M50: starter files, for the picker's Install Starter… -->
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>OpenNexus Starter</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.opennexus.starter</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>nexusstarter</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>OpenNexus Starter Pack</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.opennexus.starters</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>nexusstarters</string>
+				</array>
+			</dict>
+		</dict>
 	</array>
 </dict>
 </plist>

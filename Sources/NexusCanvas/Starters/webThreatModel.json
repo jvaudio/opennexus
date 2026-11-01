@@ -1,0 +1,107 @@
+{
+  "aliases": [
+    "web threat model",
+    "stride",
+    "threats",
+    "appsec",
+    "trust boundary"
+  ],
+  "boundaries": [
+    {
+      "meaning": "trust",
+      "title": "Library servers",
+      "topics": [
+        "Sign in",
+        "Borrow books",
+        "Admin console"
+      ],
+      "trust": "high"
+    }
+  ],
+  "category": "security",
+  "collection": "security",
+  "details": [
+    {
+      "note": "Spoofing: someone signs in as a member with a password reused from another site.",
+      "topic": "Spoofed member login"
+    },
+    {
+      "edge": "Email and password",
+      "topic": "Sign in"
+    },
+    {
+      "edge": "Sign-in attempts",
+      "note": "Passwords stored only as slow, salted hashes; failed attempts are counted here so accounts can lock.",
+      "topic": "Member accounts"
+    },
+    {
+      "edge": "Borrow request",
+      "topic": "Borrow books"
+    },
+    {
+      "note": "Tampering: the borrow request is edited in the browser to push the due date out.",
+      "topic": "Tampered due date"
+    },
+    {
+      "note": "Denial of service: scripted searches tie up the catalogue during opening hours.",
+      "topic": "Search flood denies service"
+    },
+    {
+      "edge": "New loan",
+      "topic": "Loan records"
+    },
+    {
+      "note": "Information disclosure: what someone borrows is personal. A leaked export or a careless report reveals it.",
+      "topic": "Loan history disclosed"
+    },
+    {
+      "edge": "Fine waivers",
+      "topic": "Admin console"
+    },
+    {
+      "note": "Repudiation: a fine is waived and later nobody can say who did it or why.",
+      "topic": "Repudiated fine waiver"
+    },
+    {
+      "note": "Elevation of privilege: a member finds an admin page that's merely hidden, not protected.",
+      "topic": "Member elevates to librarian"
+    }
+  ],
+  "id": "webThreatModel",
+  "kicker": "THREAT MODEL",
+  "name": "Web app threat model",
+  "note": "Walk the data flow element by element and ask which STRIDE threats apply: spoofing, tampering, repudiation, information disclosure, denial of service and elevation of privilege. Hang each threat under the element it targets with its mitigation beneath it, and look hardest at the flows that cross the trust boundary.",
+  "order": 57,
+  "outline": [
+    "Library loans website",
+    "  Library member >entity",
+    "    Sign in >process",
+    "      Spoofed member login >threat",
+    "        Multi-factor sign-in >mitigation",
+    "      Member accounts >store",
+    "    Borrow books >process",
+    "      Loan records >store",
+    "        Loan history disclosed >threat",
+    "          Encrypt and limit access >mitigation",
+    "      Tampered due date >threat",
+    "        Server sets due dates >mitigation",
+    "      Search flood denies service >threat",
+    "        Rate limit per address >mitigation",
+    "  Librarian >entity",
+    "    Admin console >process",
+    "      Repudiated fine waiver >threat",
+    "        Signed audit log >mitigation",
+    "      Member elevates to librarian >threat",
+    "        Role check on every request >mitigation"
+  ],
+  "relationships": [
+    {
+      "from": "Admin console",
+      "label": "Waived fines",
+      "to": "Loan records"
+    }
+  ],
+  "summary": "STRIDE threats across the boundary",
+  "title": "Library loans website",
+  "type": "threatModel"
+}

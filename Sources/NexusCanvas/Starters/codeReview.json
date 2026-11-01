@@ -1,0 +1,134 @@
+{
+  "aliases": [
+    "code review",
+    "pull request",
+    "checklist",
+    "review",
+    "pr"
+  ],
+  "category": "software",
+  "collection": "engineering",
+  "details": [
+    {
+      "done": false,
+      "topic": "Description explains the why"
+    },
+    {
+      "done": false,
+      "topic": "Linked to its issue"
+    },
+    {
+      "done": false,
+      "note": "A few hundred lines reviews well; ask for a split if it's much bigger.",
+      "topic": "Small enough to review"
+    },
+    {
+      "done": false,
+      "note": "Empty lists, missing values, time zones, very large inputs.",
+      "topic": "Edge cases handled"
+    },
+    {
+      "done": false,
+      "topic": "Errors handled, not swallowed"
+    },
+    {
+      "done": false,
+      "topic": "No race conditions"
+    },
+    {
+      "done": false,
+      "topic": "New behaviour has tests"
+    },
+    {
+      "done": false,
+      "topic": "Tests fail without the change"
+    },
+    {
+      "done": false,
+      "topic": "CI is green"
+    },
+    {
+      "done": false,
+      "topic": "Names say what things do"
+    },
+    {
+      "done": false,
+      "topic": "No dead or commented-out code"
+    },
+    {
+      "done": false,
+      "topic": "Comments explain why, not what"
+    },
+    {
+      "done": false,
+      "topic": "Input validated at the edges"
+    },
+    {
+      "done": false,
+      "topic": "No secrets in code"
+    },
+    {
+      "done": false,
+      "topic": "Permissions checked"
+    },
+    {
+      "done": false,
+      "topic": "Logs and metrics added"
+    },
+    {
+      "done": false,
+      "topic": "Migration can be reversed"
+    },
+    {
+      "done": false,
+      "topic": "Risky change behind a flag"
+    },
+    {
+      "done": false,
+      "topic": "Praise what works well"
+    },
+    {
+      "done": false,
+      "note": "Comment on the code, not the author, and say which comments must be resolved before merging.",
+      "topic": "Mark nits as optional"
+    }
+  ],
+  "id": "codeReview",
+  "kicker": "CHECKLIST",
+  "name": "Code review checklist",
+  "note": "Tick each item as you review a pull request; anything you can't tick becomes a comment. Add the checks your team cares about and remove the rest.",
+  "order": 45,
+  "outline": [
+    "Code review checklist",
+    "  Context",
+    "    Description explains the why",
+    "    Linked to its issue",
+    "    Small enough to review",
+    "  Correctness",
+    "    Edge cases handled",
+    "    Errors handled, not swallowed",
+    "    No race conditions",
+    "  Tests",
+    "    New behaviour has tests",
+    "    Tests fail without the change",
+    "    CI is green",
+    "  Readability",
+    "    Names say what things do",
+    "    No dead or commented-out code",
+    "    Comments explain why, not what",
+    "  Security",
+    "    Input validated at the edges",
+    "    No secrets in code",
+    "    Permissions checked",
+    "  Operations",
+    "    Logs and metrics added",
+    "    Migration can be reversed",
+    "    Risky change behind a flag",
+    "  Feedback",
+    "    Praise what works well",
+    "    Mark nits as optional"
+  ],
+  "summary": "Check before you approve",
+  "title": "Code review checklist",
+  "type": "tree"
+}

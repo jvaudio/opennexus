@@ -1,0 +1,63 @@
+{
+  "aliases": [
+    "goals",
+    "resolutions",
+    "new year",
+    "life plan",
+    "personal"
+  ],
+  "category": "planning",
+  "collection": "personal",
+  "details": [
+    {
+      "markers": [
+        "priority-1"
+      ],
+      "topic": "Run 5 km without stopping"
+    },
+    {
+      "markers": [
+        "priority-2"
+      ],
+      "topic": "Three months' savings buffer"
+    },
+    {
+      "markers": [
+        "priority-3"
+      ],
+      "topic": "Grow herbs on the balcony"
+    }
+  ],
+  "id": "goalSetting",
+  "kicker": "MIND MAP",
+  "name": "Goal setting",
+  "note": "Add a goal or two for each area of life, each specific enough to know when it's done, and give the big ones a first step. Then mark your top three priorities and start with those.",
+  "order": 95,
+  "outline": [
+    "This year's goals",
+    "  Health",
+    "    Run 5 km without stopping",
+    "      Three short runs a week",
+    "    In bed by eleven",
+    "  Work",
+    "    Lead a project end to end",
+    "    Finish the data course",
+    "  Money",
+    "    Three months' savings buffer",
+    "      Save 200 every payday",
+    "    Clear the credit card",
+    "  People",
+    "    Sunday call with Gran",
+    "    Monthly dinner with friends",
+    "  Learning",
+    "    Read twelve books",
+    "    Basic conversational Italian",
+    "  Home",
+    "    Grow herbs on the balcony",
+    "      Buy pots in March",
+    "    Clear out the loft"
+  ],
+  "summary": "Life areas, goals, first steps",
+  "title": "This year's goals",
+  "type": "mindmap"
+}

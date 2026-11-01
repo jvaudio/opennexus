@@ -1,0 +1,42 @@
+{
+  "aliases": [
+    "roadmap",
+    "quarterly",
+    "quarters",
+    "themes",
+    "product plan"
+  ],
+  "category": "planning",
+  "collection": "planning",
+  "id": "quarterlyRoadmap",
+  "kicker": "TIMELINE",
+  "name": "Quarterly roadmap",
+  "note": "Give each quarter one theme and two or three bets, with a target that says how you'll know it worked. Keep the next quarter specific and later ones broad, and revisit the roadmap every quarter.",
+  "order": 85,
+  "outline": [
+    "Recipe app roadmap",
+    "  Q1 · Faster search",
+    "    Search by ingredient",
+    "    Offline saved recipes",
+    "    Target: results in one second",
+    "  Q2 · Meal planning",
+    "    Weekly meal planner",
+    "    Shared shopping list",
+    "    Target: 20% plan weekly",
+    "  Q3 · Community",
+    "    Ratings and reviews",
+    "    Cooks' photo uploads",
+    "    Target: 5,000 reviews",
+    "  Q4 · Premium",
+    "    Subscription tier",
+    "    Video cooking lessons",
+    "    Target: 3% subscribe",
+    "  Later",
+    "    Smart scales support",
+    "    Family accounts"
+  ],
+  "structure": "timeline.alternating",
+  "summary": "Themes and bets by quarter",
+  "title": "Recipe app roadmap",
+  "type": "timeline"
+}

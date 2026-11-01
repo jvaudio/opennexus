@@ -1,0 +1,58 @@
+{
+  "aliases": [
+    "decision matrix",
+    "weighted scoring",
+    "options",
+    "criteria",
+    "compare options"
+  ],
+  "category": "thinking",
+  "collection": "business",
+  "details": [
+    {
+      "note": "Weights say what matters most to this florist: 3 is critical, 1 is nice to have.",
+      "topic": "Running cost (weight 3)"
+    },
+    {
+      "note": "The sum of each option's weighted scores.",
+      "topic": "Weighted total"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Electric van: 35"
+    }
+  ],
+  "id": "decisionMatrix",
+  "kicker": "TREE TABLE",
+  "name": "Decision matrix",
+  "note": "Give each criterion a weight from 1 to 3, score every option from 1 to 5 against it, and multiply. Add up each option's weighted scores in the last row; the highest total is a strong hint, not the final word.",
+  "order": 35,
+  "outline": [
+    "Choosing a delivery vehicle",
+    "  Running cost (weight 3)",
+    "    Electric van: 5, weighted 15",
+    "    Diesel van: 1, weighted 3",
+    "    Cargo bike: 5, weighted 15",
+    "  Load space (weight 3)",
+    "    Electric van: 4, weighted 12",
+    "    Diesel van: 5, weighted 15",
+    "    Cargo bike: 1, weighted 3",
+    "  Delivery range (weight 2)",
+    "    Electric van: 3, weighted 6",
+    "    Diesel van: 5, weighted 10",
+    "    Cargo bike: 2, weighted 4",
+    "  Upfront price (weight 1)",
+    "    Electric van: 2, weighted 2",
+    "    Diesel van: 4, weighted 4",
+    "    Cargo bike: 5, weighted 5",
+    "  Weighted total",
+    "    Electric van: 35",
+    "    Diesel van: 32",
+    "    Cargo bike: 27"
+  ],
+  "summary": "Options scored on weighted criteria",
+  "title": "Choosing a delivery vehicle",
+  "type": "treeTable"
+}

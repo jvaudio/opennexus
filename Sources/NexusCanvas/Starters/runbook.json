@@ -5,6 +5,7 @@
     "ir"
   ],
   "category": "security",
+  "collection": "security",
   "id": "runbook",
   "kicker": "FLOW",
   "name": "Incident response runbook",

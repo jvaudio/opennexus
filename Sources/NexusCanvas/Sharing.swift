@@ -569,6 +569,27 @@ public final class ShareCenter {
         return opened.bundle
     }
 
+    /// Install from URL… (M50): a starter file at an https address, read by the network
+    /// service from that host alone and without credentials, as an Open in OpenNexus link
+    /// is. The bytes are checked by `StarterFile.read` before anything is installed.
+    public func readStarter(_ url: URL) async throws -> Data {
+        guard networkOn else { throw Failure.networkOff }
+        guard url.scheme == "https", url.host() != nil, url.user() == nil, url.password() == nil else {
+            throw Failure.failed(Loc.t("A starter’s address starts with https://."))
+        }
+        busy += 1
+        defer { busy -= 1 }
+        let purpose = Loc.t("Install starter")
+        var job = NetJob(
+            action: .read, purpose: purpose, destination: ShareDestination(id: "link", kind: .server, name: purpose),
+            secret: "", allowedHosts: [], object: url.absoluteString)
+        job.source = .url
+        let (reply, data) = await transport.exchange(job, body: Data())
+        log.append(reply.log)
+        guard reply.ok else { throw Failure.failed(Loc.f("Couldn’t read the starter: %@", reply.error ?? "")) }
+        return data
+    }
+
     /// The link's map as a new document's content, with its import report (File › Import…'s).
     public func importLink(_ text: String) async throws -> Imported {
         let bundle = try await openLink(text)

@@ -350,6 +350,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         }
         guard let window, window.attachedSheet == nil else { return }
         let gallery = StarterGallery(purpose: .canvas)
+        gallery.readURL = ShareCenter.shared.networkOn ? { try await ShareCenter.shared.readStarter($0) } : nil
         let sheet = NSWindow(contentViewController: NSHostingController(rootView: StarterGalleryView(model: gallery)))
         sheet.title = Loc.t("New Canvas")
         gallery.onCancel = { [weak window, weak sheet] in

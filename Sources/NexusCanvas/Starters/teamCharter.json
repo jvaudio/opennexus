@@ -1,0 +1,59 @@
+{
+  "aliases": [
+    "team charter",
+    "working agreement",
+    "team canvas",
+    "roles"
+  ],
+  "category": "planning",
+  "collection": "meetings",
+  "details": [
+    {
+      "note": "One sentence on why the team exists and who it serves.",
+      "topic": "Purpose"
+    },
+    {
+      "note": "Habits everyone agrees to. Change them together, not quietly.",
+      "topic": "Ways of working"
+    },
+    {
+      "note": "What's yours, and what you hand to others. Saying no is easier when it's written down.",
+      "topic": "Scope"
+    }
+  ],
+  "id": "teamCharter",
+  "kicker": "LOGIC",
+  "name": "Team charter",
+  "note": "Write it together in the team's first week, one branch at a time, and keep each line short enough to remember. Revisit it at the review date or whenever someone joins.",
+  "order": 37,
+  "outline": [
+    "Onboarding team charter",
+    "  Purpose",
+    "    New customers live within a week",
+    "    Why: first weeks predict renewals",
+    "  Members and roles",
+    "    Team lead: priorities, hiring",
+    "    Two specialists: setup calls",
+    "    Engineer: import tools",
+    "  Goals this half",
+    "    Go-live in under seven days",
+    "    Setup rating above 4.5",
+    "    No lost data in imports",
+    "  Ways of working",
+    "    Ten-minute stand-up daily",
+    "    Core hours 10:00–15:00",
+    "    Decisions written in the tracker",
+    "  Communication",
+    "    Questions in the team channel",
+    "    Urgent: phone the lead",
+    "    Weekly update to sales",
+    "  Scope",
+    "    In: setup, data imports, training",
+    "    Out: billing and contracts",
+    "  Charter review",
+    "    Quarterly, and when someone joins"
+  ],
+  "summary": "Purpose, roles, goals, ways of working",
+  "title": "Onboarding team charter",
+  "type": "logic"
+}

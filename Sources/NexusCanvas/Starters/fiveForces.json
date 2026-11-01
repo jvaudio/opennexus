@@ -1,0 +1,78 @@
+{
+  "aliases": [
+    "five forces",
+    "competition",
+    "industry analysis",
+    "competitive forces"
+  ],
+  "category": "thinking",
+  "collection": "business",
+  "details": [
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "note": "How hard existing rivals fight on price, quality and service.",
+      "topic": "Rivalry among competitors"
+    },
+    {
+      "markers": [
+        "flag-green"
+      ],
+      "note": "How easily someone new could open nearby.",
+      "topic": "Threat of new entrants"
+    },
+    {
+      "markers": [
+        "flag-orange"
+      ],
+      "note": "Other ways customers meet the same need.",
+      "topic": "Threat of substitutes"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "note": "How easily customers can push prices down or leave.",
+      "topic": "Buyer power"
+    },
+    {
+      "markers": [
+        "flag-orange"
+      ],
+      "note": "How much those you buy from can raise prices or set terms.",
+      "topic": "Supplier power"
+    }
+  ],
+  "id": "fiveForces",
+  "kicker": "MIND MAP",
+  "name": "Five forces",
+  "note": "Put your business at the centre and list what drives each force. Rate each force with a flag (red strong, orange medium, green weak); strong forces squeeze profits, so plan for those first.",
+  "order": 31,
+  "outline": [
+    "Bouldering gym five forces",
+    "  Rivalry among competitors",
+    "    Two rival gyms nearby",
+    "    Membership price war",
+    "    Similar walls, little to choose",
+    "  Threat of new entrants",
+    "    High cost of building walls",
+    "    Few warehouses big enough",
+    "    Leisure centre may add wall",
+    "  Threat of substitutes",
+    "    Outdoor crags in summer",
+    "    Home training boards",
+    "    Gym and yoga classes",
+    "  Buyer power",
+    "    Easy to switch gyms",
+    "    Students push for discounts",
+    "    Day-pass climbers shop around",
+    "  Supplier power",
+    "    Plenty of hold makers",
+    "    Landlord sets warehouse rent",
+    "    Few certified route setters"
+  ],
+  "summary": "Rivals, entrants, substitutes, buyers, suppliers",
+  "title": "Bouldering gym five forces",
+  "type": "mindmap"
+}

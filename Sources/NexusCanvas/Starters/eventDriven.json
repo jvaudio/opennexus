@@ -1,0 +1,123 @@
+{
+  "aliases": [
+    "event driven",
+    "event sourcing",
+    "cqrs",
+    "events",
+    "read model"
+  ],
+  "category": "architecture",
+  "collection": "architecture",
+  "details": [
+    {
+      "edge": "Basket and address",
+      "note": "Checks the basket, then appends OrderPlaced. It never updates a view itself.",
+      "topic": "Place order"
+    },
+    {
+      "edge": "OrderPlaced",
+      "note": "Append-only and in order for each order. It's the source of truth: any read model can be rebuilt by replaying it.",
+      "topic": "Event log"
+    },
+    {
+      "edge": "Events in order",
+      "note": "Idempotent: an event delivered twice mustn't count twice. It remembers the last position it read.",
+      "topic": "Project read models"
+    },
+    {
+      "edge": "Status changes",
+      "topic": "Order status view"
+    },
+    {
+      "edge": "Current status",
+      "note": "Answers from the view, never from the log, so tracking stays fast however long the log grows.",
+      "topic": "Track order"
+    },
+    {
+      "edge": "Order status",
+      "topic": "Customer app"
+    },
+    {
+      "edge": "Stock changes",
+      "note": "Eventually consistent: it can trail the log by a moment, so treat its counts as a guide.",
+      "topic": "Stock levels view"
+    },
+    {
+      "edge": "Low stock lines",
+      "note": "When a line drops below its threshold, it orders more.",
+      "topic": "Reorder stock"
+    },
+    {
+      "edge": "Purchase order",
+      "topic": "Supplier"
+    },
+    {
+      "edge": "Order events",
+      "note": "A separate consumer: if it falls behind, orders still go through.",
+      "topic": "Send notifications"
+    },
+    {
+      "edge": "Payment result",
+      "note": "The provider calls back once the payment clears; this appends PaymentConfirmed.",
+      "topic": "Confirm payment"
+    },
+    {
+      "edge": "Scanned items",
+      "topic": "Pick and pack"
+    },
+    {
+      "edge": "Proof of delivery",
+      "topic": "Record delivery"
+    }
+  ],
+  "id": "eventDriven",
+  "kicker": "DATA FLOW",
+  "name": "Event-driven system",
+  "note": "Producers record facts in the event log; consumers read the log in order and keep their own read models up to date. Name each event in the past tense after something that happened in your domain, and give every screen or job the read model it needs.",
+  "order": 55,
+  "outline": [
+    "Grocery order events",
+    "  Customer >entity",
+    "    Place order >process",
+    "      Event log >store",
+    "        Project read models >process",
+    "          Order status view >store",
+    "            Track order >process",
+    "              Customer app >entity",
+    "          Stock levels view >store",
+    "            Reorder stock >process",
+    "              Supplier >entity",
+    "        Send notifications >process",
+    "  Payment provider >entity",
+    "    Confirm payment >process",
+    "  Warehouse staff >entity",
+    "    Pick and pack >process",
+    "  Courier >entity",
+    "    Record delivery >process"
+  ],
+  "relationships": [
+    {
+      "from": "Confirm payment",
+      "label": "PaymentConfirmed",
+      "to": "Event log"
+    },
+    {
+      "from": "Pick and pack",
+      "label": "OrderPacked",
+      "to": "Event log"
+    },
+    {
+      "from": "Record delivery",
+      "label": "OrderDelivered",
+      "to": "Event log"
+    },
+    {
+      "from": "Send notifications",
+      "label": "Delivery updates",
+      "to": "Customer app"
+    }
+  ],
+  "summary": "Producers, event log, read models",
+  "title": "Grocery order events",
+  "type": "dfd"
+}
