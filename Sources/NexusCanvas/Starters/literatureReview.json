@@ -1,0 +1,47 @@
+{
+  "aliases": [
+    "literature review",
+    "research",
+    "sources",
+    "dissertation",
+    "evidence"
+  ],
+  "category": "thinking",
+  "collection": "thinking",
+  "details": [
+    {
+      "note": "Keep the full reference here: authors, year, title and journal, plus the method in a line.",
+      "topic": "Survey of 200 nurses"
+    }
+  ],
+  "id": "literatureReview",
+  "kicker": "TREE TABLE",
+  "name": "Literature review",
+  "note": "Group studies under themes, one row per study with its main finding beside it, and keep the full reference in each study's note. End with the gaps: what no one has studied yet is where your own question comes from.",
+  "order": 90,
+  "outline": [
+    "Night shifts and nurse fatigue",
+    "  Sleep and recovery",
+    "    Survey of 200 nurses",
+    "      Under six hours' sleep after nights",
+    "    Sleep diaries, 40 nurses",
+    "      Two days to recover",
+    "  Errors and safety",
+    "    Audit of three hospitals' wards",
+    "      More drug errors after 3am",
+    "    Simulation study, 60 nurses",
+    "      Slower reactions late in shift",
+    "  Rota design",
+    "    Trial of forward-rotating rotas",
+    "      Less fatigue than backward rotation",
+    "    Interviews with ward managers",
+    "      Short staffing forces long runs",
+    "  Gaps",
+    "    Part-time staff not studied",
+    "    Little follow-up beyond a year",
+    "    Few community or home settings"
+  ],
+  "summary": "Themes, studies, findings and gaps",
+  "title": "Night shifts and nurse fatigue",
+  "type": "treeTable"
+}

@@ -1,10 +1,13 @@
 import AppKit
 import Foundation
+import ImageIO
 import Testing
+import Vision
 
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusInterchange
+@testable import NexusScene
 
 /// M12: an image's map lands in the open document as one undo step.
 @MainActor
@@ -23,7 +26,7 @@ import Testing
 
     func harness(_ model: DocumentModel) -> CanvasHarness {
         let h = CanvasHarness(model: model)
-        h.controller.pasteboard = NSPasteboard(name: NSPasteboard.Name("nexus-test-\(UUID().uuidString)"))
+        h.controller.pasteboard = MemoryPasteboard()
         return h
     }
 
@@ -265,9 +268,10 @@ import Testing
             NSBitmapImageRep(
                 bitmapDataPlanes: nil, pixelsWide: 4, pixelsHigh: 4, bitsPerSample: 8, samplesPerPixel: 4,
                 hasAlpha: true, isPlanar: false, colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0))
+        let tiff = try #require(rep.representation(using: .tiff, properties: [:]))
         let pb = h.controller.pasteboard
         pb.clearContents()
-        pb.setData(rep.representation(using: .tiff, properties: [:]), forType: .tiff)
+        pb.setData(tiff, forType: .tiff)
         let found = try #require(ImageToMap.image(on: pb))
         #expect(found.name.hasSuffix(".png") && NSBitmapImageRep(data: found.data)?.pixelsWide == 4)
         #expect(ImageToMap.isImage(name: "Screenshot 2026-10-20.HEIC") && ImageToMap.isImage(name: "poster.pdf"))
@@ -333,8 +337,38 @@ import Testing
         let im = try Interchange.importFile(name: "launch.png", data: png)
         let c = im.canvases[0]
         #expect(outline(c, c.root) == outline(m.canvases["c1"]!, m.canvases["c1"]!.root), "\(structure.rawValue)")
+        if outline(c, c.root) != outline(m.canvases["c1"]!, m.canvases["c1"]!.root) {
+            print("Vision read \(structure.rawValue):\n" + Self.visionLines(png))
+        }
         #expect(im.report.format == "Image")
         return c
+    }
+
+    /// What Vision reads in `png` as the importer asks it to, a line at a time: the text,
+    /// its box, and each word's box, in pixels. Printed when a round trip fails, since CI's
+    /// second Mac reads some pictures differently from this one (D483).
+    static func visionLines(_ png: Data) -> String {
+        guard let src = CGImageSourceCreateWithData(png as CFData, nil),
+            let image = CGImageSourceCreateImageAtIndex(src, 0, nil)
+        else { return "" }
+        let request = VNRecognizeTextRequest()
+        request.revision = VNRecognizeTextRequestRevision3
+        request.recognitionLevel = .accurate
+        request.usesLanguageCorrection = true
+        request.automaticallyDetectsLanguage = true
+        try? VNImageRequestHandler(cgImage: image, options: [:]).perform([request])
+        let (w, h) = (Double(image.width), Double(image.height))
+        func px(_ r: CGRect) -> String {
+            "x \(Int(r.minX * w))...\(Int(r.maxX * w)) y \(Int((1 - r.maxY) * h))...\(Int((1 - r.minY) * h))"
+        }
+        return (request.results ?? []).compactMap { obs -> String? in
+            guard let best = obs.topCandidates(1).first else { return nil }
+            let words = best.string.split(separator: " ").map { word in
+                let box = try? best.boundingBox(for: word.startIndex..<word.endIndex)
+                return "\(word) " + (box.map { px($0.boundingBox) } ?? "?")
+            }
+            return "\(best.string) | \(px(obs.boundingBox)) | " + words.joined(separator: "; ")
+        }.joined(separator: "\n")
     }
 }
 

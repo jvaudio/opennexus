@@ -1,0 +1,48 @@
+{
+  "aliases": [
+    "sipoc",
+    "process scope",
+    "suppliers",
+    "inputs and outputs"
+  ],
+  "category": "process",
+  "collection": "process",
+  "details": [
+    {
+      "note": "Keep it high level: where the process starts and stops, not every task.",
+      "topic": "Process"
+    }
+  ],
+  "id": "sipoc",
+  "kicker": "BRACE MAP",
+  "name": "SIPOC",
+  "note": "Start in the middle: describe the process in four to six high-level steps. Then list its outputs and who receives them, and finally the inputs it needs and who supplies them.",
+  "order": 75,
+  "outline": [
+    "Bike repair service",
+    "  Suppliers",
+    "    Parts wholesaler",
+    "    Tyre distributor",
+    "    Payment provider",
+    "  Inputs",
+    "    Customer's bike",
+    "    Spare parts",
+    "    Booking details",
+    "  Process",
+    "    Book in the bike",
+    "    Inspect and quote",
+    "    Repair and test",
+    "    Hand back and take payment",
+    "  Outputs",
+    "    Repaired bike",
+    "    Invoice and receipt",
+    "    Service record",
+    "  Customers",
+    "    Commuters",
+    "    Families",
+    "    Delivery riders"
+  ],
+  "summary": "Suppliers, inputs, process, outputs, customers",
+  "title": "Bike repair service",
+  "type": "brace"
+}

@@ -1,0 +1,43 @@
+{
+  "name": "opennexus-web",
+  "private": true,
+  "description": "OpenNexus in the browser: the interactive viewer (M43), the viewer site (M44) and what grows from them.",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "viewer-core",
+    "viewer-app",
+    "math",
+    "obsidian"
+  ],
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
+  "scripts": {
+    "build": "npm run build -w viewer-core && npm run build -w viewer-app && npm run build -w obsidian",
+    "fixtures": "cd .. && NEXUS_WRITE_VIEWER_FIXTURES=1 swift test --filter \"ViewerFixtures|ShareFixtures|JoinFixtures|OpenFixtures\"",
+    "typecheck": "tsc -p viewer-core --noEmit && tsc -p viewer-app --noEmit && tsc -p obsidian --noEmit && tsc -p e2e --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build -w viewer-app && npm run build -w obsidian && npm run fixtures && npm run e2e",
+    "vectors": "NEXUS_WRITE_VECTORS=1 vitest run viewer-app/test/sealed.test.ts && cd .. && NEXUS_WRITE_VECTORS=1 swift test --filter SealedTests"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@codemirror/state": "6.7.6",
+    "@codemirror/view": "6.43.13",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@types/node": "26.6.6",
+    "@types/pngjs": "6.0.5",
+    "esbuild": "0.28.2",
+    "eslint": "10.13.0",
+    "jsdom": "30.1.3",
+    "obsidian": "1.14.4",
+    "pngjs": "7.0.0",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vitest": "5.0.5"
+  }
+}

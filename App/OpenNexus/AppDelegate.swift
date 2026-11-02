@@ -5,6 +5,7 @@ import NexusCore
 import NexusFormat
 import NexusInterchange
 import NexusKeys
+import NexusScene
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -33,15 +34,24 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var launchedAtLogin = false
 
     func applicationWillFinishLaunching(_ notification: Notification) {
+        // First, so it's the shared document controller (starter files, M50).
+        _ = AppDocumentController()
         launchedAtLogin = QuickCapture.launchedAtLogin
         NSApp.mainMenu = MainMenu.build(registry: .standard, profile: .openNexus)
         AppPreferences.shared.start()
         Integrations.shared.start()
+        // Formulas typeset in the background on the canvas; the engine starts now (M48).
+        MathEngine.defersOnMainThread = true
+        MathEngine.shared.warmUp()
     }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         if !launchedAtLogin { Onboarding.launch() }
         Updates.shared.start()
+        // Links past their expiry date are deleted where they're stored (when sharing is on).
+        Task { await ShareCenter.shared.sweepExpired() }
+        // Sync libraries (M45): at launch, then on the schedule (when the network is on).
+        SyncCenter.shared.start()
     }
 
     /// Spotlight results open straight to the topic; Handoff for iCloud documents is
@@ -65,7 +75,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc func showWelcome(_ sender: Any?) { Onboarding.showWelcome() }
+    /// Registry commands with no document window in front: Install Starter… (M50).
+    @objc func performRegistryCommand(_ sender: Any?) {
+        guard let raw = (sender as? NSMenuItem)?.representedObject as? String else { return }
+        if CommandID(rawValue: raw) == .installStarter { StarterInstaller.choose() }
+    }
+
+    func validateMenuItem(_ item: NSMenuItem) -> Bool {
+        guard item.action == #selector(performRegistryCommand(_:)), let raw = item.representedObject as? String
+        else { return true }
+        return CommandID(rawValue: raw) == .installStarter
+    }
     @objc func showHome(_ sender: Any?) { HomeWindow.shared.show() }
+    /// File › Sync Now: every library.
+    @objc func syncNow(_ sender: Any?) { Task { await SyncCenter.shared.syncNow() } }
     /// File › New Document from Starter… (⇧⌘N on Home): Home's starter picker (M40).
     @objc func newDocumentChooseType(_ sender: Any?) { HomeWindow.shared.show(choosingStarter: true) }
     /// ⌘N: a new document with the default look (Settings › New documents).

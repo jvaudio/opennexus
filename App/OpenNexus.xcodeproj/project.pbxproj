@@ -12,6 +12,7 @@
 		3DDAF9460A5445AEE2F8D97E /* NexusAgentKit in Frameworks */ = {isa = PBXBuildFile; productRef = 2366E69D08CA5CA50399E632 /* NexusAgentKit */; };
 		400914B702091A220692095A /* NexusShared in Frameworks */ = {isa = PBXBuildFile; productRef = 09BDE3D75AF7C50A469F9D86 /* NexusShared */; };
 		44846E656F84DE61477A0CDA /* OpenNexusKit in Frameworks */ = {isa = PBXBuildFile; productRef = FA8D346CF2F46D1E63F2DAC2 /* OpenNexusKit */; };
+		5F37325B00DB0BE27574770E /* NexusNetKit in Frameworks */ = {isa = PBXBuildFile; productRef = 49B3D44A34AB06D3222188AF /* NexusNetKit */; };
 		67B4FA71EF8B761270591A90 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = 6361D128999FFF161D3C8635 /* Sparkle */; };
 		70969204F7ADDEB2BFBF910D /* SpotlightImporter.appex in Embed */ = {isa = PBXBuildFile; fileRef = FB7FA1C59AEC54BB4C7F7D8C /* SpotlightImporter.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		863A5A9AF31C958AE7013145 /* nexus in Embed */ = {isa = PBXBuildFile; fileRef = 7B6AA8C1BFEB156A71DCB094 /* nexus */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -21,6 +22,7 @@
 		BDC3585E7BC9B5EF7E7519AD /* NexusShared in Frameworks */ = {isa = PBXBuildFile; productRef = 9307AD410D26C205C4C0EC3E /* NexusShared */; };
 		CC040830A3EFDEEE11A904C1 /* QuickLookPreview.appex in Embed */ = {isa = PBXBuildFile; fileRef = 541BF5BA2AC67308BE28B0D7 /* QuickLookPreview.appex */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		D59968889C44F5A6419CFE5D /* OpenNexusKit in Frameworks */ = {isa = PBXBuildFile; productRef = DD08290EE6E7D83DCF40D846 /* OpenNexusKit */; };
+		EAA8F00C464A864331ED496D /* OpenNexusNet.xpc in Embed */ = {isa = PBXBuildFile; fileRef = 331775CBB3513F4204B7BAF2 /* OpenNexusNet.xpc */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		FBA47DDE0E80CAC3826B86DF /* NexusShared in Frameworks */ = {isa = PBXBuildFile; productRef = CC34BE45EFCA6656408EF839 /* NexusShared */; };
 /* End PBXBuildFile section */
 
@@ -67,6 +69,13 @@
 			remoteGlobalIDString = B098C4283CD9150A17F55F64;
 			remoteInfo = nexus;
 		};
+		D212BC0C92EE5F0650DAD724 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 6D52EB32CAE1C98D617F89C1;
+			remoteInfo = OpenNexusNet;
+		};
 		EB3C689D0442296A0C6589F9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 98F54143AB4E86B28C3AFEE0 /* Project object */;
@@ -77,6 +86,17 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		52A66EBAAD92B0E5D7498195 /* Embed XPC Services */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/XPCServices";
+			dstSubfolderSpec = 16;
+			files = (
+				EAA8F00C464A864331ED496D /* OpenNexusNet.xpc in Embed */,
+			);
+			name = "Embed XPC Services";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6EF44DCF89DC106337DE3CE9 /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -110,6 +130,8 @@
 		202AC0AE4567887E9FE476D6 /* Widgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Widgets.entitlements; sourceTree = "<group>"; };
 		2C7F9B5C9C8F9720AF0C798A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3134D37283DA99FD4AD31355 /* nexus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = nexus.entitlements; sourceTree = "<group>"; };
+		331775CBB3513F4204B7BAF2 /* OpenNexusNet.xpc */ = {isa = PBXFileReference; explicitFileType = wrapper.xpc-service; includeInIndex = 0; path = OpenNexusNet.xpc; sourceTree = BUILT_PRODUCTS_DIR; };
+		49FD9A9B19D99EBD04662E79 /* OpenNexusNet.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpenNexusNet.entitlements; sourceTree = "<group>"; };
 		541BF5BA2AC67308BE28B0D7 /* QuickLookPreview.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = QuickLookPreview.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		60E41821CCF463A3276E29B9 /* OpenNexusUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenNexusUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		6D86DD6ABCA3F57547123631 /* SpotlightImporter.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SpotlightImporter.entitlements; sourceTree = "<group>"; };
@@ -120,6 +142,7 @@
 		82B3507AA44879E2F82B759F /* QuickLookThumbnail.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = QuickLookThumbnail.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		A1F2706C2FB6D7CC9B288D59 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A909B940739D1B51E0CD3BB3 /* QuickLookPreview.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickLookPreview.entitlements; sourceTree = "<group>"; };
+		ABD42B81F76839F2A552276A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AEBAC585BABAA37A2CBBC8BE /* Share.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = Share.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		B657770421B1CB6BD974200B /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Base.xcconfig; path = Config/Base.xcconfig; sourceTree = "<group>"; };
 		D1B367699EC893BDB7A24FB8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -133,6 +156,7 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		22AA7C351FDC0108F6E7C0B8 /* SpotlightImporter */ = {isa = PBXFileSystemSynchronizedRootGroup; name = SpotlightImporter; path = Extensions/SpotlightImporter; sourceTree = "<group>"; };
 		57B5014AA193A9B865C53CEF /* UITests */ = {isa = PBXFileSystemSynchronizedRootGroup; name = UITests; path = UITests; sourceTree = "<group>"; };
+		57E335BD9BF9896498D91585 /* OpenNexusNet */ = {isa = PBXFileSystemSynchronizedRootGroup; name = OpenNexusNet; path = Services/OpenNexusNet; sourceTree = "<group>"; };
 		75842155306204542CC003AF /* nexus */ = {isa = PBXFileSystemSynchronizedRootGroup; name = "nexus (CLI)"; path = ../Sources/nexus; sourceTree = "<group>"; };
 		7D321226DE2F0F1B99DAE706 /* QuickLookPreview */ = {isa = PBXFileSystemSynchronizedRootGroup; name = QuickLookPreview; path = Extensions/QuickLookPreview; sourceTree = "<group>"; };
 		99FA0EF68C9EA0E5E6728C91 /* Share */ = {isa = PBXFileSystemSynchronizedRootGroup; name = Share; path = Extensions/Share; sourceTree = "<group>"; };
@@ -142,6 +166,14 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		1DB832DC81F87C3FBBDD9E4A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5F37325B00DB0BE27574770E /* NexusNetKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		3F98D7B28A1CDAE096323DB9 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -219,6 +251,7 @@
 				FB7FA1C59AEC54BB4C7F7D8C /* SpotlightImporter.appex */,
 				AEBAC585BABAA37A2CBBC8BE /* Share.appex */,
 				82B29CD2484C01EC9A2A0DD7 /* Widgets.appex */,
+				331775CBB3513F4204B7BAF2 /* OpenNexusNet.xpc */,
 				60E41821CCF463A3276E29B9 /* OpenNexusUITests.xctest */,
 				7B6AA8C1BFEB156A71DCB094 /* nexus */,
 			);
@@ -232,6 +265,15 @@
 				196DE9B65F01DDD9381672EA /* QuickLookThumbnail.entitlements */,
 			);
 			path = QuickLookThumbnail;
+			sourceTree = "<group>";
+		};
+		2EC68C617A211354DFCA89ED /* OpenNexusNet */ = {
+			isa = PBXGroup;
+			children = (
+				ABD42B81F76839F2A552276A /* Info.plist */,
+				49FD9A9B19D99EBD04662E79 /* OpenNexusNet.entitlements */,
+			);
+			path = OpenNexusNet;
 			sourceTree = "<group>";
 		};
 		31C0D1ED16DC03053FEA7455 /* Widgets */ = {
@@ -269,6 +311,7 @@
 			children = (
 				F78C1CE01304D412F03454B5 /* OpenNexus */,
 				34970A53293144F63E8A81D3 /* Extensions */,
+				57E335BD9BF9896498D91585 /* OpenNexusNet */,
 				75842155306204542CC003AF /* nexus */,
 				57B5014AA193A9B865C53CEF /* UITests */,
 				8D7A76B729E19ED65F048634 /* Support */,
@@ -297,6 +340,7 @@
 				78C852AE722E12F275E11119 /* SpotlightImporter */,
 				FCE8352ACAB30A459D969255 /* Share */,
 				31C0D1ED16DC03053FEA7455 /* Widgets */,
+				2EC68C617A211354DFCA89ED /* OpenNexusNet */,
 			);
 			path = Support;
 			sourceTree = "<group>";
@@ -381,6 +425,29 @@
 			productName = QuickLookThumbnail;
 			productReference = 82B3507AA44879E2F82B759F /* QuickLookThumbnail.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		6D52EB32CAE1C98D617F89C1 /* OpenNexusNet */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 113C5B41C88F29EF2D524C1F /* Build configuration list for PBXNativeTarget "OpenNexusNet" */;
+			buildPhases = (
+				8B16F8A2094F9FC18B06CE17 /* Sources */,
+				1DB832DC81F87C3FBBDD9E4A /* Frameworks */,
+				05BF4F1159929064C0C1F356 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				57E335BD9BF9896498D91585 /* OpenNexusNet */,
+			);
+			name = OpenNexusNet;
+			packageProductDependencies = (
+				49B3D44A34AB06D3222188AF,
+			);
+			productName = OpenNexusNet;
+			productReference = 331775CBB3513F4204B7BAF2 /* OpenNexusNet.xpc */;
+			productType = "com.apple.product-type.xpc-service";
 		};
 		74D88135404D377DBCBF2AB2 /* OpenNexusUITests */ = {
 			isa = PBXNativeTarget;
@@ -483,6 +550,7 @@
 				96C74F6402BBE40B12C3FF40 /* Frameworks */,
 				465E9D62B44427629109A948 /* Resources */,
 				6EF44DCF89DC106337DE3CE9 /* Embed Foundation Extensions */,
+				52A66EBAAD92B0E5D7498195 /* Embed XPC Services */,
 				F8E9CF01DF76A515ADD1DBD5 /* Embed Command-Line Tool */,
 				34E56203511F4C7D4FE5C5CC /* Localized strings */,
 			);
@@ -494,6 +562,7 @@
 				91AF2CF1DE30CB217709DBE8 /* PBXTargetDependency */,
 				5F1B33DC01F55E276DAFEBC5 /* PBXTargetDependency */,
 				2F2149A1BB22D1379DC2C020 /* PBXTargetDependency */,
+				669F90E7F86C10C3514042E3 /* PBXTargetDependency */,
 				92E09E9CAB02D37BA0815B22 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
@@ -536,6 +605,9 @@
 					CA9274E4BBF30D4BE87C8D11 = {
 						CreatedOnToolsVersion = 27.0;
 					};
+					6D52EB32CAE1C98D617F89C1 = {
+						CreatedOnToolsVersion = 27.0;
+					};
 					74D88135404D377DBCBF2AB2 = {
 						CreatedOnToolsVersion = 27.0;
 					};
@@ -568,6 +640,7 @@
 				53E4C2647F6E9C6EC119943D /* SpotlightImporter */,
 				8C31EE71DA98EF5D94AD7DCE /* Share */,
 				CA9274E4BBF30D4BE87C8D11 /* Widgets */,
+				6D52EB32CAE1C98D617F89C1 /* OpenNexusNet */,
 				74D88135404D377DBCBF2AB2 /* OpenNexusUITests */,
 				B098C4283CD9150A17F55F64 /* nexus */,
 			);
@@ -575,6 +648,13 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		05BF4F1159929064C0C1F356 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1B64D5051B4D09EC85C07537 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -647,7 +727,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "src=\"$BUILT_PRODUCTS_DIR/OpenNexus_NexusCanvas.bundle/Contents/Resources\"\ndst=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nfor d in \"$src\"/*.lproj; do\n  [ -d \"$d\" ] || continue\n  mkdir -p \"$dst/$(basename \"$d\")\"\n  for f in \"$d\"/Localizable.strings \"$d\"/Localizable.stringsdict; do [ -f \"$f\" ] && cp -f \"$f\" \"$dst/$(basename \"$d\")/\"; done\ndone\nexit 0\n";
+			shellScript = "src=\"$BUILT_PRODUCTS_DIR/OpenNexus_NexusScene.bundle/Contents/Resources\"\ndst=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nfor d in \"$src\"/*.lproj; do\n  [ -d \"$d\" ] || continue\n  mkdir -p \"$dst/$(basename \"$d\")\"\n  for f in \"$d\"/Localizable.strings \"$d\"/Localizable.stringsdict; do [ -f \"$f\" ] && cp -f \"$f\" \"$dst/$(basename \"$d\")/\"; done\ndone\nexit 0\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -674,6 +754,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		80CA6881DFCA0C2E7BA85ACF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B16F8A2094F9FC18B06CE17 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -725,6 +812,11 @@
 			isa = PBXTargetDependency;
 			target = 8C31EE71DA98EF5D94AD7DCE /* Share */;
 			targetProxy = 49DA8F04403CFDEF7012166F /* PBXContainerItemProxy */;
+		};
+		669F90E7F86C10C3514042E3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 6D52EB32CAE1C98D617F89C1 /* OpenNexusNet */;
+			targetProxy = D212BC0C92EE5F0650DAD724 /* PBXContainerItemProxy */;
 		};
 		91AF2CF1DE30CB217709DBE8 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -819,6 +911,30 @@
 			};
 			name = Debug;
 		};
+		13501C28BDE4F14D17A57EEB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Support/OpenNexusNet/OpenNexusNet.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Support/OpenNexusNet/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../../../../Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.OpenNexusNet;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Release;
+		};
 		3004B5FA54CBCA1CA8323043 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -870,6 +986,30 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 			};
 			name = Release;
+		};
+		4408C2BC61D639A4D9D4FD37 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Support/OpenNexusNet/OpenNexusNet.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				ENABLE_HARDENED_RUNTIME = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = Support/OpenNexusNet/Info.plist;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../../../../Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.OpenNexusNet;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Debug;
 		};
 		4A42B7112ACCE52BF96E1AE9 /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1212,6 +1352,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		113C5B41C88F29EF2D524C1F /* Build configuration list for PBXNativeTarget "OpenNexusNet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4408C2BC61D639A4D9D4FD37 /* Debug */,
+				13501C28BDE4F14D17A57EEB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		3AA2480B883751BEF061C8D6 /* Build configuration list for PBXNativeTarget "SpotlightImporter" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -1323,6 +1472,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 13B6A09A1BCFDBF170717D85 /* XCLocalSwiftPackageReference ".." */;
 			productName = NexusAgentKit;
+		};
+		49B3D44A34AB06D3222188AF /* NexusNetKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 13B6A09A1BCFDBF170717D85 /* XCLocalSwiftPackageReference ".." */;
+			productName = NexusNetKit;
 		};
 		57CFA4F959F4311B562D03B8 /* OpenNexusKit */ = {
 			isa = XCSwiftPackageProductDependency;

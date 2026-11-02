@@ -4,7 +4,9 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusKeys
+import NexusScene
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// App-wide settings that live outside a document window (M8): appearance, language,
 /// launch behaviour, tabs, the menu bar's shortcuts, and the Settings buttons' actions.
@@ -176,6 +178,8 @@ final class AppPreferences {
             showInfo(Loc.t("What’s new in OpenNexus 1.0"), WhatsNew.text)
         case "about.source":
             showInfo(Loc.t("OpenNexus is open source"), Self.licence)
+        case "about.acknowledgements":
+            showInfo(Loc.t("Acknowledgements"), Acknowledgements.text, markdown: false)
         case "about.issue":
             let info = """
                 OpenNexus \(Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0") (\(Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"))
@@ -228,7 +232,17 @@ final class AppPreferences {
                 ChatStore.clearAll()
             }
         case "privacy.log":
-            showInfo(Loc.t("Network activity"), NetworkActivity.summary(prefs))
+            let log = ShareCenter.shared.log
+            showInfo(
+                Loc.t("Network activity"),
+                NetworkActivity.summary(prefs, log: log.recent()) + "\n\n" + NetworkActivity.table(log.entries))
+        case "privacy.exportLog":
+            let panel = NSSavePanel()
+            panel.nameFieldStringValue = "OpenNexus network log.csv"
+            panel.allowedContentTypes = [.commaSeparatedText]
+            if panel.runModal() == .OK, let url = panel.url {
+                try? Data(ShareCenter.shared.log.csv().utf8).write(to: url, options: .atomic)
+            }
         default:
             if action.hasPrefix("snapshot.copy:") || action.hasPrefix("snapshot.compare:") {
                 let path = String(action.split(separator: ":", maxSplits: 1)[1])
@@ -238,7 +252,7 @@ final class AppPreferences {
         }
     }
 
-    func showInfo(_ title: String, _ body: String) {
+    func showInfo(_ title: String, _ body: String, markdown: Bool = true) {
         let w = NSWindow(
             contentRect: CGRect(x: 0, y: 0, width: 560, height: 520), styleMask: [.titled, .closable, .resizable],
             backing: .buffered, defer: false)
@@ -246,7 +260,7 @@ final class AppPreferences {
         w.isReleasedWhenClosed = false
         w.contentView = NSHostingView(
             rootView: ScrollView {
-                Text(.init(body)).font(.chrome(14)).textSelection(.enabled).frame(
+                (markdown ? Text(.init(body)) : Text(verbatim: body)).font(.chrome(14)).textSelection(.enabled).frame(
                     maxWidth: .infinity, alignment: .leading
                 ).padding(24)
             }
@@ -287,30 +301,4 @@ enum WhatsNew {
 
         **Settings and Home.** Ten settings panes with search, a template shelf for your role, and a four-minute tour you build yourself.
         """
-}
-
-/// AI chats kept on this Mac rather than in the document (Settings › Privacy & Data).
-enum ChatStore {
-    static var directory: URL {
-        FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appending(
-            path: "OpenNexus/Chats")
-    }
-
-    static func url(_ id: String) -> URL { directory.appending(path: "\(id).json") }
-
-    static func save(_ chats: [AIChat], documentID: String) {
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try? CanonicalJSON.data(.object(["chats": .array(chats.map(\.json))])).write(
-            to: url(documentID), options: .atomic)
-    }
-
-    static func load(documentID: String) -> [AIChat] {
-        guard let d = try? Data(contentsOf: url(documentID)), let v = try? CanonicalJSON.parse(d),
-            var r = try? ObjectReader(v, path: "chats"),
-            let list = try? r.array("chats")
-        else { return [] }
-        return list.enumerated().compactMap { try? AIChat(json: $1, path: "chats[\($0)]") }
-    }
-
-    static func clearAll() { try? FileManager.default.removeItem(at: directory) }
 }

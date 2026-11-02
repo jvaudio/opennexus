@@ -1,9 +1,11 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusAI
 import NexusCore
 import NexusFormat
 import NexusInterchange
 import NexusKeys
+import NexusScene
 import NexusTheme
 import UniformTypeIdentifiers
 
@@ -12,7 +14,7 @@ import UniformTypeIdentifiers
 public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
     case png, jpeg, svg, pdf
     case mermaid, plantuml, drawio, json, opml, xmind
-    case markdown, word, powerpoint, keynote, csv, excel
+    case markdown, word, powerpoint, keynote, csv, excel, html
     case ganttPNG, ganttJPEG, ganttPDF, tasksCSV, ics
 
     public var id: String { rawValue }
@@ -48,6 +50,7 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
         case .keynote: Loc.t("Keynote")
         case .csv: Loc.t("CSV · threats")
         case .excel: "Excel"
+        case .html: Loc.t("Interactive HTML")
         case .ganttPNG: Loc.t("Gantt · PNG")
         case .ganttJPEG: Loc.t("Gantt · JPEG")
         case .ganttPDF: Loc.t("Gantt · PDF")
@@ -74,6 +77,7 @@ public enum ExportFormat: String, CaseIterable, Sendable, Identifiable {
         case .keynote: "key"
         case .csv: "csv"
         case .excel: "xlsx"
+        case .html: "html"
         case .ganttPNG: "png"
         case .ganttJPEG: "jpg"
         case .ganttPDF: "pdf"
@@ -119,7 +123,21 @@ public struct ExportState: Equatable, Sendable {
     /// per zone (D195). Never remembered, like the zone scope itself.
     public var zones = ZoneExport.one
     public enum ZoneExport: String, CaseIterable, Sendable { case one, each, pages }
+    /// Interactive HTML (M43).
+    public var html = HTMLOptions()
     public init() {}
+
+    /// What an interactive export holds. Branch and zone scopes come from `image.scope`;
+    /// at canvas scope, `document` picks every canvas or just this one.
+    public struct HTMLOptions: Equatable, Sendable {
+        public var document = true
+        public var notes = true
+        public var comments = true
+        public var attachments = false
+        /// Both layouts (As saved and Everything); off, only as saved.
+        public var expanded = true
+        public init() {}
+    }
 }
 
 /// Map Shot (⌃⌘M, artboard 51).
@@ -168,15 +186,6 @@ public struct MergeState: Equatable, Sendable {
 
     /// A picture is still being read.
     public var reading: Bool { sources.contains { $0.progress != nil } }
-}
-
-extension NSPasteboard.PasteboardType {
-    /// Copied topics as a canvas fragment (canonical JSON).
-    public static let nexusFragment = NSPasteboard.PasteboardType("org.opennexus.fragment")
-    /// A whole canvas (Copy canvas).
-    public static let nexusCanvas = NSPasteboard.PasteboardType("org.opennexus.canvas")
-    /// Where a zone fragment was copied: the open document and the canvas (D196).
-    public static let nexusFragmentSource = NSPasteboard.PasteboardType("org.opennexus.fragment.source")
 }
 
 extension CanvasController {
@@ -279,7 +288,7 @@ extension CanvasController {
         }
         guard
             s.format.isVisual || s.format == .word || s.format == .powerpoint || s.format == .keynote
-                || s.format == .xmind
+                || s.format == .xmind || s.format == .html
         else {
             return nil
         }
@@ -303,6 +312,10 @@ extension CanvasController {
             return Loc.f("%lld × %lld px", Int(size.width), Int(size.height))
         case .ganttPDF:
             return Loc.n("%lld task", "%lld tasks", TaskSchedule(exportCanvas(s)).spans.count)
+        case .html:
+            let bytes = Int64(exportHTML(s).utf8.count)
+            return Loc.n("%lld topic", "%lld topics", htmlTopicCount(s)) + " · "
+                + ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)
         case .xmind:
             let r = xmindReport(s)
             return Loc.n("%lld sheet", "%lld sheets", r.sheets) + " · " + Loc.n("%lld topic", "%lld topics", r.topics)
@@ -355,8 +368,7 @@ extension CanvasController {
             case "all":
                 var o = s.image
                 o.scope = .canvas
-                let pages = m.canvasOrder.compactMap { ImageExporter.image(m, canvas: $0, o) }
-                return Self.pdfPages(pages)
+                return Self.pdfPages(m.canvasOrder.compactMap { ImageExporter.pdfPicture(m, canvas: $0, o) })
             default: return PrintLayout.singlePage(m, canvas: canvasID, s.image, links: prefs.bool("export.pdfLinks"))
             }
         case .word:
@@ -369,7 +381,9 @@ extension CanvasController {
                     images[id] = (ImageExporter.png(img), img.width, img.height)
                 }
             }
-            return WordFormat.export(m, images: images.mapValues { (png: $0.0, width: $0.1, height: $0.2) })
+            return WordFormat.export(
+                m, images: images.mapValues { (png: $0.0, width: $0.1, height: $0.2) }, typeset: Self.wordFormula,
+                textMath: prefs.bool("editing.typesetMath"))
         case .ganttPNG: return GanttExporter.data(self, exportCanvas(s), s.gantt)
         case .ganttJPEG: return GanttExporter.data(self, exportCanvas(s), s.gantt, jpeg: s.jpegQuality)
         case .ganttPDF: return GanttExporter.pdf(self, exportCanvas(s), s.gantt)
@@ -379,10 +393,56 @@ extension CanvasController {
             let playing = m.canvases[canvasID].map { Deck.slides($0).filter { !$0.skipped } } ?? []
             return SlideExporter.pptx(slides, titles: playing.map(\.title), notes: playing.map(\.note))
         case .excel: return ExcelFormat.export(m)
+        case .html: return Data(HTMLExporter.export(m, viewerOptions(s), prefs: prefs).utf8)
         case .xmind: return xmindExport(m, xmind8: s.xmind8).data
         default:
             return exportText(s).map { Data($0.utf8) }
         }
+    }
+
+    /// The interactive export's options for the sheet's state (M43).
+    func viewerOptions(_ s: ExportState) -> ViewerBundle.Options {
+        var o = ViewerBundle.Options()
+        switch s.image.scope {
+        case .branch, .selection:
+            o.scope = s.image.selection.first.map { .branch(canvasID, $0) } ?? .canvas(canvasID)
+        case .zone:
+            o.scope = s.image.zone.map { .zone(canvasID, $0) } ?? .canvas(canvasID)
+        case .canvas:
+            o.scope = s.html.document ? .document : .canvas(canvasID)
+        }
+        o.notes = s.html.notes
+        o.comments = s.html.comments
+        o.attachments = s.html.attachments
+        o.expanded = s.html.expanded
+        o.theme = s.image.theme
+        return o
+    }
+
+    /// The interactive HTML page for the sheet's state.
+    public func exportHTML(_ s: ExportState) -> String {
+        HTMLExporter.export(exportModel(s), viewerOptions(s), prefs: prefs)
+    }
+
+    /// Topics an interactive export holds.
+    func htmlTopicCount(_ s: ExportState) -> Int {
+        let o = viewerOptions(s)
+        let m = exportModel(s)
+        return ViewerBundle.canvasIDs(m, o.scope).reduce(0) { n, id in
+            guard let c = m.canvases[id] else { return n }
+            return n + (ImageExporter.keep(c, ViewerBundle.imageOptions(o.scope, theme: nil))?.count ?? c.nodes.count)
+        }
+    }
+
+    /// Bytes of the attachments an interactive export would include.
+    public func htmlAttachmentBytes(_ s: ExportState) -> Int {
+        let m = exportModel(s)
+        var names = Set<String>()
+        for id in ViewerBundle.canvasIDs(m, viewerOptions(s).scope) {
+            guard let c = m.canvases[id] else { continue }
+            for n in c.nodes.values { for a in n.attachments { names.insert(a.asset) } }
+        }
+        return names.reduce(0) { $0 + (m.assets[$1]?.count ?? 0) }
     }
 
     /// What the Xmind export leaves out, for the version the sheet is set to.
@@ -403,16 +463,43 @@ extension CanvasController {
         return xmind8 ? XmindWriter.exportXMind8(m, thumbnail: thumb) : XmindWriter.export(m, thumbnail: thumb)
     }
 
-    static func pdfPages(_ images: [CGImage]) -> Data {
+    /// A formula for Word (M48): its glyphs as an SVG, and a PNG at 4× for Word before 2016.
+    static func wordFormula(_ source: String, display: Bool, size: Double) -> WordFormat.Formula? {
+        guard case .glyphs(let g)? = MathEngine.waiting({ MathEngine.shared.result(source, display: display) }) else {
+            return nil
+        }
+        let em = MathText.fontSize(for: Fonts.system(CGFloat(size)))
+        let s = g.size(em)
+        let k: CGFloat = 4
+        guard s.width > 0, s.height > 0,
+            let ctx = CGContext(
+                data: nil, width: Int(ceil(s.width * k)), height: Int(ceil(s.height * k)), bitsPerComponent: 8,
+                bytesPerRow: 0, space: CGColorSpace(name: CGColorSpace.sRGB)!,
+                bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
+        else { return nil }
+        ctx.scaleBy(x: k, y: k)
+        let black = CGColor(gray: 0, alpha: 1)
+        g.draw(in: ctx, at: CGPoint(x: 0, y: g.depth * em), fontSize: em, color: black, flipped: false)
+        guard let img = ctx.makeImage() else { return nil }
+        return WordFormat.Formula(
+            svg: Data(g.svg(fontSize: em, color: RGBA(r: 0, g: 0, b: 0, a: 1)).utf8), png: ImageExporter.png(img),
+            width: s.width, height: s.height, depth: g.depth * em)
+    }
+
+    static func pdfPages(_ pictures: [ImageExporter.PDFPicture]) -> Data {
         let data = NSMutableData()
         guard let consumer = CGDataConsumer(data: data as CFMutableData),
             let ctx = CGContext(consumer: consumer, mediaBox: nil, nil)
         else { return Data() }
-        for img in images {
+        for p in pictures {
+            let img = p.image
             var box = CGRect(x: 0, y: 0, width: CGFloat(img.width) / 2, height: CGFloat(img.height) / 2)
             ctx.beginPDFPage(
                 [kCGPDFContextMediaBox as String: Data(bytes: &box, count: MemoryLayout<CGRect>.size)] as CFDictionary)
             ctx.draw(img, in: box)
+            ImageExporter.drawFormulas(
+                p.formulas, in: ctx, from: p.rect, scale: p.scale / 2,
+                topLeft: CGPoint(x: p.topLeft.x / 2, y: p.topLeft.y / 2))
             ctx.endPDFPage()
         }
         ctx.closePDF()
@@ -656,11 +743,9 @@ extension CanvasController {
             }
             return
         }
-        for type in [NSPasteboard.PasteboardType.png, .tiff] {
-            if let data = pb.data(forType: type), let rep = NSBitmapImageRep(data: data),
-                let png = rep.representation(using: .png, properties: [:])
-            {
-                setImage(png, ext: "png", size: CGSize(width: rep.pixelsWide, height: rep.pixelsHigh), on: parent)
+        for type in [PasteboardType.png, .tiff] {
+            if let data = pb.data(forType: type), let (png, size) = ImageExporter.png(fromImage: data) {
+                setImage(png, ext: "png", size: size, on: parent)
                 return
             }
         }
@@ -897,7 +982,9 @@ extension CanvasController {
     }
 
     public func printPDF(_ o: PrintLayout.Options) -> (data: Data, pages: Int) {
-        PrintLayout.pdf(exportModel, canvas: canvasID, o)
+        var o = o
+        o.typesetMath = prefs.bool("editing.typesetMath")
+        return PrintLayout.pdf(exportModel, canvas: canvasID, o)
     }
 
     public func runPrint(_ o: PrintLayout.Options, savePDF: Bool = false) {
@@ -1227,6 +1314,11 @@ extension ExportState {
         if let v = d["ganttSelection"] as? Bool { s.gantt.selectionOnly = v }
         if let v = d["ganttPaper"] as? String { s.gantt.paper = v }
         if let v = d["xmind8"] as? Bool { s.xmind8 = v }
+        if let v = d["htmlDocument"] as? Bool { s.html.document = v }
+        if let v = d["htmlNotes"] as? Bool { s.html.notes = v }
+        if let v = d["htmlComments"] as? Bool { s.html.comments = v }
+        if let v = d["htmlAttachments"] as? Bool { s.html.attachments = v }
+        if let v = d["htmlExpanded"] as? Bool { s.html.expanded = v }
         return s
     }
 
@@ -1241,6 +1333,8 @@ extension ExportState {
             "mermaidBlock": markdown.mermaidBlock, "yaml": yaml,
             "pretty": prettyJSON, "pdfScope": pdfScope, "ganttScale": gantt.scale,
             "ganttSelection": gantt.selectionOnly, "ganttPaper": gantt.paper, "xmind8": xmind8,
+            "htmlDocument": html.document, "htmlNotes": html.notes, "htmlComments": html.comments,
+            "htmlAttachments": html.attachments, "htmlExpanded": html.expanded,
         ]
         if let t = image.theme { d["theme"] = t }
         if let f = mermaid { d["flavour"] = f.rawValue }

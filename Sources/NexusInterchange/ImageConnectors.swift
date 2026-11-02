@@ -96,6 +96,32 @@ public struct InkMap: Sendable, Equatable {
         return CGRect(x: minX, y: box.minY, width: maxX - minX, height: box.height)
     }
 
+    /// Where a line in the ink crosses `box` (in image pixels), left to right: columns whose
+    /// ink inside the box is under a third of its height tall, side by side for 1.5 box
+    /// heights or more. A connector between two topics on one row; a character's columns
+    /// are taller, or (a dash, a crossbar) not that long (D483).
+    func strokes(across box: CGRect) -> [ClosedRange<Double>] {
+        func cell(_ v: Double) -> Int { Int((v / scale).rounded(.down)) }
+        let rows = max(0, cell(box.minY))...max(0, min(height - 1, cell(box.maxY)))
+        let cols = max(0, cell(box.minX))...max(0, min(width - 1, cell(box.maxX)))
+        let thin = max(1, Int((box.height / 3 / scale).rounded(.down)))
+        var runs: [ClosedRange<Double>] = []
+        var start: Int?
+        for x in cols.lowerBound...(cols.upperBound + 1) {
+            var line = false
+            if x <= cols.upperBound, let top = rows.first(where: { self[x, $0] }),
+                let bottom = rows.last(where: { self[x, $0] })
+            {
+                line = bottom - top < thin
+            }
+            if line, start == nil { start = x }
+            guard !line, let s = start else { continue }
+            if Double(x - s) * scale >= 1.5 * box.height { runs.append(Double(s) * scale...Double(x) * scale) }
+            start = nil
+        }
+        return runs
+    }
+
     /// Whether the ink in `mark` runs out of `box` (both in image pixels): a walk over ink
     /// from inside `mark` gets at least 3 px and two cells past the box's edge. A character
     /// keeps inside the box Vision drew around its line; a connector read as one carries

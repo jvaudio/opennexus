@@ -5,6 +5,7 @@
     "review"
   ],
   "category": "security",
+  "collection": "security",
   "id": "access",
   "kicker": "MATRIX",
   "name": "Access review",

@@ -157,6 +157,15 @@ extension CommandID {
     public static let newCanvas: CommandID = "file.newCanvas"
     public static let newCanvasFromTopic: CommandID = "file.newCanvasFromTopic"
     public static let export: CommandID = "file.export"
+    public static let exportHTML: CommandID = "file.exportHTML"
+    public static let shareLink: CommandID = "file.shareLink"
+    public static let manageShareLinks: CommandID = "file.manageShareLinks"
+    public static let syncNow: CommandID = "file.syncNow"
+    public static let syncHistory: CommandID = "file.syncHistory"
+    public static let resolveConflicts: CommandID = "file.resolveConflicts"
+    public static let mergeConflictCopies: CommandID = "file.mergeConflictCopies"
+    public static let collaborate: CommandID = "file.collaborate"
+    public static let joinSession: CommandID = "file.joinSession"
     public static let mapShot: CommandID = "file.mapShot"
     public static let copyAsImage: CommandID = "file.copyAsImage"
     public static let copyAsMarkdown: CommandID = "file.copyAsMarkdown"
@@ -181,6 +190,8 @@ extension CommandID {
     public static let copyCanvas: CommandID = "canvas.copy"
     public static let pasteCanvas: CommandID = "canvas.paste"
     public static let saveCanvasAsDocument: CommandID = "canvas.saveAsDocument"
+    public static let saveCanvasAsStarter: CommandID = "canvas.saveAsStarter"
+    public static let installStarter: CommandID = "file.installStarter"
     public static let moveCanvasToWindow: CommandID = "canvas.moveToWindow"
     public static let copy: CommandID = "edit.copy"
     public static let cut: CommandID = "edit.cut"
@@ -538,6 +549,27 @@ public enum DefaultCommands {
         C(.newCanvas, "New Canvas", .file, scope: .global, keys: [k("cmd+t")], menu: .file),
         C(.newCanvasFromTopic, "New Canvas from Topic", .file, keys: [k("opt+cmd+n")], menu: .file),
         C(.export, "Export…", .file, scope: .global, keys: [k("shift+cmd+e")], menu: .file),
+        C(
+            .exportHTML, "Export as Interactive HTML…", .file, scope: .global, menu: .file,
+            note: "One file that opens in any browser, offline"),
+        C(
+            .shareLink, "Share Link…", .file, scope: .global, keys: [k("ctrl+cmd+s")], menu: .file,
+            note: "An encrypted link anyone can open in a browser"),
+        C(.manageShareLinks, "Manage Share Links…", .file, scope: .global, menu: .file),
+        C(
+            .syncNow, "Sync Now", .file, scope: .global, menu: .file, note: "Sync every library (Settings › Sync)",
+            standardAction: "syncNow:"),
+        C(.syncHistory, "Sync History…", .file, scope: .global, menu: .file),
+        C(.resolveConflicts, "Resolve Conflicts…", .file, scope: .global, menu: .file),
+        C(
+            .mergeConflictCopies, "Merge Conflicting Copies…", .file, scope: .global, menu: .file,
+            note: "Copies iCloud Drive, Dropbox or Syncthing left beside this document"),
+        C(
+            .collaborate, "Collaborate…", .file, scope: .global, keys: [k("ctrl+cmd+l")], menu: .file,
+            note: "Edit this document with others at the same time (Labs)"),
+        C(
+            .joinSession, "Join Session…", .file, scope: .global, menu: .file,
+            note: "Open a live session from an invite link"),
         C(.mapShot, "Map Shot", .file, scope: .global, keys: [k("ctrl+cmd+m")], menu: .file),
         C(.copyAsImage, "Copy as Image", .file, keys: [k("ctrl+cmd+c")], menu: .edit),
         C(.copyAsMarkdown, "Copy as Markdown", .file, menu: .edit),
@@ -568,6 +600,12 @@ public enum DefaultCommands {
         C(.copyCanvas, "Copy Canvas", .file, scope: .global, menu: .file),
         C(.pasteCanvas, "Paste Canvas", .file, scope: .global, menu: .file),
         C(.saveCanvasAsDocument, "Save Canvas as Document…", .file, scope: .global, menu: .file),
+        C(
+            .saveCanvasAsStarter, "Save Canvas as Starter…", .file, scope: .global, menu: .file,
+            note: "Keep this canvas in My Starters"),
+        C(
+            .installStarter, "Install Starter…", .file, scope: .global, menu: .file,
+            note: "A .nexusstarter file or a pack"),
         C(.moveCanvasToWindow, "Move Canvas to New Window", .file, scope: .global, menu: .file),
         C(.cut, "Cut", .edit, keys: [k("cmd+x")], menu: .edit, xmind: true, standardAction: "cut:"),
         C(.copy, "Copy", .edit, keys: [k("cmd+c")], menu: .edit, xmind: true, standardAction: "copy:"),

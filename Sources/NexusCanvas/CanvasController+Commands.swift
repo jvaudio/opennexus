@@ -2,6 +2,7 @@ import Foundation
 import NexusCore
 import NexusKeys
 import NexusLayout
+import NexusScene
 
 /// Command handlers, bound to registry ids. Anything not listed here is handled by the
 /// view (zoom, fit) or later milestones, and shows as disabled.
@@ -58,6 +59,15 @@ extension CanvasController {
             .guide: { $0.toggleGuide() },
             .setNodeType: { $0.showNodeTypeControl() },
             .export: { $0.openExport() },
+            .exportHTML: { $0.openExport(.html) },
+            .shareLink: { $0.openShareLink() },
+            .manageShareLinks: { $0.manageLinks = true },
+            .syncNow: { c in Task { await c.syncCenter.syncNow() } },
+            .syncHistory: { $0.openSyncHistory() },
+            .resolveConflicts: { $0.openResolveConflicts() },
+            .mergeConflictCopies: { $0.mergeConflictCopies() },
+            .collaborate: { $0.openCollaborate() },
+            .joinSession: { $0.openJoinSession() },
             .mapShot: { $0.openMapShot() },
             .copyAsImage: { $0.copyAsImage() },
             .copyAsMarkdown: { $0.copyAsMarkdown() },

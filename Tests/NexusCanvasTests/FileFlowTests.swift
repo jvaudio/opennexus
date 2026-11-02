@@ -8,6 +8,7 @@ import Testing
 @testable import NexusFormat
 @testable import NexusInterchange
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M7: copy and paste, paste as branch, merge, canvas tab operations, exports, Map Shot
 /// and print, on the real controller.
@@ -17,7 +18,7 @@ import Testing
 
     func harness() -> CanvasHarness {
         let h = CanvasHarness(model: launchPlanDocument())
-        h.controller.pasteboard = NSPasteboard(name: NSPasteboard.Name("nexus-test-\(UUID().uuidString)"))
+        h.controller.pasteboard = MemoryPasteboard()
         return h
     }
 

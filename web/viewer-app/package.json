@@ -1,0 +1,11 @@
+{
+  "name": "@opennexus/viewer-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "The OpenNexus viewer site (GitHub Pages): opens share links (M44).",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  }
+}

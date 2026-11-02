@@ -1,0 +1,12 @@
+{
+  "name": "@opennexus/obsidian-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OpenNexus for Obsidian (M49): maps in vaults, embeds, and notes as maps.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "vault": "cd ../.. && NEXUS_WRITE_OBSIDIAN_VAULT=1 swift test --filter ObsidianVault"
+  }
+}

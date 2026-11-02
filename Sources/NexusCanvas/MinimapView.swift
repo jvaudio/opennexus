@@ -1,5 +1,7 @@
+#if os(macOS)
 import AppKit
 import NexusCore
+import NexusScene
 
 /// The minimap (Settings › Appearance › Minimap): every topic in miniature with the
 /// visible area outlined. Click or drag to move there. Shows while panning, always, or never.
@@ -63,29 +65,6 @@ final class MinimapView: NSView {
 
     private var cache: (key: String, image: CGImage?)?
 
-    /// The topics as a bitmap in the view's (flipped) coordinates.
-    static func render(_ scene: Scene, k: CGFloat, o: CGPoint, size: CGSize, scale: CGFloat) -> CGImage? {
-        let w = Int(size.width * scale)
-        let h = Int(size.height * scale)
-        guard w > 0, h > 0,
-            let ctx = CGContext(
-                data: nil, width: w, height: h, bitsPerComponent: 8, bytesPerRow: 0,
-                space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
-        else { return nil }
-        // Flip so y grows downwards, matching the view.
-        ctx.translateBy(x: 0, y: CGFloat(h))
-        ctx.scaleBy(x: scale, y: -scale)
-        for n in scene.nodes.values {
-            let r = n.frame.rect
-            let m = CGRect(
-                x: o.x + r.minX * k, y: o.y + r.minY * k, width: max(2, r.width * k), height: max(1.5, r.height * k))
-            ctx.setFillColor(n.branchColor.cgColor.copy(alpha: 0.8) ?? n.branchColor.cgColor)
-            ctx.addPath(CGPath(roundedRect: m, cornerWidth: 1, cornerHeight: 1, transform: nil))
-            ctx.fillPath()
-        }
-        return ctx.makeImage()
-    }
-
     override func draw(_ dirtyRect: NSRect) {
         let bg = NSBezierPath(roundedRect: bounds.insetBy(dx: 0.5, dy: 0.5), xRadius: 10, yRadius: 10)
         NSColor.windowBackgroundColor.withAlphaComponent(0.92).setFill()
@@ -99,7 +78,8 @@ final class MinimapView: NSView {
         if cache?.key != key {
             cache = (
                 key,
-                Self.render(c.controller.scene, k: k, o: o, size: bounds.size, scale: window?.backingScaleFactor ?? 2)
+                Minimap.render(
+                    c.controller.scene, k: k, o: o, size: bounds.size, scale: window?.backingScaleFactor ?? 2)
             )
         }
         if let img = cache?.image, let ctx = NSGraphicsContext.current?.cgContext {
@@ -132,3 +112,4 @@ final class MinimapView: NSView {
         c.setCamera(cam, animated: false)
     }
 }
+#endif

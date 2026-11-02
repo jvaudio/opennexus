@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M27: several zones selected at once (⇧- and ⌘-click, Select All Zones) copy, cut,
 /// duplicate, delete and move together (D228); topic copy knows the document it came
@@ -19,7 +20,7 @@ import Testing
     /// "Someday" to "Pricing".
     func harness() throws -> (CanvasHarness, ideas: String, backlog: String) {
         let h = CanvasHarness(model: launchPlanDocument())
-        h.controller.pasteboard = NSPasteboard(name: NSPasteboard.Name("nexus-test-\(UUID().uuidString)"))
+        h.controller.pasteboard = MemoryPasteboard()
         let pricing = node(h, "Pricing")
         let ids = try #require(
             h.controller.perform("Zones") { e -> (String, String) in
@@ -216,7 +217,7 @@ import Testing
 
     @Test func topicPasteKeepsDependenciesOnlyInItsOwnDocument() throws {
         let h = CanvasHarness(model: taskDocument())
-        h.controller.pasteboard = NSPasteboard(name: NSPasteboard.Name("nexus-test-\(UUID().uuidString)"))
+        h.controller.pasteboard = MemoryPasteboard()
         let design = node(h, "Design")
         h.controller.select(node(h, "Build"))
         h.press("cmd+c")

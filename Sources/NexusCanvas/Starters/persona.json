@@ -1,0 +1,49 @@
+{
+  "aliases": [
+    "persona",
+    "user profile",
+    "archetype",
+    "audience"
+  ],
+  "category": "thinking",
+  "collection": "product",
+  "details": [
+    {
+      "note": "Each need answers a frustration or a goal. These are what the product must do for Sam.",
+      "topic": "Needs from us"
+    }
+  ],
+  "id": "persona",
+  "kicker": "MIND MAP",
+  "name": "Persona",
+  "note": "Fill each branch from interviews and research, not guesses. Keep the quote in the person's own words, and turn each frustration into something they need from you.",
+  "order": 65,
+  "outline": [
+    "Sam, busy parent of two",
+    "  Profile",
+    "    Aged 38, two children",
+    "    Works part-time in retail",
+    "    Lives in a small town",
+    "  Goals",
+    "    Healthy dinners on weeknights",
+    "    Less food thrown away",
+    "    One big weekly shop",
+    "  Frustrations",
+    "    Recipes need rare ingredients",
+    "    Planning takes all Sunday",
+    "    Children refuse new dishes",
+    "  Habits",
+    "    Shops on Saturday mornings",
+    "    Plans meals on the phone",
+    "    Cooks in batches",
+    "  In their words",
+    "    “I just want dinner sorted”",
+    "  Needs from us",
+    "    A week planned in minutes",
+    "    Shopping list by aisle",
+    "    Child-friendly swaps"
+  ],
+  "summary": "Goals, frustrations, habits and needs",
+  "title": "Sam, busy parent of two",
+  "type": "mindmap"
+}

@@ -1,6 +1,8 @@
+#if os(macOS)
 import AppKit
 import Carbon.HIToolbox
 import NexusKeys
+import NexusScene
 
 extension KeyChord {
     /// Maps a key event to a chord. Special keys come from the key code; letters and
@@ -72,3 +74,4 @@ extension KeyChord {
     /// Modifier mask for an `NSMenuItem` key equivalent.
     public var menuModifierMask: NSEvent.ModifierFlags { eventModifierFlags }
 }
+#endif

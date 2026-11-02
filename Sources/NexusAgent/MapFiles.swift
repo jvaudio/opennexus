@@ -3,6 +3,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// Reading and writing maps on disk for the CLI and the MCP server. Every access is
 /// coordinated (`NSFileCoordinator`), so a document open in OpenNexus notices the
@@ -32,18 +33,19 @@ public enum MapFiles {
         return try result.get()
     }
 
-    /// Writes `doc`, replacing the file. Packages get a fresh `preview.png` (never for
-    /// encrypted documents, which agents can't open anyway).
+    /// Writes `doc`, replacing the file. Packages get a fresh `preview.png` and viewer copy
+    /// (never for encrypted documents, which agents can't open anyway); `prefs` are the
+    /// app's Files settings, as the app would save.
     @MainActor
-    public static func write(_ doc: DocumentModel, to url: URL) throws {
+    public static func write(_ doc: DocumentModel, to url: URL, prefs: Preferences = .shared) throws {
         let isJSON = url.pathExtension.lowercased() == "nexusjson"
         let wrapper: FileWrapper
         if isJSON {
-            wrapper = FileWrapper(
-                regularFileWithContents: Data(DocumentJSON.export(doc, pretty: true, assets: true).utf8))
+            wrapper = FileWrapper(regularFileWithContents: Data(ViewerCopy.json(doc, pretty: true, prefs: prefs).utf8))
         } else {
             var files = NexusPackage.files(for: doc)
             if let png = HeadlessExport.previewPNG(doc) { files[NexusPackage.previewName] = png }
+            ViewerCopy.add(to: &files, doc, prefs: prefs)
             wrapper = NexusPackage.directoryWrapper(from: files)
         }
         var failure: (any Error)?

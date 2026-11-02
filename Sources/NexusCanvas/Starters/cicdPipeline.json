@@ -1,0 +1,79 @@
+{
+  "aliases": [
+    "ci/cd",
+    "pipeline",
+    "deployment",
+    "continuous integration",
+    "release"
+  ],
+  "category": "software",
+  "collection": "engineering",
+  "details": [
+    {
+      "note": "Run the build, lint and type checks in parallel to keep feedback under ten minutes.",
+      "topic": "Build and lint"
+    },
+    {
+      "edge": "No",
+      "topic": "Notify the author"
+    },
+    {
+      "edge": "Yes",
+      "note": "Build once and promote the same artefact through every stage.",
+      "topic": "Package build artefact"
+    },
+    {
+      "edge": "No",
+      "topic": "Roll back staging"
+    },
+    {
+      "edge": "Yes",
+      "note": "Send a small share of traffic to the new version and compare its error rate and latency with the old one.",
+      "topic": "Canary to 5% of traffic"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Roll out everywhere"
+    },
+    {
+      "edge": "No",
+      "topic": "Automatic rollback"
+    }
+  ],
+  "id": "cicdPipeline",
+  "kicker": "FLOW",
+  "name": "CI/CD pipeline",
+  "note": "Trace one change from merge to production. Rename the stages to match your pipeline, and keep a way back out of every check that can fail.",
+  "order": 47,
+  "outline": [
+    "Change merged to main >start",
+    "  Build and lint >process",
+    "    Run unit tests >process",
+    "      All checks pass? >decision",
+    "        Notify the author >io",
+    "          Pipeline stopped >end",
+    "        Package build artefact >process",
+    "          Push to artefact registry >io",
+    "            Deploy to staging >process",
+    "              Run smoke tests >process",
+    "                Staging healthy? >decision",
+    "                  Roll back staging >process",
+    "                  Canary to 5% of traffic >process",
+    "                    Error rate normal? >decision",
+    "                      Roll out everywhere >process",
+    "                        Publish release notes >document",
+    "                          Live in production >end",
+    "                      Automatic rollback >process",
+    "                        Page on-call engineer >end"
+  ],
+  "relationships": [
+    {
+      "from": "Roll back staging",
+      "label": "Smoke test report",
+      "to": "Notify the author"
+    }
+  ],
+  "summary": "Build, test, deploy, roll back",
+  "title": "CI/CD pipeline",
+  "type": "flowchart"
+}

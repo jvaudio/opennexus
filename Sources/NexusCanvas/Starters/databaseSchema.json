@@ -1,0 +1,76 @@
+{
+  "aliases": [
+    "database",
+    "schema",
+    "tables",
+    "erd",
+    "data model"
+  ],
+  "category": "software",
+  "collection": "engineering",
+  "details": [
+    {
+      "note": "A book can have many copies on the shelves; a loan points at a copy, not at the book.",
+      "topic": "copies"
+    },
+    {
+      "note": "One row each time a copy goes out. Index member_id and due_on to find a member's loans and overdue ones quickly.",
+      "topic": "loans"
+    },
+    {
+      "note": "Empty while the copy is still out.",
+      "topic": "returned_on · date, nullable"
+    }
+  ],
+  "id": "databaseSchema",
+  "kicker": "SCHEMA",
+  "name": "Database schema",
+  "note": "Each branch is a table and each child a column, written as name · type. Mark primary keys PK and foreign keys FK, and draw an arrow from each foreign key to the table it points at. Replace the library's tables with your own.",
+  "order": 44,
+  "outline": [
+    "Library database",
+    "  members",
+    "    member_id · uuid PK",
+    "    full_name · text",
+    "    email · text unique",
+    "    joined_on · date",
+    "  books",
+    "    book_id · uuid PK",
+    "    title · text",
+    "    author · text",
+    "    isbn · text unique",
+    "    published_year · int",
+    "  copies",
+    "    copy_id · uuid PK",
+    "    book_id · uuid FK",
+    "    shelf_mark · text",
+    "    condition · text",
+    "  loans",
+    "    loan_id · uuid PK",
+    "    copy_id · uuid FK",
+    "    member_id · uuid FK",
+    "    borrowed_on · date",
+    "    due_on · date",
+    "    returned_on · date, nullable"
+  ],
+  "relationships": [
+    {
+      "from": "book_id · uuid FK",
+      "label": "references",
+      "to": "books"
+    },
+    {
+      "from": "copy_id · uuid FK",
+      "label": "references",
+      "to": "copies"
+    },
+    {
+      "from": "member_id · uuid FK",
+      "label": "references",
+      "to": "members"
+    }
+  ],
+  "summary": "Tables, columns and keys",
+  "title": "Library database",
+  "type": "tree"
+}

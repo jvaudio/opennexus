@@ -6,6 +6,7 @@
     "handshake"
   ],
   "category": "software",
+  "collection": "engineering",
   "id": "oauth",
   "kicker": "SEQUENCE",
   "name": "OAuth handshake",

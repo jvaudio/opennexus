@@ -1,11 +1,17 @@
-import AppKit
 import NexusAI
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
+
 extension CanvasController {
-    var aiColor: Color { Color(nsColor: NSColor(cgColor: theme.ai.cgColor) ?? .systemTeal) }
+    var aiColor: Color { Color(cgColor: theme.ai.cgColor) }
 }
 
 // MARK: Ghost hints (artboard 28, under the ghosts)
@@ -60,7 +66,7 @@ struct AINoticeView: View {
                 HStack {
                     Button("Open System Settings") {
                         if let url = URL(string: "x-apple.systempreferences:com.apple.Siri-Settings.extension") {
-                            NSWorkspace.shared.open(url)
+                            PlatformOpen.url(url)
                         }
                     }
                     .buttonStyle(AIButtonStyle(fill: .black))
@@ -68,7 +74,7 @@ struct AINoticeView: View {
                 }
             }
             .padding(16)
-            .frame(width: 400, alignment: .leading)
+            .fixedWidth(400, alignment: .leading)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
             .shadow(color: .black.opacity(0.15), radius: 14, y: 6)
@@ -134,7 +140,7 @@ struct PromptBarView: View {
                             controller.submitPrompt(text)
                             text = ""
                         }
-                        .onExitCommand { controller.closePromptBar() }
+                        .onEscape { controller.closePromptBar() }
                     Keycap(text: "↩")
                 }
                 HStack(spacing: 8) {
@@ -156,10 +162,10 @@ struct PromptBarView: View {
                     Text("Results arrive as ghosts, never applied silently")
                 }
                 .font(.chrome(11.5))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.chromeSecondary)
             }
             .padding(18)
-            .frame(width: 640)
+            .fixedWidth(640)
             .background(.background, in: RoundedRectangle(cornerRadius: 14))
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(controller.aiColor.opacity(0.35), lineWidth: 1.5))
             .shadow(color: controller.aiColor.opacity(0.18), radius: 18, y: 6)
@@ -194,7 +200,7 @@ struct AIPanelView: View {
                         LabeledMenu(Loc.f("Chat: %@", chat?.title ?? Loc.t("New chat"))) {
                             ForEach(controller.chats) { c in Button(c.title) { controller.selectChat(c.id) } }
                         }
-                        .menuStyle(.borderlessButton)
+                        .borderlessMenu()
                         .fixedSize()
                         Spacer()
                         Button("+ New chat") { controller.newChat() }.buttonStyle(.plain).foregroundStyle(
@@ -229,7 +235,7 @@ struct AIPanelView: View {
                             if let busy = controller.aiBusy {
                                 HStack(spacing: 6) {
                                     ProgressView().controlSize(.small)
-                                    Text(busy + "…").foregroundStyle(.secondary)
+                                    Text(busy + "…").foregroundStyle(.chromeSecondary)
                                     Button("Stop") { controller.stopAI() }.buttonStyle(.plain).foregroundStyle(.red)
                                 }
                                 .font(.chrome(13))
@@ -255,7 +261,7 @@ struct AIPanelView: View {
                             controller.ask(draft)
                             draft = ""
                         }
-                        .onExitCommand { controller.onRestoreFocus?() }
+                        .onEscape { controller.onRestoreFocus?() }
                     if let partial = mentionQuery {
                         mentionSuggestions(partial)
                     }
@@ -269,11 +275,11 @@ struct AIPanelView: View {
                         Text("Nothing leaves this Mac")
                     }
                     .font(.chrome(12))
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.chromeSecondary)
                 }
                 .padding(16)
             }
-            .frame(width: 380)
+            .panelWidth(380)
             .frame(maxHeight: .infinity)
             .background(.background)
             .overlay(alignment: .leading) { Rectangle().fill(.separator).frame(width: 1) }
@@ -323,9 +329,9 @@ struct AIPanelView: View {
     func planCard(_ plan: ChangePlan, chat: String, index: Int, applied: Bool) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
-                Text("PROPOSED CHANGE").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.secondary)
+                Text("PROPOSED CHANGE").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.chromeSecondary)
                 Spacer()
-                Text(plan.counts()).font(.chrome(12, design: .monospaced)).foregroundStyle(.secondary)
+                Text(plan.counts()).font(.chrome(12, design: .monospaced)).foregroundStyle(.chromeSecondary)
             }
             .padding(12)
             .background(Color.secondary.opacity(0.06))
@@ -343,7 +349,7 @@ struct AIPanelView: View {
             HStack {
                 Spacer()
                 if applied {
-                    Text("Applied · ⌘Z undoes").font(.chrome(12.5)).foregroundStyle(.secondary)
+                    Text("Applied · ⌘Z undoes").font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                 } else {
                     Button(controller.previewPlan == plan ? Loc.t("Hide preview") : Loc.t("Preview on canvas")) {
                         controller.previewPlan(plan)
@@ -361,7 +367,7 @@ struct AIPanelView: View {
 
     var actions: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("ACTIONS · ALSO IN ⌘K").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.secondary)
+            Text("ACTIONS · ALSO IN ⌘K").font(.chrome(11.5, weight: .semibold)).foregroundStyle(.chromeSecondary)
             FlowLayout(spacing: 6) {
                 ForEach(AIAction.panel, id: \.self) { a in
                     Button(a.title == "Rewrite shorter" ? Loc.t("Rewrite") : a.title) { controller.runAction(a) }
@@ -416,11 +422,11 @@ struct AISheetView: View {
                 }
             }
             .padding(22)
-            .frame(width: 460)
+            .fixedWidth(460)
             .background(.background, in: RoundedRectangle(cornerRadius: 16))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(.separator))
             .shadow(color: .black.opacity(0.2), radius: 24, y: 10)
-            .onExitCommand { controller.closeAISheet() }
+            .onEscape { controller.closeAISheet() }
         }
     }
 }
@@ -434,7 +440,7 @@ private struct SheetHeader: View {
         HStack {
             Text(title).font(.chrome(17, weight: .semibold))
             Spacer()
-            Text(hint).font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
+            Text(hint).font(.chrome(11, design: .monospaced)).foregroundStyle(.chromeSecondary)
                 .padding(.horizontal, 6).padding(.vertical, 3)
                 .background(RoundedRectangle(cornerRadius: 5).stroke(.separator))
             Button {
@@ -487,7 +493,7 @@ struct TranslateSheet: View {
             Toggle("Notes", isOn: $options.notes)
             Toggle("Keep code blocks as is", isOn: $options.keepCode)
             Text("Writes a new canvas, structure and styles untouched; the original stays.")
-                .font(.chrome(12)).foregroundStyle(.secondary)
+                .font(.chrome(12)).foregroundStyle(.chromeSecondary)
             HStack {
                 Spacer()
                 if busy { ProgressView().controlSize(.small) }
@@ -529,7 +535,7 @@ struct TranslateSheet: View {
                     "Install this language pair in System Settings › General › Language & Region › Translation Languages to preview."
                 )
                 .font(.chrome(12))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.chromeSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(10)
             } else {
@@ -573,7 +579,7 @@ struct MaskSheet: View {
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: 6) {
-                    if hits.isEmpty { Text("Nothing to mask on this canvas.").foregroundStyle(.secondary) }
+                    if hits.isEmpty { Text("Nothing to mask on this canvas.").foregroundStyle(.chromeSecondary) }
                     ForEach(hits) { h in
                         Toggle(
                             isOn: Binding(
@@ -585,7 +591,7 @@ struct MaskSheet: View {
                             HStack {
                                 Text(h.text).font(.chrome(13, design: .monospaced))
                                 Spacer()
-                                Text(h.kind.title).font(.chrome(11)).foregroundStyle(.secondary)
+                                Text(h.kind.title).font(.chrome(11)).foregroundStyle(.chromeSecondary)
                             }
                         }
                     }
@@ -594,7 +600,7 @@ struct MaskSheet: View {
             .accessibilityLabel(Loc.t("Masked items"))
             .frame(maxHeight: 220)
             Text("Makes a masked copy for export, Present or sharing. You review each hit before anything is written.")
-                .font(.chrome(12)).foregroundStyle(.secondary)
+                .font(.chrome(12)).foregroundStyle(.chromeSecondary)
             HStack {
                 Spacer()
                 Button("Make masked copy") {
@@ -617,7 +623,7 @@ struct MaskSheet: View {
         return VStack(spacing: 6) {
             Text(field(c)).frame(maxWidth: .infinity, alignment: .leading).padding(10)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.07)))
-            Image(systemName: "arrow.down").foregroundStyle(.secondary).accessibilityHidden(true)
+            Image(systemName: "arrow.down").foregroundStyle(.chromeSecondary).accessibilityHidden(true)
             Text(after).frame(maxWidth: .infinity, alignment: .leading).padding(10)
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.07)))
         }
@@ -638,13 +644,13 @@ struct RemoveBackgroundSheet: View {
                 controller.closeAISheet()
             }
             if let asset = controller.canvas.nodes[node]?.image?.asset, let data = controller.store.model.assets[asset],
-                let img = NSImage(data: data)
+                let img = PlatformImage(data: data)
             {
-                Image(nsImage: img).resizable().scaledToFit().frame(height: 160).frame(maxWidth: .infinity)
+                Image(platform: img).resizable().scaledToFit().frame(height: 160).frame(maxWidth: .infinity)
             } else {
-                Text("Select a topic with an image (drag one onto a topic).").foregroundStyle(.secondary)
+                Text("Select a topic with an image (drag one onto a topic).").foregroundStyle(.chromeSecondary)
             }
-            Text("Subject lift in under a second.").font(.chrome(12)).foregroundStyle(.secondary)
+            Text("Subject lift in under a second.").font(.chrome(12)).foregroundStyle(.chromeSecondary)
             HStack {
                 if busy { ProgressView().controlSize(.small) }
                 Spacer()
@@ -692,14 +698,14 @@ struct StickerSheet: View {
             .labelsHidden()
             HStack(spacing: 10) {
                 ForEach(Array(images.enumerated()), id: \.offset) { _, d in
-                    if let img = NSImage(data: d) {
+                    if let img = PlatformImage(data: d) {
                         Button {
                             Task {
                                 await controller.applySticker(d, to: node)
                                 controller.closeAISheet()
                             }
                         } label: {
-                            Image(nsImage: img).resizable().scaledToFit().frame(width: 120, height: 120)
+                            Image(platform: img).resizable().scaledToFit().frame(width: 120, height: 120)
                                 .background(RoundedRectangle(cornerRadius: 12).fill(Color.secondary.opacity(0.1)))
                         }
                         .buttonStyle(.plain)
@@ -711,7 +717,7 @@ struct StickerSheet: View {
             Text(
                 "Prompt is pre-filled from the topic and its branch. The pick lands on the topic with its background removed."
             )
-            .font(.chrome(12)).foregroundStyle(.secondary)
+            .font(.chrome(12)).foregroundStyle(.chromeSecondary)
             HStack {
                 Spacer()
                 Button(images.isEmpty ? Loc.t("Make") : Loc.t("Make more"), action: make).buttonStyle(
@@ -767,7 +773,7 @@ struct RecordSheet: View {
                                 paused.toggle()
                             }
                             .buttonStyle(.plain)
-                            Text("·").foregroundStyle(.secondary)
+                            Text("·").foregroundStyle(.chromeSecondary)
                             Button("Stop") { stop() }.buttonStyle(.plain)
                         }
                     }
@@ -785,7 +791,7 @@ struct RecordSheet: View {
             }
             if let error { Text(error).font(.chrome(12)).foregroundStyle(.red) }
             Text("Live transcript; key points become ghosts and the full transcript goes into the root’s note.")
-                .font(.chrome(12)).foregroundStyle(.secondary)
+                .font(.chrome(12)).foregroundStyle(.chromeSecondary)
             HStack {
                 Spacer()
                 if !running {

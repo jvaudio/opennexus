@@ -7,6 +7,7 @@ import SwiftUI
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 /// Guide mode (M41): the built-in guides, the panel's state in the controller, keys per
 /// profile, the Type control, Start with Guide, and the budgets.

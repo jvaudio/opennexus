@@ -1,0 +1,42 @@
+{
+  "aliases": [
+    "cornell",
+    "note taking",
+    "class notes",
+    "study",
+    "revision"
+  ],
+  "category": "thinking",
+  "collection": "thinking",
+  "id": "cornellNotes",
+  "kicker": "MATRIX",
+  "name": "Cornell notes",
+  "note": "Write in Notes during the lesson. Afterwards add a question in Cues for each idea and a two- or three-line Summary; to revise, cover Notes and answer the cues aloud.",
+  "order": 88,
+  "outline": [
+    "Photosynthesis",
+    "  Cues",
+    "    What does chlorophyll absorb?",
+    "    Where does each stage happen?",
+    "    Where does the oxygen come from?",
+    "    What limits the rate?",
+    "  Notes",
+    "    Chlorophyll absorbs red and blue light",
+    "    Light stage in thylakoid membranes",
+    "    Water split, oxygen released",
+    "    Calvin cycle in the stroma",
+    "    Carbon dioxide fixed into glucose",
+    "    Rate levels off in bright light",
+    "  Summary",
+    "    Light energy becomes chemical energy",
+    "    Two stages: light, then Calvin",
+    "    Light, CO2 or temperature limits rate",
+    "  Review",
+    "    Cover notes, answer the cues",
+    "    Revisit after one day",
+    "    Revisit after one week"
+  ],
+  "summary": "Cues, notes and a summary",
+  "title": "Photosynthesis",
+  "type": "matrix"
+}

@@ -42,6 +42,23 @@
 			<key>NSDocumentClass</key>
 			<string>$(PRODUCT_MODULE_NAME).NexusDocument</string>
 		</dict>
+		<!-- M50: starter files are previewed and installed into My Starters, not opened as
+		     documents (AppDocumentController hands them to StarterInstaller). -->
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>OpenNexus Starter</string>
+			<key>CFBundleTypeIconFile</key>
+			<string>NexusDocument</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.opennexus.starter</string>
+				<string>com.opennexus.starters</string>
+			</array>
+		</dict>
 	</array>
 	<!-- M38: software updates through Sparkle, off until the user agrees (D275). With no
 	     SUEnableAutomaticChecks here, Sparkle asks before its first check. The app has no
@@ -152,6 +169,44 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>nexusjson</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>OpenNexus Starter</string>
+			<key>UTTypeIconFile</key>
+			<string>NexusDocument.icns</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.opennexus.starter</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>nexusstarter</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>OpenNexus Starter Pack</string>
+			<key>UTTypeIconFile</key>
+			<string>NexusDocument.icns</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.opennexus.starters</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>nexusstarters</string>
 				</array>
 			</dict>
 		</dict>

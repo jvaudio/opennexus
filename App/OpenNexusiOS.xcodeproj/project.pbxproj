@@ -1,0 +1,1224 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		08C2BB2C8EA63FEA2C3A8418 /* NexusTouchKit in Frameworks */ = {isa = PBXBuildFile; productRef = BCBE5AD3A2DDA32353B46A66 /* NexusTouchKit */; };
+		0F8800801DBEB96ECFD6A411 /* OpenNexusKit in Frameworks */ = {isa = PBXBuildFile; productRef = 7B70D040844E099BD6734341 /* OpenNexusKit */; };
+		2A5833DC272114B6EB4FFC1F /* OpenNexusKit in Frameworks */ = {isa = PBXBuildFile; productRef = 89FA73A851427403B41A4CFD /* OpenNexusKit */; };
+		32B44BE3C04DC139BBC2FC60 /* Widgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 42D9833CC154912EF370005B /* Widgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		4C7C2A0B40C7C8AC3FE10615 /* QuickLookPreview.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 8BC00FCF899E41710044A076 /* QuickLookPreview.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		59E492B013D99BD3E65D9599 /* NexusWidgetsKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5275E494A796CCC51ABE73B4 /* NexusWidgetsKit */; };
+		7269B99FAF953E7FDF2B7213 /* NexusNetKit in Frameworks */ = {isa = PBXBuildFile; productRef = FCE94C3A2E34CEC8A68D6931 /* NexusNetKit */; };
+		A451D137E2B3FC01137483D5 /* NexusShared in Frameworks */ = {isa = PBXBuildFile; productRef = EB6456BF71AC62ED2158ED2E /* NexusShared */; };
+		AA7C7B35F94B5646905AEAE1 /* NexusTouchKit in Frameworks */ = {isa = PBXBuildFile; productRef = F7A579D56995C7805D9A56A8 /* NexusTouchKit */; };
+		BB06705CD68B93FFF85C19E6 /* OpenNexusKit in Frameworks */ = {isa = PBXBuildFile; productRef = 5A000269FF747B8CCE0B264A /* OpenNexusKit */; };
+		DE39BF511510BBB3B0D6DD32 /* NexusTouchKit in Frameworks */ = {isa = PBXBuildFile; productRef = E962BB190EDA913EC306F61D /* NexusTouchKit */; };
+		E3B063B5B359764606730078 /* Share.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A1C1FA8CCF194EA87D265525 /* Share.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		F4B8D0B9CCD4433FB8B1D950 /* OpenNexusKit in Frameworks */ = {isa = PBXBuildFile; productRef = 2367ECEF38A9209978FC6B5C /* OpenNexusKit */; };
+		F514AF7EEDA5D67D33DC07B1 /* NexusTouchKit in Frameworks */ = {isa = PBXBuildFile; productRef = A52903532FE41BC58242DD8F /* NexusTouchKit */; };
+		FAB59456EBAD896CA6EEEE2A /* QuickLookThumbnail.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = FB0749EEDE6F5DABC79DCA60 /* QuickLookThumbnail.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		FB5A4B78C479FDF666FCBD4B /* NexusShared in Frameworks */ = {isa = PBXBuildFile; productRef = C67F44A2E4A6EFB6A1D28778 /* NexusShared */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		08D87D9ABC6DF2EA3119C2F7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B13A71CAF0ED602F12FBF5CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B08A8E3DDF6067E8202AF0A3;
+			remoteInfo = Share;
+		};
+		1CDD550C2CA6E531C75C2BE7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B13A71CAF0ED602F12FBF5CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5059F62BBA38BC2D89844DCE;
+			remoteInfo = OpenNexus;
+		};
+		250E6E8E7BD24632DD7837F3 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B13A71CAF0ED602F12FBF5CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 5059F62BBA38BC2D89844DCE;
+			remoteInfo = OpenNexus;
+		};
+		7D163948F84718BA740F5FB8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B13A71CAF0ED602F12FBF5CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A54E6C24D8530E1D55716A09;
+			remoteInfo = Widgets;
+		};
+		A5E0651D2CAF470CDCE6123E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B13A71CAF0ED602F12FBF5CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 36EC410822D8D512DBE2CA71;
+			remoteInfo = QuickLookPreview;
+		};
+		ADCE5C07AC17329B1285D3BF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B13A71CAF0ED602F12FBF5CE /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = B6A918D77D054A8A187ABD3D;
+			remoteInfo = QuickLookThumbnail;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		64B86B1244C460CE1E428C49 /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				4C7C2A0B40C7C8AC3FE10615 /* QuickLookPreview.appex in Embed Foundation Extensions */,
+				FAB59456EBAD896CA6EEEE2A /* QuickLookThumbnail.appex in Embed Foundation Extensions */,
+				E3B063B5B359764606730078 /* Share.appex in Embed Foundation Extensions */,
+				32B44BE3C04DC139BBC2FC60 /* Widgets.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		066E73205CEA58BBBC648263 /* QuickLookPreview.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickLookPreview.entitlements; sourceTree = "<group>"; };
+		0A017B67343F9FE98541C3FC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		203F9D05691280AFE1757705 /* Share.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Share.entitlements; sourceTree = "<group>"; };
+		33D5A6B108C82DFA5FCEDA0F /* QuickLookThumbnail.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = QuickLookThumbnail.entitlements; sourceTree = "<group>"; };
+		42D9833CC154912EF370005B /* Widgets.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = Widgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		4B8AE1BCF3684B34EFCF8243 /* OpenNexus.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpenNexus.entitlements; sourceTree = "<group>"; };
+		58D5C91323BC49D262E642E0 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8BC00FCF899E41710044A076 /* QuickLookPreview.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = QuickLookPreview.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A1C1FA8CCF194EA87D265525 /* Share.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = Share.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A4610D3AD0C88602BCC47964 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AD76124CAB8534220753CC8A /* Base.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = Base.xcconfig; path = Config/Base.xcconfig; sourceTree = "<group>"; };
+		B63A18CBA2504F53FF43FBC9 /* Widgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Widgets.entitlements; sourceTree = "<group>"; };
+		BF7A4E93BB83B4B5697B44D7 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		CA299AF5FFA71C838DA1B35B /* OpenNexus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenNexus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		E4E0C9153DCECE36B6879AF8 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F6148760F760AD7D37A61F1D /* OpenNexusiOSUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenNexusiOSUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FB0749EEDE6F5DABC79DCA60 /* QuickLookThumbnail.appex */ = {isa = PBXFileReference; explicitFileType = wrapper.app-extension; includeInIndex = 0; path = QuickLookThumbnail.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		FF787FE7FB361A2337A8B3C0 /* OpenNexusiOSTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenNexusiOSTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		0E216F72F13F9BEEE87CE8C9 /* QuickLookThumbnail */ = {isa = PBXFileSystemSynchronizedRootGroup; path = iOS/Extensions/QuickLookThumbnail; sourceTree = "<group>"; };
+		24D7FE696B6E8874DC46BBEA /* OpenNexus */ = {isa = PBXFileSystemSynchronizedRootGroup; path = iOS/OpenNexus; sourceTree = "<group>"; };
+		366CD11000D8F3F6E8F8F156 /* Tests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = iOS/Tests; sourceTree = "<group>"; };
+		3A8A47BADCEC9C394EAEBEDD /* UITests */ = {isa = PBXFileSystemSynchronizedRootGroup; path = iOS/UITests; sourceTree = "<group>"; };
+		572EF593B74ED45CD14E8779 /* Widgets */ = {isa = PBXFileSystemSynchronizedRootGroup; path = iOS/Extensions/Widgets; sourceTree = "<group>"; };
+		C5359C1E5510F60AEC932A89 /* QuickLookPreview */ = {isa = PBXFileSystemSynchronizedRootGroup; path = iOS/Extensions/QuickLookPreview; sourceTree = "<group>"; };
+		CD560828E852A0A2BED2022C /* Share */ = {isa = PBXFileSystemSynchronizedRootGroup; path = iOS/Extensions/Share; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		2DA69C550573A0FD14CA3EEF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A5833DC272114B6EB4FFC1F /* OpenNexusKit in Frameworks */,
+				08C2BB2C8EA63FEA2C3A8418 /* NexusTouchKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44AFF32EB1433497C6BBDFD8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0F8800801DBEB96ECFD6A411 /* OpenNexusKit in Frameworks */,
+				F514AF7EEDA5D67D33DC07B1 /* NexusTouchKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		49FB3B7FF7288449E4DEEDD8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4AC4F356E2AB1816E128B666 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB06705CD68B93FFF85C19E6 /* OpenNexusKit in Frameworks */,
+				AA7C7B35F94B5646905AEAE1 /* NexusTouchKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BA2C4B96552CDEE297434E48 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F4B8D0B9CCD4433FB8B1D950 /* OpenNexusKit in Frameworks */,
+				DE39BF511510BBB3B0D6DD32 /* NexusTouchKit in Frameworks */,
+				7269B99FAF953E7FDF2B7213 /* NexusNetKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C83377A8C93157A4FD0C54B3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A451D137E2B3FC01137483D5 /* NexusShared in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		C95618C1AA2A5128DB27F23F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FB5A4B78C479FDF666FCBD4B /* NexusShared in Frameworks */,
+				59E492B013D99BD3E65D9599 /* NexusWidgetsKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		137D1B3FBFCCB32B64A58BA4 /* QuickLookThumbnail */ = {
+			isa = PBXGroup;
+			children = (
+				E4E0C9153DCECE36B6879AF8 /* Info.plist */,
+				33D5A6B108C82DFA5FCEDA0F /* QuickLookThumbnail.entitlements */,
+			);
+			path = QuickLookThumbnail;
+			sourceTree = "<group>";
+		};
+		1DF4DEF594DC9427C5BA5DD5 = {
+			isa = PBXGroup;
+			children = (
+				24D7FE696B6E8874DC46BBEA /* OpenNexus */,
+				DA39E2827CE0251A55932821 /* Extensions */,
+				366CD11000D8F3F6E8F8F156 /* Tests */,
+				3A8A47BADCEC9C394EAEBEDD /* UITests */,
+				6F62444DEF9BC459860C3EB5 /* Support */,
+				AD76124CAB8534220753CC8A /* Base.xcconfig */,
+				72A287ECD7345C563AC39C44 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		5966399533E2E22E1A8C2D79 /* QuickLookPreview */ = {
+			isa = PBXGroup;
+			children = (
+				0A017B67343F9FE98541C3FC /* Info.plist */,
+				066E73205CEA58BBBC648263 /* QuickLookPreview.entitlements */,
+			);
+			path = QuickLookPreview;
+			sourceTree = "<group>";
+		};
+		6F62444DEF9BC459860C3EB5 /* Support */ = {
+			isa = PBXGroup;
+			children = (
+				58D5C91323BC49D262E642E0 /* Info.plist */,
+				4B8AE1BCF3684B34EFCF8243 /* OpenNexus.entitlements */,
+				5966399533E2E22E1A8C2D79 /* QuickLookPreview */,
+				137D1B3FBFCCB32B64A58BA4 /* QuickLookThumbnail */,
+				D689ED7BD0540CA4DC52D3A3 /* Share */,
+				92A68C23A77570CEF8579C55 /* Widgets */,
+			);
+			path = iOS/Support;
+			sourceTree = "<group>";
+		};
+		72A287ECD7345C563AC39C44 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				CA299AF5FFA71C838DA1B35B /* OpenNexus.app */,
+				8BC00FCF899E41710044A076 /* QuickLookPreview.appex */,
+				FB0749EEDE6F5DABC79DCA60 /* QuickLookThumbnail.appex */,
+				A1C1FA8CCF194EA87D265525 /* Share.appex */,
+				42D9833CC154912EF370005B /* Widgets.appex */,
+				FF787FE7FB361A2337A8B3C0 /* OpenNexusiOSTests.xctest */,
+				F6148760F760AD7D37A61F1D /* OpenNexusiOSUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		92A68C23A77570CEF8579C55 /* Widgets */ = {
+			isa = PBXGroup;
+			children = (
+				A4610D3AD0C88602BCC47964 /* Info.plist */,
+				B63A18CBA2504F53FF43FBC9 /* Widgets.entitlements */,
+			);
+			path = Widgets;
+			sourceTree = "<group>";
+		};
+		D689ED7BD0540CA4DC52D3A3 /* Share */ = {
+			isa = PBXGroup;
+			children = (
+				BF7A4E93BB83B4B5697B44D7 /* Info.plist */,
+				203F9D05691280AFE1757705 /* Share.entitlements */,
+			);
+			path = Share;
+			sourceTree = "<group>";
+		};
+		DA39E2827CE0251A55932821 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				C5359C1E5510F60AEC932A89 /* QuickLookPreview */,
+				0E216F72F13F9BEEE87CE8C9 /* QuickLookThumbnail */,
+				CD560828E852A0A2BED2022C /* Share */,
+				572EF593B74ED45CD14E8779 /* Widgets */,
+			);
+			name = Extensions;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		36EC410822D8D512DBE2CA71 /* QuickLookPreview */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 28753DE4702731A8C7EF9265 /* Build configuration list for PBXNativeTarget "QuickLookPreview" */;
+			buildPhases = (
+				972202E10D42373FBF01B7FC /* Sources */,
+				44AFF32EB1433497C6BBDFD8 /* Frameworks */,
+				B5E5FB6A409C3834060095F4 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C5359C1E5510F60AEC932A89 /* QuickLookPreview */,
+			);
+			name = QuickLookPreview;
+			packageProductDependencies = (
+				7B70D040844E099BD6734341 /* OpenNexusKit */,
+				A52903532FE41BC58242DD8F /* NexusTouchKit */,
+			);
+			productName = QuickLookPreview;
+			productReference = 8BC00FCF899E41710044A076 /* QuickLookPreview.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		5059F62BBA38BC2D89844DCE /* OpenNexus */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 759DCB8A7F595DDFCCF3B8B2 /* Build configuration list for PBXNativeTarget "OpenNexus" */;
+			buildPhases = (
+				64E8C420C915465816FD79D3 /* Sources */,
+				BA2C4B96552CDEE297434E48 /* Frameworks */,
+				8E25DF6C9ECAA3D6C760C6DA /* Resources */,
+				64B86B1244C460CE1E428C49 /* Embed Foundation Extensions */,
+				4F34BC256E4F0B12D328084E /* Localized strings */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				4B9C551A339426E71A9AE2CD /* PBXTargetDependency */,
+				66C70778EABE18731981796E /* PBXTargetDependency */,
+				34767EAC89DEF8EDCC07F445 /* PBXTargetDependency */,
+				BFB6C1ED02930594781D5D8D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				24D7FE696B6E8874DC46BBEA /* OpenNexus */,
+			);
+			name = OpenNexus;
+			packageProductDependencies = (
+				2367ECEF38A9209978FC6B5C /* OpenNexusKit */,
+				E962BB190EDA913EC306F61D /* NexusTouchKit */,
+				FCE94C3A2E34CEC8A68D6931 /* NexusNetKit */,
+			);
+			productName = OpenNexus;
+			productReference = CA299AF5FFA71C838DA1B35B /* OpenNexus.app */;
+			productType = "com.apple.product-type.application";
+		};
+		6B516D5FEB4251B8FE0650FA /* OpenNexusiOSTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B840B0FBBF61FFD43F732DE2 /* Build configuration list for PBXNativeTarget "OpenNexusiOSTests" */;
+			buildPhases = (
+				F06065B32156C9CFA617A20E /* Sources */,
+				2DA69C550573A0FD14CA3EEF /* Frameworks */,
+				6568550838A4B2E38827D9F8 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				F34A1586495A8A02D959E82B /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				366CD11000D8F3F6E8F8F156 /* Tests */,
+			);
+			name = OpenNexusiOSTests;
+			packageProductDependencies = (
+				89FA73A851427403B41A4CFD /* OpenNexusKit */,
+				BCBE5AD3A2DDA32353B46A66 /* NexusTouchKit */,
+			);
+			productName = OpenNexusiOSTests;
+			productReference = FF787FE7FB361A2337A8B3C0 /* OpenNexusiOSTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A54E6C24D8530E1D55716A09 /* Widgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1BF0D4E72FF990B119B4956E /* Build configuration list for PBXNativeTarget "Widgets" */;
+			buildPhases = (
+				8ADBA2E20FBD9F9B2B1EB008 /* Sources */,
+				C95618C1AA2A5128DB27F23F /* Frameworks */,
+				997AE20CB11081DE780658D3 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				572EF593B74ED45CD14E8779 /* Widgets */,
+			);
+			name = Widgets;
+			packageProductDependencies = (
+				C67F44A2E4A6EFB6A1D28778 /* NexusShared */,
+				5275E494A796CCC51ABE73B4 /* NexusWidgetsKit */,
+			);
+			productName = Widgets;
+			productReference = 42D9833CC154912EF370005B /* Widgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		B08A8E3DDF6067E8202AF0A3 /* Share */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 49120B7D1D148987097C1354 /* Build configuration list for PBXNativeTarget "Share" */;
+			buildPhases = (
+				4C0FC593E6200BCF57C66AD5 /* Sources */,
+				C83377A8C93157A4FD0C54B3 /* Frameworks */,
+				80BA2F5A23D14B1A006B1D24 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				CD560828E852A0A2BED2022C /* Share */,
+			);
+			name = Share;
+			packageProductDependencies = (
+				EB6456BF71AC62ED2158ED2E /* NexusShared */,
+			);
+			productName = Share;
+			productReference = A1C1FA8CCF194EA87D265525 /* Share.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		B6A918D77D054A8A187ABD3D /* QuickLookThumbnail */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = CE266299F28C18B144442987 /* Build configuration list for PBXNativeTarget "QuickLookThumbnail" */;
+			buildPhases = (
+				4D92EF92C4EC4DD99609EC57 /* Sources */,
+				4AC4F356E2AB1816E128B666 /* Frameworks */,
+				E4C02736CEAEF1A971CAECB0 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				0E216F72F13F9BEEE87CE8C9 /* QuickLookThumbnail */,
+			);
+			name = QuickLookThumbnail;
+			packageProductDependencies = (
+				5A000269FF747B8CCE0B264A /* OpenNexusKit */,
+				F7A579D56995C7805D9A56A8 /* NexusTouchKit */,
+			);
+			productName = QuickLookThumbnail;
+			productReference = FB0749EEDE6F5DABC79DCA60 /* QuickLookThumbnail.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		BE07833590BDD0B06970C5E0 /* OpenNexusiOSUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DBD5B438BA277964892DB42A /* Build configuration list for PBXNativeTarget "OpenNexusiOSUITests" */;
+			buildPhases = (
+				BA09ECDD0C834CA90E4BFDE1 /* Sources */,
+				49FB3B7FF7288449E4DEEDD8 /* Frameworks */,
+				9E66D1FAAE169C7C10C456AD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				C27EC0E26460AA7805350D68 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				3A8A47BADCEC9C394EAEBEDD /* UITests */,
+			);
+			name = OpenNexusiOSUITests;
+			packageProductDependencies = (
+			);
+			productName = OpenNexusiOSUITests;
+			productReference = F6148760F760AD7D37A61F1D /* OpenNexusiOSUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B13A71CAF0ED602F12FBF5CE /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2700;
+				LastUpgradeCheck = 2700;
+				TargetAttributes = {
+					5059F62BBA38BC2D89844DCE = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					36EC410822D8D512DBE2CA71 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					B6A918D77D054A8A187ABD3D = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					B08A8E3DDF6067E8202AF0A3 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					A54E6C24D8530E1D55716A09 = {
+						CreatedOnToolsVersion = 27.0;
+					};
+					6B516D5FEB4251B8FE0650FA = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 5059F62BBA38BC2D89844DCE;
+					};
+					BE07833590BDD0B06970C5E0 = {
+						CreatedOnToolsVersion = 27.0;
+						TestTargetID = 5059F62BBA38BC2D89844DCE;
+					};
+				};
+			};
+			buildConfigurationList = 900FB9E2A1A93E5B56E966F1 /* Build configuration list for PBXProject "OpenNexusiOS" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 1DF4DEF594DC9427C5BA5DD5;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 72A287ECD7345C563AC39C44 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5059F62BBA38BC2D89844DCE /* OpenNexus */,
+				36EC410822D8D512DBE2CA71 /* QuickLookPreview */,
+				B6A918D77D054A8A187ABD3D /* QuickLookThumbnail */,
+				B08A8E3DDF6067E8202AF0A3 /* Share */,
+				A54E6C24D8530E1D55716A09 /* Widgets */,
+				6B516D5FEB4251B8FE0650FA /* OpenNexusiOSTests */,
+				BE07833590BDD0B06970C5E0 /* OpenNexusiOSUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6568550838A4B2E38827D9F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		80BA2F5A23D14B1A006B1D24 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E25DF6C9ECAA3D6C760C6DA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		997AE20CB11081DE780658D3 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		9E66D1FAAE169C7C10C456AD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		B5E5FB6A409C3834060095F4 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E4C02736CEAEF1A971CAECB0 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		4F34BC256E4F0B12D328084E /* Localized strings */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Localized strings";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "src=\"$BUILT_PRODUCTS_DIR/OpenNexus_NexusScene.bundle\"\ndst=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH\"\nfor d in \"$src\"/*.lproj; do\n  [ -d \"$d\" ] || continue\n  mkdir -p \"$dst/$(basename \"$d\")\"\n  for f in \"$d\"/Localizable.strings \"$d\"/Localizable.stringsdict; do [ -f \"$f\" ] && cp -f \"$f\" \"$dst/$(basename \"$d\")/\"; done\ndone\nexit 0\n";
+		};
+/* End PBXShellScriptBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4C0FC593E6200BCF57C66AD5 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4D92EF92C4EC4DD99609EC57 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		64E8C420C915465816FD79D3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8ADBA2E20FBD9F9B2B1EB008 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		972202E10D42373FBF01B7FC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		BA09ECDD0C834CA90E4BFDE1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F06065B32156C9CFA617A20E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		34767EAC89DEF8EDCC07F445 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B08A8E3DDF6067E8202AF0A3 /* Share */;
+			targetProxy = 08D87D9ABC6DF2EA3119C2F7 /* PBXContainerItemProxy */;
+		};
+		4B9C551A339426E71A9AE2CD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 36EC410822D8D512DBE2CA71 /* QuickLookPreview */;
+			targetProxy = A5E0651D2CAF470CDCE6123E /* PBXContainerItemProxy */;
+		};
+		66C70778EABE18731981796E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = B6A918D77D054A8A187ABD3D /* QuickLookThumbnail */;
+			targetProxy = ADCE5C07AC17329B1285D3BF /* PBXContainerItemProxy */;
+		};
+		BFB6C1ED02930594781D5D8D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A54E6C24D8530E1D55716A09 /* Widgets */;
+			targetProxy = 7D163948F84718BA740F5FB8 /* PBXContainerItemProxy */;
+		};
+		C27EC0E26460AA7805350D68 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5059F62BBA38BC2D89844DCE /* OpenNexus */;
+			targetProxy = 1CDD550C2CA6E531C75C2BE7 /* PBXContainerItemProxy */;
+		};
+		F34A1586495A8A02D959E82B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 5059F62BBA38BC2D89844DCE /* OpenNexus */;
+			targetProxy = 250E6E8E7BD24632DD7837F3 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0BBD7BD61F111694773BC231 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.UITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				TEST_TARGET_NAME = OpenNexus;
+			};
+			name = Release;
+		};
+		17AE71977B5FAF2D9A671B8D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AD76124CAB8534220753CC8A /* Base.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_OPTIMIZATION_LEVEL = "0";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = "27.0";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = "6.0";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		1C14106EAE7224A52866EBB2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = iOS/Support/Widgets/Widgets.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOS/Support/Widgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Release;
+		};
+		2C7AEB90AB8B6813F2BC9133 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OpenNexus.app/OpenNexus";
+			};
+			name = Debug;
+		};
+		496B22FFB2F199D884E1D18F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = iOS/Support/Widgets/Widgets.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOS/Support/Widgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Debug;
+		};
+		535B69BCF112D9CA2DAE61D9 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = AD76124CAB8534220753CC8A /* Base.xcconfig */;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = "27.0";
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_VERSION = "6.0";
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		7C44FF7CF766854AEA860DB9 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.UITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				TEST_TARGET_NAME = OpenNexus;
+			};
+			name = Debug;
+		};
+		80B7A93CAD7DC30B83ADA193 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iOS/Support/OpenNexus.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOS/Support/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Image to map scans a whiteboard or a page with the camera. The picture stays on this device.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "OpenNexus records audio notes on this device. Recordings stay in your document.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Record to Map transcribes speech on this device. Nothing leaves your device.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus;
+				PRODUCT_NAME = OpenNexus;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Debug;
+		};
+		84FA8CD0F8F46B749393BD77 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = iOS/Support/QuickLookPreview/QuickLookPreview.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOS/Support/QuickLookPreview/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookPreview;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Debug;
+		};
+		9FC0C1CFB1D4F38A20F84535 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = iOS/Support/QuickLookThumbnail/QuickLookThumbnail.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOS/Support/QuickLookThumbnail/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookThumbnail;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Release;
+		};
+		A91BD56B6D1E1F0A3D5DF1CA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = iOS/Support/Share/Share.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOS/Support/Share/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Debug;
+		};
+		AED550D96F4BFA7BDA1AE2BC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OpenNexus.app/OpenNexus";
+			};
+			name = Release;
+		};
+		C2857FBD8267F6BAF00C9C8A /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = iOS/Support/Share/Share.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOS/Support/Share/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Share;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Release;
+		};
+		C52D1A07A8FDF83BF50A2025 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = iOS/Support/OpenNexus.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOS/Support/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Image to map scans a whiteboard or a page with the camera. The picture stays on this device.";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "OpenNexus records audio notes on this device. Recordings stay in your document.";
+				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "Record to Map transcribes speech on this device. Nothing leaves your device.";
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus;
+				PRODUCT_NAME = OpenNexus;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Release;
+		};
+		D1CB9492BF2AF13410409FEB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = iOS/Support/QuickLookPreview/QuickLookPreview.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOS/Support/QuickLookPreview/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookPreview;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Release;
+		};
+		DE6924A44DC448BC9368E266 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				APPLICATION_EXTENSION_API_ONLY = YES;
+				CODE_SIGN_ENTITLEMENTS = iOS/Support/QuickLookThumbnail/QuickLookThumbnail.entitlements;
+				CURRENT_PROJECT_VERSION = "1";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = iOS/Support/QuickLookThumbnail/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenNexus;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "OpenNexus contributors";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = "0.3";
+				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookThumbnail;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1BF0D4E72FF990B119B4956E /* Build configuration list for PBXNativeTarget "Widgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				496B22FFB2F199D884E1D18F /* Debug */,
+				1C14106EAE7224A52866EBB2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		28753DE4702731A8C7EF9265 /* Build configuration list for PBXNativeTarget "QuickLookPreview" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84FA8CD0F8F46B749393BD77 /* Debug */,
+				D1CB9492BF2AF13410409FEB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		49120B7D1D148987097C1354 /* Build configuration list for PBXNativeTarget "Share" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A91BD56B6D1E1F0A3D5DF1CA /* Debug */,
+				C2857FBD8267F6BAF00C9C8A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		759DCB8A7F595DDFCCF3B8B2 /* Build configuration list for PBXNativeTarget "OpenNexus" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				80B7A93CAD7DC30B83ADA193 /* Debug */,
+				C52D1A07A8FDF83BF50A2025 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		900FB9E2A1A93E5B56E966F1 /* Build configuration list for PBXProject "OpenNexusiOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				17AE71977B5FAF2D9A671B8D /* Debug */,
+				535B69BCF112D9CA2DAE61D9 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B840B0FBBF61FFD43F732DE2 /* Build configuration list for PBXNativeTarget "OpenNexusiOSTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2C7AEB90AB8B6813F2BC9133 /* Debug */,
+				AED550D96F4BFA7BDA1AE2BC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		CE266299F28C18B144442987 /* Build configuration list for PBXNativeTarget "QuickLookThumbnail" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DE6924A44DC448BC9368E266 /* Debug */,
+				9FC0C1CFB1D4F38A20F84535 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DBD5B438BA277964892DB42A /* Build configuration list for PBXNativeTarget "OpenNexusiOSUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7C44FF7CF766854AEA860DB9 /* Debug */,
+				0BBD7BD61F111694773BC231 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ..;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		2367ECEF38A9209978FC6B5C /* OpenNexusKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = OpenNexusKit;
+		};
+		5275E494A796CCC51ABE73B4 /* NexusWidgetsKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = NexusWidgetsKit;
+		};
+		5A000269FF747B8CCE0B264A /* OpenNexusKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = OpenNexusKit;
+		};
+		7B70D040844E099BD6734341 /* OpenNexusKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = OpenNexusKit;
+		};
+		89FA73A851427403B41A4CFD /* OpenNexusKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = OpenNexusKit;
+		};
+		A52903532FE41BC58242DD8F /* NexusTouchKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = NexusTouchKit;
+		};
+		BCBE5AD3A2DDA32353B46A66 /* NexusTouchKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = NexusTouchKit;
+		};
+		C67F44A2E4A6EFB6A1D28778 /* NexusShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = NexusShared;
+		};
+		E962BB190EDA913EC306F61D /* NexusTouchKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = NexusTouchKit;
+		};
+		EB6456BF71AC62ED2158ED2E /* NexusShared */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = NexusShared;
+		};
+		F7A579D56995C7805D9A56A8 /* NexusTouchKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = NexusTouchKit;
+		};
+		FCE94C3A2E34CEC8A68D6931 /* NexusNetKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = F95861779F887AB84973153D /* XCLocalSwiftPackageReference ".." */;
+			productName = NexusNetKit;
+		};
+/* End XCSwiftPackageProductDependency section */
+
+	};
+	rootObject = B13A71CAF0ED602F12FBF5CE /* Project object */;
+}

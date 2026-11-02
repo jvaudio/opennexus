@@ -1,0 +1,71 @@
+/* The front page (M47d): the pickers, the outline of a document without a viewer copy,
+   and the drop highlight. The cards are the share page's. */
+
+.open {
+  max-width: 40rem;
+  margin-bottom: 12vh;
+}
+
+.open h2 {
+  margin: 24px 0 6px;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.open a {
+  color: var(--share-accent);
+}
+
+.open-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+
+.share button.secondary {
+  border: 1px solid var(--share-line);
+  background: var(--share-bg);
+  color: var(--share-text);
+}
+
+.open .open-how {
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--share-bg);
+  color: var(--share-text);
+}
+
+.open-canvas {
+  margin: 0 0 20px;
+}
+
+.open-canvas ul {
+  margin: 0;
+  padding-inline-start: 1.25em;
+}
+
+.open-canvas > ul {
+  padding-inline-start: 0;
+  list-style: none;
+}
+
+.open-topic {
+  font-weight: 500;
+}
+
+.open .open-note {
+  margin: 2px 0 6px;
+  white-space: pre-wrap;
+  font-size: 13px;
+}
+
+.open .open-hint {
+  color: var(--share-text);
+}
+
+/* Something's being dragged over the page: it opens wherever it's dropped. */
+html.onx-dragging body {
+  outline: 3px dashed var(--share-accent);
+  outline-offset: -8px;
+}

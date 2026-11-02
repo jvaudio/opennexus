@@ -5,6 +5,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 
 /// M10: Dynamic Type for the chrome.
 @MainActor

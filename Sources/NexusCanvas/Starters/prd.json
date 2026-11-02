@@ -1,0 +1,61 @@
+{
+  "aliases": [
+    "prd",
+    "product requirements",
+    "spec",
+    "requirements",
+    "feature brief"
+  ],
+  "category": "planning",
+  "collection": "product",
+  "details": [
+    {
+      "note": "Who has the problem, and the evidence for it, before any solution.",
+      "topic": "Problem"
+    },
+    {
+      "note": "What this release won't do, so the scope stays honest.",
+      "topic": "Non-goals"
+    },
+    {
+      "note": "Mark each as must, should or could. Describe behaviour, not screens.",
+      "topic": "Requirements"
+    }
+  ],
+  "id": "prd",
+  "kicker": "LOGIC",
+  "name": "PRD outline",
+  "note": "Work top to bottom: agree the problem and goals before writing requirements. Keep each branch short enough to read in a review, and move open questions out as they're answered.",
+  "order": 66,
+  "outline": [
+    "PRD · Online repair booking",
+    "  Problem",
+    "    Customers phone during work hours",
+    "    A third of calls unanswered",
+    "  Goals",
+    "    Book a repair in two minutes",
+    "    Halve phone bookings by spring",
+    "  Non-goals",
+    "    Paying online",
+    "    Selling parts online",
+    "  Users",
+    "    Commuters with one bike",
+    "    Families with several bikes",
+    "  Requirements",
+    "    Pick a service and slot",
+    "    Text confirmation and reminder",
+    "    Calendar view for mechanics",
+    "  Success metrics",
+    "    Share of bookings made online",
+    "    No-show rate",
+    "  Open questions",
+    "    Will mechanics trust the calendar?",
+    "    How do walk-ins fit in?",
+    "  Release",
+    "    Pilot with regular customers",
+    "    Launch in the shop window"
+  ],
+  "summary": "Problem, goals, requirements, metrics",
+  "title": "PRD · Online repair booking",
+  "type": "logic"
+}

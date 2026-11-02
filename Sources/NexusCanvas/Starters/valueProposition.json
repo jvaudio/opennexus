@@ -1,0 +1,72 @@
+{
+  "aliases": [
+    "value proposition",
+    "vpc",
+    "customer profile",
+    "value map",
+    "product fit"
+  ],
+  "category": "planning",
+  "collection": "business",
+  "details": [
+    {
+      "note": "What the customer is trying to get done, in their words: tasks, problems and needs.",
+      "topic": "Customer jobs"
+    },
+    {
+      "note": "What annoys them or gets in the way before, during and after the job.",
+      "topic": "Pains"
+    },
+    {
+      "note": "The outcomes they want, including ones that would delight them.",
+      "topic": "Gains"
+    },
+    {
+      "note": "What you offer. Keep to what helps with the jobs above.",
+      "topic": "Products and services"
+    },
+    {
+      "note": "How the offer eases a specific pain in the column above.",
+      "topic": "Pain relievers"
+    },
+    {
+      "note": "How the offer produces a specific gain in the column above.",
+      "topic": "Gain creators"
+    }
+  ],
+  "id": "valueProposition",
+  "kicker": "MATRIX",
+  "name": "Value proposition",
+  "note": "Fill the top row first, the customer profile: the jobs they're trying to get done, the pains in the way and the gains they want. Then fill the bottom row, the value map, so each column fits: products for the jobs, relievers for the pains, creators for the gains.",
+  "order": 28,
+  "outline": [
+    "Dog-walking value proposition",
+    "  Customer jobs",
+    "    Keep the dog exercised",
+    "    Work full days at the office",
+    "    Know the dog is safe",
+    "  Pains",
+    "    Guilt about long days alone",
+    "    Walkers who cancel last minute",
+    "    Muddy paws on the sofa",
+    "  Gains",
+    "    A tired, happy dog",
+    "    Photos during the day",
+    "    Same walker every week",
+    "  Products and services",
+    "    Hour-long group walks",
+    "    Midday solo visits",
+    "    Booking and updates app",
+    "  Pain relievers",
+    "    No dog alone over four hours",
+    "    Backup walker guaranteed",
+    "    Towel-dry before drop-off",
+    "  Gain creators",
+    "    Off-lead runs in small groups",
+    "    Photos and route after walks",
+    "    One named walker per dog"
+  ],
+  "summary": "Customer profile meets value map",
+  "title": "Dog-walking value proposition",
+  "type": "matrix"
+}

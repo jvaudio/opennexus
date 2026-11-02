@@ -1,0 +1,123 @@
+{
+  "aliases": [
+    "serverless",
+    "functions",
+    "event-driven",
+    "faas"
+  ],
+  "category": "architecture",
+  "collection": "architecture",
+  "details": [
+    {
+      "edge": "OIDC",
+      "note": "Signs people in and issues short-lived tokens. No function handles passwords.",
+      "topic": "Sign-in service"
+    },
+    {
+      "edge": "HTTPS",
+      "note": "Checks the token, throttles each user and routes each endpoint to its own function.",
+      "topic": "API gateway"
+    },
+    {
+      "edge": "POST /uploads",
+      "note": "Returns a signed URL that's valid for five minutes, so the photo goes straight to the bucket, not through the API.",
+      "topic": "Upload URL function"
+    },
+    {
+      "edge": "GET /receipts",
+      "topic": "Receipts API function"
+    },
+    {
+      "edge": "Query",
+      "note": "A key-value table keyed by user and receipt; you pay per request, not per hour.",
+      "topic": "Receipts table"
+    },
+    {
+      "edge": "HTTPS PUT",
+      "topic": "Receipt images bucket"
+    },
+    {
+      "edge": "Object created",
+      "note": "Absorbs bursts and retries failures. After three tries a message moves to the failed scans queue.",
+      "topic": "Scan queue"
+    },
+    {
+      "edge": "Batch of 10",
+      "note": "Make it idempotent: the queue can deliver the same message twice.",
+      "topic": "Scan function"
+    },
+    {
+      "note": "Runs on each change to the table and tells the user their receipt is ready.",
+      "topic": "Notify function"
+    },
+    {
+      "edge": "HTTPS",
+      "topic": "Push service"
+    },
+    {
+      "note": "A dead-letter queue. Alert as soon as it isn't empty.",
+      "topic": "Failed scans queue"
+    },
+    {
+      "note": "Every function logs here. Trace one receipt end to end by its id.",
+      "topic": "Logs and traces"
+    }
+  ],
+  "id": "serverless",
+  "kicker": "ARCHITECTURE",
+  "name": "Serverless app",
+  "note": "Nothing here runs until an event arrives: a request, an upload or a queue message. Follow a receipt from upload to notification, replace each function with your own, and keep slow work behind the queue so the app stays quick.",
+  "order": 53,
+  "outline": [
+    "Expense receipt scanner",
+    "  Phone app >mobile",
+    "    Sign-in service >auth",
+    "    API gateway >gateway",
+    "      Upload URL function >fn",
+    "      Receipts API function >fn",
+    "        Receipts table >db",
+    "    Receipt images bucket >storage",
+    "      Scan queue >queue",
+    "        Scan function >fn",
+    "  Text recognition API >saas",
+    "  Notify function >fn",
+    "    Push service >saas",
+    "  Failed scans queue >queue",
+    "  Logs and traces >monitor"
+  ],
+  "relationships": [
+    {
+      "from": "API gateway",
+      "label": "Verify token",
+      "to": "Sign-in service"
+    },
+    {
+      "from": "Scan function",
+      "label": "HTTPS",
+      "to": "Text recognition API"
+    },
+    {
+      "from": "Scan function",
+      "label": "Write totals",
+      "to": "Receipts table"
+    },
+    {
+      "from": "Receipts table",
+      "label": "Change event",
+      "to": "Notify function"
+    },
+    {
+      "from": "Scan queue",
+      "label": "After 3 tries",
+      "to": "Failed scans queue"
+    },
+    {
+      "from": "Scan function",
+      "label": "Logs",
+      "to": "Logs and traces"
+    }
+  ],
+  "summary": "Functions triggered by events",
+  "title": "Expense receipt scanner",
+  "type": "architecture"
+}

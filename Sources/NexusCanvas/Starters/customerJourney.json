@@ -1,0 +1,58 @@
+{
+  "aliases": [
+    "customer journey",
+    "journey map",
+    "experience map",
+    "cx"
+  ],
+  "category": "thinking",
+  "collection": "product",
+  "details": [
+    {
+      "note": "The lowest point of the journey: customers can't judge price or trust before they visit.",
+      "topic": "Find a shop"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "topic": "Feeling: unsure who to trust"
+    }
+  ],
+  "id": "customerJourney",
+  "kicker": "TIMELINE",
+  "name": "Customer journey",
+  "note": "Each event is a stage, in the order the customer goes through it. Under each, note what they do, think and feel, then the opportunity it opens for you. Start with the stages where they feel worst.",
+  "order": 64,
+  "outline": [
+    "Bike repair customer journey",
+    "  Notice a problem",
+    "    Doing: hears a grinding chain",
+    "    Thinking: can I fix it myself?",
+    "    Feeling: annoyed, a bit anxious",
+    "    Opportunity: quick fix-it guides",
+    "  Find a shop",
+    "    Doing: searches for nearby shops",
+    "    Thinking: who is honest about prices?",
+    "    Feeling: unsure who to trust",
+    "    Opportunity: clear prices online",
+    "  Book a repair",
+    "    Doing: phones in a lunch break",
+    "    Thinking: how long without my bike?",
+    "    Feeling: relieved to get a slot",
+    "    Opportunity: online booking with times",
+    "  Drop off",
+    "    Doing: explains the noise",
+    "    Thinking: will they find extra work?",
+    "    Feeling: wary of surprise costs",
+    "    Opportunity: approve extras by text",
+    "  Collect and ride",
+    "    Doing: test-rides round the block",
+    "    Thinking: was it worth it?",
+    "    Feeling: pleased, it runs quietly",
+    "    Opportunity: six-month service reminder"
+  ],
+  "summary": "Stages, feelings and opportunities",
+  "title": "Bike repair customer journey",
+  "type": "timeline"
+}

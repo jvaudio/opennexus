@@ -4,6 +4,7 @@ import NexusCore
 import NexusKeys
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 /// A real canvas in an offscreen window, driven by synthesized key events through the
 /// same `keyDown` path the app uses (minus the menu bar, so the registry fallback is
@@ -20,6 +21,8 @@ final class CanvasHarness {
         store = DocumentStore(model: model)
         store.undoRegistrar = undo
         controller = CanvasController(store: store)
+        // The controller reaches the platform through its host (M47a): a memory one here.
+        controller.host = MemoryCanvasHost()
         // Themes render as named, whatever the Mac's appearance (deterministic goldens).
         let prefs = Preferences.isolated()
         prefs.set("appearance.followSystem", false)

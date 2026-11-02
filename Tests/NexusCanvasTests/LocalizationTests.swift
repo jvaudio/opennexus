@@ -6,13 +6,14 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M10: localisation scaffolding. The String Catalog holds every data-driven string
 /// (commands, Settings), and pseudo-localisation shows where text would truncate.
 @MainActor
 @Suite(.serialized) struct LocalizationTests {
     static let catalogURL = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
-        .deletingLastPathComponent().appending(path: "Sources/NexusCanvas/Resources/Localizable.xcstrings")
+        .deletingLastPathComponent().appending(path: "Sources/NexusScene/Resources/Localizable.xcstrings")
 
     /// Every string the app shows from the registry and the Settings schema, with a
     /// comment saying where it appears.
@@ -50,6 +51,9 @@ import Testing
             for i in DiagramCatalog.nodeTypes(for: d.type) { out[i.name] = out[i.name] ?? "Node type (\(d.name))" }
         }
         for c in StarterCategory.allCases { out[c.title] = out[c.title] ?? "Starter category (starter picker)" }
+        for c in StarterCollection.allCases {
+            out[c.title] = out[c.title] ?? "Starter collection (the starter picker's sidebar)"
+        }
         for s in StarterLibrary.all {
             out[s.name] = out[s.name] ?? "Starter name (Home's template shelf, starter picker)"
             out[s.summary] = out[s.summary] ?? "Starter summary (Home's template shelf, starter picker)"
@@ -117,10 +121,13 @@ import Testing
         let repo = catalogURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent()
             .deletingLastPathComponent()
         var out: [(String, String)] = []
-        for dir in ["Sources/NexusCanvas", "Sources/NexusCore", "App/OpenNexus"] {
+        for dir in [
+            "Sources/NexusCanvas", "Sources/NexusScene", "Sources/NexusCore", "Sources/NexusTouch", "App/OpenNexus",
+            "App/iOS/OpenNexus", "App/iOS/Extensions",
+        ] {
             let urls =
-                (try? FileManager.default.contentsOfDirectory(
-                    at: repo.appending(path: dir), includingPropertiesForKeys: nil)) ?? []
+                FileManager.default.enumerator(at: repo.appending(path: dir), includingPropertiesForKeys: nil)?
+                .compactMap { $0 as? URL } ?? []
             for f in urls where f.pathExtension == "swift" {
                 guard let text = try? String(contentsOf: f, encoding: .utf8) else { continue }
                 let code = text.split(separator: "\n", omittingEmptySubsequences: false)
@@ -191,7 +198,7 @@ import Testing
         #expect(Loc.n("%lld topic", "%lld topics", 2) == "2 topics")
         #expect(Loc.n("%lld topic", "%lld topics", 0) == "0 topics")
         #expect(Loc.n("%lld unknown thing", "%lld unknown things", 1) == "1 unknown thing", "falls back to English")
-        let dict = Bundle.module.url(forResource: "Localizable", withExtension: "stringsdict")  // NexusCanvas's
+        let dict = Loc.bundle.url(forResource: "Localizable", withExtension: "stringsdict")
             .flatMap { NSDictionary(contentsOf: $0) }
         #expect(dict?["%lld topics"] != nil, "the plural variants compile into the bundle's stringsdict")
     }

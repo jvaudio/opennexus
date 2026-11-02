@@ -1,10 +1,12 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusAI
 import NexusCore
 import NexusFormat
 import NexusInterchange
 import NexusKeys
 import NexusLayout
+import NexusScene
 import NexusTheme
 import Observation
 import os
@@ -44,10 +46,15 @@ let signposter = OSSignposter(subsystem: "com.opennexus.canvas", category: .poin
 @Observable
 public final class CanvasController {
     public let store: DocumentStore
-    public private(set) var canvasID: CanvasID
+    public private(set) var canvasID: CanvasID {
+        didSet { if canvasID != oldValue { presenceDidChange() } }
+    }
     public internal(set) var mode: CanvasMode = .select
     public internal(set) var selection: Selection {
-        didSet { scheduleGuideUpdate() }
+        didSet {
+            scheduleGuideUpdate()
+            if selection != oldValue { presenceDidChange() }
+        }
     }
     /// A selected non-topic element (relationship, boundary, summary, callout, zone).
     public internal(set) var selectedElement: ElementRef? {
@@ -59,7 +66,9 @@ public final class CanvasController {
     var zoneGroup: [String] = []
     /// Connect mode state (⇧⌘L).
     public internal(set) var connect: ConnectState?
-    public internal(set) var edit: EditSession?
+    public internal(set) var edit: EditSession? {
+        didSet { if edit?.node != oldValue?.node { editingDidChange() } }
+    }
     /// The slash menu (`/`), in Select mode or at the start of an empty topic.
     public internal(set) var slash: SlashState?
     /// The Convert picker (⌥⌘T).
@@ -76,7 +85,7 @@ public final class CanvasController {
     }
     public internal(set) var aiAvailability: AIAvailability = .ready
     /// Ghost suggestions under a topic (⌥Space).
-    public internal(set) var ghosts: GhostState?
+    public package(set) var ghosts: GhostState?
     /// The prompt bar (⇧⌘Space), anchored to a topic.
     public internal(set) var promptBar: PromptBarState?
     /// The AI panel and the guide share the trailing slot: opening one closes the other.
@@ -127,6 +136,49 @@ public final class CanvasController {
     /// Pictures the merge sheet is reading, by name (D191).
     @ObservationIgnored var mergeReads: [String: Task<Void, Never>] = [:]
     public internal(set) var importReport: ImportReport?
+    /// File › Share Link… (M44): the sheet, why it can't open, and Manage Share Links….
+    public internal(set) var shareState: ShareState?
+    public var shareNotice: ShareCenter.Failure?
+    public var manageLinks = false
+    @ObservationIgnored public var shareCenter: ShareCenter = .shared
+    /// The document's file, for links that update when it's saved (the app sets it).
+    @ObservationIgnored public var documentPath: String?
+    @ObservationIgnored var shareRepublish: Task<Void, Never>?
+    /// Sync (M45): Resolve Conflicts (and what waits after it), Sync History…, and
+    /// conflict copies other apps' sync left beside the document.
+    public internal(set) var resolveState: ResolveState?
+    @ObservationIgnored var resolveQueue: [ResolveState] = []
+    public internal(set) var syncHistory: SyncHistoryState?
+    public internal(set) var conflictCopies: [ConflictCopy] = []
+    @ObservationIgnored public var syncCenter: SyncCenter = .shared
+    /// Live co-editing (M46): File › Collaborate… and Join Session…, why they can't open,
+    /// and whose view this person follows.
+    public internal(set) var collabSheet: CollabSheetState?
+    public internal(set) var joinSheet: JoinSheetState?
+    public var collabNotice: CollabCenter.Failure?
+    public internal(set) var following: String?
+    /// Bumped when someone's presence changes (the toolbar's avatars follow it).
+    public internal(set) var presenceSerial = 0
+    @ObservationIgnored public var collabCenter: CollabCenter = .shared
+    /// The document's id, which sessions are kept by (the app sets it).
+    @ObservationIgnored public var documentIDProvider: (() -> String)?
+    /// The app opens a session's copy from an invite link.
+    @ObservationIgnored public var onJoinSession: ((String) -> Void)?
+    /// The app's part of a session starting (undo history) and ending.
+    @ObservationIgnored public var onCollabAttached: ((CollabSession) -> Void)?
+    @ObservationIgnored public var onCollabEnded: (() -> Void)?
+    /// The canvas redraws other people's marks; VoiceOver hears announcements.
+    @ObservationIgnored public var onPresence: (() -> Void)?
+    @ObservationIgnored public var onAnnounce: ((String) -> Void)?
+    /// The part of the canvas in view, in canvas coordinates (the view keeps it current).
+    @ObservationIgnored public var viewport: CGRect? {
+        didSet { if viewport != oldValue { presenceDidChange() } }
+    }
+    @ObservationIgnored var announcedEditors: [String] = []
+    /// Reads a conflict copy (tests replace it).
+    @ObservationIgnored public var readCopy: (ConflictCopy) throws -> DocumentModel = ConflictCopies.read
+    /// Merged copies are done with: the app resolves iCloud's versions and trashes the files.
+    @ObservationIgnored public var onConflictCopiesMerged: (([ConflictCopy]) -> Void)?
     /// File › Set Password… sheet (the app encrypts on save).
     public var passwordSheet = false
     public var documentEncrypted = false
@@ -165,8 +217,14 @@ public final class CanvasController {
     @ObservationIgnored public var rendersThemeAsNamed = false
     /// Set by the first key press; the empty-canvas hints fade then.
     public internal(set) var hasPressedKey = false
-    /// The clipboard (tests use a private pasteboard).
-    @ObservationIgnored public var pasteboard: NSPasteboard = .general
+    /// What the controller asks of the platform: the pasteboard, appearance, names and
+    /// VoiceOver (M47a).
+    @ObservationIgnored public var host: any CanvasHost = CanvasHosts.platform()
+    /// The clipboard (tests use a memory one).
+    public var pasteboard: any CanvasPasteboard {
+        get { host.pasteboard }
+        set { host.pasteboard = newValue }
+    }
     /// The app's save panel: data and a suggested file name.
     @ObservationIgnored public var onSaveFile: ((Data, String) -> Void)?
     /// Choose a folder, then write these files (split by branch).
@@ -177,6 +235,8 @@ public final class CanvasController {
     @ObservationIgnored public var onSaveDocument: ((DocumentModel, String) -> Void)?
     /// "Use a local model" and ⌘, open Settings › AI.
     @ObservationIgnored public var onOpenAISettings: (() -> Void)?
+    /// Opens Settings at a pane ("privacy", "sharing").
+    @ObservationIgnored public var onOpenSettings: ((String) -> Void)?
     /// Opens Settings › Shortcuts, recording a new key for the command (the palette's
     /// "Shortcuts › …" row).
     @ObservationIgnored public var onRebind: ((CommandID) -> Void)?
@@ -221,16 +281,11 @@ public final class CanvasController {
     public internal(set) var present: PresentState?
     public var countsVisible = false
     /// The camera zoom, for the zoom control.
-    public internal(set) var zoom: Double = 1
+    public package(set) var zoom: Double = 1
     @ObservationIgnored public var onViewMode: ((CanvasViewMode) -> Void)?
     /// The outline pane has keyboard focus (its key scope is active).
     @ObservationIgnored public var outlineFocused = false
     @ObservationIgnored public var onOutlineEditChange: ((EditSession?) -> Void)?
-    /// A topic's row in the outline, as a view and a rect in it, while the outline shows
-    /// it: popovers anchor there when the outline has focus or the canvas is hidden (D254).
-    @ObservationIgnored var outlineAnchor: ((NodeID) -> (NSView, CGRect)?)?
-    /// The same for a task's row in the Gantt, while it has focus or the canvas is hidden.
-    @ObservationIgnored var ganttAnchor: ((NodeID) -> (NSView, CGRect)?)?
     @ObservationIgnored public var onZen: ((Bool) -> Void)?
     @ObservationIgnored public var onPresent: ((Bool) -> Void)?
     /// Export the deck: "PDF", "PowerPoint", "Keynote" or "Video".
@@ -252,6 +307,8 @@ public final class CanvasController {
     @ObservationIgnored public var onSaveText: ((String, String) -> Void)?
     /// Replaces the live editor's text (slash menu picks clear their `/query`).
     @ObservationIgnored public var onEditorReplaceText: ((String) -> Void)?
+    /// Puts the editor's caret at a UTF-16 offset (`/chem`, M48).
+    @ObservationIgnored public var onEditorCaret: ((Int) -> Void)?
     public private(set) var toast: Toast?
     public var cheatSheetVisible = false
     public private(set) var scene = Scene()
@@ -263,6 +320,8 @@ public final class CanvasController {
         didSet { observePreferences() }
     }
     @ObservationIgnored var prefsObserver: (any NSObjectProtocol)?
+    /// Formulas typeset in the background redraw the canvas (M48).
+    @ObservationIgnored var mathObserver: (any NSObjectProtocol)?
     /// Bumps when preferences change (overlays read it).
     public internal(set) var prefsRevision = 0
     @ObservationIgnored public var profile: KeyProfile = .openNexus {
@@ -396,8 +455,12 @@ public final class CanvasController {
         }
         // Canvas added or removed (merge, import, delete, or their undo): stay on a canvas
         // that exists, preferring the one the change is about.
+        // Someone else's edit in a live session (M46) never moves this person to its canvas.
+        let remote = store.applyingRemote
         if patch.changesCanvasSet {
-            if store.canvas(canvasID) == nil || (patch.canvases[patch.canvasID]?.after != nil && !committingOwnPatch) {
+            if store.canvas(canvasID) == nil
+                || (patch.canvases[patch.canvasID]?.after != nil && !committingOwnPatch && !remote)
+            {
                 let target = store.canvas(patch.canvasID) != nil ? patch.canvasID : store.model.canvasOrder.first
                 if let target, target != canvasID {
                     canvasID = target
@@ -410,8 +473,9 @@ public final class CanvasController {
                 }
             }
         }
-        guard patch.canvasID == canvasID, !committingOwnPatch else { return }
-        if let s = patch.selectionAfter {
+        guard patch.canvasID == canvasID || (remote && patch.canvases[canvasID] != nil), !committingOwnPatch
+        else { return }
+        if !remote, let s = patch.selectionAfter {
             let c = canvas
             let valid = s.nodes.filter { c.nodes[$0] != nil }
             if c.nodes[s.primary] != nil {
@@ -433,7 +497,7 @@ public final class CanvasController {
         }
         rebuildScene()
         onSceneChange?(true)
-        onReveal?(selection.primary)
+        if !remote { onReveal?(selection.primary) }
     }
 
     func rebuildScene() {

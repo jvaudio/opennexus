@@ -1,6 +1,8 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusFormat
+import NexusScene
 
 /// Exports and previews without a window: the `nexus` CLI, the MCP server and the Quick
 /// Look extensions use the same offscreen canvas as the app, so every output looks
@@ -22,7 +24,8 @@ public enum HeadlessExport {
     /// belong to the app) unless `prefs` is given.
     public static func data(
         _ doc: DocumentModel, canvas: CanvasID? = nil, format: ExportFormat, scope: Scope = .canvas,
-        yaml: Bool = false, scale: Double? = nil, xmind8: Bool = false, prefs: Preferences = .isolated()
+        yaml: Bool = false, scale: Double? = nil, xmind8: Bool = false, html: ExportState.HTMLOptions? = nil,
+        prefs: Preferences = .isolated()
     ) -> Data? {
         guard let (controller, state) = setUp(doc, canvas: canvas, format: format, scope: scope, prefs: prefs) else {
             return nil
@@ -30,6 +33,7 @@ public enum HeadlessExport {
         var s = state
         s.yaml = yaml
         s.xmind8 = xmind8
+        if let html { s.html = html }
         if let scale { s.image.scale = scale }
         return controller.exportData(s)
     }
@@ -80,7 +84,9 @@ public enum HeadlessExport {
         }
         let controller = CanvasController(store: DocumentStore(model: doc), canvasID: id)
         controller.prefs = prefs
+        // The scene built with the controller followed the system's appearance.
         controller.rendersThemeAsNamed = true
+        controller.rebuildScene()
         return (controller, s)
     }
 

@@ -4,8 +4,8 @@ import NexusCore
 /// A small JSON Schema (draft 2020-12) validator covering the keywords the
 /// published `nexus.schema.json` uses: `type`, `properties`, `required`,
 /// `additionalProperties`, `patternProperties`, `items`, `enum`, `const`,
-/// `minimum`, `maximum`, `minLength`, `minItems`, `pattern`, `uniqueItems`,
-/// `$ref` (local), `anyOf`, `oneOf` and `allOf`.
+/// `minimum`, `maximum`, `minLength`, `minItems`, `maxItems`, `pattern`, `uniqueItems`,
+/// `$ref` (local), `anyOf`, `oneOf` and `allOf`; and `viewer.schema.json` (M43).
 public struct SchemaValidator: Sendable {
     public struct Issue: Equatable, Sendable, CustomStringConvertible {
         public var path: String
@@ -28,6 +28,26 @@ public struct SchemaValidator: Sendable {
             let data = try? Data(contentsOf: url),
             let json = try? CanonicalJSON.parse(data)
         else { fatalError("nexus.schema.json is missing from the NexusFormat bundle") }
+        return SchemaValidator(schema: json)
+    }()
+
+    /// The viewer bundle's schema (`viewer.schema.json`, M43): the interactive HTML
+    /// export's data and a document's viewer copy.
+    public static let viewer: SchemaValidator = {
+        guard let url = Bundle.module.url(forResource: "viewer.schema", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let json = try? CanonicalJSON.parse(data)
+        else { fatalError("viewer.schema.json is missing from the NexusFormat bundle") }
+        return SchemaValidator(schema: json)
+    }()
+
+    /// A starter's schema (`starter.schema.json`, M39): the built-ins, and the `.nexusstarter`
+    /// files people save and install (M50).
+    public static let starter: SchemaValidator = {
+        guard let url = Bundle.module.url(forResource: "starter.schema", withExtension: "json"),
+            let data = try? Data(contentsOf: url),
+            let json = try? CanonicalJSON.parse(data)
+        else { fatalError("starter.schema.json is missing from the NexusFormat bundle") }
         return SchemaValidator(schema: json)
     }()
 
@@ -158,6 +178,9 @@ public struct SchemaValidator: Sendable {
         case .array(let a):
             if let min = s["minItems"]?.doubleValue, Double(a.count) < min {
                 issues.append(Issue(path: path, message: "must have at least \(Int(min)) items"))
+            }
+            if let max = s["maxItems"]?.doubleValue, Double(a.count) > max {
+                issues.append(Issue(path: path, message: "must have at most \(Int(max)) items"))
             }
             if s["uniqueItems"]?.boolValue == true, Set(a).count != a.count {
                 issues.append(Issue(path: path, message: "items must be unique"))

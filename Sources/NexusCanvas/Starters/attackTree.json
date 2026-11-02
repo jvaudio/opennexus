@@ -5,6 +5,7 @@
     "risk"
   ],
   "category": "security",
+  "collection": "security",
   "id": "attackTree",
   "kicker": "TREE",
   "name": "Attack tree",

@@ -1,6 +1,8 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusKeys
+import NexusScene
 import NexusTheme
 
 /// Settings that change how the canvas behaves, applied live (M8).
@@ -12,6 +14,17 @@ extension CanvasController {
         ) {
             [weak self] _ in
             MainActor.assumeIsolated { self?.applyPreferences() }
+        }
+        if mathObserver == nil {
+            mathObserver = NotificationCenter.default.addObserver(
+                forName: MathEngine.didTypeset, object: nil, queue: .main
+            ) { [weak self] _ in
+                MainActor.assumeIsolated {
+                    guard let self else { return }
+                    self.rebuildScene()
+                    self.onSceneChange?(false)
+                }
+            }
         }
         applyPreferences()
     }
@@ -75,12 +88,13 @@ extension CanvasController {
         v.minFontSize = max(a, b)
         v.patterns = prefs.bool("accessibility.patterns")
         v.taskDetails = prefs.bool("editing.taskDetails")
+        v.typesetMath = prefs.bool("editing.typesetMath")
         v.today = todayDate
     }
 
     /// High Contrast replaces the theme while macOS's Increase Contrast is on.
     func contrastTheme(_ theme: Theme) -> Theme {
-        if prefs.bool("accessibility.highContrast"), NSWorkspace.shared.accessibilityDisplayShouldIncreaseContrast {
+        if prefs.bool("accessibility.highContrast"), host.increaseContrast {
             return Theme.named("highContrast")
         }
         return theme
@@ -91,7 +105,7 @@ extension CanvasController {
     func followSystemTheme(_ theme: Theme) -> Theme {
         guard present == nil, !rendersThemeAsNamed, prefs.bool("appearance.followSystem"), let pair = theme.counterpart
         else { return theme }
-        let dark = systemIsDark ?? (NSApp?.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua)
+        let dark = systemIsDark ?? host.systemIsDark
         return dark != theme.isDark ? Theme.named(pair, custom: library.themes) : theme
     }
 

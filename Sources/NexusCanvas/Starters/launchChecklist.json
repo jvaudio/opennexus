@@ -1,0 +1,103 @@
+{
+  "aliases": [
+    "launch",
+    "checklist",
+    "release",
+    "go live"
+  ],
+  "category": "planning",
+  "collection": "planning",
+  "details": [
+    {
+      "done": true,
+      "topic": "Release candidate signed off"
+    },
+    {
+      "done": true,
+      "topic": "Crash-free sessions above 99%"
+    },
+    {
+      "done": false,
+      "topic": "Feature flags checked"
+    },
+    {
+      "done": true,
+      "topic": "New screenshots"
+    },
+    {
+      "done": false,
+      "topic": "Release notes written"
+    },
+    {
+      "done": false,
+      "topic": "Privacy answers reviewed"
+    },
+    {
+      "done": false,
+      "topic": "Launch blog post"
+    },
+    {
+      "done": false,
+      "topic": "Subscriber email scheduled"
+    },
+    {
+      "done": true,
+      "topic": "Press kit ready"
+    },
+    {
+      "done": false,
+      "topic": "Help centre articles"
+    },
+    {
+      "done": false,
+      "topic": "Support team briefed"
+    },
+    {
+      "done": false,
+      "topic": "Known issues list"
+    },
+    {
+      "done": false,
+      "topic": "Staged rollout to 10%"
+    },
+    {
+      "done": false,
+      "topic": "Watch crash reports"
+    },
+    {
+      "done": false,
+      "topic": "Retro booked for Friday"
+    }
+  ],
+  "id": "launchChecklist",
+  "kicker": "CHECKLIST",
+  "name": "Launch checklist",
+  "note": "Tick each item as it's done; the launch is ready when every box is ticked. Put an owner's name in the note of anything that's slipping, and remove items that don't apply to you.",
+  "order": 82,
+  "outline": [
+    "Recipe app 2.0 launch",
+    "  Product",
+    "    Release candidate signed off",
+    "    Crash-free sessions above 99%",
+    "    Feature flags checked",
+    "  Store listing",
+    "    New screenshots",
+    "    Release notes written",
+    "    Privacy answers reviewed",
+    "  Marketing",
+    "    Launch blog post",
+    "    Subscriber email scheduled",
+    "    Press kit ready",
+    "  Support",
+    "    Help centre articles",
+    "    Support team briefed",
+    "    Known issues list",
+    "  Launch day",
+    "    Staged rollout to 10%",
+    "    Watch crash reports",
+    "    Retro booked for Friday"
+  ],
+  "summary": "Every task ticked before launch",
+  "title": "Recipe app 2.0 launch",
+  "type": "tree"
+}

@@ -1,0 +1,562 @@
+{
+  "$defs": {
+    "asset": {
+      "additionalProperties": false,
+      "description": "An image or attachment. Exports carry its bytes as base64; a document's viewer copy names it only, and the host reads it from the document's own assets.",
+      "properties": {
+        "data": {
+          "description": "The bytes, base64.",
+          "type": "string"
+        },
+        "size": {
+          "description": "Size in bytes.",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "type": {
+          "description": "The media type.",
+          "pattern": "^[a-z]+/[A-Za-z0-9.+-]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "size",
+        "type"
+      ],
+      "type": "object"
+    },
+    "attachment": {
+      "additionalProperties": false,
+      "properties": {
+        "asset": {
+          "description": "The key in assets, when the attachment is included.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "size": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
+    "canvas": {
+      "additionalProperties": false,
+      "description": "One canvas (a tab).",
+      "properties": {
+        "deck": {
+          "additionalProperties": false,
+          "description": "The canvas's deck as Present plays it (M47d): the slides that play, after the author's order, merges and skips. Document and canvas exports only.",
+          "properties": {
+            "aspect": {
+              "description": "The slides' width over their height.",
+              "exclusiveMinimum": 0,
+              "type": "number"
+            },
+            "move": {
+              "description": "How the camera moves between slides.",
+              "enum": [
+                "cut",
+                "fly",
+                "glide"
+              ],
+              "type": "string"
+            },
+            "slides": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "focus": {
+                    "description": "Topics the camera frames; the rest dims. Empty frames the whole map.",
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "highlight": {
+                    "description": "Topics the slide rings.",
+                    "items": {
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "type": "array"
+                  },
+                  "kicker": {
+                    "type": "string"
+                  },
+                  "note": {
+                    "description": "The presenter's note, when notes are included.",
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "focus",
+                  "highlight",
+                  "kicker",
+                  "title"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "aspect",
+            "move",
+            "slides"
+          ],
+          "type": "object"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "layouts": {
+          "additionalProperties": false,
+          "description": "As saved (folds as the author left them) and, when something is folded, Everything (every branch open).",
+          "properties": {
+            "expanded": {
+              "$ref": "#/$defs/layout"
+            },
+            "saved": {
+              "$ref": "#/$defs/layout"
+            }
+          },
+          "required": [
+            "saved"
+          ],
+          "type": "object"
+        },
+        "legend": {
+          "additionalProperties": false,
+          "properties": {
+            "rows": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "marker": {
+                    "type": "string"
+                  },
+                  "text": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "text"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "title": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "rows",
+            "title"
+          ],
+          "type": "object"
+        },
+        "lines": {
+          "additionalProperties": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "description": "For a bundle of Markdown (nexus bundle, M49): each topic's line in the source, counted from 1.",
+          "type": "object"
+        },
+        "outline": {
+          "description": "The canvas as a tree in outline order: the central topic, then floating topics.",
+          "items": {
+            "$ref": "#/$defs/outlineItem"
+          },
+          "type": "array"
+        },
+        "theme": {
+          "additionalProperties": false,
+          "properties": {
+            "accent": {
+              "$ref": "#/$defs/colour"
+            },
+            "canvas": {
+              "$ref": "#/$defs/colour"
+            },
+            "dark": {
+              "type": "boolean"
+            },
+            "ink": {
+              "$ref": "#/$defs/colour"
+            },
+            "ink2": {
+              "$ref": "#/$defs/colour"
+            }
+          },
+          "required": [
+            "accent",
+            "canvas",
+            "dark",
+            "ink",
+            "ink2"
+          ],
+          "type": "object"
+        },
+        "threats": {
+          "additionalProperties": false,
+          "description": "A threat model's threat table.",
+          "properties": {
+            "columns": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            "rows": {
+              "items": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            }
+          },
+          "required": [
+            "columns",
+            "rows"
+          ],
+          "type": "object"
+        },
+        "title": {
+          "type": "string"
+        },
+        "topics": {
+          "additionalProperties": {
+            "$ref": "#/$defs/topic"
+          },
+          "description": "Each topic's details, by topic id.",
+          "type": "object"
+        },
+        "type": {
+          "description": "The diagram type (nexus.schema.json's canvas type).",
+          "minLength": 1,
+          "type": "string"
+        },
+        "typeName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "layouts",
+        "outline",
+        "theme",
+        "title",
+        "topics",
+        "type",
+        "typeName"
+      ],
+      "type": "object"
+    },
+    "colour": {
+      "pattern": "^#[0-9A-F]{6}$",
+      "type": "string"
+    },
+    "comment": {
+      "additionalProperties": false,
+      "properties": {
+        "author": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "author",
+        "date",
+        "text"
+      ],
+      "type": "object"
+    },
+    "layout": {
+      "additionalProperties": false,
+      "properties": {
+        "svg": {
+          "description": "The drawing, from the app's SVG exporter with outlined text. Topics carry data-nexus-id; images name their asset in data-nexus-asset.",
+          "minLength": 1,
+          "type": "string"
+        },
+        "topics": {
+          "additionalProperties": {
+            "$ref": "#/$defs/placement"
+          },
+          "description": "Every topic the drawing shows, by id.",
+          "type": "object"
+        },
+        "viewBox": {
+          "$ref": "#/$defs/rect"
+        },
+        "zones": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "frame": {
+                "$ref": "#/$defs/rect"
+              },
+              "id": {
+                "type": "string"
+              },
+              "title": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "frame",
+              "id",
+              "title"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "svg",
+        "topics",
+        "viewBox"
+      ],
+      "type": "object"
+    },
+    "link": {
+      "additionalProperties": false,
+      "properties": {
+        "canvas": {
+          "description": "For a topic link: the canvas it points to.",
+          "type": "string"
+        },
+        "href": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "web",
+            "mail",
+            "topic",
+            "file",
+            "other"
+          ]
+        },
+        "topic": {
+          "description": "For a topic link: the topic it points to.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "href",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "outlineItem": {
+      "additionalProperties": false,
+      "properties": {
+        "children": {
+          "items": {
+            "$ref": "#/$defs/outlineItem"
+          },
+          "type": "array"
+        },
+        "folded": {
+          "type": "boolean"
+        },
+        "id": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    },
+    "placement": {
+      "additionalProperties": false,
+      "description": "Where a topic is drawn, in the SVG's coordinates.",
+      "properties": {
+        "badge": {
+          "$ref": "#/$defs/rect",
+          "description": "The +N badge of a folded topic."
+        },
+        "depth": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "frame": {
+          "$ref": "#/$defs/rect"
+        },
+        "hidden": {
+          "description": "Topics folded away under it.",
+          "minimum": 1,
+          "type": "integer"
+        },
+        "parent": {
+          "type": "string"
+        },
+        "text": {
+          "$ref": "#/$defs/rect",
+          "description": "Where its title is drawn (the invisible text layer goes here)."
+        }
+      },
+      "required": [
+        "depth",
+        "frame"
+      ],
+      "type": "object"
+    },
+    "rect": {
+      "description": "x, y, width, height.",
+      "items": {
+        "type": "number"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "type": "array"
+    },
+    "topic": {
+      "additionalProperties": false,
+      "properties": {
+        "attachments": {
+          "items": {
+            "$ref": "#/$defs/attachment"
+          },
+          "type": "array"
+        },
+        "comments": {
+          "items": {
+            "$ref": "#/$defs/comment"
+          },
+          "type": "array"
+        },
+        "fields": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "key",
+              "value"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "label": {
+          "description": "What VoiceOver says for the topic in the app.",
+          "type": "string"
+        },
+        "labels": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "link": {
+          "$ref": "#/$defs/link"
+        },
+        "markers": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "note": {
+          "type": "string"
+        },
+        "task": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        },
+        "type": {
+          "description": "The node type's name, on technical canvases.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "text"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "https://opennexus.app/schema/viewer.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "An OpenNexus viewer bundle (M43): what the interactive viewer draws. Interactive HTML exports embed one; a .nexus package's render/viewer.json and a .nexusjson file's render key hold one.",
+  "properties": {
+    "assets": {
+      "additionalProperties": {
+        "$ref": "#/$defs/asset"
+      },
+      "description": "Images and attachments by name.",
+      "type": "object"
+    },
+    "canvases": {
+      "items": {
+        "$ref": "#/$defs/canvas"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
+    "format": {
+      "const": "opennexus-viewer"
+    },
+    "lang": {
+      "description": "The language of title and strings (BCP 47).",
+      "type": "string"
+    },
+    "strings": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "description": "The viewer's own words, in the app's language.",
+      "type": "object"
+    },
+    "title": {
+      "type": "string"
+    },
+    "version": {
+      "const": 1
+    }
+  },
+  "required": [
+    "assets",
+    "canvases",
+    "format",
+    "title",
+    "version"
+  ],
+  "title": "OpenNexus viewer bundle",
+  "type": "object"
+}

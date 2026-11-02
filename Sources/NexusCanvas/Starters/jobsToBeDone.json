@@ -1,0 +1,55 @@
+{
+  "aliases": [
+    "jtbd",
+    "jobs",
+    "customer needs",
+    "switching"
+  ],
+  "category": "thinking",
+  "collection": "product",
+  "details": [
+    {
+      "note": "When the job comes up: the trigger and the circumstances.",
+      "topic": "Situation"
+    },
+    {
+      "note": "Whatever people hire for the job today, including doing nothing. These are your real competition.",
+      "topic": "Current solutions"
+    }
+  ],
+  "id": "jobsToBeDone",
+  "kicker": "BRACE MAP",
+  "name": "Jobs to be done",
+  "note": "Name the job as the progress a person wants to make, not as a feature. Fill each part from interviews, then weigh the current solutions against the outcomes they want.",
+  "order": 68,
+  "outline": [
+    "Get weeknight dinner sorted",
+    "  Situation",
+    "    Home late from work",
+    "    Hungry children waiting",
+    "  Functional job",
+    "    Decide what to cook",
+    "    Have the ingredients in",
+    "    Cook in thirty minutes",
+    "  Emotional job",
+    "    Feel in control of the week",
+    "    Avoid the 5 pm panic",
+    "  Social job",
+    "    Be seen as a good parent",
+    "    Share cooking with a partner",
+    "  Current solutions",
+    "    Takeaway twice a week",
+    "    Same five meals on repeat",
+    "    Meal kit deliveries",
+    "  Desired outcomes",
+    "    Less time deciding",
+    "    Less food thrown away",
+    "    Fewer takeaways",
+    "  Reasons to switch",
+    "    Takeaways cost too much",
+    "    Children bored of repeats"
+  ],
+  "summary": "Situation, job, outcomes, alternatives",
+  "title": "Get weeknight dinner sorted",
+  "type": "brace"
+}

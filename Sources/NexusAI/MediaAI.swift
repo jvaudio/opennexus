@@ -1,8 +1,9 @@
 import AVFoundation
-import AppKit
 import CoreImage
 import Foundation
+import ImageIO
 import ImagePlayground
+import NaturalLanguage
 import NexusCore
 import Speech
 import Translation
@@ -30,10 +31,20 @@ public enum SubjectLift {
             let ci = CIImage(cvPixelBuffer: buffer)
             let ctx = CIContext()
             guard let out = ctx.createCGImage(ci, from: ci.extent),
-                let png = NSBitmapImageRep(cgImage: out).representation(using: .png, properties: [:])
+                let png = PNG.data(out)
             else { throw NoSubject() }
             return png
         }.value
+    }
+}
+
+/// PNG bytes with ImageIO, on every platform.
+enum PNG {
+    static func data(_ image: CGImage) -> Data? {
+        let out = NSMutableData()
+        guard let dest = CGImageDestinationCreateWithData(out, "public.png" as CFString, 1, nil) else { return nil }
+        CGImageDestinationAddImage(dest, image, nil)
+        return CGImageDestinationFinalize(dest) ? out as Data : nil
     }
 }
 
@@ -64,7 +75,7 @@ public enum StickerMaker {
         let creator = try await ImageCreator()
         var out: [Data] = []
         for try await img in creator.images(for: [.text(prompt)], style: style.playground, limit: limit) {
-            if let png = NSBitmapImageRep(cgImage: img.cgImage).representation(using: .png, properties: [:]) {
+            if let png = PNG.data(img.cgImage) {
                 out.append(png)
             }
         }
@@ -80,6 +91,13 @@ public enum MapTranslator {
         public var notes = true
         public var keepCode = false
         public init() {}
+    }
+
+    /// The map's dominant language (NaturalLanguage), English when it can't tell.
+    public static func language(of c: Canvas) -> Locale.Language {
+        let r = NLLanguageRecognizer()
+        r.processString(c.nodes.values.map(\.text).joined(separator: ". "))
+        return Locale.Language(identifier: r.dominantLanguage?.rawValue ?? "en")
     }
 
     /// The strings a translation needs, in a stable order.

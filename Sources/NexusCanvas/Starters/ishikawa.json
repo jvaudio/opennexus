@@ -1,0 +1,62 @@
+{
+  "aliases": [
+    "ishikawa",
+    "6m",
+    "cause and effect",
+    "root cause",
+    "fishbone"
+  ],
+  "category": "process",
+  "collection": "process",
+  "details": [
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "note": "Confirmed: weighed doses over a week varied by 3 g.",
+      "topic": "Dose judged by eye"
+    },
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "topic": "Grinder burrs worn"
+    },
+    {
+      "note": "Once called mother nature: the conditions around the work.",
+      "topic": "Environment"
+    }
+  ],
+  "id": "ishikawa",
+  "kicker": "FISHBONE",
+  "name": "Ishikawa 6M",
+  "note": "Write the effect at the head, then brainstorm causes on each of the six bones. Ask why to add sub-causes, and flag the causes your data confirms before fixing anything.",
+  "order": 78,
+  "outline": [
+    "Inconsistent espresso shots",
+    "  People",
+    "    Uneven tamping",
+    "      No hands-on training",
+    "    Rushed at the morning peak",
+    "  Machines",
+    "    Grinder burrs worn",
+    "    Group head temperature drifts",
+    "      Descaling overdue",
+    "  Methods",
+    "    No written recipe",
+    "    Dose judged by eye",
+    "  Materials",
+    "    Beans past their best",
+    "      Large orders sit for weeks",
+    "    Hard tap water",
+    "  Measurement",
+    "    Shot time not checked",
+    "    Scales never calibrated",
+    "  Environment",
+    "    Humidity changes the grind",
+    "    Cold mornings slow warm-up"
+  ],
+  "summary": "Causes in six categories",
+  "title": "Inconsistent espresso shots",
+  "type": "fishbone"
+}

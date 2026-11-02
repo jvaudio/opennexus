@@ -7,6 +7,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M34: a rubber band selects the zones it encloses (D258); Arrange and the Format panel
 /// act on every selected zone (D259, D260); VoiceOver reads a zone with the group and

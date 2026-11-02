@@ -1,0 +1,60 @@
+{
+  "aliases": [
+    "workshop",
+    "agenda",
+    "facilitation",
+    "away day",
+    "session plan"
+  ],
+  "category": "planning",
+  "collection": "meetings",
+  "details": [
+    {
+      "note": "15 minutes. The hotel manager opens: why guest feedback matters now.",
+      "topic": "09:30 Welcome and aims"
+    },
+    {
+      "note": "60 minutes, whole group. Brown paper on the wall, sticky notes and pens.",
+      "topic": "10:00 Map the guest journey"
+    },
+    {
+      "note": "45 minutes. Each person gets three dots to vote with.",
+      "topic": "11:15 Find the pain points"
+    },
+    {
+      "note": "20 minutes. Nothing leaves the room without an owner.",
+      "topic": "12:40 Agree next steps"
+    }
+  ],
+  "id": "workshopAgenda",
+  "kicker": "TIMELINE",
+  "name": "Workshop agenda",
+  "note": "Put each session on the line in order with its start time, and list its activities and outputs under it. Leave a break at least every 90 minutes and a few spare minutes before the close.",
+  "order": 39,
+  "outline": [
+    "Guest journey workshop",
+    "  09:30 Welcome and aims",
+    "    Why we're here",
+    "    Ground rules",
+    "  09:45 Warm-up: a great stay",
+    "    Pairs share a memorable stay",
+    "  10:00 Map the guest journey",
+    "    Stages from booking to check-out",
+    "    Sticky notes per stage",
+    "  11:00 Coffee break",
+    "  11:15 Find the pain points",
+    "    Quotes from guest reviews",
+    "    Dot-vote the worst five",
+    "  12:00 Ideas for the top three",
+    "    Eight sketches in eight minutes",
+    "    Share and build on ideas",
+    "  12:40 Agree next steps",
+    "    Pick two ideas to test",
+    "    Owners and dates",
+    "  13:00 Lunch and close",
+    "    One-word check-out"
+  ],
+  "summary": "Timed sessions, start to close",
+  "title": "Guest journey workshop",
+  "type": "timeline"
+}

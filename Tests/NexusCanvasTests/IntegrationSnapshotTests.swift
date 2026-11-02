@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 @testable import NexusWidgetsUI
 
 /// Visual review of M9 against artboards 33 (Quick Capture, widgets) and 40 (Settings ›

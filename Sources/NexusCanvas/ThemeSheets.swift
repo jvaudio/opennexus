@@ -1,8 +1,14 @@
-import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 import UniformTypeIdentifiers
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// The theme builder (artboard 03): start from a theme, change font, palette, canvas,
 /// root and branch line, with a live contrast badge; export `.nexustheme` or save.
@@ -160,12 +166,12 @@ struct ThemeBuilder: View {
             }
         }
         .padding(20)
-        .frame(width: 520, height: 640)
+        .fixedWidth(520, height: 640)
     }
 
     func modeRow(_ label: String, _ key: String, _ options: [String: String]) -> some View {
         HStack {
-            Text(label).foregroundStyle(.secondary)
+            Text(label).foregroundStyle(.chromeSecondary)
             Spacer()
             Picker(
                 "",
@@ -207,13 +213,20 @@ struct ThemeBuilder: View {
     }
 
     func export() {
-        let panel = NSSavePanel()
-        panel.allowedContentTypes = [UTType(filenameExtension: ThemeCodec.fileExtension) ?? .json]
-        panel.nameFieldStringValue = (theme.name.isEmpty ? "Theme" : theme.name) + "." + ThemeCodec.fileExtension
-        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let name = (theme.name.isEmpty ? "Theme" : theme.name) + "." + ThemeCodec.fileExtension
         var t = theme
         if t.id.isEmpty { t.id = "custom-" + t.name.lowercased().replacingOccurrences(of: " ", with: "-") }
+        #if os(macOS)
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [UTType(filenameExtension: ThemeCodec.fileExtension) ?? .json]
+        panel.nameFieldStringValue = name
+        guard panel.runModal() == .OK, let url = panel.url else { return }
         try? ThemeCodec.encode(t).write(to: url)
+        #else
+        let url = FileManager.default.temporaryDirectory.appending(path: name)
+        guard (try? ThemeCodec.encode(t).write(to: url)) != nil else { return }
+        PlatformOpen.export(url)
+        #endif
     }
 }
 
@@ -242,7 +255,7 @@ struct ColourThemeEditor: View {
             Divider()
             LabeledContent("Name") { TextField("Name", text: $palette.name).textFieldStyle(.roundedBorder) }
             Text("6 BRANCH COLOURS · REORDER WITH THE ARROWS").font(.chrome(11, weight: .semibold))
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.chromeSecondary)
             HStack(spacing: 8) {
                 ForEach(Array(palette.colors.enumerated()), id: \.offset) { i, c in
                     Swatch(color: c, selected: i == selected, size: 44) {
@@ -313,7 +326,7 @@ struct ColourThemeEditor: View {
             }
         }
         .padding(20)
-        .frame(width: 440, height: 470)
+        .fixedWidth(440, height: 470)
         .onAppear { hex = palette.colors.first?.hex ?? "" }
     }
 

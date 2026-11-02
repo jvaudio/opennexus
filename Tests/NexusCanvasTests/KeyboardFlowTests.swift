@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusKeys
+@testable import NexusScene
 
 @MainActor
 @Suite(.serialized) struct KeyboardFlowTests {

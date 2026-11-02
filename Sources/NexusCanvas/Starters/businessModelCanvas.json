@@ -1,0 +1,89 @@
+{
+  "aliases": [
+    "bmc",
+    "business model",
+    "canvas",
+    "strategy"
+  ],
+  "category": "planning",
+  "collection": "business",
+  "details": [
+    {
+      "note": "Who you rely on for what you don't do yourself.",
+      "topic": "Key partners"
+    },
+    {
+      "note": "What you must do well every day to deliver the value propositions.",
+      "topic": "Key activities"
+    },
+    {
+      "note": "The people, places and things the business can't run without.",
+      "topic": "Key resources"
+    },
+    {
+      "note": "Why a customer picks you: the problem you solve for each segment.",
+      "topic": "Value propositions"
+    },
+    {
+      "note": "How you win, keep and grow each segment.",
+      "topic": "Customer relationships"
+    },
+    {
+      "note": "How customers find you, buy from you and get what they paid for.",
+      "topic": "Channels"
+    },
+    {
+      "note": "The groups you serve. Name them narrowly; two or three is plenty.",
+      "topic": "Customer segments"
+    },
+    {
+      "note": "The biggest costs, fixed and variable, that the activities and resources create.",
+      "topic": "Cost structure"
+    },
+    {
+      "note": "What each segment pays for, and how: per job, per item or per day.",
+      "topic": "Revenue streams"
+    }
+  ],
+  "id": "businessModelCanvas",
+  "kicker": "MATRIX",
+  "name": "Business model canvas",
+  "note": "Replace each block's examples with your own. Start with Customer segments and Value propositions, then fill the blocks that deliver them. Finish with Cost structure and Revenue streams, and check that they add up.",
+  "order": 26,
+  "outline": [
+    "Bike workshop business model",
+    "  Key partners",
+    "    Parts wholesaler",
+    "    Local cycling club",
+    "  Key activities",
+    "    Repairs and servicing",
+    "    Weekend bike hire",
+    "  Key resources",
+    "    Two trained mechanics",
+    "    High-street workshop",
+    "  Value propositions",
+    "    Same-day puncture repair",
+    "    Fixed-price annual service",
+    "  Customer relationships",
+    "    Service reminders by text",
+    "    Free safety checks",
+    "  Channels",
+    "    Walk-in counter",
+    "    Online booking page",
+    "  Customer segments",
+    "    Daily commuters",
+    "    Families with children",
+    "    Delivery riders",
+    "  Cost structure",
+    "    Rent and utilities",
+    "    Mechanic wages",
+    "    Spare parts stock",
+    "  Revenue streams",
+    "    Repair labour",
+    "    Parts and accessories",
+    "    Hire day passes"
+  ],
+  "summary": "Nine blocks of a business",
+  "title": "Bike workshop business model",
+  "type": "matrix"
+}

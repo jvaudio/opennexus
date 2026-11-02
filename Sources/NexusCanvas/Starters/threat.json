@@ -5,6 +5,7 @@
     "payments"
   ],
   "category": "security",
+  "collection": "security",
   "id": "threat",
   "kicker": "THREAT MODEL",
   "name": "Threat model",

@@ -3,6 +3,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 
 /// M9: a map changed on disk (an agent, the CLI, Git) arrives as one undoable edit,
 /// merged with whatever the user hasn't saved.

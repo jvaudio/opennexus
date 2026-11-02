@@ -1,0 +1,106 @@
+{
+  "aliases": [
+    "okr",
+    "objectives",
+    "key results",
+    "goals"
+  ],
+  "category": "planning",
+  "collection": "business",
+  "details": [
+    {
+      "note": "An objective: qualitative, ambitious and easy to remember.",
+      "topic": "Win the weekday lunch crowd"
+    },
+    {
+      "markers": [
+        "progress-50"
+      ],
+      "note": "A key result: a number you either hit or miss by the end of the quarter.",
+      "topic": "Lunch sales up 25%"
+    },
+    {
+      "markers": [
+        "progress-75"
+      ],
+      "topic": "300 loyalty card sign-ups"
+    },
+    {
+      "markers": [
+        "progress-25"
+      ],
+      "topic": "Lunch queue under four minutes"
+    },
+    {
+      "markers": [
+        "progress-63"
+      ],
+      "topic": "Unsold bread under 5%"
+    },
+    {
+      "markers": [
+        "progress-13"
+      ],
+      "topic": "Gross margin up to 65%"
+    },
+    {
+      "done": true,
+      "note": "An initiative: work you think will move the key result. Swap it if it doesn't.",
+      "topic": "Soup and sandwich deal"
+    },
+    {
+      "done": false,
+      "topic": "Pre-orders for office pick-up"
+    },
+    {
+      "done": true,
+      "topic": "Stamp card at the till"
+    },
+    {
+      "done": false,
+      "topic": "Second till from noon"
+    },
+    {
+      "done": true,
+      "topic": "Bake in two batches"
+    },
+    {
+      "done": false,
+      "topic": "Half-price shelf after four"
+    },
+    {
+      "done": false,
+      "topic": "Renegotiate flour contract"
+    },
+    {
+      "done": false,
+      "topic": "Drop the five slowest lines"
+    }
+  ],
+  "id": "okrTree",
+  "kicker": "OKR",
+  "name": "OKR tree",
+  "note": "Write one or two objectives in plain words, then two to four measurable key results under each. Initiatives are the work you'll try; update the progress marker on each key result every week.",
+  "order": 33,
+  "outline": [
+    "Bakery Q3 OKRs",
+    "  Win the weekday lunch crowd",
+    "    Lunch sales up 25%",
+    "      Soup and sandwich deal",
+    "      Pre-orders for office pick-up",
+    "    300 loyalty card sign-ups",
+    "      Stamp card at the till",
+    "    Lunch queue under four minutes",
+    "      Second till from noon",
+    "  Waste less, earn more",
+    "    Unsold bread under 5%",
+    "      Bake in two batches",
+    "      Half-price shelf after four",
+    "    Gross margin up to 65%",
+    "      Renegotiate flour contract",
+    "      Drop the five slowest lines"
+  ],
+  "summary": "Objectives, key results, initiatives",
+  "title": "Bakery Q3 OKRs",
+  "type": "logic"
+}

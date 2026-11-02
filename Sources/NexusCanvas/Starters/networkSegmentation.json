@@ -1,0 +1,155 @@
+{
+  "aliases": [
+    "network segmentation",
+    "subnets",
+    "vpc",
+    "firewall",
+    "dmz"
+  ],
+  "boundaries": [
+    {
+      "meaning": "vpc",
+      "title": "Clinic VPC",
+      "topics": [
+        "Edge firewall",
+        "App server A",
+        "App server B",
+        "Data firewall",
+        "Flow logs"
+      ]
+    },
+    {
+      "meaning": "subnet",
+      "title": "Public subnet",
+      "topics": [
+        "Public load balancer",
+        "Bastion host"
+      ]
+    },
+    {
+      "meaning": "subnet",
+      "title": "Private subnet",
+      "topics": [
+        "App server A",
+        "App server B"
+      ]
+    },
+    {
+      "meaning": "subnet",
+      "title": "Data subnet",
+      "topics": [
+        "Patient records database",
+        "Session cache"
+      ]
+    }
+  ],
+  "category": "architecture",
+  "collection": "architecture",
+  "details": [
+    {
+      "edge": "HTTPS",
+      "note": "The network's only route to and from the internet.",
+      "topic": "Internet gateway"
+    },
+    {
+      "edge": "HTTPS",
+      "note": "Allows 443 to the load balancer and SSH from the clinic's office address to the bastion. Everything else is dropped and logged.",
+      "topic": "Edge firewall"
+    },
+    {
+      "edge": "443 only",
+      "topic": "Public load balancer"
+    },
+    {
+      "edge": "SSH, office IP only",
+      "note": "The only way for staff to reach a server. Keys only, and every session is recorded.",
+      "topic": "Bastion host"
+    },
+    {
+      "note": "No public address. Accepts traffic only from the load balancer and the bastion.",
+      "topic": "App server A"
+    },
+    {
+      "note": "Allows database and cache traffic from the private subnet only. Nothing in the public subnet can reach patient records.",
+      "topic": "Data firewall"
+    },
+    {
+      "edge": "SQL",
+      "topic": "Patient records database"
+    },
+    {
+      "edge": "Replication",
+      "note": "In a second availability zone, inside the same data subnet rules.",
+      "topic": "Standby replica"
+    },
+    {
+      "edge": "TCP",
+      "topic": "Session cache"
+    },
+    {
+      "note": "Review denied traffic weekly: a spike usually means a scan or a rule that's wrong.",
+      "topic": "Flow logs"
+    }
+  ],
+  "id": "networkSegmentation",
+  "kicker": "ARCHITECTURE",
+  "name": "Network segmentation",
+  "note": "Each subnet is a segment with its own rules: only the public subnet faces the internet, the app servers sit in the private subnet, and patient data can be reached only from the app servers. Replace the clinic's hosts with yours and write the allowed ports on every arrow.",
+  "order": 54,
+  "outline": [
+    "Clinic booking network",
+    "  Patient browser >client",
+    "    Internet gateway >router",
+    "      Edge firewall >firewall",
+    "        Public load balancer >lb",
+    "        Bastion host >host",
+    "  Clinic IT admin >actor",
+    "  App server A >service",
+    "  App server B >service",
+    "  Data firewall >firewall",
+    "    Patient records database >db",
+    "      Standby replica >db",
+    "    Session cache >cache",
+    "  Flow logs >monitor"
+  ],
+  "relationships": [
+    {
+      "from": "Clinic IT admin",
+      "label": "SSH",
+      "to": "Internet gateway"
+    },
+    {
+      "from": "Public load balancer",
+      "label": "HTTP 8080",
+      "to": "App server A"
+    },
+    {
+      "from": "Public load balancer",
+      "label": "HTTP 8080",
+      "to": "App server B"
+    },
+    {
+      "from": "Bastion host",
+      "label": "SSH",
+      "to": "App server A"
+    },
+    {
+      "from": "App server A",
+      "label": "SQL",
+      "to": "Data firewall"
+    },
+    {
+      "from": "App server B",
+      "label": "SQL",
+      "to": "Data firewall"
+    },
+    {
+      "from": "Data firewall",
+      "label": "Denied traffic",
+      "to": "Flow logs"
+    }
+  ],
+  "summary": "Public, private and data subnets",
+  "title": "Clinic booking network",
+  "type": "architecture"
+}

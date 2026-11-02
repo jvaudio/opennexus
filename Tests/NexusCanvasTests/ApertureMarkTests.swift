@@ -3,6 +3,7 @@ import SwiftUI
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 @testable import NexusTheme
 
 /// `ApertureMark` against the brand kit (brand/BRAND.md): the spec's numbers, and pixels

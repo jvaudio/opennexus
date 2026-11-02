@@ -1,0 +1,138 @@
+{
+  "aliases": [
+    "zero trust",
+    "ztna",
+    "access proxy",
+    "zero-trust network",
+    "identity"
+  ],
+  "boundaries": [
+    {
+      "meaning": "zone",
+      "title": "Untrusted networks",
+      "topics": [
+        "Designer laptop",
+        "Contractor phone"
+      ]
+    },
+    {
+      "meaning": "zone",
+      "title": "Control plane",
+      "topics": [
+        "Policy engine",
+        "Identity provider",
+        "Device posture service"
+      ]
+    },
+    {
+      "meaning": "zone",
+      "title": "Protected apps",
+      "topics": [
+        "Project files service",
+        "Timesheet app",
+        "Code repository"
+      ]
+    }
+  ],
+  "category": "security",
+  "collection": "security",
+  "details": [
+    {
+      "note": "The only way in, from any network. It ends TLS, checks the session and asks the policy engine before forwarding anything.",
+      "topic": "Access proxy"
+    },
+    {
+      "edge": "mTLS",
+      "topic": "Project files service"
+    },
+    {
+      "edge": "HTTPS",
+      "topic": "Asset storage"
+    },
+    {
+      "edge": "mTLS",
+      "topic": "Timesheet app"
+    },
+    {
+      "edge": "SQL",
+      "topic": "Timesheet database"
+    },
+    {
+      "edge": "mTLS",
+      "note": "Apps accept connections only from the proxy, so a laptop on the office Wi-Fi gets no further than one at a café.",
+      "topic": "Code repository"
+    },
+    {
+      "note": "Rules such as: designers on a managed, up-to-date laptop may edit project files; contractors may view the review folder from any device, and nothing else.",
+      "topic": "Policy engine"
+    },
+    {
+      "edge": "Every decision",
+      "note": "Allowed and denied requests alike. Alert on a burst of denials for one person.",
+      "topic": "Access log"
+    },
+    {
+      "note": "One sign-in with multi-factor; groups decide roles. Leavers lose access everywhere at once.",
+      "topic": "Identity provider"
+    },
+    {
+      "note": "An agent on each device reports disk encryption, OS version and screen lock.",
+      "topic": "Device posture service"
+    }
+  ],
+  "id": "zeroTrust",
+  "kicker": "ARCHITECTURE",
+  "name": "Zero-trust architecture",
+  "note": "No network is trusted: every request goes through the access proxy, which asks the policy engine about this person, this device and this app, every time. Put your own apps behind the proxy and write the rule for each in the policy engine's note.",
+  "order": 62,
+  "outline": [
+    "Design agency access",
+    "  Designer laptop >client",
+    "  Contractor phone >mobile",
+    "  Access proxy >gateway",
+    "    Project files service >service",
+    "      Asset storage >storage",
+    "    Timesheet app >service",
+    "      Timesheet database >db",
+    "    Code repository >service",
+    "  Policy engine >service",
+    "    Access log >monitor",
+    "  Identity provider >auth",
+    "  Device posture service >service"
+  ],
+  "relationships": [
+    {
+      "from": "Designer laptop",
+      "label": "HTTPS",
+      "to": "Access proxy"
+    },
+    {
+      "from": "Contractor phone",
+      "label": "HTTPS",
+      "to": "Access proxy"
+    },
+    {
+      "from": "Designer laptop",
+      "label": "Posture report",
+      "to": "Device posture service"
+    },
+    {
+      "from": "Access proxy",
+      "label": "Allow request?",
+      "to": "Policy engine"
+    },
+    {
+      "from": "Policy engine",
+      "label": "Session check",
+      "to": "Identity provider"
+    },
+    {
+      "from": "Policy engine",
+      "label": "Device check",
+      "to": "Device posture service"
+    }
+  ],
+  "summary": "Verify every request, every time",
+  "title": "Design agency access",
+  "type": "architecture"
+}

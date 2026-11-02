@@ -1,7 +1,9 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// Paste and Zone where the empty-canvas menu opened (M26), as Xmind places them. ⌘V and
 /// ⌥⌘Z keep their own placement: under the selection, and around the selected floating
@@ -73,11 +75,10 @@ extension CanvasController {
     /// An image on the clipboard (what ⌘V would put on the selected topic) as a new
     /// floating topic holding it, at the point, selected, one undo step (D253).
     private func pasteImage(at point: CanvasPoint) {
-        for type in [NSPasteboard.PasteboardType.png, .tiff] {
-            guard let data = pasteboard.data(forType: type), let rep = NSBitmapImageRep(data: data),
-                let png = rep.representation(using: .png, properties: [:])
+        for type in [PasteboardType.png, .tiff] {
+            guard let data = pasteboard.data(forType: type), let (png, size) = ImageExporter.png(fromImage: data)
             else { continue }
-            let image = imageAsset(png, ext: "png", size: CGSize(width: rep.pixelsWide, height: rep.pixelsHigh))
+            let image = imageAsset(png, ext: "png", size: size)
             perform(Loc.t("Paste"), selectionAfter: { Selection($0) }) { e in
                 let id = e.addFloating(at: point, text: "")
                 e.update(id) { $0.image = image }

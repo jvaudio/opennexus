@@ -4,6 +4,7 @@ import Testing
 @testable import NexusAgent
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// M33: `nexus validate` counts in English, "1 canvas, 1 topic" (D257).
 extension CLITests {

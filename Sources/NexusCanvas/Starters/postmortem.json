@@ -1,0 +1,53 @@
+{
+  "aliases": [
+    "postmortem",
+    "post-mortem",
+    "outage",
+    "incident review",
+    "root cause"
+  ],
+  "category": "process",
+  "collection": "engineering",
+  "details": [
+    {
+      "markers": [
+        "flag-red"
+      ],
+      "note": "The trigger. Mark it, then keep asking why: the other bones explain how a small change became an outage.",
+      "topic": "Timeout cut from 30s to 3s"
+    }
+  ],
+  "id": "postmortem",
+  "kicker": "FISHBONE",
+  "name": "Postmortem",
+  "note": "The head is the outage; each bone is a kind of contributing factor, with its causes and their causes beneath. Ask why until you reach something you can change, then turn those into actions. Keep it blameless: name conditions, not people.",
+  "order": 49,
+  "outline": [
+    "Checkout down for 47 minutes",
+    "  Change",
+    "    Timeout cut from 30s to 3s",
+    "    Pushed to all regions at once",
+    "      No canary for config changes",
+    "  Code",
+    "    Retries without backoff",
+    "      Retry storm on payment calls",
+    "    No circuit breaker",
+    "  Capacity",
+    "    Connection pool exhausted",
+    "    Autoscaling too slow to help",
+    "  Dependency",
+    "    Payment provider slowed down",
+    "    No fallback payment route",
+    "  Detection",
+    "    Alerts on averages, not p99",
+    "      Spike hidden for 12 minutes",
+    "    Payment errors not on dashboard",
+    "  Response",
+    "    Rollback took 20 minutes",
+    "      Manual steps, no runbook",
+    "    Checkout not in on-call training"
+  ],
+  "summary": "Contributing factors behind an outage",
+  "title": "Checkout outage postmortem",
+  "type": "fishbone"
+}

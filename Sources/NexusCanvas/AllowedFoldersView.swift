@@ -1,5 +1,11 @@
-import AppKit
+import NexusScene
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// Settings › Integrations › Allowed folders: the only places `nexus mcp` may read,
 /// edit or write.
@@ -17,11 +23,11 @@ public struct AllowedFoldersView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Agents can read and edit maps only in these folders, and in the folders inside them.")
-                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
             List(selection: $selection) {
                 ForEach(folders, id: \.self) { f in
                     HStack(spacing: 8) {
-                        Image(systemName: "folder").foregroundStyle(.secondary)
+                        Image(systemName: "folder").foregroundStyle(.chromeSecondary)
                         Text((f as NSString).abbreviatingWithTildeInPath).lineLimit(1).truncationMode(.middle)
                     }
                     .tag(f)
@@ -29,7 +35,7 @@ public struct AllowedFoldersView: View {
             }
             .frame(minHeight: 160)
             .overlay {
-                if folders.isEmpty { Text("No folders yet").foregroundStyle(.secondary) }
+                if folders.isEmpty { Text("No folders yet").foregroundStyle(.chromeSecondary) }
             }
             HStack {
                 Button {
@@ -50,11 +56,12 @@ public struct AllowedFoldersView: View {
             }
         }
         .padding(18)
-        .frame(width: 520)
+        .fixedWidth(520)
         .onAppear { folders = AgentFolders.list(prefs) }
     }
 
     func add() {
+        #if os(macOS)
         let p = NSOpenPanel()
         p.canChooseDirectories = true
         p.canChooseFiles = false
@@ -63,6 +70,9 @@ public struct AllowedFoldersView: View {
         p.message = Loc.t("Agents can read and edit maps only in the folders you allow.")
         guard p.runModal() == .OK else { return }
         save(folders + p.urls.map(\.path))
+        #else
+        PlatformOpen.choose([.folder], multiple: true) { urls in save(folders + urls.map(\.path)) }
+        #endif
     }
 
     func save(_ list: [String]) {

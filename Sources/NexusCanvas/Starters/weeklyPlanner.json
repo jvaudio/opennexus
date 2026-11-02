@@ -1,0 +1,61 @@
+{
+  "aliases": [
+    "week",
+    "weekly",
+    "planner",
+    "agenda",
+    "diary"
+  ],
+  "category": "planning",
+  "collection": "personal",
+  "details": [
+    {
+      "done": false,
+      "topic": "Send the quarterly report"
+    },
+    {
+      "done": false,
+      "topic": "Book a dentist check-up"
+    },
+    {
+      "done": false,
+      "topic": "Plan Saturday's picnic"
+    }
+  ],
+  "id": "weeklyPlanner",
+  "kicker": "MATRIX",
+  "name": "Weekly planner",
+  "note": "Start with three priorities for the week and give each a slot on a day. Tick the priorities off as they're done, and on Sunday carry anything unfinished into next week.",
+  "order": 96,
+  "outline": [
+    "This week",
+    "  Priorities",
+    "    Send the quarterly report",
+    "    Book a dentist check-up",
+    "    Plan Saturday's picnic",
+    "  Monday",
+    "    Team meeting at ten",
+    "    Gym after work",
+    "  Tuesday",
+    "    Report first draft",
+    "    Swimming lesson at half five",
+    "  Wednesday",
+    "    Ring the dentist",
+    "    Batch-cook for the week",
+    "  Thursday",
+    "    Report review with manager",
+    "    Book club",
+    "  Friday",
+    "    Report sent by noon",
+    "    Pizza night",
+    "  Saturday",
+    "    Picnic in the park",
+    "    Food shop",
+    "  Sunday",
+    "    Long walk",
+    "    Plan next week"
+  ],
+  "summary": "Priorities and seven days",
+  "title": "This week",
+  "type": "matrix"
+}

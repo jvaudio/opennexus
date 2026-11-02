@@ -1,9 +1,15 @@
-import AppKit
 import NexusCore
 import NexusKeys
 import NexusLayout
+import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// The Format panel (⌘I): Style (selection), Map (whole canvas) and Data tabs.
 /// Every control writes through the controller, so each change is one undo step.
@@ -112,7 +118,7 @@ struct StyleTab: View {
         PanelSection(
             Loc.t("Quick style"), key: "quick",
             accessory: {
-                Text("⌃⌥1–8").font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
+                Text("⌃⌥1–8").font(.chrome(11, design: .monospaced)).foregroundStyle(.chromeSecondary)
             }
         ) {
             LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
@@ -129,7 +135,7 @@ struct StyleTab: View {
                         .background(
                             RoundedRectangle(cornerRadius: 8)
                                 .strokeBorder(
-                                    node?.quickStyle == q.id ? Color.accentColor : Color(nsColor: .separatorColor))
+                                    node?.quickStyle == q.id ? Color.accentColor : Color.separatorLine)
                         )
                         .contentShape(Rectangle())
                     }
@@ -139,7 +145,7 @@ struct StyleTab: View {
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Quick style")
             Text("Xmind’s four (Very Important, Important, Cross Out, Default) plus four for technical work.")
-                .font(.chrome(11)).foregroundStyle(Color(nsColor: .secondaryLabelColor))
+                .font(.chrome(11)).foregroundStyle(Color.secondaryLabel)
         }
     }
 
@@ -157,7 +163,7 @@ struct StyleTab: View {
                 } label: {
                     Text("Update style").font(.chrome(13)).accessibilityHidden(true)
                 }
-                .menuStyle(.borderlessButton)
+                .borderlessMenu()
                 .accessibilityLabel("Update style")
                 .padding(.vertical, 4)
                 actionRow(Loc.t("Save as Quick Style…"), "") { askingQuickName = true }
@@ -189,7 +195,7 @@ struct StyleTab: View {
             HStack {
                 Text(title).font(.chrome(13))
                 Spacer()
-                Text(keys).font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
+                Text(keys).font(.chrome(11, design: .monospaced)).foregroundStyle(.chromeSecondary)
             }
             .padding(.vertical, 4)
             .contentShape(Rectangle())
@@ -227,7 +233,7 @@ struct StyleTab: View {
         PanelSection(
             Loc.t("Shape"), key: "shape",
             accessory: {
-                Text("\(ShapeLibrary.all.count)").font(.chrome(11)).foregroundStyle(.secondary)
+                Text("\(ShapeLibrary.all.count)").font(.chrome(11)).foregroundStyle(.chromeSecondary)
             }
         ) {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 8), spacing: 6) {
@@ -367,7 +373,7 @@ struct StyleTab: View {
                 ) {
                     ForEach(Self.fonts, id: \.0) { Text($0.1).tag($0.0) }
                     Divider()
-                    ForEach(NSFontManager.shared.availableFontFamilies.prefix(40), id: \.self) { Text($0).tag($0) }
+                    ForEach(PlatformFonts.families.prefix(40), id: \.self) { Text($0).tag($0) }
                 }
                 .labelsHidden()
                 Picker(
@@ -402,7 +408,7 @@ struct StyleTab: View {
                         get: { style.autoContrast ?? true },
                         set: { v in set(Loc.t("Auto Contrast")) { $0.autoContrast = v } })
                 )
-                .toggleStyle(.checkbox)
+                .checkboxToggle()
                 .font(.chrome(13))
             }
             HStack(spacing: 0) {
@@ -609,7 +615,7 @@ struct StyleTab: View {
                         Text("Follow branch").font(.chrome(13))
                     }
                 }
-                .toggleStyle(.checkbox)
+                .checkboxToggle()
                 Spacer()
                 Picker(
                     "",
@@ -666,7 +672,7 @@ struct StyleTab: View {
                 .accessibilityLabel(Loc.t("Level gap"))
             }
             Divider().padding(.vertical, 4)
-            Text("UPDATE STYLE").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+            Text("UPDATE STYLE").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
             VStack(alignment: .leading, spacing: 2) {
                 let depth = controller.canvas.depth(of: controller.selection.primary)
                 actionRow(Loc.t("Apply to siblings"), "") { controller.updateStyle(.siblings) }
@@ -698,7 +704,7 @@ struct QuickGlyph: View {
             .overlay(
                 RoundedRectangle(cornerRadius: 5)
                     .strokeBorder(
-                        border?.color ?? Color(nsColor: .separatorColor),
+                        border?.color ?? Color.separatorLine,
                         style: StrokeStyle(
                             lineWidth: border == nil ? 0.5 : 1.5,
                             dash: quick.style.border == "dashed" ? [3, 2] : [])))

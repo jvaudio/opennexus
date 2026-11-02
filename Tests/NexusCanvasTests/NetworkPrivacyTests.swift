@@ -1,8 +1,15 @@
 import Foundation
 import Testing
 
-/// README §12: "Network traffic with default settings: none". OpenNexus has no network
-/// code and no network entitlement, so the sandbox blocks any connection outright.
+@testable import NexusCanvas
+@testable import NexusFormat
+@testable import NexusScene
+
+/// README §12: "Network traffic with default settings: none". The network rule (D313):
+/// OpenNexus itself has no network code and no network entitlement, so the sandbox blocks
+/// any connection outright. The one exception is `OpenNexusNet.xpc` (M44), which alone has
+/// the entitlement and the request code, connects only to hosts each job allows, and does
+/// nothing until Privacy & Data › Network is turned on.
 @Suite struct NetworkPrivacyTests {
     static let repo = URL(fileURLWithPath: #filePath).deletingLastPathComponent().deletingLastPathComponent()
         .deletingLastPathComponent()
@@ -19,21 +26,159 @@ import Testing
             "CFSocket", "CFStream", "getaddrinfo", "XMLHttpRequest", "fetch(", "PrivateCloudCompute",
         ]
         var hits: [String] = []
+        var service: [String] = []
         for f in NetworkPrivacyTests.files(under: "Sources", ext: ["swift"])
             + NetworkPrivacyTests.files(under: "App", ext: ["swift", "js"])
         {
             let text = try String(contentsOf: f, encoding: .utf8)
+            // The network service's own code (M44) is the exception.
+            if f.path.contains("/Sources/NexusNet/") {
+                service += banned.filter { text.contains($0) }
+                continue
+            }
             for b in banned where text.contains(b) { hits.append("\(f.lastPathComponent): \(b)") }
         }
         #expect(hits.isEmpty, "networking code: \(hits)")
+        #expect(service.contains("URLSession"), "the service's requests are where the test expects them")
     }
 
-    @Test func noTargetHasANetworkEntitlement() throws {
+    /// Only the network service links the network code: not the app, its extensions or the CLI.
+    @Test func onlyTheServiceLinksTheNetworkCode() throws {
+        // In the package: its own product, and test targets; no other target depends on it.
+        let package = try String(contentsOf: NetworkPrivacyTests.repo.appending(path: "Package.swift"), encoding: .utf8)
+        // Each product and target declaration whole, however it's wrapped.
+        let uses = package.components(separatedBy: "\n        .").filter { $0.contains("\"NexusNet\"") }.map {
+            $0.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.joined(separator: " ")
+        }
+        // The product, the target, and three test targets (canvas, network, sync).
+        #expect(uses.count == 5, "\(uses)")
+        for u in uses {
+            #expect(
+                u.hasPrefix("library(name: \"NexusNetKit\"") || u.hasPrefix("target(name: \"NexusNet\"")
+                    || (u.hasPrefix("testTarget(") && u.contains("Tests\"")), "\(u)")
+        }
+        // In the app's project: only the service target takes the product.
+        let project = try String(
+            contentsOf: NetworkPrivacyTests.repo.appending(path: "App/tools/make_project.py"), encoding: .utf8)
+        #expect(project.components(separatedBy: "\"NexusNetKit\"").count == 2, "one target uses NexusNetKit")
+        let service = try #require(project.range(of: "name=\"OpenNexusNet\""))
+        #expect(project[service.lowerBound...].prefix(400).contains("packages=[\"NexusNetKit\"]"))
+        // Nothing the app links imports it.
+        for f in NetworkPrivacyTests.files(under: "Sources", ext: ["swift"])
+            + NetworkPrivacyTests.files(under: "App/OpenNexus", ext: ["swift"])
+            + NetworkPrivacyTests.files(under: "App/Extensions", ext: ["swift"])
+        where !f.path.contains("/Sources/NexusNet/") {
+            let text = try String(contentsOf: f, encoding: .utf8)
+            #expect(!text.contains("import NexusNet"), "\(f.lastPathComponent) imports the network code")
+        }
+    }
+
+    /// The iPad (M47b): iOS has no XPC services for apps, so NexusNet runs in the app's own
+    /// process behind one adapter. Only that file imports it, only the app's target links
+    /// it (not the extensions), nothing loosens App Transport Security, the App Group is the
+    /// only entitlement, and the privacy manifest declares no tracking and no collected data.
+    @Test func theIPadHasOneNetworkAdapter() throws {
+        // What ships: the test bundles may reach the network code directly.
+        let sources = NetworkPrivacyTests.files(under: "App/iOS", ext: ["swift"]).filter {
+            !$0.path.contains("/App/iOS/Tests/") && !$0.path.contains("/App/iOS/UITests/")
+        }
+        #expect(sources.count > 10)
+        let importers = try sources.filter { try String(contentsOf: $0, encoding: .utf8).contains("import NexusNet") }
+        #expect(importers.map(\.lastPathComponent) == ["InProcessNetwork.swift"])
+        let project = try String(
+            contentsOf: NetworkPrivacyTests.repo.appending(path: "App/tools/make_ios_project.py"), encoding: .utf8)
+        #expect(project.components(separatedBy: "\"NexusNetKit\"").count == 2, "one target uses NexusNetKit")
+        #expect(project.contains(#"folder="iOS/OpenNexus", packages=["OpenNexusKit", "NexusTouchKit", "NexusNetKit"]"#))
+        func plist(_ url: URL) throws -> [String: Any] {
+            try #require(
+                PropertyListSerialization.propertyList(from: Data(contentsOf: url), format: nil) as? [String: Any])
+        }
+        for f in NetworkPrivacyTests.files(under: "App/iOS/Support", ext: ["plist"]) {
+            #expect(try plist(f)["NSAppTransportSecurity"] == nil, "\(f.lastPathComponent) loosens ATS")
+        }
+        let ents = NetworkPrivacyTests.files(under: "App/iOS/Support", ext: ["entitlements"])
+        #expect(ents.count == 5, "the app and four extensions")
+        for f in ents {
+            #expect(try plist(f).keys.sorted() == ["com.apple.security.application-groups"], "\(f.lastPathComponent)")
+        }
+        let manifest = try plist(NetworkPrivacyTests.repo.appending(path: "App/iOS/OpenNexus/PrivacyInfo.xcprivacy"))
+        #expect(manifest["NSPrivacyTracking"] as? Bool == false)
+        #expect((manifest["NSPrivacyTrackingDomains"] as? [Any])?.isEmpty == true)
+        #expect((manifest["NSPrivacyCollectedDataTypes"] as? [Any])?.isEmpty == true)
+        #expect((manifest["NSPrivacyAccessedAPITypes"] as? [Any])?.isEmpty == false, "the required-reason APIs")
+    }
+
+    /// Every switch under Privacy & Data › Network is off on a fresh install.
+    @Test @MainActor func theNetworkIsOffByDefault() {
+        let rows = SettingsSchema.allRows.map(\.2).filter { $0.key.hasPrefix("network.") }
+        #expect(!rows.isEmpty)
+        for r in rows { #expect(r.defaultValue == .bool(false), "\(r.key)") }
+        let prefs = Preferences.isolated()
+        #expect(!prefs.bool("network.enabled") && !prefs.bool("network.sharing"))
+    }
+
+    /// The interactive viewer (M43) opens offline: neither its source nor the copy built into
+    /// the app may reach the network (exported pages also forbid it by CSP; HTMLExportTests).
+    @Test func theViewerMakesNoRequests() throws {
+        let banned = [
+            "fetch(", "XMLHttpRequest", "WebSocket", "EventSource", "sendBeacon", "serviceWorker", "importScripts",
+            "new Worker", "import(", "<link", "<iframe", "eval(", "new Function",
+        ]
+        let files =
+            NetworkPrivacyTests.files(under: "Sources/NexusCanvas/Viewer", ext: ["js", "css"])
+            + NetworkPrivacyTests.files(under: "web/viewer-core/src", ext: ["ts", "css"])
+        #expect(files.count >= 9, "the built viewer and its sources")
+        var hits: [String] = []
+        for f in files {
+            // SVG's and XLink's namespace names are URIs, not addresses anything loads.
+            let text = try String(contentsOf: f, encoding: .utf8)
+                .replacingOccurrences(of: "http://www.w3.org/2000/svg", with: "")
+                .replacingOccurrences(of: "http://www.w3.org/1999/xlink", with: "")
+            for b in banned where text.contains(b) { hits.append("\(f.lastPathComponent): \(b)") }
+            if f.pathExtension == "css", text.contains("@import") || text.contains("url(") {
+                hits.append("\(f.lastPathComponent): a stylesheet reference")
+            }
+            if text.range(of: #"(https?:)?//[A-Za-z0-9-]+\.[A-Za-z]"#, options: .regularExpression) != nil,
+                f.pathExtension != "ts"
+            {
+                hits.append("\(f.lastPathComponent): an address")
+            }
+        }
+        #expect(hits.isEmpty, "network code in the viewer: \(hits)")
+    }
+
+    /// Open in OpenNexus (M47d, D441) is the one request a click on a link starts rather than
+    /// a destination the user set up. Its job names no hosts and no secret: the service reads
+    /// the link only from the hosts the link itself names (NexusNetTests), behind the sharing
+    /// switches (ShareLinkTests), and only `ShareCenter.openLink` makes one.
+    @Test func aLinkIsReadOnlyFromItsOwnHosts() throws {
+        let service = try String(
+            contentsOf: Self.repo.appending(path: "Sources/NexusNet/NetService.swift"), encoding: .utf8)
+        #expect(service.contains("let hosts = LinkReader.hosts(source: source, locator: locator)"))
+        #expect(service.contains("HTTPClient(allowed: hosts, purpose: job.purpose"))
+        let code = ShareLinkCode(source: .url, locator: "https://maps.example.org/a.onx", key: Data(count: 32))
+        let job = NetJob.read(code, purpose: "Open share link")
+        #expect(job.allowedHosts.isEmpty && job.secret.isEmpty && job.writeSecret == nil)
+        let callers = try (Self.files(under: "Sources", ext: ["swift"]) + Self.files(under: "App", ext: ["swift"]))
+            .filter { try String(contentsOf: $0, encoding: .utf8).contains("NetJob.read(") }
+            .map { $0.path.replacingOccurrences(of: Self.repo.path + "/", with: "") }
+            .filter { !$0.contains("/Tests/") }
+        #expect(callers == ["Sources/NexusCanvas/Sharing.swift"])
+    }
+
+    @Test func onlyTheServiceHasANetworkEntitlement() throws {
         let ents = NetworkPrivacyTests.files(under: "App/Support", ext: ["entitlements"])
-        #expect(ents.count >= 7, "the app, five extensions and the CLI")
+        #expect(ents.count >= 8, "the app, five extensions, the network service and the CLI")
         for f in ents {
             let text = try String(contentsOf: f, encoding: .utf8)
-            #expect(!text.contains("com.apple.security.network"), "\(f.lastPathComponent) asks for the network")
+            if f.lastPathComponent == "OpenNexusNet.entitlements" {
+                // Outgoing connections only.
+                #expect(text.contains("<key>com.apple.security.network.client</key>"))
+                #expect(!text.contains("com.apple.security.network.server"))
+                #expect(!text.contains("com.apple.security.files") && !text.contains("application-groups"))
+            } else {
+                #expect(!text.contains("com.apple.security.network"), "\(f.lastPathComponent) asks for the network")
+            }
             if !f.lastPathComponent.hasPrefix("nexus") {
                 #expect(text.contains("com.apple.security.app-sandbox"), "\(f.lastPathComponent) isn't sandboxed")
             }

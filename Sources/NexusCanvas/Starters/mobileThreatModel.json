@@ -1,0 +1,124 @@
+{
+  "aliases": [
+    "mobile threat model",
+    "app security",
+    "stride",
+    "threats",
+    "mobile"
+  ],
+  "boundaries": [
+    {
+      "meaning": "trust",
+      "title": "Pharmacy servers",
+      "topics": [
+        "Refill API",
+        "Spoofed app token",
+        "Short-lived device-bound tokens",
+        "Request flood denies service",
+        "Rate limit per device",
+        "Elevated access to others' records",
+        "Ownership check per record",
+        "Refill orders database",
+        "Repudiated refill request",
+        "Append-only audit trail"
+      ],
+      "trust": "high"
+    }
+  ],
+  "category": "security",
+  "collection": "security",
+  "details": [
+    {
+      "edge": "Refill request",
+      "topic": "Phone app"
+    },
+    {
+      "note": "Tampering: a repackaged app skips checks or sends crafted requests. Never trust the app to enforce a rule the API doesn't.",
+      "topic": "Tampered app build"
+    },
+    {
+      "edge": "Cached prescriptions",
+      "topic": "On-device storage"
+    },
+    {
+      "note": "Information disclosure: a lost or shared phone exposes cached prescriptions.",
+      "topic": "Records disclosed from lost phone"
+    },
+    {
+      "note": "Everything inside the boundary runs on servers you control, so this is where every rule is enforced, whatever the app claims.",
+      "topic": "Refill API"
+    },
+    {
+      "note": "Spoofing: a token copied from one phone is replayed from another device.",
+      "topic": "Spoofed app token"
+    },
+    {
+      "note": "Denial of service: a script hammers the refill endpoint until real patients can't get through.",
+      "topic": "Request flood denies service"
+    },
+    {
+      "note": "Elevation of privilege: changing an id in the request returns another patient's prescriptions.",
+      "topic": "Elevated access to others' records"
+    },
+    {
+      "edge": "Refill order",
+      "topic": "Refill orders database"
+    },
+    {
+      "note": "Repudiation: a patient says they never asked for a refill, and nothing proves otherwise.",
+      "topic": "Repudiated refill request"
+    },
+    {
+      "note": "Information disclosure: notifications show on the lock screen and pass through the push service.",
+      "topic": "Medicine names disclosed in pushes"
+    }
+  ],
+  "id": "mobileThreatModel",
+  "kicker": "THREAT MODEL",
+  "name": "Mobile app threat model",
+  "note": "Treat the phone as outside your control: anything stored or checked on it can be read or changed by whoever holds it. Hang each STRIDE threat under the element it targets with its mitigation beneath it, then replace the pharmacy example with your own app's flows.",
+  "order": 58,
+  "outline": [
+    "Pharmacy refill app",
+    "  Patient >entity",
+    "    Phone app >process",
+    "      Tampered app build >threat",
+    "        Integrity check at launch >mitigation",
+    "      On-device storage >store",
+    "        Records disclosed from lost phone >threat",
+    "          Encrypt with device keystore >mitigation",
+    "  Refill API >process",
+    "    Spoofed app token >threat",
+    "      Short-lived device-bound tokens >mitigation",
+    "    Request flood denies service >threat",
+    "      Rate limit per device >mitigation",
+    "    Elevated access to others' records >threat",
+    "      Ownership check per record >mitigation",
+    "    Refill orders database >store",
+    "      Repudiated refill request >threat",
+    "        Append-only audit trail >mitigation",
+    "  Push service >entity",
+    "    Medicine names disclosed in pushes >threat",
+    "      Generic notification text >mitigation"
+  ],
+  "relationships": [
+    {
+      "from": "Phone app",
+      "label": "Refill request, token",
+      "to": "Refill API"
+    },
+    {
+      "from": "Refill API",
+      "label": "Refill update",
+      "to": "Push service"
+    },
+    {
+      "from": "Push service",
+      "label": "Push notification",
+      "to": "Phone app"
+    }
+  ],
+  "summary": "Phone, API and push threats",
+  "title": "Pharmacy refill app",
+  "type": "threatModel"
+}

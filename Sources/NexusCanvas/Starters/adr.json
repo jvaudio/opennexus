@@ -5,6 +5,7 @@
     "record"
   ],
   "category": "architecture",
+  "collection": "architecture",
   "id": "adr",
   "kicker": "DECISION",
   "name": "Architecture decision record",

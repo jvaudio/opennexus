@@ -5,6 +5,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusInterchange
+@testable import NexusScene
 
 /// M10: the file loader never crashes or hangs. Every damaged file either fails to open
 /// with an error, or opens as a valid document that lays out and renders.

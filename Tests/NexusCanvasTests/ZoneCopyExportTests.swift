@@ -7,6 +7,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M20: export every zone at once (D195) and copy, cut, paste and duplicate zones (D196),
 /// on the real controller.
@@ -16,9 +17,9 @@ import Testing
 
     /// The launch plan with a zone "Ideas" around "Parking lot" › "Later idea", connected
     /// to "Pricing" both ways (one end on the zone itself).
-    func harness(pasteboard: NSPasteboard? = nil) throws -> (CanvasHarness, zone: String) {
+    func harness(pasteboard: (any CanvasPasteboard)? = nil) throws -> (CanvasHarness, zone: String) {
         let h = CanvasHarness(model: launchPlanDocument())
-        h.controller.pasteboard = pasteboard ?? NSPasteboard(name: NSPasteboard.Name("nexus-test-\(UUID().uuidString)"))
+        h.controller.pasteboard = pasteboard ?? MemoryPasteboard()
         let pricing = node(h, "Pricing")
         let zone = try #require(
             h.controller.perform("Zone") { e -> String in

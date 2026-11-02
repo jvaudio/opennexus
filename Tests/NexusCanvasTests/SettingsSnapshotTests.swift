@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// Visual review of Settings (08, 29, 35–42), Welcome (14), roles (15), Home (16) and the
 /// tutorial (31) against their artboards (env-gated).
@@ -45,7 +46,8 @@ import Testing
         for (id, art) in [
             ("general", "35"), ("editing", "36"), ("appearance", "37"), ("files", "38"), ("ai", "29"),
             ("shortcuts", "08"),
-            ("export", "39"), ("integrations", "40"), ("privacy", "41"), ("accessibility", "42"),
+            ("export", "39"), ("sharing", "m44"), ("sync", "m45"), ("integrations", "40"), ("privacy", "41"),
+            ("accessibility", "42"),
         ] {
             try await shoot(SettingsView(prefs: .isolated(), availability: .ready, pane: id), "\(art)-\(id)")
         }

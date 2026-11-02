@@ -1,6 +1,8 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusKeys
+import NexusScene
 
 // The Present strip's controls from the keyboard (M35, D266): ⇥ and ⇧⇥ walk them, ↩ or
 // Space uses the one in focus, and Esc hands the keys back to the slides. The strip
@@ -188,12 +190,8 @@ extension CanvasController {
 
     /// VoiceOver reads the control ⇥ moved to (or that the slides have the keys again).
     func announceStripFocus() {
-        guard NSWorkspace.shared.isVoiceOverEnabled, let window = NSApp.keyWindow else { return }
-        let text =
+        host.announce(
             focusedStripControl.map { c in [c.label, c.value].compactMap { $0 }.joined(separator: ", ") }
-            ?? Loc.t("Slides")
-        NSAccessibility.post(
-            element: window, notification: .announcementRequested,
-            userInfo: [.announcement: text, .priority: NSAccessibilityPriorityLevel.medium.rawValue])
+                ?? Loc.t("Slides"))
     }
 }

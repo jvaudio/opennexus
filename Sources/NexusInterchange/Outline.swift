@@ -18,7 +18,7 @@ public enum MarkdownFormat {
     }
 
     static func line(_ n: Node) -> String {
-        var t = n.text.replacingOccurrences(of: "\n", with: " ")
+        var t = MathInterchange.text(n).replacingOccurrences(of: "\n", with: " ")
         if let link = n.link, !link.hasPrefix("#") { t = "[\(t)](\(link))" }
         if !n.labels.isEmpty { t += " " + n.labels.map { "`\($0)`" }.joined(separator: " ") }
         if let p = n.priority { t += " (P\(p))" }
@@ -142,13 +142,22 @@ public enum MarkdownFormat {
     /// Markdown into a topic tree: headings nest, bullets nest by indentation, paragraphs
     /// become the note of the topic above, `- [ ]` becomes a to-do. Bullets after the
     /// floating marker are floating topics, up to the next heading or rule (D239).
-    public static func parse(_ text: String, title: String, report: inout ImportReport) -> ICanvas {
+    /// The extra key under which `parse(…, sourceLines: true)` puts each heading's and
+    /// bullet's line, counted from 1 (Obsidian's note as map, M49).
+    public static let sourceLineKey = "opennexus.sourceLine"
+
+    public static func parse(
+        _ text: String, title: String, report: inout ImportReport, sourceLines: Bool = false
+    ) -> ICanvas {
         var lines = text.replacingOccurrences(of: "\r\n", with: "\n").components(separatedBy: "\n")
+        /// Each remaining line's index in `text`.
+        var origin = Array(lines.indices)
         // YAML front matter.
         if lines.first == "---", let end = lines.dropFirst().firstIndex(of: "---") {
             lines.removeSubrange(0...end)
+            origin.removeSubrange(0...end)
         }
-        let comments = commentAppendices(&lines)
+        let comments = commentAppendices(&lines, origin: &origin)
         struct Entry {
             var level: Int
             var topic: ITopic
@@ -181,9 +190,11 @@ public enum MarkdownFormat {
                 }
             }
         }
-        func push(_ t: ITopic, level: Int) {
+        func push(_ t: ITopic, level: Int, line: Int) {
             flushNote()
             pop(to: level)
+            var t = t
+            if sourceLines { t.extra[sourceLineKey] = .number(Double(origin[line] + 1)) }
             stack.append(Entry(level: level, topic: t))
         }
         /// Closes the tree being read, and starts or ends the floating topics.
@@ -193,7 +204,7 @@ public enum MarkdownFormat {
             floating = on
         }
 
-        for raw in lines {
+        for (index, raw) in lines.enumerated() {
             if raw.trimmingCharacters(in: .whitespaces).hasPrefix("```") {
                 if inFence {
                     inFence = false
@@ -233,11 +244,11 @@ public enum MarkdownFormat {
                     todo = true
                     body = body.dropFirst(4)
                 }
-                push(item(String(body), todo: todo), level: h.0)
+                push(item(String(body), todo: todo), level: h.0, line: index)
                 continue
             }
             if let b = bullet(raw) {
-                push(item(b.text, todo: b.todo), level: 100 + b.indent)
+                push(item(b.text, todo: b.todo), level: 100 + b.indent, line: index)
                 continue
             }
             if t.hasPrefix("![") {
@@ -272,6 +283,17 @@ public enum MarkdownFormat {
             }
         }
         return ic
+    }
+
+    /// The source lines `parse(…, sourceLines: true)` left on `c`'s topics, removed from them.
+    public static func takeSourceLines(_ c: inout Canvas) -> [NodeID: Int] {
+        var out: [NodeID: Int] = [:]
+        for (id, n) in c.nodes {
+            guard let v = n.extra[sourceLineKey] else { continue }
+            if case .number(let line) = v { out[id] = Int(line) }
+            c.nodes[id]?.extra[sourceLineKey] = nil
+        }
+        return out
     }
 
     /// A heading's or bullet's text after its check box: the topic, its task tokens and its
@@ -315,7 +337,7 @@ public enum MarkdownFormat {
     /// Takes out each "## Comments" section the exporter writes (D207), returning its
     /// comments with the topic title and anchor they name. A section with any other kind of
     /// line is left alone: it's a topic called Comments.
-    static func commentAppendices(_ lines: inout [String]) -> [(String, String?, TopicComment)] {
+    static func commentAppendices(_ lines: inout [String], origin: inout [Int]) -> [(String, String?, TopicComment)] {
         var found: [(String, String?, TopicComment)] = []
         var i = 0
         while i < lines.count {
@@ -351,6 +373,7 @@ public enum MarkdownFormat {
             }
             found += items
             lines.removeSubrange(i..<j)
+            origin.removeSubrange(i..<j)
         }
         return found
     }
@@ -442,9 +465,11 @@ public enum MarkdownFormat {
             text = text.replacingCharacters(in: m.range, with: String(m.1))
             t.link = t.link ?? String(m.2)
         }
-        text = text.replacingOccurrences(of: "**", with: "").replacingOccurrences(of: "__", with: "")
-            .replacingOccurrences(of: "`", with: "")
-        t.text = text
+        t.text = MathInterchange.outsideFormulas(text) {
+            $0.replacingOccurrences(of: "**", with: "").replacingOccurrences(of: "__", with: "")
+                .replacingOccurrences(of: "`", with: "")
+        }
+        MathInterchange.read(&t)
         return t
     }
 }

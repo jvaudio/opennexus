@@ -79,7 +79,7 @@ public enum AppGroup {
     }
 
     /// A group container path for a team, without asking the system (the CLI's view).
-    public static func container(team: String, home: URL = FileManager.default.homeDirectoryForCurrentUser) -> URL {
+    public static func container(team: String, home: URL = URL(fileURLWithPath: NSHomeDirectory())) -> URL {
         home.appending(path: "Library/Group Containers/\(team).\(suffix)")
     }
 }
@@ -176,6 +176,13 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
 
     public static func directory(in container: URL) -> URL { container.appending(path: "Widgets") }
 
+    /// Whether the widgets would show the same thing (`updated` aside): the Inbox's
+    /// count changes on its own when an older idea is filed away.
+    public func showsTheSame(as other: WidgetSnapshot?) -> Bool {
+        guard let other else { return false }
+        return inbox == other.inbox && inboxCount == other.inboxCount && recents == other.recents
+    }
+
     public func write(to container: URL) throws {
         let dir = Self.directory(in: container)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -183,6 +190,12 @@ public struct WidgetSnapshot: Codable, Equatable, Sendable {
         enc.dateEncodingStrategy = .iso8601
         enc.outputFormatting = [.sortedKeys]
         try enc.encode(self).write(to: dir.appending(path: "snapshot.json"), options: .atomic)
+        // The thumbnails of maps that are no longer recent.
+        let kept = Set(recents.compactMap(\.thumbnail))
+        for u in (try? FileManager.default.contentsOfDirectory(at: dir, includingPropertiesForKeys: nil)) ?? []
+        where u.pathExtension == "png" && !kept.contains(u.lastPathComponent) {
+            try? FileManager.default.removeItem(at: u)
+        }
     }
 
     public static func read(from container: URL) -> WidgetSnapshot? {

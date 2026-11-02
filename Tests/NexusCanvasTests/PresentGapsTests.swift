@@ -5,6 +5,7 @@ import NexusKeys
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 private func d(_ s: String) -> TaskDate { TaskDate(s)! }
 

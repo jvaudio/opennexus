@@ -1,7 +1,13 @@
-import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// Present mode chrome (artboard 32): kicker and title over the stage, progress dots, and
 /// the slide strip with its controls.
@@ -20,7 +26,7 @@ struct PresentOverlayView: View {
     func stage(_ p: PresentState, size: CGSize) -> some View {
         let slides = controller.slides
         let slide = p.index < slides.count ? slides[p.index] : nil
-        let ink = Color(nsColor: NSColor(cgColor: controller.scene.theme.ink.cgColor) ?? .labelColor)
+        let ink = Color(cgColor: controller.scene.theme.ink.cgColor)
         ZStack(alignment: .topLeading) {
             VStack(alignment: .leading, spacing: 6) {
                 Text(slide?.kicker ?? "").font(.chrome(13, weight: .medium, design: .monospaced))
@@ -134,8 +140,7 @@ struct SlideStripView: View {
     var controller: CanvasController
     let state: PresentState
     let slides: [Slide]
-    /// The strip's height; the corner legend and the dots sit above it (D232).
-    static let height: CGFloat = 236
+    static var height: CGFloat { PresentLegendPlacement.stripHeight }
 
     var body: some View {
         let controls = controller.stripControls
@@ -143,9 +148,9 @@ struct SlideStripView: View {
             HStack(spacing: 8) {
                 Text("SLIDES · AUTO-GENERATED · DRAG TO REORDER")
                     .font(.chrome(11.5, weight: .semibold, design: .monospaced)).kerning(1.2)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.chromeSecondary)
                 Spacer()
-                Text("Transition").font(.chrome(12.5)).foregroundStyle(.secondary)
+                Text("Transition").font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
                 // One list for the mouse, ⇥ and VoiceOver (M35, D266).
                 ForEach(controls.filter { $0.kind != .export }) { c in
                     switch c.kind {
@@ -180,7 +185,7 @@ struct SlideStripView: View {
                 key("⇥", Loc.t("controls"))
                 key("esc", "end")
                 Spacer()
-                Text("Export:").foregroundStyle(.secondary)
+                Text("Export:").foregroundStyle(.chromeSecondary)
                 ForEach(controls.filter { $0.kind == .export }) { c in
                     Button(c.title) { controller.activateStripControl(c.id) }
                         .buttonStyle(.plain)
@@ -234,7 +239,7 @@ struct SlideStripView: View {
     func focusRing(_ c: StripControl) -> some View {
         if state.stripFocus == c.id {
             RoundedRectangle(cornerRadius: 7)
-                .stroke(Color(nsColor: .keyboardFocusIndicatorColor), lineWidth: 2.5)
+                .stroke(Color.focusIndicator, lineWidth: 2.5)
                 .padding(-3)
                 .allowsHitTesting(false)
         }
@@ -243,7 +248,7 @@ struct SlideStripView: View {
     func key(_ k: String, _ label: String) -> some View {
         HStack(spacing: 5) {
             Keycap(text: k)
-            Text(label).foregroundStyle(.secondary)
+            Text(label).foregroundStyle(.chromeSecondary)
         }
     }
 
@@ -253,7 +258,7 @@ struct SlideStripView: View {
                 .frame(width: 170, height: 80)
                 .overlay(alignment: .bottomLeading) {
                     Text(String(format: "%02d", i + 1)).font(.chrome(10, design: .monospaced))
-                        .foregroundStyle(.secondary).padding(5)
+                        .foregroundStyle(.chromeSecondary).padding(5)
                 }
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
                 .overlay(
@@ -276,7 +281,7 @@ struct SlideStripView: View {
 
 /// A slide thumbnail: the scene's outlines with the slide's topics emphasised.
 struct SlideWireframe: View {
-    let scene: Scene
+    let scene: NexusScene.Scene
     let slide: Slide
 
     var body: some View {
@@ -344,7 +349,19 @@ public struct PresenterView: View {
     /// Slides drawn so far. An observable object, not `@State`: the cards read it inside
     /// the TimelineView's content, where a state change wouldn't redraw them.
     @State private var drawn = PresenterSlides()
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
     public init(controller: CanvasController) { self.controller = controller }
+
+    /// The iPhone's narrow cards wrap a slide's title rather than cut it.
+    var compactTitles: Bool {
+        #if os(iOS)
+        sizeClass == .compact
+        #else
+        false
+        #endif
+    }
 
     public var body: some View {
         TimelineView(.periodic(from: .now, by: 1)) { ctx in
@@ -355,14 +372,109 @@ public struct PresenterView: View {
             let next = nextIndex.map { slides[$0] }
             let current = slides.indices.contains(index) ? slides[index] : nil
             let elapsed = Int(ctx.date.timeIntervalSince(p?.started ?? ctx.date))
+            #if os(iOS)
+            if sizeClass == .compact {
+                compactBody(
+                    now: ctx.date, elapsed: elapsed, slides: slides, index: index, current: current, next: next,
+                    nextIndex: nextIndex)
+            } else {
+                regularBody(
+                    now: ctx.date, elapsed: elapsed, slides: slides, index: index, current: current, next: next,
+                    nextIndex: nextIndex)
+            }
+            #else
+            regularBody(
+                now: ctx.date, elapsed: elapsed, slides: slides, index: index, current: current, next: next,
+                nextIndex: nextIndex)
+            #endif
+        }
+    }
+
+    /// The iPhone's clock and timer, each under a caption that says what it is: read as
+    /// drawn, since a label other than the text reads to the audit as clipped text (D408).
+    func clock(_ now: Date) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text("Time").font(.chrome(12, weight: .medium)).foregroundStyle(.chromeSecondary)
+            Text(now.formatted(date: .omitted, time: .shortened))
+                .font(.chrome(22, weight: .medium, design: .monospaced)).foregroundStyle(.chromeSecondary)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    func timer(_ elapsed: Int) -> some View {
+        VStack(alignment: .trailing, spacing: 0) {
+            Text("Elapsed").font(.chrome(12, weight: .medium)).foregroundStyle(.chromeSecondary)
+            Text(String(format: "%02d:%02d", elapsed / 60, elapsed % 60))
+                .font(.chrome(34, weight: .semibold, design: .monospaced))
+                .foregroundStyle(Color.accentColor)
+        }
+        .accessibilityElement(children: .combine)
+    }
+
+    func note(_ current: Slide?) -> some View {
+        ScrollView {
+            MathNoteText(text: current?.note ?? Loc.t("No note on this slide's topic."), size: 24)
+                .font(.chrome(24))
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .accessibilityLabel(Loc.t("Speaker note"))
+        .padding(16)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.secondary.opacity(0.08)))
+    }
+
+    #if os(iOS)
+    /// The iPhone's presenter view while the slides are on a TV or a Mac (M47c): the current
+    /// slide, the next one beside the note, and large buttons.
+    func compactBody(
+        now: Date, elapsed: Int, slides: [Slide], index: Int, current: Slide?, next: Slide?, nextIndex: Int?
+    ) -> some View {
+        let pair = Set([current, next].compactMap { $0.map(cardKey) })
+        return VStack(alignment: .leading, spacing: 12) {
+            // Side by side, or the timer under the clock when the text is too large for both.
+            TitleAndControl {
+                clock(now)
+                timer(elapsed)
+            }
+            slideCard(current, index: index, label: Loc.f("Slide %lld of %lld", index + 1, slides.count), keep: pair)
+            HStack(alignment: .top, spacing: 12) {
+                slideCard(next, index: nextIndex, label: next == nil ? Loc.t("End of deck") : Loc.t("Next"), keep: pair)
+                    .frame(width: 130)
+                    .opacity(0.85)
+                note(current)
+            }
+            HStack(spacing: 10) {
+                Button {
+                    controller.stepSlide(-1)
+                } label: {
+                    Label(Loc.t("Previous step"), systemImage: "chevron.backward").frame(maxWidth: .infinity)
+                }
+                Button {
+                    controller.stepSlide(1)
+                } label: {
+                    Label(Loc.t("Next step"), systemImage: "chevron.forward").frame(maxWidth: .infinity)
+                }
+                Button(Loc.t("End")) { controller.endPresent() }.fixedSize()
+            }
+            .labelStyle(.iconOnly)
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+        }
+        .padding(16)
+    }
+    #endif
+
+    func regularBody(
+        now: Date, elapsed: Int, slides: [Slide], index: Int, current: Slide?, next: Slide?, nextIndex: Int?
+    ) -> some View {
+        Group {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(alignment: .firstTextBaseline) {
                     Text("PRESENTER VIEW").font(.chrome(12, weight: .semibold, design: .monospaced)).kerning(1.4)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.chromeSecondary)
                     Spacer()
-                    Text(ctx.date.formatted(date: .omitted, time: .shortened))
-                        .font(.chrome(22, weight: .medium, design: .monospaced)).foregroundStyle(.secondary)
-                        .accessibilityLabel(Loc.f("Time: %@", ctx.date.formatted(date: .omitted, time: .shortened)))
+                    Text(now.formatted(date: .omitted, time: .shortened))
+                        .font(.chrome(22, weight: .medium, design: .monospaced)).foregroundStyle(.chromeSecondary)
+                        .accessibilityLabel(Loc.f("Time: %@", now.formatted(date: .omitted, time: .shortened)))
                     Text(String(format: "%02d:%02d", elapsed / 60, elapsed % 60))
                         .font(.chrome(34, weight: .semibold, design: .monospaced))
                         .foregroundStyle(Color.accentColor)
@@ -382,7 +494,7 @@ public struct PresenterView: View {
                     .opacity(0.85)
                 }
                 ScrollView {
-                    Text(current?.note ?? Loc.t("No note on this slide's topic."))
+                    MathNoteText(text: current?.note ?? Loc.t("No note on this slide's topic."), size: 24)
                         .font(.chrome(24))
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
@@ -421,9 +533,11 @@ public struct PresenterView: View {
             }
             .aspectRatio(16.0 / 9, contentMode: .fit)
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(.separator))
-            .accessibilityHidden(true)
-            Text(label).font(.chrome(13)).foregroundStyle(.secondary)
-            Text(slide.map(controller.slideTitle) ?? "").font(.chrome(19, weight: .semibold)).lineLimit(2)
+            .illustration(Loc.t("Slide picture"))
+            Text(label).font(.chrome(13)).foregroundStyle(.chromeSecondary)
+            Text(slide.map(controller.slideTitle) ?? "").font(.chrome(19, weight: .semibold))
+                .lineLimit(compactTitles ? nil : 2)
+                .fixedSize(horizontal: false, vertical: compactTitles)
         }
         .task(id: key) {
             guard let key, let index, drawn.images[key] == nil else { return }
@@ -446,4 +560,157 @@ public struct PresenterView: View {
 @Observable
 final class PresenterSlides {
     var images: [String: CGImage] = [:]
+}
+
+// MARK: On screen
+
+/// The legend in the slide's bottom-left corner (D200).
+struct PresentLegendCorner: View {
+    let legend: SceneLegend
+    let theme: Theme
+    let canvas: RGBA
+    let placement: PresentLegendPlacement
+
+    var body: some View {
+        let k = placement.scale(legend)
+        LegendDrawing(legend: legend, theme: theme, canvas: canvas, scale: k)
+            .frame(width: legend.rect.width * k, height: legend.rect.height * k)
+            .accessibilityElement()
+            .accessibilityLabel(legend.spoken)
+            .accessibilityAddTraits(.isImage)
+    }
+
+    #if os(macOS)
+    struct LegendDrawing: NSViewRepresentable {
+        let legend: SceneLegend
+        let theme: Theme
+        let canvas: RGBA
+        let scale: CGFloat
+        func makeNSView(context: Context) -> Surface { Surface() }
+        func updateNSView(_ v: Surface, context: Context) {
+            v.legend = legend
+            v.theme = theme
+            v.canvas = canvas
+            v.scale = scale
+            v.needsDisplay = true
+        }
+
+        final class Surface: NSView {
+            var legend: SceneLegend?
+            var theme = Theme.classic
+            var canvas = Theme.classic.canvas
+            var scale: CGFloat = 1
+            override var isFlipped: Bool { true }
+            override func draw(_ dirtyRect: NSRect) {
+                guard let l = legend, let ctx = NSGraphicsContext.current?.cgContext else { return }
+                ctx.scaleBy(x: scale, y: scale)
+                LegendLayer.draw(l, theme: theme, canvas: canvas, origin: l.rect.origin, in: ctx)
+            }
+        }
+    }
+    #else
+    struct LegendDrawing: UIViewRepresentable {
+        let legend: SceneLegend
+        let theme: Theme
+        let canvas: RGBA
+        let scale: CGFloat
+        func makeUIView(context: Context) -> Surface { Surface() }
+        func updateUIView(_ v: Surface, context: Context) {
+            v.legend = legend
+            v.theme = theme
+            v.canvas = canvas
+            v.scale = scale
+            v.setNeedsDisplay()
+        }
+
+        final class Surface: UIView {
+            var legend: SceneLegend?
+            var theme = Theme.classic
+            var canvas = Theme.classic.canvas
+            var scale: CGFloat = 1
+            override init(frame: CGRect) {
+                super.init(frame: frame)
+                isOpaque = false
+                backgroundColor = .clear
+            }
+            required init?(coder: NSCoder) { fatalError() }
+            override func draw(_ rect: CGRect) {
+                guard let l = legend, let ctx = UIGraphicsGetCurrentContext() else { return }
+                ctx.scaleBy(x: scale, y: scale)
+                LegendLayer.draw(l, theme: theme, canvas: canvas, origin: l.rect.origin, in: ctx)
+            }
+        }
+    }
+    #endif
+}
+
+/// A Timeline slide's chart, under the title in its `TimelinePlacement` box (D202, D264).
+struct TimelineCard: View {
+    let chart: TimelineChart
+    let spoken: String
+    let maxScale: CGFloat
+
+    var body: some View {
+        Drawing(chart: chart, maxScale: maxScale)
+            .accessibilityElement()
+            .accessibilityLabel(spoken)
+            .accessibilityAddTraits(.isImage)
+    }
+
+    #if os(macOS)
+    struct Drawing: NSViewRepresentable {
+        let chart: TimelineChart
+        let maxScale: CGFloat
+        func makeNSView(context: Context) -> Surface { Surface() }
+        func updateNSView(_ v: Surface, context: Context) {
+            v.chart = chart
+            v.maxScale = maxScale
+            v.needsDisplay = true
+        }
+
+        final class Surface: NSView {
+            var chart: TimelineChart?
+            var maxScale: CGFloat = 1.6
+            override var isFlipped: Bool { true }
+            override func draw(_ dirtyRect: NSRect) {
+                guard let chart, let ctx = NSGraphicsContext.current?.cgContext else { return }
+                let drawn = chart.draw(in: bounds, maxScale: maxScale, context: ctx)
+                NSColor.separatorColor.setStroke()
+                let ring = NSBezierPath(roundedRect: drawn.insetBy(dx: 0.5, dy: 0.5), xRadius: 10, yRadius: 10)
+                ring.lineWidth = 1
+                ring.stroke()
+            }
+        }
+    }
+    #else
+    struct Drawing: UIViewRepresentable {
+        let chart: TimelineChart
+        let maxScale: CGFloat
+        func makeUIView(context: Context) -> Surface { Surface() }
+        func updateUIView(_ v: Surface, context: Context) {
+            v.chart = chart
+            v.maxScale = maxScale
+            v.setNeedsDisplay()
+        }
+
+        final class Surface: UIView {
+            var chart: TimelineChart?
+            var maxScale: CGFloat = 1.6
+            override init(frame: CGRect) {
+                super.init(frame: frame)
+                isOpaque = false
+                backgroundColor = .clear
+            }
+            required init?(coder: NSCoder) { fatalError() }
+            override func draw(_ rect: CGRect) {
+                guard let chart, let ctx = UIGraphicsGetCurrentContext() else { return }
+                let drawn = chart.draw(in: bounds, maxScale: maxScale, context: ctx)
+                UIColor.separator.setStroke()
+                let ring = UIBezierPath(roundedRect: drawn.insetBy(dx: 0.5, dy: 0.5), cornerRadius: 10)
+                ring.lineWidth = 1
+                ring.stroke()
+            }
+        }
+    }
+    #endif
 }

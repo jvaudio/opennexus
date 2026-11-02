@@ -1,7 +1,9 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusAI
 import NexusCore
 import NexusKeys
+import NexusScene
 
 public struct GhostState: Equatable, Sendable {
     public var anchor: NodeID
@@ -20,10 +22,8 @@ public struct PromptBarState: Equatable, Sendable {
 
 extension CanvasController {
     /// Ghost ids in the scene: `ghost:<index>`.
-    public static func ghostID(_ i: Int) -> NodeID { NodeID("ghost:\(i)") }
-    public static func ghostIndex(_ id: NodeID) -> Int? {
-        id.rawValue.hasPrefix("ghost:") ? Int(id.rawValue.dropFirst(6)) : nil
-    }
+    public static func ghostID(_ i: Int) -> NodeID { Ghost.id(i) }
+    public static func ghostIndex(_ id: NodeID) -> Int? { Ghost.index(id) }
 
     /// Checks the model before every entry point; when it can't run, the reason shows in
     /// place (artboard 29) and nothing else happens.

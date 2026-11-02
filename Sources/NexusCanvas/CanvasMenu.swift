@@ -1,6 +1,7 @@
 import Foundation
 import NexusCore
 import NexusKeys
+import NexusScene
 
 /// What a right-click (or Control-click) landed on (M17).
 public enum CanvasMenuTarget: Equatable, Sendable {
@@ -131,7 +132,7 @@ extension CanvasController {
 
     /// The menu a target would get once selected, without selecting it (VoiceOver's
     /// custom actions list these, D179).
-    func contextMenu(previewing target: CanvasMenuTarget) -> [CanvasMenuEntry] {
+    package func contextMenu(previewing target: CanvasMenuTarget) -> [CanvasMenuEntry] {
         switch target {
         case .topic(let id), .image(let id):
             guard canvas.nodes[id] != nil else { return [] }
@@ -181,7 +182,7 @@ extension CanvasController {
 
     /// The menu a row would get once selected alone, without selecting it (an outline
     /// row's custom actions list these, D256).
-    func outlineContextMenu(previewing id: NodeID) -> [CanvasMenuEntry] {
+    package func outlineContextMenu(previewing id: NodeID) -> [CanvasMenuEntry] {
         guard canvas.nodes[id] != nil else { return [] }
         return MenuBuilder(controller: self, selection: Selection(id), element: nil).outlineMenu()
     }

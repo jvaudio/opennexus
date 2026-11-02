@@ -5,6 +5,7 @@
     "waves"
   ],
   "category": "planning",
+  "collection": "architecture",
   "id": "migration",
   "kicker": "TIMELINE",
   "name": "Cloud migration",

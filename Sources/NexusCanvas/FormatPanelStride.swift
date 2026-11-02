@@ -1,4 +1,5 @@
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -20,12 +21,12 @@ struct StrideTab: View {
                     ([type.flatMap { DiagramCatalog.info($0, in: c.type)?.caption }, number].compactMap { $0 })
                         .joined(separator: " · ")
                 )
-                .font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                .font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
                 Text(c.nodes[id]?.text ?? "").font(.chrome(18, weight: .semibold))
             }
             if applicable.isEmpty {
                 Text("Select a process, data store or external entity to see its STRIDE checklist.")
-                    .font(.chrome(12)).foregroundStyle(.secondary)
+                    .font(.chrome(12)).foregroundStyle(.chromeSecondary)
             } else {
                 VStack(spacing: 0) {
                     ForEach(Stride.allCases, id: \.self) { s in
@@ -50,7 +51,7 @@ struct StrideTab: View {
                 id: \.0
             ) { key, title in
                 HStack {
-                    Text(title).font(.chrome(12.5)).foregroundStyle(.secondary).frame(
+                    Text(title).font(.chrome(12.5)).foregroundStyle(.chromeSecondary).frame(
                         width: 82, alignment: .leading)
                     TextField(
                         "—",
@@ -89,10 +90,10 @@ struct StrideTab: View {
             VStack(alignment: .leading, spacing: 1) {
                 Text(Loc.t(s.name)).font(.chrome(13, weight: .medium))
                 if let threat {
-                    Text(threat.title).font(.chrome(11.5)).foregroundStyle(.secondary).lineLimit(1)
+                    Text(threat.title).font(.chrome(11.5)).foregroundStyle(.chromeSecondary).lineLimit(1)
                 } else if let suggestion {
                     Text(Loc.f("✦ Suggested · %@", suggestion.1)).font(.chrome(11.5)).foregroundStyle(
-                        Color(nsColor: NSColor(cgColor: controller.theme.ai.cgColor) ?? .systemTeal)
+                        Color(cgColor: controller.theme.ai.cgColor)
                     ).lineLimit(1)
                 } else {
                     Text(applies ? Loc.t("No threat recorded") : Loc.t("Not applicable")).font(.chrome(11.5))
@@ -107,14 +108,14 @@ struct StrideTab: View {
                         Button(Loc.t(r)) { controller.setThreatField(threat.node, Stride.riskKey, r) }
                     }
                 }
-                .menuStyle(.borderlessButton)
+                .borderlessMenu()
                 .fixedSize()
                 .font(.chrome(11, weight: .bold, design: .monospaced))
             } else if let suggestion {
                 Button("+") { controller.acceptStride(s, suggestion.1, suggestion.2, on: element) }
                     .help("Add this threat")
             } else {
-                Text("N/A").font(.chrome(11, design: .monospaced)).foregroundStyle(.tertiary)
+                Text("N/A").font(.chrome(11, design: .monospaced)).foregroundStyle(.chromeTertiary)
             }
         }
         .padding(.horizontal, 10)

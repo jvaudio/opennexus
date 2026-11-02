@@ -2,7 +2,19 @@
   "$id": "https://opennexus.app/schema/starter.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
-  "description": "One starter: a card in the starter picker that makes a new canvas, as one JSON file (M39). The built-ins live in Sources/NexusCanvas/Starters/.",
+  "description": "One starter: a card in the starter picker that makes a new canvas, as one JSON file (M39). The built-ins live in Sources/NexusCanvas/Starters/; a .nexusstarter file holds one (M50), and a .nexusstarters pack holds several as {\"starters\": [...]}.",
+  "oneOf": [
+    {
+      "required": [
+        "outline"
+      ]
+    },
+    {
+      "required": [
+        "document"
+      ]
+    }
+  ],
   "properties": {
     "aliases": {
       "description": "Search terms, in English.",
@@ -12,6 +24,49 @@
       },
       "type": "array",
       "uniqueItems": true
+    },
+    "boundaries": {
+      "description": "Boundaries around outline topics' branches: groups, zones, networks and trust boundaries.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "meaning": {
+            "description": "What it marks.",
+            "enum": [
+              "group",
+              "zone",
+              "vpc",
+              "subnet",
+              "trust"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "topics": {
+            "description": "Outline topics, by their text (the first in outline order).",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          },
+          "trust": {
+            "description": "A trust boundary's level.",
+            "enum": [
+              "high",
+              "medium",
+              "low"
+            ]
+          }
+        },
+        "required": [
+          "topics"
+        ],
+        "type": "object"
+      },
+      "type": "array"
     },
     "category": {
       "description": "The starter picker's category.",
@@ -24,6 +79,81 @@
         "software"
       ]
     },
+    "collection": {
+      "description": "The starter picker's shelf (M50). Neither a category (For You) nor a Home shelf (a role's row).",
+      "enum": [
+        "business",
+        "engineering",
+        "product",
+        "process",
+        "planning",
+        "thinking",
+        "security",
+        "architecture",
+        "personal",
+        "meetings"
+      ]
+    },
+    "details": {
+      "description": "More about outline topics, each found by its text (the first in outline order).",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "days": {
+            "description": "A scheduled task's length in days, from start; without start it's a milestone that many days out.",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "done": {
+            "description": "A to-do, done or not.",
+            "type": "boolean"
+          },
+          "edge": {
+            "description": "The label on the edge into the topic: a data flow, a protocol, Yes or No.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "markers": {
+            "description": "Marker ids, such as priority-1, flag-red or progress-50.",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "note": {
+            "description": "The topic's note, in Markdown.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "progress": {
+            "description": "A to-do's progress, in whole percent.",
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "start": {
+            "description": "A scheduled task's first day, counted from the day the starter is used (0 is that day).",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "topic": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "topic"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "document": {
+      "description": "A whole one-canvas OpenNexus JSON document (a .nexusjson, its assets in base64), for a starter saved from a canvas (M50). It takes the place of outline.",
+      "type": "object"
+    },
     "id": {
       "description": "Unique id, letters, digits and hyphens. Blank starters are generated as blank.<type>, so ids never start with blank.",
       "pattern": "^(?!blank)[A-Za-z][A-Za-z0-9-]*$",
@@ -34,8 +164,41 @@
       "minLength": 1,
       "type": "string"
     },
+    "lanes": {
+      "description": "A swimlane's lanes, top to bottom, each with the outline topics in it. Other topics take their parent's lane, or the first.",
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "topics": {
+            "description": "Outline topics, by their text (the first in outline order).",
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "title",
+          "topics"
+        ],
+        "type": "object"
+      },
+      "minItems": 1,
+      "type": "array"
+    },
     "name": {
       "description": "The card's title, in English (looked up in the string catalog).",
+      "minLength": 1,
+      "type": "string"
+    },
+    "note": {
+      "description": "The root topic's note, in Markdown: how to use the starter.",
       "minLength": 1,
       "type": "string"
     },
@@ -45,7 +208,7 @@
       "type": "integer"
     },
     "outline": {
-      "description": "Topics, one per line: the root first, then each topic indented two spaces a level deeper than its parent. \"Text >nodeType\" sets a node type.",
+      "description": "Topics, one per line: the root first, then each topic indented two spaces a level deeper than its parent. \"Text >nodeType\" sets a node type. A starter has an outline or a document.",
       "items": {
         "pattern": "^(  )*[^ ]",
         "type": "string"
@@ -93,6 +256,11 @@
         "learning"
       ]
     },
+    "structure": {
+      "description": "The canvas's layout structure when it isn't the type's own, such as timeline.alternating.",
+      "pattern": "^[a-z][A-Za-z]*\\.[a-z][A-Za-z]*$",
+      "type": "string"
+    },
     "summary": {
       "description": "One line under the title, in English.",
       "minLength": 1,
@@ -114,7 +282,6 @@
     "kicker",
     "name",
     "order",
-    "outline",
     "summary",
     "title",
     "type"

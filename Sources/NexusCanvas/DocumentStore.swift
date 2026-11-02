@@ -1,5 +1,6 @@
 import Foundation
 import NexusCore
+import NexusScene
 import Observation
 
 /// Records patches for undo. The app registers them with `NSUndoManager`; tests and
@@ -7,6 +8,17 @@ import Observation
 @MainActor
 public protocol UndoRegistrar: AnyObject {
     func register(_ patch: Patch, store: DocumentStore)
+}
+
+/// A live session bound to a document (M46): every local commit goes to it, so it can send
+/// the edit's ops.
+@MainActor
+public protocol CollabBinding: AnyObject {
+    /// False for a view-only participant: edits are turned away before they're applied.
+    var allowsEdits: Bool { get }
+    func committed(_ patch: Patch, store: DocumentStore)
+    /// An edit was turned away (view only).
+    func refused(_ patch: Patch)
 }
 
 /// Owns the document model. Every change, including undo and redo, arrives as a
@@ -23,8 +35,14 @@ public final class DocumentStore {
     @ObservationIgnored private var observers: [ObjectIdentifier: (Patch) -> Void] = [:]
     /// Called after every change so the document can update its change count.
     @ObservationIgnored public var onChange: ((Patch, ChangeKind) -> Void)?
+    /// The live session this document is in, if any (M46).
+    @ObservationIgnored public weak var collab: (any CollabBinding)?
+    /// True while observers hear about someone else's edit: views follow it without
+    /// moving this person's canvas, selection or camera.
+    @ObservationIgnored public private(set) var applyingRemote = false
 
-    public enum ChangeKind: Sendable { case done, undone, redone }
+    /// `remote`: someone else's edit in a live session, applied outside undo.
+    public enum ChangeKind: Sendable { case done, undone, redone, remote }
 
     public init(model: DocumentModel) {
         self.model = model
@@ -35,10 +53,22 @@ public final class DocumentStore {
     /// Applies a new edit and registers it for undo.
     public func commit(_ patch: Patch) {
         guard !patch.isEmpty else { return }
+        if let c = collab, !c.allowsEdits { return c.refused(patch) }
         model.apply(patch)
         revision += 1
+        collab?.committed(patch, store: self)
         undoRegistrar?.register(patch, store: self)
         notify(patch, .done)
+    }
+
+    /// Someone else's edit in a live session (M46): applied and drawn, never undone here.
+    public func applyRemote(_ patch: Patch) {
+        guard !patch.isEmpty else { return }
+        model.apply(patch)
+        revision += 1
+        applyingRemote = true
+        defer { applyingRemote = false }
+        notify(patch, .remote)
     }
 
     /// Applies a patch coming from the undo machinery (already inverted for undo).

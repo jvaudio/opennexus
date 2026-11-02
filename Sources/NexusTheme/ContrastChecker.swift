@@ -1,8 +1,8 @@
 import Foundation
 import NexusCore
 
-/// The theme builder's live contrast check: node text against its background for every
-/// role, node style and branch colour a theme can produce.
+/// The theme builder's live contrast check: node text, and a formula's error colour,
+/// against its background for every role, node style and branch colour a theme can produce.
 public enum ContrastChecker {
     public struct Report: Sendable, Equatable {
         public var minimum: Double
@@ -44,6 +44,14 @@ public enum ContrastChecker {
                         worst = "\(style.name) \(role.rawValue) #\(i)"
                         detail = "text \(a.text.hex) on \(a.textBackground.hex) branch \(branch.hex)"
                     }
+                    // A formula with an error shows its source in the error colour (M48).
+                    let error = t.formulaErrorColor(on: a.textBackground, canvas: env.canvas)
+                    let e = Contrast.ratio(error, a.textBackground, backdrop: env.canvas)
+                    if e < minimum {
+                        minimum = e
+                        worst = "\(style.name) \(role.rawValue) #\(i) formula error"
+                        detail = "error \(error.hex) on \(a.textBackground.hex) branch \(branch.hex)"
+                    }
                 }
             }
         }
@@ -59,5 +67,13 @@ public enum ContrastChecker {
             return Contrast.ratio(text, c.composited(over: theme.canvas)) >= 4.5
         }.count
         return (passing, colors.count)
+    }
+}
+
+extension Theme {
+    /// The colour a formula with an error shows its source in (M48): the theme's critical
+    /// red, lifted until it reads on the topic as the theme's text must.
+    public func formulaErrorColor(on background: RGBA, canvas: RGBA) -> RGBA {
+        Contrast.adjusted(critical, on: background, backdrop: canvas, target: max(4.5, contrastTarget))
     }
 }

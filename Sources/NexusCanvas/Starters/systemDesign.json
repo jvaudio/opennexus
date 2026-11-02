@@ -1,0 +1,120 @@
+{
+  "aliases": [
+    "system design",
+    "url shortener",
+    "scalability",
+    "design interview"
+  ],
+  "boundaries": [
+    {
+      "meaning": "vpc",
+      "title": "Private network",
+      "topics": [
+        "Load balancer"
+      ]
+    },
+    {
+      "meaning": "zone",
+      "title": "Async analytics",
+      "topics": [
+        "Click queue"
+      ]
+    }
+  ],
+  "category": "architecture",
+  "collection": "engineering",
+  "details": [
+    {
+      "edge": "HTTPS",
+      "topic": "Load balancer"
+    },
+    {
+      "edge": "POST /links",
+      "note": "Creates a short code for a long URL. Writes are rare next to reads, so this service can stay small.",
+      "topic": "Shorten service"
+    },
+    {
+      "edge": "gRPC",
+      "topic": "Auth service"
+    },
+    {
+      "edge": "gRPC",
+      "note": "Checks the target URL against a blocklist before a link is created.",
+      "topic": "Abuse checker"
+    },
+    {
+      "edge": "gRPC",
+      "note": "Hands out unique seven-character codes, for example base-62 of a counter, so two links never collide.",
+      "topic": "ID generator"
+    },
+    {
+      "edge": "SQL",
+      "note": "The source of truth: code, target URL, owner and expiry date.",
+      "topic": "Links database"
+    },
+    {
+      "edge": "GET /{code}",
+      "topic": "Redirect service"
+    },
+    {
+      "edge": "Key lookup",
+      "note": "Popular codes are served from memory, which keeps redirects fast and the database quiet.",
+      "topic": "Link cache"
+    },
+    {
+      "edge": "AMQP",
+      "note": "The redirect publishes a click and returns at once; analytics catch up later.",
+      "topic": "Click queue"
+    },
+    {
+      "edge": "Consume",
+      "topic": "Analytics worker"
+    },
+    {
+      "edge": "Batch write",
+      "topic": "Click history store"
+    }
+  ],
+  "id": "systemDesign",
+  "kicker": "ARCHITECTURE",
+  "name": "System design",
+  "note": "A classic design exercise: a link shortener that serves far more redirects than new links. Follow a request from the client to the data, then swap in your own services, stores and protocols. Label each arrow with how the parts talk.",
+  "order": 41,
+  "outline": [
+    "Link shortener",
+    "  Web browser >client",
+    "    Load balancer >lb",
+    "      Shorten service >service",
+    "        Auth service >auth",
+    "        Abuse checker >service",
+    "        ID generator >service",
+    "        Links database >db",
+    "      Redirect service >service",
+    "        Link cache >cache",
+    "        Click queue >queue",
+    "          Analytics worker >fn",
+    "            Click history store >storage",
+    "  Mobile app >mobile",
+    "  Metrics and alerts >monitor"
+  ],
+  "relationships": [
+    {
+      "from": "Mobile app",
+      "label": "HTTPS",
+      "to": "Load balancer"
+    },
+    {
+      "from": "Redirect service",
+      "label": "SQL on cache miss",
+      "to": "Links database"
+    },
+    {
+      "from": "Metrics and alerts",
+      "label": "Health checks",
+      "to": "Load balancer"
+    }
+  ],
+  "summary": "Clients, services, cache and data",
+  "title": "Link shortener",
+  "type": "architecture"
+}

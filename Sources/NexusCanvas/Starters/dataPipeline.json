@@ -1,0 +1,111 @@
+{
+  "aliases": [
+    "data pipeline",
+    "etl",
+    "elt",
+    "warehouse",
+    "ingest"
+  ],
+  "category": "architecture",
+  "collection": "architecture",
+  "details": [
+    {
+      "edge": "Trip records",
+      "note": "Accepts records from every station every few minutes and never changes them.",
+      "topic": "Ingest trips"
+    },
+    {
+      "edge": "Raw files",
+      "note": "Files exactly as received, one folder a day. Never edit them: fix problems downstream and replay.",
+      "topic": "Raw landing zone"
+    },
+    {
+      "edge": "Daily batch",
+      "note": "Drops duplicates, fixes time zones and rejects trips under a minute or over a day.",
+      "topic": "Clean records"
+    },
+    {
+      "edge": "Invalid rows",
+      "topic": "Rejected records"
+    },
+    {
+      "edge": "Rejected rows",
+      "note": "A sudden jump in rejects usually means a station's software has changed.",
+      "topic": "Summarise rejects"
+    },
+    {
+      "edge": "Valid trips",
+      "note": "Adds the weather at the start time and each station's neighbourhood.",
+      "topic": "Enrich trips"
+    },
+    {
+      "edge": "Enriched trips",
+      "note": "Loads into a staging table, then swaps it in, so reports never see half a day.",
+      "topic": "Load warehouse"
+    },
+    {
+      "edge": "Trip facts",
+      "note": "Trips as facts; stations, dates and weather as dimensions.",
+      "topic": "Data warehouse"
+    },
+    {
+      "edge": "Daily totals",
+      "topic": "Build reports"
+    },
+    {
+      "edge": "New stations",
+      "topic": "Register stations"
+    },
+    {
+      "edge": "Station rows",
+      "topic": "Station register"
+    },
+    {
+      "edge": "Reject summary",
+      "topic": "Data engineer"
+    },
+    {
+      "edge": "Weekly report",
+      "topic": "City planners"
+    }
+  ],
+  "id": "dataPipeline",
+  "kicker": "DATA FLOW",
+  "name": "Data pipeline",
+  "note": "Follow one record from left to right: ingest it as it arrives, clean it, enrich it, then load it. Keep the raw landing zone so any step can be replayed, and make sure rejected rows reach a person.",
+  "order": 56,
+  "outline": [
+    "Bike-share ride data",
+    "  Operations team >entity",
+    "    Register stations >process",
+    "      Station register >store",
+    "  Docking stations >entity",
+    "    Ingest trips >process",
+    "      Raw landing zone >store",
+    "        Clean records >process",
+    "          Enrich trips >process",
+    "            Load warehouse >process",
+    "              Data warehouse >store",
+    "                Build reports >process",
+    "                  City planners >entity",
+    "          Rejected records >store",
+    "            Summarise rejects >process",
+    "              Data engineer >entity",
+    "  Weather service >entity"
+  ],
+  "relationships": [
+    {
+      "from": "Weather service",
+      "label": "Hourly weather",
+      "to": "Enrich trips"
+    },
+    {
+      "from": "Station register",
+      "label": "Station locations",
+      "to": "Enrich trips"
+    }
+  ],
+  "summary": "Ingest, clean, enrich, load",
+  "title": "Bike-share ride data",
+  "type": "dfd"
+}

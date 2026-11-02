@@ -1,0 +1,67 @@
+{
+  "aliases": [
+    "one on one",
+    "1:1",
+    "1on1",
+    "check-in",
+    "manager"
+  ],
+  "category": "planning",
+  "collection": "meetings",
+  "details": [
+    {
+      "note": "Theirs come first. Ask them to add items before the meeting.",
+      "topic": "Your topics"
+    },
+    {
+      "note": "One thing to keep doing and one to try, each with a recent example.",
+      "topic": "Feedback"
+    },
+    {
+      "note": "Each has an owner. Review last week's before adding new ones.",
+      "topic": "Actions"
+    },
+    {
+      "done": false,
+      "topic": "Manager: chase refund policy"
+    },
+    {
+      "done": false,
+      "topic": "You: draft training outline"
+    },
+    {
+      "done": false,
+      "topic": "Both: decide billing move"
+    }
+  ],
+  "id": "oneOnOne",
+  "kicker": "MIND MAP",
+  "name": "One-on-one agenda",
+  "note": "Make a copy for each meeting and let your report add their topics first; it's their time. Close by turning anything agreed into actions with an owner, and tick them off next week.",
+  "order": 36,
+  "outline": [
+    "Weekly one-on-one",
+    "  How you're doing",
+    "    Energy this week",
+    "    Workload: heavy since launch",
+    "  Your topics",
+    "    Moving to the billing queue",
+    "    Working from home on Fridays",
+    "  Work in progress",
+    "    Help centre rewrite",
+    "    Blocked on refund policy",
+    "  Growth",
+    "    Leading next month's training",
+    "    Budget for a writing course",
+    "  Feedback",
+    "    Praise: calm on angry call",
+    "    Try: shorter ticket notes",
+    "  Actions",
+    "    Manager: chase refund policy",
+    "    You: draft training outline",
+    "    Both: decide billing move"
+  ],
+  "summary": "Their topics first, then actions",
+  "title": "Weekly one-on-one",
+  "type": "mindmap"
+}

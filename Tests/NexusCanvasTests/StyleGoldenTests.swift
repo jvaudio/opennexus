@@ -4,6 +4,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 @testable import NexusTheme
 
 /// M2 acceptance: the NS sample map in 9 node styles × 4 required themes, rendered

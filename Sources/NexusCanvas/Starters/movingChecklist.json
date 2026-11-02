@@ -1,0 +1,120 @@
+{
+  "aliases": [
+    "moving",
+    "move house",
+    "relocation",
+    "checklist",
+    "new home"
+  ],
+  "category": "planning",
+  "collection": "personal",
+  "details": [
+    {
+      "done": true,
+      "topic": "Give notice on the flat"
+    },
+    {
+      "done": true,
+      "topic": "Book a removal van"
+    },
+    {
+      "done": false,
+      "topic": "Declutter the spare room"
+    },
+    {
+      "done": true,
+      "topic": "Order boxes and tape"
+    },
+    {
+      "done": false,
+      "topic": "Set up post redirection"
+    },
+    {
+      "done": false,
+      "topic": "Book a day off work"
+    },
+    {
+      "done": false,
+      "topic": "Tell the bank and doctor"
+    },
+    {
+      "done": false,
+      "topic": "Arrange broadband at new place"
+    },
+    {
+      "done": false,
+      "topic": "Pack books and winter clothes"
+    },
+    {
+      "done": false,
+      "topic": "Defrost the freezer"
+    },
+    {
+      "done": false,
+      "topic": "Pack an essentials box"
+    },
+    {
+      "done": false,
+      "topic": "Confirm van and key times"
+    },
+    {
+      "done": false,
+      "topic": "Meter readings at both homes"
+    },
+    {
+      "done": false,
+      "topic": "Final check of every room"
+    },
+    {
+      "done": false,
+      "topic": "Hand back the old keys"
+    },
+    {
+      "done": false,
+      "topic": "Register to vote"
+    },
+    {
+      "done": false,
+      "topic": "Update council tax"
+    },
+    {
+      "done": false,
+      "topic": "Meet the neighbours"
+    }
+  ],
+  "id": "movingChecklist",
+  "kicker": "CHECKLIST",
+  "name": "Moving checklist",
+  "note": "Work down the list week by week and tick each task as it's done. Change the timings to suit your moving date, and add anything particular to your new home.",
+  "order": 98,
+  "outline": [
+    "Moving house",
+    "  Six weeks before",
+    "    Give notice on the flat",
+    "    Book a removal van",
+    "    Declutter the spare room",
+    "  Four weeks before",
+    "    Order boxes and tape",
+    "    Set up post redirection",
+    "    Book a day off work",
+    "  Two weeks before",
+    "    Tell the bank and doctor",
+    "    Arrange broadband at new place",
+    "    Pack books and winter clothes",
+    "  Moving week",
+    "    Defrost the freezer",
+    "    Pack an essentials box",
+    "    Confirm van and key times",
+    "  Moving day",
+    "    Meter readings at both homes",
+    "    Final check of every room",
+    "    Hand back the old keys",
+    "  First week in",
+    "    Register to vote",
+    "    Update council tax",
+    "    Meet the neighbours"
+  ],
+  "summary": "Weeks before, the day, after",
+  "title": "Moving house",
+  "type": "tree"
+}

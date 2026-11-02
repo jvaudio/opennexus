@@ -1,16 +1,20 @@
-import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // Shared building blocks for the Format panel (FMT-1…3).
 
 extension RGBA {
     init(color: Color) {
-        let ns = NSColor(color).usingColorSpace(.sRGB) ?? .black
-        self.init(
-            r: Double(ns.redComponent), g: Double(ns.greenComponent), b: Double(ns.blueComponent),
-            a: Double(ns.alphaComponent))
+        let c = color.srgbComponents ?? (0, 0, 0, 1)
+        self.init(r: c.red, g: c.green, b: c.blue, a: c.alpha)
     }
 }
 
@@ -41,7 +45,7 @@ struct PanelSection<Content: View, Accessory: View>: View {
                 } label: {
                     Text(title.uppercased())
                         .font(.chrome(11, weight: .semibold))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.chromeSecondary)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
                 }
@@ -126,7 +130,7 @@ struct PanelToggle: View {
         let toggle = Toggle(isOn: Binding(get: { isOn && !mixed }, set: set)) {
             HStack(spacing: 6) {
                 Text(label).font(.chrome(13))
-                if mixed { Text(Loc.t("Mixed")).font(.chrome(11)).foregroundStyle(.secondary) }
+                if mixed { Text(Loc.t("Mixed")).font(.chrome(11)).foregroundStyle(.chromeSecondary) }
             }
         }
         .toggleStyle(.switch)
@@ -192,12 +196,12 @@ struct Tile<Content: View>: View {
                 .foregroundStyle(selected ? Color.accentColor : Color.primary)
                 .background(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(selected ? Color.accentColor.opacity(0.1) : Color(nsColor: .controlBackgroundColor))
+                        .fill(selected ? Color.accentColor.opacity(0.1) : Color.controlBackground)
                 )
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
                         .strokeBorder(
-                            selected ? Color.accentColor : Color(nsColor: .separatorColor),
+                            selected ? Color.accentColor : Color.separatorLine,
                             lineWidth: selected ? 1.5 : 1))
         }
         .buttonStyle(.plain)

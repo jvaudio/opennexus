@@ -1,9 +1,11 @@
 import Foundation
+import NexusCanvas
 import Testing
 
 @testable import NexusAgent
 @testable import NexusCore
 @testable import NexusFormat
+@testable import NexusScene
 
 /// A temporary folder holding a copy of the launch-plan fixture.
 struct Sandbox {
@@ -406,7 +408,7 @@ final class Session {
         #expect(run(["new", "X", "--starter", "dfd", "--type", "dfd"], in: box.root).0 == 64)
         let (s6, list, _, _) = run(["starters"], in: box.root)
         let rows = list.split(separator: "\n")
-        #expect(s6 == 0 && rows.count == 41, "16 blank starters and 25 templates")
+        #expect(s6 == 0 && rows.count == 116, "16 blank starters and 100 templates")
         #expect(rows.first?.hasPrefix("blank.mindmap") == true && rows.contains { $0.hasPrefix("threat ") })
         // import
         try "# Trip\n## Packing\n- Passport\n- Charger\n## Trains\n".write(
@@ -414,6 +416,48 @@ final class Session {
         let (s4, report, _, _) = run(["import", "trip.md"], in: box.root)
         #expect(s4 == 0 && report.contains("1 canvases · 5 topics"), "\(report)")
         #expect(try MapFiles.read(box.root.appending(path: "trip.nexus")).orderedCanvases[0].nodes.count == 5)
+    }
+
+    /// M50: `nexus starter install` adds a starter file or pack to the user's own, which
+    /// `starters`, `new --starter` and list_starters then include. Clashes need a choice.
+    @Test func userStartersInTheCLIAndMCP() throws {
+        let box = try Sandbox()
+        defer { box.remove() }
+        let folder = box.root.appending(path: "My Starters")
+        let env = ["OPENNEXUS_STARTERS": folder.path]
+        var s = try #require(StarterLibrary.starter("trip"))
+        s.id = "ski-week"
+        s.name = "Ski week"
+        try StarterFile.data(s).write(to: box.root.appending(path: "ski.nexusstarter"))
+        let (s1, out1, _, _) = run(["starter", "install", "ski.nexusstarter"], in: box.root, env: env)
+        #expect(s1 == 0 && out1 == "ski-week  Ski week\n")
+        let (s2, _, err2, _) = run(["starter", "install", "ski.nexusstarter"], in: box.root, env: env)
+        #expect(s2 == 1 && err2.contains("you already have “Ski week” (ski-week); use --replace or --keep-both"))
+        let (s3, out3, _, _) = run(["starter", "install", "ski.nexusstarter", "--keep-both"], in: box.root, env: env)
+        #expect(s3 == 0 && out3 == "ski-week-2  Ski week 2\n")
+        #expect(run(["starter", "install", "ski.nexusstarter", "--replace"], in: box.root, env: env).0 == 0)
+        let (_, list, _, _) = run(["starters"], in: box.root, env: env)
+        let rows = list.split(separator: "\n")
+        #expect(rows.count == 118 && rows[116].hasPrefix("ski-week ") && rows[117].hasPrefix("ski-week-2 "))
+        // A pack, and a file that isn't a starter.
+        try StarterFile.pack([s, try #require(StarterLibrary.starter("swot"))]).write(
+            to: box.root.appending(path: "two.nexusstarters"))
+        let (s4, out4, _, _) = run(["starter", "install", "two.nexusstarters", "--keep-both"], in: box.root, env: env)
+        #expect(s4 == 0 && out4 == "ski-week-3  Ski week 3\nswot-2  SWOT\n", "\(out4)")
+        try Data("{".utf8).write(to: box.root.appending(path: "bad.nexusstarter"))
+        let (s5, _, err5, _) = run(["starter", "install", "bad.nexusstarter"], in: box.root, env: env)
+        #expect(s5 == 1 && err5 == "nexus starter install: “bad.nexusstarter” isn’t a starter file: it isn’t JSON.\n")
+        #expect(run(["starter", "remove", "x"], in: box.root, env: env).0 == 64)
+        // new from one of the user's own.
+        let (s6, path, _, _) = run(["new", "Alps", "--starter", "ski-week"], in: box.root, env: env)
+        #expect(s6 == 0)
+        let made = try MapFiles.read(URL(fileURLWithPath: path.trimmingCharacters(in: .newlines)))
+        #expect(made.orderedCanvases[0].title == "Alps" && made.orderedCanvases[0].nodes.count > 5)
+        // The MCP server lists them too.
+        var tools = MapTools(policy: AgentPolicy(enabled: true))
+        tools.mine = MyStarters(folder: folder)
+        let found = try tools.call("list_starters", ["query": "ski"]).text
+        #expect(found.contains("ski-week — Ski week (mindmap, planning)"), "\(found)")
     }
 
     @Test func mcpReadsPolicyFile() throws {

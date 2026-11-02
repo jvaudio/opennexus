@@ -1,0 +1,62 @@
+{
+  "aliases": [
+    "critique",
+    "design review",
+    "feedback",
+    "crit"
+  ],
+  "category": "thinking",
+  "collection": "product",
+  "details": [
+    {
+      "markers": [
+        "symbol-check"
+      ],
+      "topic": "What works"
+    },
+    {
+      "markers": [
+        "symbol-question"
+      ],
+      "topic": "Questions"
+    },
+    {
+      "markers": [
+        "symbol-exclaim"
+      ],
+      "topic": "Concerns"
+    },
+    {
+      "note": "Each action has an owner and is checked at the next critique.",
+      "topic": "Agreed actions"
+    }
+  ],
+  "id": "designCritique",
+  "kicker": "WHITEBOARD",
+  "name": "Design critique",
+  "note": "Put the design and its goal in the middle, then gather feedback around it: what works, questions, concerns and ideas. Judge against the goal rather than taste, and finish with agreed actions.",
+  "order": 70,
+  "outline": [
+    "Critique · weekly planner screen",
+    "  Goal",
+    "    Plan a week in five minutes",
+    "  What works",
+    "    Clear day columns",
+    "    Drag to swap meals",
+    "  Questions",
+    "    Where do leftovers go?",
+    "    Does it fit small screens?",
+    "  Concerns",
+    "    Add button hard to find",
+    "    Low contrast on weekend days",
+    "  Ideas",
+    "    Suggest meals from favourites",
+    "    Show prep time on cards",
+    "  Agreed actions",
+    "    Raise contrast to AA",
+    "    Test with five parents"
+  ],
+  "summary": "Goal, feedback and agreed actions",
+  "title": "Critique · weekly planner screen",
+  "type": "whiteboard"
+}

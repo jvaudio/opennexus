@@ -1,0 +1,50 @@
+{
+  "aliases": [
+    "lecture",
+    "notes",
+    "university",
+    "seminar",
+    "study"
+  ],
+  "category": "thinking",
+  "collection": "thinking",
+  "details": [
+    {
+      "note": "Redraw the diagram from memory after the lecture. If you can't, add what's missing to Questions for seminar.",
+      "topic": "Worked example"
+    }
+  ],
+  "id": "lectureNotes",
+  "kicker": "TREE",
+  "name": "Lecture notes",
+  "note": "Follow the lecturer's headings, one point per line, with the detail indented beneath. Straight after the lecture, add your own questions and the reading so the notes are ready for revision.",
+  "order": 89,
+  "outline": [
+    "Supply and demand · Week 3",
+    "  Key terms",
+    "    Demand curve",
+    "    Supply curve",
+    "    Equilibrium price",
+    "  Demand",
+    "    Price up, quantity demanded down",
+    "    Shifts with income and tastes",
+    "    Substitutes and complements",
+    "  Supply",
+    "    Price up, quantity supplied up",
+    "    Shifts with costs and technology",
+    "  Equilibrium",
+    "    Where the two curves cross",
+    "    Shortage below, surplus above",
+    "  Worked example",
+    "    Resold concert tickets",
+    "    Price cap causes queues",
+    "  Questions for seminar",
+    "    Why do rents keep rising?",
+    "    Who gains from a cap?",
+    "  Reading",
+    "    Chapter 4, pages 60–82"
+  ],
+  "summary": "Headings, points and questions",
+  "title": "Supply and demand",
+  "type": "tree"
+}

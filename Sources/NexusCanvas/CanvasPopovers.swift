@@ -1,10 +1,17 @@
 import AVFoundation
-import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
 import UniformTypeIdentifiers
 
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
+
+#if os(macOS)
 /// Presents the canvas's popovers next to a topic (note, link, labels, markers & stickers,
 /// comments, audio), on the canvas or on the topic's outline row, and handles image /
 /// attachment requests.
@@ -80,9 +87,11 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
         guard let view else { return nil }
         let c = view.controller
         let canvasShown = view.window != nil && !view.isHiddenOrHasHiddenAncestor
-        if c.outlineFocused, let row = c.outlineAnchor?(id) { return row }
-        if c.ganttFocused, let row = c.ganttAnchor?(id) { return row }
-        if !canvasShown, let row = c.outlineAnchor?(id) ?? c.ganttAnchor?(id) { return row }
+        let outline = PopoverAnchors.outline(c)
+        let gantt = PopoverAnchors.gantt(c)
+        if c.outlineFocused, let row = outline?(id) { return row }
+        if c.ganttFocused, let row = gantt?(id) { return row }
+        if !canvasShown, let row = outline?(id) ?? gantt?(id) { return row }
         return view.viewRect(of: id).map { (view, $0) }
     }
 
@@ -125,6 +134,8 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
     }
 }
 
+#endif
+
 // MARK: - Note
 
 struct NotePopover: View {
@@ -137,7 +148,7 @@ struct NotePopover: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Note").font(.headline)
-                Text(controller.canvas.nodes[node]?.text ?? "").foregroundStyle(.secondary).lineLimit(1)
+                Text(controller.canvas.nodes[node]?.text ?? "").foregroundStyle(.chromeSecondary).lineLimit(1)
                 Spacer()
                 Button("Done") { save() }.keyboardShortcut(.defaultAction)
             }
@@ -145,9 +156,17 @@ struct NotePopover: View {
                 .font(.chrome(13))
                 .scrollContentBackground(.hidden)
                 .padding(6)
-                .background(RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .textBackgroundColor)))
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.textBackground))
                 .overlay(RoundedRectangle(cornerRadius: 8).strokeBorder(.separator))
-            Text("Markdown: # headings, - lists, ``` code, | tables |").font(.chrome(11)).foregroundStyle(
+            if Preferences.shared.bool("editing.typesetMath"), !MathMarkup.scan(text).formulas.isEmpty {
+                // The note's formulas as they'll show (M48).
+                ScrollView { MathNoteText(text: text, size: 13).frame(maxWidth: .infinity, alignment: .leading) }
+                    .frame(maxHeight: 140)
+                    .padding(6)
+                    .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
+                    .accessibilityLabel(Loc.t("Preview"))
+            }
+            Text("Markdown: # headings, - lists, ``` code, | tables |, $math$").font(.chrome(11)).foregroundStyle(
                 .secondary)
         }
         .padding(14)
@@ -205,7 +224,7 @@ struct LinkPopover: View {
                         HStack {
                             Text(t.2)
                             Spacer()
-                            Text(t.3).foregroundStyle(.secondary).font(.chrome(11))
+                            Text(t.3).foregroundStyle(.chromeSecondary).font(.chrome(11))
                         }
                     }
                     .buttonStyle(.plain)
@@ -213,6 +232,7 @@ struct LinkPopover: View {
                 .frame(minHeight: 160)
             case "file", "folder":
                 Button(kind == "file" ? Loc.t("Choose File…") : Loc.t("Choose Folder…")) {
+                    #if os(macOS)
                     let p = NSOpenPanel()
                     p.canChooseFiles = kind == "file"
                     p.canChooseDirectories = kind == "folder"
@@ -220,9 +240,16 @@ struct LinkPopover: View {
                         controller.setLink(u.absoluteString, on: node)
                         close()
                     }
+                    #else
+                    PlatformOpen.choose(kind == "file" ? [.item] : [.folder]) { urls in
+                        guard let u = urls.first else { return }
+                        controller.setLink(u.absoluteString, on: node)
+                        close()
+                    }
+                    #endif
                 }
                 Text("Links keep the file where it is; the file itself is not copied into the document.")
-                    .font(.chrome(11)).foregroundStyle(.secondary)
+                    .font(.chrome(11)).foregroundStyle(.chromeSecondary)
             default:
                 TextField("https://", text: $url)
                     .textFieldStyle(.roundedBorder)
@@ -242,7 +269,7 @@ struct LinkPopover: View {
             if !back.isEmpty {
                 Divider()
                 Text(Loc.n("LINKED FROM %lld TOPIC", "LINKED FROM %lld TOPICS", back.count))
-                    .font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                    .font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
                 ForEach(back, id: \.node) { b in
                     Text("⤳ \(b.text) · \(b.canvasTitle)").font(.chrome(12))
                 }
@@ -310,7 +337,7 @@ struct LabelPopover: View {
                             HStack {
                                 Text(s.label)
                                 Spacer()
-                                Text(Loc.f("used %lld×", s.count)).foregroundStyle(.secondary).font(.chrome(11))
+                                Text(Loc.f("used %lld×", s.count)).foregroundStyle(.chromeSecondary).font(.chrome(11))
                             }
                             .padding(.vertical, 3)
                             .contentShape(Rectangle())
@@ -323,7 +350,7 @@ struct LabelPopover: View {
                 }
             }
             .accessibilityLabel(Loc.t("Label suggestions"))
-            Toggle("Auto sort A–Z", isOn: $sort).toggleStyle(.checkbox)
+            Toggle("Auto sort A–Z", isOn: $sort).checkboxToggle()
             HStack {
                 Spacer()
                 Button("Done", action: save).keyboardShortcut(.defaultAction)
@@ -400,7 +427,7 @@ struct MarkerPopover: View {
                             }
                         }
                         Text("Picking from the same group replaces; another group adds.")
-                            .font(.chrome(11)).foregroundStyle(.secondary)
+                            .font(.chrome(11)).foregroundStyle(.chromeSecondary)
                     }
                 }
                 .accessibilityLabel(Loc.t("Markers"))
@@ -431,7 +458,7 @@ struct MarkerPopover: View {
                     }
                 }
                 Text("✦ Make a sticker with Image Playground arrives with on-device AI.")
-                    .font(.chrome(11)).foregroundStyle(.secondary)
+                    .font(.chrome(11)).foregroundStyle(.chromeSecondary)
             }
             Spacer(minLength: 0)
         }
@@ -476,6 +503,15 @@ final class AudioRecorderModel {
 }
 
 struct AudioPopover: View {
+    #if os(macOS)
+    static var recordedHere: String { Loc.t("Recorded on this Mac. Transcription runs on-device (AI, M6).") }
+    #else
+    static var recordedHere: String {
+        onPhone
+            ? Loc.t("Recorded on this iPhone. Transcription runs on-device (AI, M6).")
+            : Loc.t("Recorded on this iPad. Transcription runs on-device (AI, M6).")
+    }
+    #endif
     var controller: CanvasController
     let node: NodeID
     var close: () -> Void
@@ -495,9 +531,32 @@ struct AudioPopover: View {
                 }
             }
             .keyboardShortcut(.defaultAction)
-            Text("Recorded on this Mac. Transcription runs on-device (AI, M6).")
-                .font(.chrome(11)).foregroundStyle(.secondary)
+            Text(Self.recordedHere)
+                .font(.chrome(11)).foregroundStyle(.chromeSecondary)
         }
         .padding(14)
     }
 }
+
+#if os(macOS)
+/// Where a topic's popover can hang besides the canvas (D254): its row in the outline, or
+/// a task's row in the Gantt, as a view and a rect in it, while that view shows it. The
+/// outline and the Gantt register here; the popovers ask.
+@MainActor
+enum PopoverAnchors {
+    typealias Anchor = (NodeID) -> (NSView, CGRect)?
+
+    final class Box {
+        let anchor: Anchor
+        init(_ anchor: @escaping Anchor) { self.anchor = anchor }
+    }
+
+    private static let outlines = NSMapTable<CanvasController, Box>.weakToStrongObjects()
+    private static let gantts = NSMapTable<CanvasController, Box>.weakToStrongObjects()
+
+    static func outline(_ c: CanvasController) -> Anchor? { outlines.object(forKey: c)?.anchor }
+    static func gantt(_ c: CanvasController) -> Anchor? { gantts.object(forKey: c)?.anchor }
+    static func setOutline(_ c: CanvasController, _ a: @escaping Anchor) { outlines.setObject(Box(a), forKey: c) }
+    static func setGantt(_ c: CanvasController, _ a: @escaping Anchor) { gantts.setObject(Box(a), forKey: c) }
+}
+#endif

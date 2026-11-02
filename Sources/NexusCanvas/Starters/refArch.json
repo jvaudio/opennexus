@@ -5,6 +5,7 @@
     "services"
   ],
   "category": "architecture",
+  "collection": "architecture",
   "id": "refArch",
   "kicker": "ARCHITECTURE",
   "name": "Reference architecture",

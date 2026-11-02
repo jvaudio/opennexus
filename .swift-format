@@ -4,6 +4,7 @@
   "indentation": { "spaces": 4 },
   "maximumBlankLines": 1,
   "respectsExistingLineBreaks": true,
+  "indentConditionalCompilationBlocks": false,
   "lineBreakBeforeEachArgument": false,
   "rules": {
     "AlwaysUseLowerCamelCase": false,

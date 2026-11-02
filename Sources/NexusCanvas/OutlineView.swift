@@ -1,6 +1,8 @@
+#if os(macOS)
 import AppKit
 import NexusCore
 import NexusKeys
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -71,10 +73,10 @@ struct OutlineHints: View {
             ForEach([("↩", "sibling"), ("⇥", "indent"), ("⇧⇥", "outdent"), ("⌥⌘↑↓", "reorder")], id: \.0) { k, v in
                 HStack(spacing: 5) {
                     Keycap(text: k)
-                    Text(v).foregroundStyle(.secondary)
+                    Text(v).foregroundStyle(.chromeSecondary)
                 }
             }
-            Text("Notes edit inline").foregroundStyle(.secondary)
+            Text("Notes edit inline").foregroundStyle(.chromeSecondary)
         }
         .font(.chrome(12.5))
     }
@@ -116,7 +118,7 @@ final class OutlineDocumentView: NSView, NSTextViewDelegate, ContextMenuTarget, 
         noteEditor.textContainer?.lineFragmentPadding = 0
         addSubview(noteEditor)
         controller.onOutlineEditChange = { [weak self] s in self?.editChanged(s) }
-        controller.outlineAnchor = { [weak self] id in self?.popoverAnchor(id) }
+        PopoverAnchors.setOutline(controller) { [weak self] id in self?.popoverAnchor(id) }
         observe()
     }
 
@@ -528,3 +530,4 @@ final class OutlineDocumentView: NSView, NSTextViewDelegate, ContextMenuTarget, 
     /// Show Menu on the outline itself: the selected row's menu.
     override func accessibilityPerformShowMenu() -> Bool { showMenu(for: controller.selection.primary) }
 }
+#endif

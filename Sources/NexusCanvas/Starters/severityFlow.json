@@ -1,0 +1,82 @@
+{
+  "aliases": [
+    "severity",
+    "sev1",
+    "incident triage",
+    "paging",
+    "on-call"
+  ],
+  "category": "security",
+  "collection": "security",
+  "details": [
+    {
+      "note": "Look at error rates, failed checkouts and support tickets, not hunches. Spend five minutes at most.",
+      "topic": "Check dashboards and reports"
+    },
+    {
+      "note": "The journeys that matter most. Name your own: booking, payment, upload.",
+      "topic": "Sign-in or checkout down?"
+    },
+    {
+      "edge": "Yes",
+      "note": "Most customers can't complete a core journey. Respond within 5 minutes, day or night.",
+      "topic": "Declare SEV1"
+    },
+    {
+      "note": "The incident lead runs the response and the comms; the on-call engineer fixes.",
+      "topic": "Page on-call and incident lead"
+    },
+    {
+      "edge": "No",
+      "note": "Any customer seeing errors, slowness or wrong data counts. A suspected breach also goes to the security on-call.",
+      "topic": "Customers or data affected?"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Workaround available?"
+    },
+    {
+      "edge": "No",
+      "note": "Some customers affected with no workaround, or data at risk. Respond within 15 minutes, day or night.",
+      "topic": "Declare SEV2"
+    },
+    {
+      "edge": "Yes",
+      "note": "Minor, or there's a workaround. Fix in working hours; no one is woken up.",
+      "topic": "Declare SEV3"
+    },
+    {
+      "edge": "No",
+      "note": "Note what you saw in the on-call log; if it comes back, start again at the top.",
+      "topic": "Log and keep watching"
+    }
+  ],
+  "id": "severityFlow",
+  "kicker": "FLOW",
+  "name": "Incident severity",
+  "note": "Answer the questions from the top to land on a severity; each severity says who to page. Change the thresholds and names to match your own on-call rota, and keep every question answerable in under a minute.",
+  "order": 60,
+  "outline": [
+    "Alert or customer report >start",
+    "  Check dashboards and reports >process",
+    "    Sign-in or checkout down? >decision",
+    "      Declare SEV1 >process",
+    "        Page on-call and incident lead >process",
+    "          Open bridge and status page >process",
+    "            Updates every 30 minutes >end",
+    "      Customers or data affected? >decision",
+    "        Workaround available? >decision",
+    "          Declare SEV2 >process",
+    "            Page service on-call >process",
+    "              Open incident channel >process",
+    "                Updates hourly until fixed >end",
+    "          Declare SEV3 >process",
+    "            Raise next-day ticket >process",
+    "              Fixed in working hours >end",
+    "        Log and keep watching >process",
+    "          No incident declared >end"
+  ],
+  "summary": "Questions that set the severity",
+  "title": "Incident severity",
+  "type": "flowchart"
+}

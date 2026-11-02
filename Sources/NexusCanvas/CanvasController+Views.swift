@@ -1,7 +1,9 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusKeys
 import NexusLayout
+import NexusScene
 import NexusTheme
 
 public enum CanvasViewMode: String, Sendable { case canvas, outline, split, gantt }
@@ -180,7 +182,7 @@ extension CanvasController {
         return v
     }
 
-    func refreshView(frame ids: [NodeID]? = nil, aspect: Double? = nil) {
+    package func refreshView(frame ids: [NodeID]? = nil, aspect: Double? = nil) {
         rebuildScene()
         onSceneChange?(true)
         if let ids { onFrame?(ids, aspect) }

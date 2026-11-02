@@ -1,0 +1,75 @@
+{
+  "aliases": [
+    "release",
+    "launch",
+    "gantt",
+    "schedule",
+    "milestones"
+  ],
+  "category": "planning",
+  "collection": "product",
+  "details": [
+    {
+      "days": 5,
+      "start": 0,
+      "topic": "Plan · week 1"
+    },
+    {
+      "days": 26,
+      "start": 7,
+      "topic": "Build · weeks 2–5"
+    },
+    {
+      "days": 12,
+      "start": 35,
+      "topic": "Beta · weeks 6–7"
+    },
+    {
+      "days": 49,
+      "note": "A milestone: the build that ships unless a blocker turns up.",
+      "topic": "Release candidate · week 8"
+    },
+    {
+      "days": 56,
+      "topic": "Launch · week 9"
+    },
+    {
+      "days": 70,
+      "topic": "Review · week 11"
+    },
+    {
+      "note": "Widen to everyone over a week if crash rates hold.",
+      "topic": "Staged roll-out from 10%"
+    }
+  ],
+  "id": "releasePlan",
+  "kicker": "TIMELINE",
+  "name": "Release plan",
+  "note": "Each event is a phase or a milestone, in order. Phases have a start and a length and milestones a single date, all counted from today, so the Gantt view shows the plan; move them to fit your calendar.",
+  "order": 69,
+  "outline": [
+    "Version 2.4 release",
+    "  Plan · week 1",
+    "    Lock the scope",
+    "    Size the stories",
+    "  Build · weeks 2–5",
+    "    Family sharing",
+    "    Shopping list by aisle",
+    "    New features behind flags",
+    "  Beta · weeks 6–7",
+    "    200 beta testers",
+    "    Triage crashes and feedback",
+    "  Release candidate · week 8",
+    "    Code freeze",
+    "    Store listing and screenshots",
+    "  Launch · week 9",
+    "    Staged roll-out from 10%",
+    "    Announcement email",
+    "  Review · week 11",
+    "    Adoption against goals",
+    "    Lessons for 2.5"
+  ],
+  "summary": "Phases and milestones, with dates",
+  "title": "Version 2.4 release",
+  "type": "timeline"
+}

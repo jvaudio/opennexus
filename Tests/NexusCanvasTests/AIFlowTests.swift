@@ -4,6 +4,7 @@ import Testing
 @testable import NexusCanvas
 @testable import NexusCore
 @testable import NexusKeys
+@testable import NexusScene
 
 /// M6 flows on a scripted engine (no model needed): ghosts, the prompt bar, the panel and
 /// the availability states. Every AI change is one undo.

@@ -1,0 +1,10 @@
+{
+  "id": "opennexus",
+  "name": "OpenNexus",
+  "version": "0.1.0",
+  "minAppVersion": "1.9.0",
+  "description": "View OpenNexus mind maps and diagrams in your vault, embed them in notes, and see any note as a map.",
+  "author": "Jerry Voelker",
+  "authorUrl": "https://github.com/jvaudio/opennexus",
+  "isDesktopOnly": false
+}

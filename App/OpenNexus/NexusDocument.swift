@@ -4,12 +4,15 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusReplica
+import NexusScene
+import NexusSync
 
 /// A `.nexus` package document. Autosaves in place and keeps versions (File › Revert To),
 /// writes recovery snapshots, and encrypts when a password is set (M7).
 final class NexusDocument: NSDocument {
     let store = DocumentStore(model: .blank())
-    private let undoBridge = DocumentUndoRegistrar()
+    private lazy var undoBridge = UndoManagerRegistrar { [weak self] in self?.undoManager }
     /// True for a brand-new untitled document, so the window opens with the root in Edit mode.
     private(set) var isFreshBlank = true
     /// The derived key while the document is password-protected (kept in memory only).
@@ -24,7 +27,6 @@ final class NexusDocument: NSDocument {
 
     override init() {
         super.init()
-        undoBridge.document = self
         store.undoRegistrar = undoBridge
         // A new document takes Settings › Editing › New documents and Appearance › Default look.
         store.replace(with: CanvasController.newDocumentModel(prefs: .shared))
@@ -53,6 +55,10 @@ final class NexusDocument: NSDocument {
             )
             store.updateDocument { $0.repairs = [] }
         }
+        // Copies other apps' sync left beside it (M45).
+        wc.findConflictCopies(offer: true)
+        // A document in a live session reconnects (M46).
+        resumeSession()
     }
 
     /// A stable id for this document's recovery snapshots (kept in the manifest).
@@ -86,8 +92,8 @@ final class NexusDocument: NSDocument {
         // A document that was never unlocked is written back exactly as it was read.
         if let lockedFiles { return NexusPackage.directoryWrapper(from: lockedFiles) }
         if typeName == Self.jsonType {
-            let json = DocumentJSON.export(
-                modelForSaving(), pretty: prefs.string("files.jsonLayout") != "compact", assets: true)
+            let json = ViewerCopy.json(
+                modelForSaving(), pretty: prefs.string("files.jsonLayout") != "compact", prefs: prefs)
             return FileWrapper(regularFileWithContents: Data(json.utf8))
         }
         var files = packageFiles()
@@ -95,8 +101,9 @@ final class NexusDocument: NSDocument {
         if let key = cryptoKey {
             return NexusPackage.directoryWrapper(from: try PackageCrypto.encrypt(files, with: key))
         }
-        // Quick Look's thumbnail and preview (never for encrypted documents).
+        // Quick Look's thumbnail and preview, and the viewer copy (never for encrypted documents).
         if let png = HeadlessExport.previewPNG(store.model) { files[NexusPackage.previewName] = png }
+        ViewerCopy.add(to: &files, modelForSaving(), prefs: prefs)
         return NexusPackage.directoryWrapper(from: files)
     }
 
@@ -105,7 +112,11 @@ final class NexusDocument: NSDocument {
         completionHandler: @escaping ((any Error)?) -> Void
     ) {
         super.save(to: url, ofType: typeName, for: saveOperation) { [weak self] error in
-            if error == nil, let self { Integrations.shared.documentSaved(self) }
+            if error == nil, let self {
+                Integrations.shared.documentSaved(self)
+                SyncCenter.shared.documentSaved(url)
+                (self.windowControllers.first as? DocumentWindowController)?.documentSaved(to: url, saveOperation)
+            }
             completionHandler(error)
         }
     }
@@ -144,6 +155,16 @@ final class NexusDocument: NSDocument {
         DispatchQueue.main.async { MainActor.assumeIsolated { me.mergeFromDisk() } }
     }
 
+    /// iCloud kept a conflicting version of this document (M45): offer to merge it in.
+    nonisolated override func presentedItemDidGain(_ version: NSFileVersion) {
+        nonisolated(unsafe) let me = self
+        DispatchQueue.main.async {
+            MainActor.assumeIsolated {
+                (me.windowControllers.first as? DocumentWindowController)?.findConflictCopies(offer: true)
+            }
+        }
+    }
+
     func mergeFromDisk() {
         guard let url = fileURL, lockedFiles == nil, let base = diskBase else { return }
         var disk: DocumentModel?
@@ -173,13 +194,30 @@ final class NexusDocument: NSDocument {
             fileModificationDate = date
         }
         if wasClean && conflicts.isEmpty { updateChangeCount(.changeCleared) }
+        // The topics whose unsaved edits here clashed with the file, and kept.
+        let kept = conflicts.prefix(3).joined(separator: ", ") + (conflicts.count > 3 ? "…" : "")
+        // Sync's merges (M45) say so, and point at the clashes they kept this Mac's side of.
+        // One toast replaces another, so the later one names this Mac's clashes too.
+        if SyncCenter.shared.fromSync(url) {
+            controller?.showToast(
+                conflicts.isEmpty
+                    ? Loc.t("Updated from sync · ⌘Z undoes")
+                    : Loc.f("Updated from sync · kept your version of %@", kept))
+            Task {
+                guard let p = await SyncCenter.shared.pendingConflict(for: url), !p.clashes.isEmpty else { return }
+                let count = Loc.n("%lld conflict", "%lld conflicts", p.clashes.count)
+                controller?.showToast(
+                    conflicts.isEmpty
+                        ? Loc.f("Updated from sync · %@ kept your version: File › Resolve Conflicts…", count)
+                        : Loc.f(
+                            "Updated from sync · kept your version of %@ · %@ to resolve: File › Resolve Conflicts…",
+                            kept, count))
+            }
+            return
+        }
         controller?.showToast(
             conflicts.isEmpty
-                ? Loc.t("Updated from disk · ⌘Z undoes")
-                : Loc.f(
-                    "Updated from disk · kept your version of %@",
-                    conflicts.prefix(3).joined(separator: ", ") + (conflicts.count > 3 ? "…" : ""))
-        )
+                ? Loc.t("Updated from disk · ⌘Z undoes") : Loc.f("Updated from disk · kept your version of %@", kept))
     }
 
     nonisolated override func read(from fileWrapper: FileWrapper, ofType typeName: String) throws {
@@ -407,33 +445,11 @@ final class NexusDocument: NSDocument {
     }
 
     override func close() {
+        suspendSession()
         writeSnapshot()
         snapshotTimer?.invalidate()
         snapshotTimer = nil
         super.close()
-    }
-}
-
-/// Registers canvas patches with the document's `NSUndoManager`, so Edit › Undo, the
-/// change count, autosave and versions all see every model change.
-final class DocumentUndoRegistrar: UndoRegistrar {
-    weak var document: NexusDocument?
-
-    func register(_ patch: Patch, store: DocumentStore) {
-        guard let um = document?.undoManager else { return }
-        registerInverse(of: patch, undoManager: um, store: store)
-        um.setActionName(Loc.t(patch.actionName))
-    }
-
-    private func registerInverse(of patch: Patch, undoManager um: UndoManager, store: DocumentStore) {
-        let inverse = patch.inverted
-        um.registerUndo(withTarget: store) { [weak self] store in
-            MainActor.assumeIsolated {
-                store.applyFromUndo(inverse, kind: um.isUndoing ? .undone : .redone)
-                self?.registerInverse(of: inverse, undoManager: um, store: store)
-                um.setActionName(Loc.t(patch.actionName))
-            }
-        }
     }
 }
 

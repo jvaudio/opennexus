@@ -30,6 +30,7 @@ let env = NexusCLI.Environment(
     cwd: URL(fileURLWithPath: FileManager.default.currentDirectoryPath),
     home: FileManager.default.homeDirectoryForCurrentUser,
     variables: ProcessInfo.processInfo.environment,
-    team: signingTeam())
+    team: signingTeam(),
+    executable: Bundle.main.executableURL?.resolvingSymlinksInPath().path)
 let status = MainActor.assumeIsolated { NexusCLI.run(Array(CommandLine.arguments.dropFirst()), io: io, env: env) }
 exit(status)

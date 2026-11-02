@@ -6,6 +6,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 import UniformTypeIdentifiers
 import WidgetKit
 
@@ -154,8 +155,14 @@ final class Integrations: NSObject {
         }
     }
 
-    /// Spotlight's "open this result".
+    /// Spotlight's "open this result", and an invite's universal link (`…/join/#…`, M46).
     func continueActivity(_ activity: NSUserActivity) -> Bool {
+        if activity.activityType == NSUserActivityTypeBrowsingWeb, let url = activity.webpageURL,
+            url.path.hasSuffix("/join/") || url.path.hasSuffix("/join")
+        {
+            CollabJoin.join(url.absoluteString)
+            return true
+        }
         guard activity.activityType == CSSearchableItemActionType,
             let id = activity.userInfo?[CSSearchableItemActivityIdentifier] as? String
         else { return false }
@@ -206,9 +213,7 @@ final class Integrations: NSObject {
         }
         UserDefaults.standard.set(tokens, forKey: "widgets.tokens")
         let snap = WidgetSnapshot(inbox: Array(inbox.prefix(6)), inboxCount: inbox.count, recents: recents)
-        if snap.inbox != WidgetSnapshot.read(from: group)?.inbox
-            || snap.recents != WidgetSnapshot.read(from: group)?.recents
-        {
+        if !snap.showsTheSame(as: WidgetSnapshot.read(from: group)) {
             try? snap.write(to: group)
             WidgetCenter.shared.reloadAllTimelines()
         }
@@ -222,7 +227,8 @@ final class Integrations: NSObject {
     // MARK: opennexus:// links
 
     /// `opennexus://capture` (the Share extension queued something), `quick-capture`,
-    /// `inbox`, `open/<token>` (widgets), `new`.
+    /// `inbox`, `open/<token>` (widgets), `new`, `join#<invite>` (M46), `view#<link>` (the
+    /// viewer site's Open in OpenNexus, M47d).
     @objc func handleURL(_ event: NSAppleEventDescriptor, reply: NSAppleEventDescriptor) {
         guard let s = event.paramDescriptor(forKeyword: keyDirectObject)?.stringValue, let url = URL(string: s) else {
             return
@@ -242,7 +248,34 @@ final class Integrations: NSObject {
                 open(URL(fileURLWithPath: path), canvas: nil, node: nil)
             }
         case "new": NewDocument.make()
+        // An invite to a live session (M46), from the join page while universal links wait.
+        case "join": CollabJoin.join(url.absoluteString)
+        // A share link, as a new untitled document with its import report (D441).
+        case "view": openShareLink(url.absoluteString)
         default: break
+        }
+    }
+
+    func openShareLink(_ link: String) {
+        let center = ShareCenter.shared
+        guard center.networkOn else {
+            let a = NSAlert()
+            a.messageText = Loc.t("Opening a share link uses the network")
+            a.informativeText = Loc.t(
+                "OpenNexus doesn’t use the network unless you turn it on. Turn on “Use the network” and “Share links” in Settings › Privacy & Data, then open the link again."
+            )
+            a.addButton(withTitle: Loc.t("Open Settings…"))
+            a.addButton(withTitle: Loc.t("Cancel"))
+            if a.runModal() == .alertFirstButtonReturn { AppPreferences.shared.showSettings(pane: "privacy") }
+            return
+        }
+        Task {
+            do {
+                let imported = try await center.importLink(link)
+                (NSApp.delegate as? AppDelegate)?.openImported(imported)
+            } catch {
+                CollabJoin.alert(Loc.t("Couldn’t open the share link"), String(describing: error))
+            }
         }
     }
 

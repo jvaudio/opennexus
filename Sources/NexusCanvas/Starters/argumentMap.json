@@ -1,0 +1,38 @@
+{
+  "aliases": [
+    "argument",
+    "debate",
+    "critical thinking",
+    "reasoning",
+    "pros and cons"
+  ],
+  "category": "thinking",
+  "collection": "thinking",
+  "id": "argumentMap",
+  "kicker": "ARGUMENT MAP",
+  "name": "Argument map",
+  "note": "Put the claim at the top. Reasons begin with Because and objections with But; hang the evidence under each and answer objections with However. An objection with no However is where the case is weakest.",
+  "order": 92,
+  "outline": [
+    "Pedestrianise the high street",
+    "  Because footfall would rise",
+    "    Trial weekend: 18% more visitors",
+    "    Cafés busier during the trial",
+    "  Because the air would be cleaner",
+    "    Bus stop NO2 above legal limit",
+    "  Because crossing would be safer",
+    "    Twelve crashes in five years",
+    "  But deliveries would be harder",
+    "    Ten of 40 shops object",
+    "    However, loading allowed before ten",
+    "      Market stalls already manage this",
+    "  But disabled access would suffer",
+    "    However, drop-off bays at both ends",
+    "      Access group backs the plan",
+    "  But side streets would get busier",
+    "    Trial: side roads 30% busier"
+  ],
+  "summary": "Claim, reasons, objections, rebuttals",
+  "title": "Pedestrianise the high street",
+  "type": "org"
+}

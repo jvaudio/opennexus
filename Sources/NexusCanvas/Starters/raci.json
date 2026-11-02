@@ -1,0 +1,42 @@
+{
+  "aliases": [
+    "raci",
+    "roles",
+    "responsibilities",
+    "ownership",
+    "who does what"
+  ],
+  "category": "planning",
+  "collection": "planning",
+  "id": "raci",
+  "kicker": "RACI",
+  "name": "RACI",
+  "note": "Each line reads task · who. Every task needs exactly one person accountable and at least one responsible; keep Consulted short, as they're the people you must ask before deciding.",
+  "order": 86,
+  "outline": [
+    "Office move",
+    "  Responsible",
+    "    Floor plan · Office manager",
+    "    Movers · Facilities lead",
+    "    Network · IT lead",
+    "    Customer notice · Account managers",
+    "  Accountable",
+    "    Floor plan · Operations director",
+    "    Movers · Operations director",
+    "    Network · Head of IT",
+    "    Customer notice · Sales director",
+    "  Consulted",
+    "    Floor plan · Team leads",
+    "    Movers · Finance",
+    "    Network · Security lead",
+    "    Customer notice · Marketing",
+    "  Informed",
+    "    Floor plan · All staff",
+    "    Movers · Building reception",
+    "    Network · All staff",
+    "    Customer notice · Support team"
+  ],
+  "summary": "Responsible, accountable, consulted, informed",
+  "title": "Office move",
+  "type": "matrix"
+}

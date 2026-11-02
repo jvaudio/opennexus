@@ -3,6 +3,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// The `nexus` command line (README §8; artboard 40). Hand-written argument parsing: no
 /// package dependencies, so builds never need the network (D89).
@@ -32,11 +33,14 @@ public enum NexusCLI {
         public var variables: [String: String]
         /// The team that signed this binary (it shares the app's App Group).
         public var team: String?
-        public init(cwd: URL, home: URL, variables: [String: String], team: String?) {
+        /// This binary's path, for the Git settings `nexus git setup` writes.
+        public var executable: String?
+        public init(cwd: URL, home: URL, variables: [String: String], team: String?, executable: String? = nil) {
             self.cwd = cwd
             self.home = home
             self.variables = variables
             self.team = team
+            self.executable = executable
         }
     }
 
@@ -54,14 +58,30 @@ public enum NexusCLI {
                  [--zone <id|title>]          Only one zone and its topics: \(CLIFormat.names(\.exportsZone)).
                  [--zones each|pages]         Every zone, a file each in the --out folder (default
                                               "<map> – Zones"), or one PDF with a page per zone.
+                 [--no-notes] [--no-comments] html: every canvas unless --canvas is given; leave
+                 [--attachments]              notes or comments out, embed attachments, and keep
+                 [--layouts saved|both]       only the layout as saved or Everything too (default).
                                               Formats: \(CLIFormat.names())
           new "<title>" [--type <type>]       Create a map (mindmap, flowchart, dfd, architecture, …),
                  [--starter <id>]             or one from a starter: its topics, titled "<title>".
                  [--out <path>]
-          starters                            List the starters: id, diagram type and name.
+          starters                            List the starters: id, diagram type and name; yours
+                                              (saved or installed in OpenNexus) last.
+          starter install <file>              Install a .nexusstarter or .nexusstarters pack into
+                 [--replace|--keep-both]      My Starters; one you have already needs either flag.
           import <file> [--out <path>]        Convert Xmind, OPML, Markdown, Mermaid, … to .nexus.
+                 [--viewer-copy]              Also save the map's viewer copy, a .nexusjson included.
+          bundle <file|->                     Print a viewer bundle: a map's viewer copy, or a file
+                 [--structure <structure>]    as import reads it (- reads Markdown from stdin), each
+                 [--title <text>]             Markdown topic with its line. --structure lays it out
+                                              as mindmap.balanced, logic.right, org.down, ….
           mcp [--config <agent.json>]         Run the MCP server on stdio (enable it in OpenNexus ›
                                               Settings › Integrations).
+          git setup                           In a Git repository: merge maps topic by topic and diff
+                                              them as outlines (.gitattributes and git config).
+          git textconv <file>                 Print a map file as an outline, one topic per line.
+          merge-driver %O %A %B %P            Git's merge driver (set up by git setup): exits 1
+                                              when both branches changed the same topic.
           --version, --help
 
         """
@@ -84,9 +104,13 @@ public enum NexusCLI {
             case "read": return try read(&rest, io: io, env: env)
             case "export": return try export(&rest, io: io, env: env)
             case "new": return try new(&rest, io: io, env: env)
-            case "starters": return starters(io: io)
+            case "starters": return starters(io: io, env: env)
+            case "starter": return try starter(&rest, io: io, env: env)
             case "import": return try importFile(&rest, io: io, env: env)
+            case "bundle": return try bundle(&rest, io: io, env: env)
             case "mcp": return try mcp(&rest, io: io, env: env)
+            case "git": return try git(&rest, io: io, env: env)
+            case "merge-driver": return try mergeDriver(&rest, io: io, env: env)
             default:
                 io.err("nexus: unknown command “\(command)”\n\n" + usage)
                 return 64
@@ -109,6 +133,13 @@ public enum NexusCLI {
         let v = args[i + 1]
         args.removeSubrange(i...(i + 1))
         return v
+    }
+
+    /// Removes `--name` from args; true when it was there.
+    static func flag(_ name: String, _ args: inout [String]) -> Bool {
+        guard let i = args.firstIndex(of: name) else { return false }
+        args.remove(at: i)
+        return true
     }
 
     static func file(_ path: String, _ env: Environment) -> URL {
@@ -136,10 +167,15 @@ public enum NexusCLI {
     /// Checks the files as they are on disk (not a re-serialisation), then each canvas.
     public static func validationIssues(_ url: URL) throws -> (issues: [String], summary: String) {
         if url.pathExtension.lowercased() == "nexusjson" {
-            let doc = try DocumentJSON.parse(Data(contentsOf: url), name: url.lastPathComponent)
-            let issues =
+            let data = try Data(contentsOf: url)
+            let doc = try DocumentJSON.parse(data, name: url.lastPathComponent)
+            var issues =
                 doc.repairs.map { "needs repair: \($0)" }
                 + doc.orderedCanvases.flatMap { c in c.validate().map { "\(c.id.rawValue): \($0)" } }
+            // The viewer copy (M43), when the file carries one.
+            if let render = (try? CanonicalJSON.parse(data))?.objectValue?["render"] {
+                issues += SchemaValidator.viewer.validate(render).map { "render: \($0)" }
+            }
             return (issues, contentSummary(doc))
         }
         let files = NexusPackage.flatten(try FileWrapper(url: url, options: [.immediate]))
@@ -148,6 +184,13 @@ public enum NexusCLI {
             return (issues.map(\.description), "encrypted; contents not checked without the password")
         }
         var issues = SchemaValidator.bundled.validate(package: files).map(\.description)
+        if let copy = files["render/viewer.json"] {
+            if let v = try? CanonicalJSON.parse(copy) {
+                issues += SchemaValidator.viewer.validate(v).map { "render/viewer.json: \($0)" }
+            } else {
+                issues.append("render/viewer.json is not valid JSON.")
+            }
+        }
         do {
             let doc = try NexusPackage.read(files: files)
             issues += doc.repairs.map { "needs repair: \($0)" }
@@ -225,19 +268,30 @@ public enum NexusCLI {
         let branch = try option("--branch", &args)
         let zone = try option("--zone", &args)
         let zones = try option("--zones", &args)
+        let noNotes = flag("--no-notes", &args)
+        let noComments = flag("--no-comments", &args)
+        let attachments = flag("--attachments", &args)
+        let layouts = try option("--layouts", &args)
+        if format != .html, noNotes || noComments || attachments || layouts != nil {
+            throw UsageError(message: "--no-notes, --no-comments, --attachments and --layouts are for --to html")
+        }
         let url = file(try positional(args, "file"), env)
         let doc = try MapFiles.read(url)
         let cid: CanvasID
         let scope: ExportScope
+        let html: ExportState.HTMLOptions
         do {
             cid = try MapTools.canvasID(canvasRef.map { ["canvas": .string($0)] } ?? [:], in: doc)
             scope = try ExportScope.parse(
                 branch: branch, zone: zone, zones: zones, format: format, in: doc.canvases[cid]!)
+            html = try .from(
+                canvasNamed: canvasRef != nil, notes: noNotes ? false : nil, comments: noComments ? false : nil,
+                attachments: attachments ? true : nil, layouts: layouts)
         } catch {
             throw UsageError(message: "\(error)")
         }
         if scope == .eachZone { return try exportZones(doc, cid, format, url: url, out: out, scale: scale, io, env) }
-        guard let data = format.export(doc, canvas: cid, scope: scope, scale: scale) else {
+        guard let data = format.export(doc, canvas: cid, scope: scope, scale: scale, html: html) else {
             io.err("nexus export: couldn't export \(format.rawValue)\n")
             return 1
         }
@@ -298,7 +352,7 @@ public enum NexusCLI {
         }
         let starter: Starter
         if let starterID {
-            guard let s = StarterLibrary.starter(starterID) else {
+            guard let s = StarterLibrary.starter(starterID, mine: myStarters(env: env)) else {
                 throw UsageError(message: "unknown starter “\(starterID)”; nexus starters lists them")
             }
             starter = s
@@ -328,9 +382,24 @@ public enum NexusCLI {
         return 0
     }
 
-    /// One starter per line: id, diagram type and name, in columns. Blank starters first.
-    static func starters(io: IO) -> Int32 {
-        let all = StarterLibrary.all
+    /// The user's own starters, where the app keeps them (M50): $OPENNEXUS_STARTERS, the
+    /// App Group (when this binary is signed by the app's team), then the app's container.
+    public static func myStarters(env: Environment) -> MyStarters {
+        if let v = env.variables["OPENNEXUS_STARTERS"], !v.isEmpty { return MyStarters(folder: file(v, env)) }
+        var candidates: [URL] = []
+        if let team = env.team { candidates.append(AppGroup.container(team: team, home: env.home)) }
+        candidates.append(
+            env.home.appending(
+                path: "Library/Containers/com.opennexus.OpenNexus/Data/Library/Application Support/OpenNexus"))
+        // The first place the app has run, else the App Group.
+        let base = candidates.first { FileManager.default.fileExists(atPath: $0.path) } ?? candidates[0]
+        return MyStarters(folder: base.appending(path: "Starters"))
+    }
+
+    /// One starter per line: id, diagram type and name, in columns. Blank starters first,
+    /// the user's own last.
+    static func starters(io: IO, env: Environment) -> Int32 {
+        let all = StarterLibrary.all + myStarters(env: env).all
         let idWidth = (all.map(\.id.count).max() ?? 0) + 2
         let typeWidth = (all.map(\.type.rawValue.count).max() ?? 0) + 2
         for s in all {
@@ -341,8 +410,38 @@ public enum NexusCLI {
         return 0
     }
 
+    /// `nexus starter install <file> [--replace|--keep-both]` (M50).
+    static func starter(_ args: inout [String], io: IO, env: Environment) throws -> Int32 {
+        guard args.first == "install" else { throw UsageError(message: "use: nexus starter install <file>") }
+        args.removeFirst()
+        let replace = flag("--replace", &args)
+        let keepBoth = flag("--keep-both", &args)
+        guard !(replace && keepBoth) else { throw UsageError(message: "use --replace or --keep-both, not both") }
+        let url = file(try positional(args, "file"), env)
+        let incoming: [Starter]
+        do {
+            // Mapped, so an oversized file is refused without being read.
+            let data = try Data(contentsOf: url, options: .mappedIfSafe)
+            incoming = try StarterFile.read(data, name: url.lastPathComponent)
+        } catch let r as StarterFile.Refusal {
+            io.err("nexus starter install: \(r.message)\n")
+            return 1
+        }
+        let mine = myStarters(env: env)
+        let clashes = mine.clashes(incoming)
+        if !clashes.isEmpty && !replace && !keepBoth {
+            io.err(
+                "nexus starter install: you already have \(clashes.map { "“\($0.name)” (\($0.id))" }.joined(separator: ", ")); "
+                    + "use --replace or --keep-both\n")
+            return 1
+        }
+        for s in try mine.install(incoming, clash: replace ? .replace : .keepBoth) { io.print("\(s.id)  \(s.name)") }
+        return 0
+    }
+
     static func importFile(_ args: inout [String], io: IO, env: Environment) throws -> Int32 {
         let out = try option("--out", &args)
+        let viewerCopy = flag("--viewer-copy", &args)
         let url = file(try positional(args, "file"), env)
         var isDir: ObjCBool = false
         FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
@@ -358,7 +457,7 @@ public enum NexusCLI {
             io.err("nexus import: \(target.path) already exists (use --out)\n")
             return 1
         }
-        try MapFiles.write(doc, to: target)
+        try MapFiles.write(doc, to: target, prefs: viewerCopy ? withViewerCopy() : .shared)
         let r = imported.report
         let extras = [
             r.tasks > 0 ? "\(r.tasks) tasks" : nil, r.dependencies > 0 ? "\(r.dependencies) dependencies" : nil,
@@ -368,6 +467,85 @@ public enum NexusCLI {
         io.print(
             "\(target.path)\n\(r.canvases) canvases · \(r.topics) topics\(extras) · \(r.notConverted) not converted")
         for item in r.lines { io.print("  · \(item)") }
+        return 0
+    }
+
+    /// The Files settings with the viewer copy on, single-file documents included.
+    static func withViewerCopy() -> Preferences {
+        let p = Preferences.isolated()
+        p.set("files.viewerCopy", true)
+        p.set("files.viewerCopyJSON", true)
+        return p
+    }
+
+    // MARK: bundle
+
+    /// The structures `bundle --structure` takes: the tree layouts a note can have.
+    static let structures: [LayoutStructure] = [
+        .mindmapBalanced, .mindmapRight, .mindmapLeft, .logicRight, .logicLeft, .braceRight, .braceLeft, .orgDown,
+        .treeDown, .treeIndented, .timelineHorizontal, .timelineVertical, .timelineAlternating, .fishboneLeft,
+        .fishboneRight, .matrix, .treeTable,
+    ]
+
+    /// A viewer bundle on stdout (M49, Obsidian): a map's viewer copy as the app saves it, or
+    /// a file read as `import` reads it (Markdown from stdin with `-`). Markdown topics keep
+    /// their source lines, as the first canvas's `lines`.
+    static func bundle(_ args: inout [String], io: IO, env: Environment) throws -> Int32 {
+        let structure = try option("--structure", &args).map(LayoutStructure.init(rawValue:))
+        let title = try option("--title", &args)
+        if let structure, !structures.contains(structure) {
+            throw UsageError(
+                message:
+                    "unknown structure “\(structure.rawValue)”; use \(structures.map(\.rawValue).joined(separator: ", "))"
+            )
+        }
+        let path = try positional(args, "file")
+        let url = path == "-" ? nil : file(path, env)
+        var doc: DocumentModel
+        var lines: [NodeID: Int] = [:]
+        if let url, ["nexus", "nexusjson"].contains(url.pathExtension.lowercased()) {
+            guard structure == nil, title == nil else {
+                throw UsageError(message: "--structure and --title are for files to read, not maps")
+            }
+            doc = try MapFiles.read(url)
+            guard !doc.encrypted else {
+                io.err("nexus bundle: \(url.lastPathComponent) is encrypted; it opens only in OpenNexus\n")
+                return 1
+            }
+        } else {
+            let imported: Imported
+            if let url {
+                var isDir: ObjCBool = false
+                FileManager.default.fileExists(atPath: url.path, isDirectory: &isDir)
+                let name = title.map { $0 + "." + url.pathExtension } ?? url.lastPathComponent
+                imported =
+                    isDir.boolValue
+                    ? try Interchange.importFile(
+                        name: name, files: NexusPackage.flatten(try FileWrapper(url: url, options: [.immediate])))
+                    : try Interchange.importFile(name: name, data: Data(contentsOf: url), sourceLines: true)
+            } else {
+                var text: [String] = []
+                while let l = io.readLine() { text.append(l) }
+                imported = try Interchange.importFile(
+                    name: (title ?? "Note") + ".md", data: Data(text.joined(separator: "\n").utf8), sourceLines: true)
+            }
+            doc = DocumentModel(canvases: imported.canvases, assets: imported.assets)
+            for id in doc.canvasOrder {
+                if let structure { doc.canvases[id]?.layout.structure = structure }
+                if id == doc.canvasOrder.first { lines = MarkdownFormat.takeSourceLines(&doc.canvases[id]!) }
+            }
+        }
+        guard case .object(var b)? = ViewerCopy.bundle(doc) else {
+            io.err("nexus bundle: couldn't draw the map\n")
+            return 1
+        }
+        if !lines.isEmpty, case .array(var canvases)? = b["canvases"], case .object(var first)? = canvases.first {
+            first["lines"] = .object(
+                Dictionary(uniqueKeysWithValues: lines.map { ($0.key.rawValue, JSONValue.number(Double($0.value))) }))
+            canvases[0] = .object(first)
+            b["canvases"] = .array(canvases)
+        }
+        io.out(Data((CanonicalJSON.compact(.object(b)) + "\n").utf8))
         return 0
     }
 
@@ -406,7 +584,8 @@ public enum NexusCLI {
         guard args.isEmpty else { throw UsageError(message: "unexpected \(args.joined(separator: " "))") }
         let server = MCPServer(
             config: serverConfig(config: config, env: env), input: io.readLine,
-            output: { io.out(Data(($0 + "\n").utf8)) }, log: { io.err("nexus mcp: \($0)\n") })
+            output: { io.out(Data(($0 + "\n").utf8)) }, log: { io.err("nexus mcp: \($0)\n") },
+            starters: myStarters(env: env))
         if case .disabled(let why) = server.config { io.err("nexus mcp: \(why)\n") }
         server.run()
         return 0

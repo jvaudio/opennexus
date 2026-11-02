@@ -22,6 +22,11 @@ public struct DocumentModel: Equatable, Sendable {
     /// What reading had to repair in a damaged file ("canvases/c1.json: 2 broken or
     /// repeated child links"). Not saved; the next save writes the repaired form.
     public var repairs: [String] = []
+    /// Appended to new canvas, topic and element ids during a co-editing session (M46);
+    /// every canvas carries it. Not stored.
+    public var idSuffix = "" {
+        didSet { for id in canvases.keys { canvases[id]?.idSuffix = idSuffix } }
+    }
 
     public init(canvases: [Canvas], theme: JSONValue = .object([:]), assets: [String: Data] = [:]) {
         self.canvases = Dictionary(uniqueKeysWithValues: canvases.map { ($0.id, $0) })
@@ -41,7 +46,10 @@ public struct DocumentModel: Equatable, Sendable {
 
     public mutating func apply(_ patch: Patch) {
         if let t = patch.themeAfter { theme = t }
-        for (id, change) in patch.canvases { canvases[id] = change.after }
+        for (id, change) in patch.canvases {
+            canvases[id] = change.after
+            canvases[id]?.idSuffix = idSuffix
+        }
         if let order = patch.orderAfter { canvasOrder = order.filter { canvases[$0] != nil } }
         guard !patch.nodes.isEmpty || patch.metaAfter != nil, var c = canvases[patch.canvasID] else { return }
         patch.apply(to: &c)
@@ -68,8 +76,8 @@ public struct DocumentModel: Equatable, Sendable {
 
     public func makeCanvasID() -> CanvasID {
         var i = canvases.count + 1
-        while canvases[CanvasID("c\(i)")] != nil { i += 1 }
-        return CanvasID("c\(i)")
+        while canvases[CanvasID("c\(i)\(idSuffix)")] != nil { i += 1 }
+        return CanvasID("c\(i)\(idSuffix)")
     }
 
     /// Total topics across canvases (for the title bar's "N topics").

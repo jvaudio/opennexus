@@ -11,8 +11,10 @@ import NexusCore
 /// ├── assets/              images, audio, stickers (content-hashed names)
 /// ├── preview.png          Quick Look's rendered first canvas (written by the app; never
 /// │                        for encrypted documents; ignored by Git and by reading)
+/// ├── render/viewer.json   the viewer copy browsers and Obsidian show (M43; written by the
+/// │                        app; never for encrypted documents; ignored by Git and by reading)
 /// ├── snapshots/           recovery snapshots (ignored by Git)
-/// └── .gitignore           generated: `snapshots/` and `preview.png`
+/// └── .gitignore           generated: `snapshots/`, `preview.png` and `render/`
 /// ```
 public enum NexusPackage {
     public static let fileExtension = "nexus"
@@ -62,7 +64,7 @@ public enum NexusPackage {
         for (name, data) in doc.assets {
             files["assets/\(name)"] = data
         }
-        files[".gitignore"] = Data("snapshots/\npreview.png\n".utf8)
+        files[".gitignore"] = Data("snapshots/\npreview.png\nrender/\n".utf8)
         return files
     }
 

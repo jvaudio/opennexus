@@ -1,9 +1,15 @@
-import AppKit
 import NexusAI
 import NexusCore
 import NexusFormat
+import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// The composite rows and preview cards of the settings artboards.
 struct CardView: View {
@@ -25,7 +31,11 @@ struct CardView: View {
         case .card("frames"): FramePicker(prefs: prefs)
         case .card("matColor"): MatColorRow(prefs: prefs)
         case .card("agentCard"): AgentCard(prefs: prefs)
-        case .card("networkLog"): NetworkLogCard(prefs: prefs, onAction: onAction)
+        case .card("networkLog"): NetworkLogCard(prefs: prefs, log: ShareCenter.shared.log, onAction: onAction)
+        case .card("shareDestinations"): ShareDestinationsCard(center: ShareCenter.shared)
+        case .card("shareLinks"): ShareLinksCard(center: ShareCenter.shared)
+        case .card("syncLibraries"): SyncLibrariesCard(center: SyncCenter.shared)
+        case .card("syncLog"): SyncLogCard(center: SyncCenter.shared)
         case .card("maskPreview"): MaskPreviewCard(prefs: prefs)
         case .card("voiceOverPreview"): VoiceOverPreview(prefs: prefs)
         default: EmptyView()
@@ -42,7 +52,7 @@ private struct Card<Content: View>: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .background(
                 RoundedRectangle(cornerRadius: 14).fill(
-                    dark ? Color(white: 0.1) : Color(nsColor: .controlBackgroundColor))
+                    dark ? Color(white: 0.1) : Color.controlBackground)
             )
             .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator.opacity(dark ? 0 : 0.6)))
             .environment(\.colorScheme, dark ? .dark : .light)
@@ -69,18 +79,27 @@ private struct AboutCard: View {
                                 "Build %@ · Open source · MIT",
                                 Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1")
                         )
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.chromeSecondary)
                     }
                 }
-                HStack {
-                    Button("Source code") { onAction("about.source") }
-                    Button("Release notes") { onAction("about.notes") }
-                    Button("Report an issue…") { onAction("about.issue") }
-                }
+                #if os(macOS)
+                HStack { links }
+                #else
+                // On a row, wrapping where they don't fit (a phone); the same views as the
+                // text grows, which the audit follows.
+                FlowLayout(spacing: 8) { links }
+                #endif
                 Text("Usage statistics are off. See Privacy & Data.").font(.chrome(13)).foregroundStyle(
-                    .secondary)
+                    .chromeSecondary)
             }
         }
+    }
+
+    @ViewBuilder var links: some View {
+        Button("Source code") { onAction("about.source") }
+        Button("Acknowledgements") { onAction("about.acknowledgements") }
+        Button("Release notes") { onAction("about.notes") }
+        Button("Report an issue…") { onAction("about.issue") }
     }
 }
 
@@ -91,31 +110,32 @@ private struct MouseAidsPreview: View {
                 HStack(alignment: .top, spacing: 18) {
                     ZStack(alignment: .topLeading) {
                         HStack(spacing: 4) {
-                            Text("✦ Ideas").font(.chrome(12, weight: .semibold)).foregroundStyle(.teal)
+                            Text("✦ Ideas").font(.chrome(12, weight: .semibold)).foregroundStyle(Color.statusTeal)
                             ForEach(["⇢", "↗", "▣", "≡", "☐", "Aa"], id: \.self) {
                                 Text($0).font(.chrome(12)).frame(width: 22)
                             }
                         }
                         .padding(.horizontal, 8).frame(height: 28)
                         .background(
-                            RoundedRectangle(cornerRadius: 8).fill(Color(nsColor: .textBackgroundColor)).shadow(
+                            RoundedRectangle(cornerRadius: 8).fill(Color.textBackground).shadow(
                                 color: .black.opacity(0.12), radius: 6, y: 2)
                         )
                         .offset(x: 0, y: 0)
                         Text("Pricing").font(.chrome(15, weight: .medium))
                             .padding(.horizontal, 18).frame(height: 38)
-                            .background(RoundedRectangle(cornerRadius: 10).fill(Color(nsColor: .textBackgroundColor)))
+                            .background(RoundedRectangle(cornerRadius: 10).fill(Color.textBackground))
                             .overlay(RoundedRectangle(cornerRadius: 10).stroke(Color(hex: "#E4572E"), lineWidth: 2))
                             .offset(x: 30, y: 44)
                         plus.offset(x: 132, y: 53)
                         plus.offset(x: 62, y: 92)
                     }
                     .frame(width: 240, height: 120, alignment: .topLeading)
+                    .illustration(Loc.t("A topic with its two + buttons, and the floating toolbar above it"))
                 }
                 Text(
                     "Right + adds a child (⇥), lower + a sibling (↩). The floating toolbar offers AI ideas, connect, link, image, note, to-do and style. It never appears while typing."
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -173,7 +193,7 @@ private struct ThemeGrid: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Themes")
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
         .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator.opacity(0.6)))
     }
 }
@@ -188,11 +208,12 @@ private struct LookPreview: View {
                 RoundedRectangle(cornerRadius: 12).fill(Color.secondary.opacity(0.06))
                 if let image {
                     Image(decorative: image, scale: 2).resizable().aspectRatio(contentMode: .fit).padding(10)
+                        .illustration(Loc.t("A sample map in the chosen theme, node style and colour theme"))
                 }
             }
             .frame(height: 170)
             Text("Live preview of theme + node style + colour theme. Documents keep their own look once created.")
-                .font(.chrome(13)).foregroundStyle(.secondary)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary)
         }
         .task(id: prefs.revision) { render() }
     }
@@ -217,11 +238,11 @@ private struct SnapshotUsageRow: View {
         HStack {
             Text("Using").font(.chrome(14.5))
             Spacer()
-            Text(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)).foregroundStyle(.secondary)
+            Text(ByteCountFormatter.string(fromByteCount: bytes, countStyle: .file)).foregroundStyle(.chromeSecondary)
                 .monospacedDigit()
         }
         .padding(.horizontal, 18).padding(.vertical, 11)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
         .task { bytes = SnapshotStore.usage() }
     }
 }
@@ -233,13 +254,13 @@ private struct RecoveryList: View {
         Card {
             VStack(alignment: .leading, spacing: 10) {
                 HStack {
-                    Text("RECOVERY").font(.chrome(12, weight: .semibold)).foregroundStyle(.secondary)
+                    Text("RECOVERY").font(.chrome(12, weight: .semibold)).foregroundStyle(.chromeSecondary)
                     Spacer()
                     Text(Loc.n("%lld snapshot", "%lld snapshots", items.count)).font(.chrome(12.5))
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.chromeSecondary)
                 }
                 if items.isEmpty {
-                    Text("No snapshots yet. They appear as you edit.").foregroundStyle(.secondary)
+                    Text("No snapshots yet. They appear as you edit.").foregroundStyle(.chromeSecondary)
                 }
                 ForEach(items.prefix(4)) { s in
                     HStack {
@@ -254,7 +275,7 @@ private struct RecoveryList: View {
                                     : Loc.n("Crash recovery · %lld topic", "Crash recovery · %lld topics", s.topics)
                             ).font(
                                 .chrome(12.5)
-                            ).foregroundStyle(.secondary)
+                            ).foregroundStyle(.chromeSecondary)
                         }
                         Spacer()
                         Button("Compare") { onAction("snapshot.compare:\(s.url.path)") }
@@ -302,7 +323,7 @@ private struct FramePicker: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Frames")
         .padding(14)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
     }
 }
 
@@ -317,7 +338,7 @@ struct FrameSample: View {
                     colors: [mat, Color(hex: "#BFE7E3")], startPoint: .topLeading, endPoint: .bottomTrailing)
             case "paper": Color(hex: "#F4EFE4")
             case "darkMat": Color(white: 0.12)
-            default: Color(nsColor: .textBackgroundColor)
+            default: Color.textBackground
             }
             VStack(spacing: 0) {
                 if frame == "window" {
@@ -354,12 +375,12 @@ private struct MatColorRow: View {
                 selection: Binding(
                     get: { Color(hex: prefs.string("export.matColor")) },
                     set: { c in
-                        if let ns = NSColor(c).usingColorSpace(.sRGB) {
+                        if let rgb = c.srgbComponents {
                             prefs.set(
                                 "export.matColor",
                                 String(
-                                    format: "#%02X%02X%02X", Int(ns.redComponent * 255), Int(ns.greenComponent * 255),
-                                    Int(ns.blueComponent * 255)))
+                                    format: "#%02X%02X%02X", Int(rgb.red * 255), Int(rgb.green * 255),
+                                    Int(rgb.blue * 255)))
                         }
                     })
             )
@@ -367,7 +388,7 @@ private struct MatColorRow: View {
             .accessibilityLabel("Custom colour")
         }
         .padding(.horizontal, 18).padding(.vertical, 11)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color(nsColor: .controlBackgroundColor)))
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
     }
 }
 
@@ -379,7 +400,7 @@ private struct AgentCard: View {
         Card {
             VStack(alignment: .leading, spacing: 12) {
                 HStack(spacing: 6) {
-                    Text("CONNECT AN AGENT").font(.chrome(12.5, weight: .semibold)).foregroundStyle(.secondary)
+                    Text("CONNECT AN AGENT").font(.chrome(12.5, weight: .semibold)).foregroundStyle(.chromeSecondary)
                     Spacer()
                     Circle().fill(on ? Color.green : Color.gray.opacity(0.6)).frame(width: 7, height: 7)
                     Text(
@@ -387,12 +408,13 @@ private struct AgentCard: View {
                             ? (folders > 0 ? Loc.t("Server on · local only") : Loc.t("On · allow a folder first"))
                             : Loc.t("Server off · local only")
                     )
-                    .font(.chrome(12.5)).foregroundStyle(on ? Color.green : .secondary)
+                    .font(.chrome(12.5)).foregroundStyle(
+                        on ? AnyShapeStyle(Color.statusGreen) : AnyShapeStyle(.chromeSecondary))
                 }
                 Text(
                     "Any MCP client on this Mac (Claude, Codex, Cursor…) can read and edit maps in the folders you allow. Nothing is uploaded."
                 )
-                .font(.chrome(12.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(12.5)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
                 Self.code(
                     """
                     $ nexus mcp            # stdio server
@@ -448,10 +470,12 @@ private struct FlowChips: View {
 
 private struct NetworkLogCard: View {
     var prefs: Preferences
+    var log: NetworkLog
     var onAction: (String) -> Void
     var body: some View {
         let _ = prefs.revision
-        let head = NetworkActivity.headline(prefs)
+        let recent = log.recent()
+        let head = NetworkActivity.headline(prefs, log: recent)
         // Dark like artboard 41, so the log reads as the system's record rather than a setting.
         VStack(alignment: .leading, spacing: 10) {
             HStack(alignment: .firstTextBaseline, spacing: 10) {
@@ -459,9 +483,12 @@ private struct NetworkLogCard: View {
                 Text(head.unit).font(.chrome(14)).foregroundStyle(.white.opacity(0.75))
             }
             .accessibilityElement(children: .combine)
-            Text(NetworkActivity.summary(prefs))
+            Text(NetworkActivity.summary(prefs, log: recent))
                 .font(.chrome(12.5)).foregroundStyle(.white.opacity(0.7)).fixedSize(horizontal: false, vertical: true)
-            Button("Open log…") { onAction("privacy.log") }
+            HStack {
+                Button("Open log…") { onAction("privacy.log") }
+                Button("Export Log…") { onAction("privacy.exportLog") }.disabled(log.entries.isEmpty)
+            }
         }
         .foregroundStyle(.white)
         .environment(\.colorScheme, .dark)
@@ -489,7 +516,7 @@ private struct MaskPreviewCard: View {
                 Text(
                     "Detected on-device with the Natural Language framework plus your patterns. Masking applies to the export copy; your document is unchanged."
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -518,14 +545,14 @@ private struct VoiceOverPreview: View {
                     Text("Pricing").font(.chrome(15, weight: .medium))
                         .padding(.horizontal, 16).frame(height: 36)
                         .background(RoundedRectangle(cornerRadius: 10).stroke(Color.teal, lineWidth: 2))
-                    Text("→").foregroundStyle(.secondary)
+                    Text("→").foregroundStyle(.chromeSecondary)
                 }
                 Text("“\(Spoken.sample(prefs))”").font(.chrome(14)).italic()
                     .fixedSize(horizontal: false, vertical: true)
                 Text(
                     "Rotor categories: Nodes, Edges, Boundaries, Notes, AI suggestions. Connect mode reads targets by hint letter."
                 )
-                .font(.chrome(13)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                .font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -533,116 +560,4 @@ private struct VoiceOverPreview: View {
 
 extension RGBA {
     var swiftUI: Color { Color(.sRGB, red: r, green: g, blue: b, opacity: a) }
-}
-
-// MARK: Spoken descriptions (VoiceOver)
-
-/// What VoiceOver says for a topic, shaped by Settings › Accessibility › VoiceOver.
-@MainActor
-public enum Spoken {
-    public static func describe(
-        _ id: NodeID, in c: NexusCore.Canvas, prefs: Preferences, branchColor: String? = nil,
-        depth knownDepth: Int? = nil,
-        maxDepth knownMax: Int? = nil
-    ) -> String {
-        guard let n = c.nodes[id] else { return "" }
-        let depth: Int
-        let maxDepth: Int
-        if let knownDepth, let knownMax {
-            (depth, maxDepth) = (knownDepth, knownMax)
-        } else {
-            // One walk from the root gives every depth.
-            let d = depths(c)
-            depth = d.depths[id] ?? c.depth(of: id)
-            maxDepth = d.max
-        }
-        var parts: [String] = [n.text.isEmpty ? Loc.t("Topic") : n.text]
-        let role =
-            id == c.root
-            ? Loc.t("Central topic")
-            : c.floating.contains(id) ? Loc.t("Floating topic") : depth == 1 ? Loc.t("Main topic") : Loc.t("Subtopic")
-        if prefs.bool("accessibility.announceLevel") {
-            parts.append(Loc.f("%@, level %lld of %lld", role, depth + 1, maxDepth + 1))
-            parts.append(
-                n.folded
-                    ? Loc.n("%lld child, collapsed", "%lld children, collapsed", n.children.count)
-                    : Loc.n("%lld child", "%lld children", n.children.count))
-        } else {
-            parts.append(role)
-        }
-        if let t = n.nodeType, let info = DiagramCatalog.info(t, in: c.type) { parts.append(Loc.t(info.name)) }
-        if let b = branchColor { parts.append(Loc.f("Branch colour %@", b)) }
-        if let todo = n.todo { parts.append(todo.done ? Loc.t("Done") : Loc.t("To do")) }
-        if let task = TaskFormat.spoken(c, id, today: TaskDate.today()) { parts.append(task) }
-        if n.note != nil { parts.append(Loc.t("Has note")) }
-        if !n.comments.isEmpty { parts.append(Loc.n("%lld comment", "%lld comments", n.comments.count)) }
-        if prefs.string("accessibility.readEdges") == "source" {
-            for r in c.relationships where r.touches(id) {
-                let other = r.from == .topic(id) ? r.to : r.from
-                let name = c.spokenName(other)
-                parts.append(
-                    r.label.isEmpty
-                        ? Loc.f("Connected to %@", name) : Loc.f("Connected to %@ by ‘%@’", name, r.label))
-            }
-        }
-        if prefs.bool("accessibility.speakHints") { parts.append(Loc.t("Tab adds a child")) }
-        return parts.joined(separator: ". ") + "."
-    }
-
-    /// Depth of every topic in the tree under the root (floating tops start their own).
-    public static func depths(_ c: NexusCore.Canvas) -> (depths: [NodeID: Int], max: Int) {
-        var depths: [NodeID: Int] = [:]
-        for top in c.tops { c.walk(from: top) { id, _, d in depths[id] = d } }
-        return (depths, depths.values.max() ?? 0)
-    }
-
-    /// A plain colour word for a branch colour ("teal", "orange"…), for VoiceOver.
-    public static func colorName(_ c: RGBA) -> String {
-        let mx = max(c.r, c.g, c.b)
-        let mn = min(c.r, c.g, c.b)
-        let delta = mx - mn
-        if delta < 0.08 { return mx > 0.85 ? "white" : mx < 0.2 ? "black" : "grey" }
-        var h: Double
-        if mx == c.r {
-            h = ((c.g - c.b) / delta).truncatingRemainder(dividingBy: 6)
-        } else if mx == c.g {
-            h = (c.b - c.r) / delta + 2
-        } else {
-            h = (c.r - c.g) / delta + 4
-        }
-        h *= 60
-        if h < 0 { h += 360 }
-        switch h {
-        case ..<15, 345...: return "red"
-        case ..<40: return "orange"
-        case ..<65: return "yellow"
-        case ..<150: return "green"
-        case ..<195: return "teal"
-        case ..<235: return "blue"
-        case ..<260: return "indigo"
-        case ..<290: return "purple"
-        default: return "pink"
-        }
-    }
-
-    static func sample(_ prefs: Preferences) -> String {
-        var c = NexusCore.Canvas(id: "c1", title: "", rootText: "Launch plan")
-        var undo = UndoStack()
-        c.edit("Sample", undo: &undo) { e in
-            let p = try! e.addChild(of: e.canvas.root, text: "Pricing")
-            for t in ["Free", "Pro", "Team"] {
-                let k = try! e.addChild(of: p, text: t)
-                _ = try? e.addChild(of: k, text: "Seats")
-            }
-            e.update(p) {
-                $0.folded = true
-                $0.note = Note(text: "x")
-            }
-            let t = try! e.addChild(of: e.canvas.root, text: "Timeline")
-            _ = e.connect(p, to: t, label: "drives")
-        }
-        let id = c.nodes.first { $0.value.text == "Pricing" }!.key
-        return describe(id, in: c, prefs: prefs, branchColor: "teal").replacingOccurrences(
-            of: "level 2 of 4", with: "level 2 of 4")
-    }
 }

@@ -502,24 +502,113 @@ public enum MindNodeFormat {
 // MARK: Word (.docx)
 
 public enum WordFormat {
+    /// A typeset formula (M48): an SVG with a PNG fallback, its size and its depth below the
+    /// baseline in points.
+    public struct Formula: Sendable {
+        public var svg: Data
+        public var png: Data
+        public var width: Double
+        public var height: Double
+        public var depth: Double
+
+        public init(svg: Data, png: Data, width: Double, height: Double, depth: Double) {
+            self.svg = svg
+            self.png = png
+            self.width = width
+            self.height = height
+            self.depth = depth
+        }
+    }
+
+    /// Typesets a formula's TeX, display or inline, for text `size` points tall; nil
+    /// leaves it as its source.
+    public typealias Typesetter = (_ source: String, _ display: Bool, _ size: Double) -> Formula?
+
     /// Headings for the outline (Title for the central topic), notes as paragraphs, and an
-    /// optional diagram image after the title.
+    /// optional diagram image after the title. With `typeset`, `/math` topics, and with
+    /// `textMath` the `$…$` and `$$…$$` in titles and notes, are vector images (M48).
     public static func export(
-        _ doc: DocumentModel, canvases: [Canvas]? = nil, images: [CanvasID: (png: Data, width: Int, height: Int)] = [:]
+        _ doc: DocumentModel, canvases: [Canvas]? = nil, images: [CanvasID: (png: Data, width: Int, height: Int)] = [:],
+        typeset: Typesetter? = nil, textMath: Bool = true
     ) -> Data {
         var body = ""
         var rels = ""
         var media: [(String, Data)] = []
-        func para(_ text: String, style: String? = nil, indent: Int = 0) -> String {
+        // Each formula once, however often it's used: its relationships and size.
+        var placed: [String: (png: String, svg: String, f: Formula)] = [:]
+        var drawings = 0
+        let sizes = ["Title": 26.0, "Heading1": 18, "Heading2": 15, "Heading3": 13, "Heading4": 12]
+        func formula(_ source: String, display: Bool, size: Double) -> String? {
+            let key = "\(display ? "D" : "I")\(size) \(source)"
+            if placed[key] == nil {
+                guard let f = typeset?(source, display, size) else { return nil }
+                let n = placed.count + 1
+                media.append(("formula\(n).png", f.png))
+                media.append(("formula\(n).svg", f.svg))
+                rels +=
+                    "<Relationship Id=\"rIdMathPng\(n)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" Target=\"media/formula\(n).png\"/><Relationship Id=\"rIdMathSvg\(n)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/image\" Target=\"media/formula\(n).svg\"/>"
+                placed[key] = ("rIdMathPng\(n)", "rIdMathSvg\(n)", f)
+            }
+            guard let p = placed[key] else { return nil }
+            drawings += 1
+            let id = 1000 + drawings
+            let cx = Int((p.f.width * 12_700).rounded())
+            let cy = Int((p.f.height * 12_700).rounded())
+            // Word sits an inline picture on the baseline; the run is lowered by the depth.
+            let lower = Int((p.f.depth * 2).rounded())
+            return
+                "<w:r>\(lower > 0 ? "<w:rPr><w:position w:val=\"-\(lower)\"/></w:rPr>" : "")<w:drawing><wp:inline distT=\"0\" distB=\"0\" distL=\"0\" distR=\"0\"><wp:extent cx=\"\(cx)\" cy=\"\(cy)\"/><wp:docPr id=\"\(id)\" name=\"Formula \(drawings)\" descr=\"\(XML.escape(source))\"/><a:graphic xmlns:a=\"http://schemas.openxmlformats.org/drawingml/2006/main\"><a:graphicData uri=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:pic xmlns:pic=\"http://schemas.openxmlformats.org/drawingml/2006/picture\"><pic:nvPicPr><pic:cNvPr id=\"\(id)\" name=\"Formula \(drawings)\"/><pic:cNvPicPr/></pic:nvPicPr><pic:blipFill><a:blip r:embed=\"\(p.png)\"><a:extLst><a:ext uri=\"{96DAC541-7B7A-43D3-8B79-37D633B846F1}\"><asvg:svgBlip xmlns:asvg=\"http://schemas.microsoft.com/office/drawing/2016/SVG/main\" r:embed=\"\(p.svg)\"/></a:ext></a:extLst></a:blip><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr><a:xfrm><a:off x=\"0\" y=\"0\"/><a:ext cx=\"\(cx)\" cy=\"\(cy)\"/></a:xfrm><a:prstGeom prst=\"rect\"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing></w:r>"
+        }
+        func run(_ text: String) -> String {
+            "<w:r><w:t xml:space=\"preserve\">\(XML.escape(text, attribute: false))</w:t></w:r>"
+        }
+        /// One line's runs: text, and with `typeset` its formulas as pictures.
+        func runs(_ line: String, size: Double) -> String {
+            guard typeset != nil, textMath else { return run(line) }
+            let scan = MathMarkup.scan(line)
+            guard !scan.formulas.isEmpty || !scan.escapes.isEmpty else { return run(line) }
+            let ns = line as NSString
+            let br = "<w:r><w:br/></w:r>"
+            var out = ""
+            var at = 0
+            // A display formula has a line of its own, as on the canvas: the spaces beside
+            // it go, and it breaks from the text before and after it.
+            var afterDisplay = false
+            func text(_ upTo: Int, beforeDisplay: Bool = false) {
+                var s = Substring(ns.substring(with: NSRange(location: at, length: upTo - at)))
+                if afterDisplay { s = s.drop { $0 == " " || $0 == "\t" } }
+                if beforeDisplay { while s.last == " " || s.last == "\t" { s = s.dropLast() } }
+                if afterDisplay, !s.isEmpty || beforeDisplay { out += br }
+                afterDisplay = false
+                if !s.isEmpty { out += run(s.replacingOccurrences(of: "\\$", with: "$")) }
+            }
+            for f in scan.formulas {
+                let r = formula(f.source, display: f.display, size: size)
+                text(f.range.location, beforeDisplay: f.display && r != nil)
+                if let r {
+                    if f.display, !out.isEmpty, !out.hasSuffix(br) { out += br }
+                    out += r
+                    afterDisplay = f.display
+                } else {
+                    out += run(ns.substring(with: f.range))
+                }
+                at = f.range.location + f.range.length
+            }
+            text(ns.length)
+            return out
+        }
+        func para(_ text: String, style: String? = nil, indent: Int = 0, math: Bool = false) -> String {
             var p = "<w:p>"
             if style != nil || indent > 0 {
                 p += "<w:pPr>" + (style.map { "<w:pStyle w:val=\"\($0)\"/>" } ?? "")
                 if indent > 0 { p += "<w:ind w:left=\"\(indent * 360)\"/>" }
                 p += "</w:pPr>"
             }
+            let size = style.flatMap { sizes[$0] } ?? 11
+            if math, let r = formula(text.trimmed, display: true, size: size) { return p + r + "</w:p>" }
             for (i, line) in text.components(separatedBy: "\n").enumerated() {
                 if i > 0 { p += "<w:r><w:br/></w:r>" }
-                p += "<w:r><w:t xml:space=\"preserve\">\(XML.escape(line, attribute: false))</w:t></w:r>"
+                p += runs(line, size: size)
             }
             return p + "</w:p>"
         }
@@ -539,12 +628,13 @@ public enum WordFormat {
                     """
             }
             c.walk { _, n, d in
+                let math = n.textFormat == "math"
                 if d == 0 {
-                    if images[c.id] == nil { body += para(n.text, style: "Title") }
+                    if images[c.id] == nil { body += para(n.text, style: "Title", math: math) }
                 } else if d <= 6 {
-                    body += para(n.text, style: "Heading\(d)")
+                    body += para(n.text, style: "Heading\(d)", math: math)
                 } else {
-                    body += para("• " + n.text, indent: d - 6)
+                    body += para(math ? n.text : "• " + n.text, indent: d - 6, math: math)
                 }
                 if let note = n.note?.text, !note.trimmed.isEmpty { body += para(note.trimmed, indent: max(d - 6, 0)) }
             }
@@ -567,7 +657,7 @@ public enum WordFormat {
             "[Content_Types].xml",
             """
             <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>
+            <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/>\(placed.isEmpty ? "" : "<Default Extension=\"svg\" ContentType=\"image/svg+xml\"/>")<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>
             """)
         z.add(
             "_rels/.rels",

@@ -4,6 +4,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 
 /// Visual review of M5 views against artboards 25–27, 32 and 47 (env-gated).
 @MainActor

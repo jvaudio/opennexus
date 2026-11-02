@@ -6,19 +6,20 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusKeys
+@testable import NexusScene
 
 @MainActor
 @Suite struct SettingsSchemaTests {
     @Test func everyPaneInOrderWithTints() {
         #expect(
             SettingsSchema.panes.map(\.title) == [
-                "General", "Editing", "Appearance", "Files & Backup", "AI", "Shortcuts", "Export", "Integrations",
-                "Privacy & Data", "Accessibility",
+                "General", "Editing", "Appearance", "Files & Backup", "AI", "Shortcuts", "Export", "Sharing", "Sync",
+                "Integrations", "Privacy & Data", "Accessibility",
             ])
         #expect(
             SettingsSchema.panes.map(\.tint) == [
-                "#8E8E96", "#1E8BE0", "#D6408B", "#E08A00", "#0F7F7A", "#5850EC", "#C25E00", "#7A4CC2", "#17171C",
-                "#1E6FB8",
+                "#8E8E96", "#1E8BE0", "#D6408B", "#E08A00", "#0F7F7A", "#5850EC", "#C25E00", "#1F7A68", "#3A6EA5",
+                "#7A4CC2", "#17171C", "#1E6FB8",
             ])
     }
 
@@ -47,6 +48,13 @@ import Testing
     }
 
     /// README §10: search finds every row.
+    /// The iPad leaves out the Mac's own rows (D407); each one names a real row.
+    @Test func macOnlyRowsExist() {
+        let keys = Set(SettingsSchema.allRows.map(\.2.key))
+        #expect(SettingsSchema.macOnly.isSubset(of: keys), "\(SettingsSchema.macOnly.subtracting(keys))")
+        #expect(SettingsSchema.shown == SettingsSchema.panes, "the Mac shows every pane as it is")
+    }
+
     @Test func searchFindsEveryRow() {
         for (p, s, r) in SettingsSchema.allRows {
             let q = r.title.isEmpty ? (r.keywords.first ?? s.title) : r.title
@@ -56,6 +64,11 @@ import Testing
         }
         #expect(SettingsSchema.search("caps lock").first?.0.id == "shortcuts")
         #expect(SettingsSchema.search("watermark").first?.2.key == "export.watermark")
+        // Settings › Sync (M45).
+        #expect(SettingsSchema.search("recovery key").first?.2.key == "sync.libraries")
+        #expect(SettingsSchema.search("dropbox").contains { $0.2.key == "sync.otherApps" })
+        #expect(SettingsSchema.search("merge driver").contains { $0.2.key == "sync.git" })
+        #expect(SettingsSchema.search("sync libraries").contains { $0.2.key == "network.sync" })
         #expect(SettingsSchema.search("zzz-nothing").isEmpty)
     }
 
@@ -158,7 +171,7 @@ import Testing
 @MainActor
 @Suite struct TemplateTests {
     @Test func everyTemplateIsAValidDocumentAndRolesFilterTheShelf() {
-        #expect(StarterLibrary.templates.count == 25)
+        #expect(StarterLibrary.templates.count == 100)
         for t in StarterLibrary.templates {
             let d = t.document()
             let c = d.orderedCanvases[0]

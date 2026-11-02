@@ -1,0 +1,76 @@
+{
+  "aliases": [
+    "bug",
+    "triage",
+    "issue",
+    "defect",
+    "severity"
+  ],
+  "category": "process",
+  "collection": "engineering",
+  "details": [
+    {
+      "edge": "Yes",
+      "topic": "Link to existing issue"
+    },
+    {
+      "edge": "No",
+      "topic": "Try to reproduce"
+    },
+    {
+      "edge": "No",
+      "topic": "Ask reporter for steps"
+    },
+    {
+      "edge": "No",
+      "topic": "Close as cannot reproduce"
+    },
+    {
+      "edge": "Yes",
+      "note": "S1: outage or data loss. S2: a main feature broken, no workaround. S3: a workaround exists. S4: cosmetic.",
+      "topic": "Set severity and priority"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Assign an owner now"
+    },
+    {
+      "edge": "No",
+      "note": "Include the steps to reproduce, what was expected and what happened.",
+      "topic": "Write backlog ticket"
+    }
+  ],
+  "id": "bugTriage",
+  "kicker": "FLOW",
+  "name": "Bug triage flow",
+  "note": "Follow a new bug report from arrival to a decision; every question has a Yes and a No branch. Replace the questions and thresholds with your team's own severity rules.",
+  "order": 46,
+  "outline": [
+    "Bug reported >start",
+    "  Search for duplicates >process",
+    "    Already reported? >decision",
+    "      Link to existing issue >end",
+    "      Try to reproduce >process",
+    "        Reproduced? >decision",
+    "          Ask reporter for steps >io",
+    "            Reply within a week? >decision",
+    "              Close as cannot reproduce >end",
+    "          Set severity and priority >process",
+    "            Outage or data loss? >decision",
+    "              Assign an owner now >process",
+    "                Ship a hotfix >process",
+    "                  Tell the reporter >end",
+    "              Write backlog ticket >document",
+    "                Rank at weekly triage >end"
+  ],
+  "relationships": [
+    {
+      "from": "Reply within a week?",
+      "label": "Yes",
+      "to": "Try to reproduce"
+    }
+  ],
+  "summary": "Reproduce, rate, route",
+  "title": "Bug triage",
+  "type": "flowchart"
+}

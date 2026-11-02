@@ -1,0 +1,104 @@
+{
+  "aliases": [
+    "git",
+    "branching",
+    "pull request",
+    "merge",
+    "trunk"
+  ],
+  "category": "software",
+  "collection": "engineering",
+  "details": [
+    {
+      "note": "Name the branch after the ticket, such as fix/412-late-fees, and keep it to a few days' work.",
+      "topic": "Branch from main"
+    },
+    {
+      "edge": "No",
+      "topic": "Fix the failures"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Review the diff"
+    },
+    {
+      "edge": "No",
+      "topic": "Address comments"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Rebase on latest main"
+    },
+    {
+      "note": "One commit per change keeps main's history readable. Delete the branch once it's merged.",
+      "topic": "Squash and merge"
+    }
+  ],
+  "id": "gitBranching",
+  "kicker": "SWIMLANE",
+  "lanes": [
+    {
+      "title": "Developer",
+      "topics": [
+        "Ticket picked up",
+        "Branch from main",
+        "Commit in small steps",
+        "Open pull request",
+        "Fix the failures",
+        "Address comments",
+        "Rebase on latest main",
+        "Squash and merge"
+      ]
+    },
+    {
+      "title": "Reviewer",
+      "topics": [
+        "Review the diff",
+        "Changes approved?"
+      ]
+    },
+    {
+      "title": "CI",
+      "topics": [
+        "Run tests and lint",
+        "Checks pass?",
+        "Build and tag main",
+        "Deployed to staging"
+      ]
+    }
+  ],
+  "name": "Git branching flow",
+  "note": "Each lane is who does the step: the developer, the reviewer or CI. Follow one change from a short-lived branch to staging; the loops show what happens when checks fail or a review asks for changes. Rename the lanes and steps to match your team.",
+  "order": 48,
+  "outline": [
+    "Ticket picked up >start",
+    "  Branch from main >process",
+    "    Commit in small steps >process",
+    "      Open pull request >io",
+    "        Run tests and lint >process",
+    "          Checks pass? >decision",
+    "            Fix the failures >process",
+    "            Review the diff >process",
+    "              Changes approved? >decision",
+    "                Address comments >process",
+    "                Rebase on latest main >process",
+    "                  Squash and merge >process",
+    "                    Build and tag main >process",
+    "                      Deployed to staging >end"
+  ],
+  "relationships": [
+    {
+      "from": "Fix the failures",
+      "label": "Push fixes",
+      "to": "Run tests and lint"
+    },
+    {
+      "from": "Address comments",
+      "label": "Push changes",
+      "to": "Run tests and lint"
+    }
+  ],
+  "summary": "Branch, review, merge, deploy",
+  "title": "Git branching flow",
+  "type": "swimlane"
+}

@@ -3,6 +3,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 
 /// The Format panel's structure picker names each structure from the structure it
 /// applies (M17's known gap: its names were in another order, so "Brace Map" applied an

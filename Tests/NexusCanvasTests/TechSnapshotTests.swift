@@ -4,6 +4,7 @@ import Testing
 
 @testable import NexusCanvas
 @testable import NexusCore
+@testable import NexusScene
 
 /// Visual review of M4 canvases against artboards 18–23 (env-gated: NEXUS_SNAPSHOT_DIR).
 @MainActor

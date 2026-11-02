@@ -1,0 +1,60 @@
+{
+  "aliases": [
+    "reading",
+    "books",
+    "to read",
+    "book list",
+    "library"
+  ],
+  "category": "thinking",
+  "collection": "personal",
+  "details": [
+    {
+      "progress": 35,
+      "topic": "A history of bridges"
+    },
+    {
+      "progress": 60,
+      "topic": "A novel about lighthouse keepers"
+    },
+    {
+      "done": true,
+      "topic": "A year of slow travel"
+    },
+    {
+      "done": true,
+      "topic": "Keeping bees in the city"
+    }
+  ],
+  "id": "readingList",
+  "kicker": "LOGIC",
+  "name": "Reading list",
+  "note": "Sort books by where they stand: reading now, up next, finished and someday. Add a line under each saying why it's there or what you thought, and move titles along as you read.",
+  "order": 100,
+  "outline": [
+    "My reading list",
+    "  Reading now",
+    "    A history of bridges",
+    "      Page 112 of 320",
+    "    A novel about lighthouse keepers",
+    "      For book club, end of month",
+    "  Up next",
+    "    How rivers shape towns",
+    "      Lent by a neighbour",
+    "    Foraging for beginners",
+    "      Before the autumn walks",
+    "    Chess for adult beginners",
+    "      Holiday reading",
+    "  Finished",
+    "    A year of slow travel",
+    "      Four stars, lend it on",
+    "    Keeping bees in the city",
+    "      Three stars, too technical",
+    "  Someday",
+    "    A long family saga",
+    "    Essays on quiet places"
+  ],
+  "summary": "Now, next, finished, someday",
+  "title": "My reading list",
+  "type": "logic"
+}

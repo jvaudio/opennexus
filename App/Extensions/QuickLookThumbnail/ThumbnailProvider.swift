@@ -3,6 +3,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 import QuickLookThumbnailing
 
 /// Finder thumbnails for `.nexus` and `.nexusjson` (artboard 33): the package's own

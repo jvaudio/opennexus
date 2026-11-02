@@ -1,0 +1,59 @@
+{
+  "aliases": [
+    "brainstorm",
+    "ideas",
+    "ideation",
+    "how might we"
+  ],
+  "category": "thinking",
+  "collection": "thinking",
+  "details": [
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Gaming nights"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Homework help hub"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Makerspace"
+    }
+  ],
+  "id": "brainstorm",
+  "kicker": "WHITEBOARD",
+  "name": "Brainstorm",
+  "note": "Put the question in the centre and add every idea around it without judging; build on an idea by adding to it. When ideas dry up, give everyone three stars to vote with, then take the starred ideas forward.",
+  "order": 87,
+  "outline": [
+    "Getting teens into the library",
+    "  Gaming nights",
+    "    Retro console tournament",
+    "    Board game café corner",
+    "  Late opening on Fridays",
+    "  Homework help hub",
+    "    Peer tutors",
+    "    Free printing",
+    "  Teen advisory panel",
+    "  Makerspace",
+    "    3D printing sessions",
+    "    Podcast booth",
+    "  Comics and graphic novels",
+    "  Exam season quiet rooms",
+    "  Phone charging lockers",
+    "  Open mic poetry",
+    "  Skills badges",
+    "    Coding club",
+    "    First job CV clinic"
+  ],
+  "summary": "Loose ideas around one question",
+  "title": "Getting teens into the library",
+  "type": "whiteboard"
+}

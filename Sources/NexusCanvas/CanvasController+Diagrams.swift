@@ -1,7 +1,9 @@
-import AppKit
+import CoreGraphics
+import Foundation
 import NexusCore
 import NexusKeys
 import NexusLayout
+import NexusScene
 import NexusTheme
 
 // MARK: Slash menu
@@ -9,6 +11,8 @@ import NexusTheme
 public enum SlashAction: Equatable, Sendable {
     case nodeType(NodeType)
     case textFormat(String)
+    /// `/chem`: an equation holding `\ce{}`, the caret inside it (M48).
+    case chemistry
     case todo, note, link, image, audio, sticker, label
     case boundary, summary, callout, zone
 }
@@ -69,6 +73,7 @@ extension CanvasController {
         }
         let content: [(String, String, String, SlashAction)] = [
             (Loc.t("Equation"), "math", "∑", .textFormat("math")),
+            (Loc.t("Chemistry"), "chem", "⚗", .chemistry),
             (Loc.t("Code block"), "code", "{}", .textFormat("code")),
             (Loc.t("Plain text"), "text", "T", .textFormat("plain")), ("To-do", "todo", "☐", .todo),
             (Loc.t("Note"), "note", "≡", .note), (Loc.t("Link"), "link", "↗", .link),
@@ -186,6 +191,22 @@ extension CanvasController {
             perform(f == "math" ? Loc.t("Equation") : f == "code" ? Loc.t("Code Block") : Loc.t("Plain Text")) {
                 $0.update(id) { $0.textFormat = f == "plain" ? nil : f }
             }
+        case .chemistry:
+            let typed = s.inEditor ? "" : canvas.nodes[id]?.text ?? ""
+            let text = "\\ce{\(typed)}"
+            perform(Loc.t("Chemistry")) {
+                $0.update(id) {
+                    $0.textFormat = "math"
+                    $0.text = text
+                }
+            }
+            if s.inEditor {
+                edit?.text = text
+                onEditorReplaceText?(text)
+            } else {
+                beginEditing(id)
+            }
+            onEditorCaret?((text as NSString).length - 1)
         case .todo: perform("To-do") { $0.update(id) { $0.todo = $0.todo == nil ? Todo(done: false) : nil } }
         case .note: onRequest?(.note(id))
         case .link: onRequest?(.link(id))

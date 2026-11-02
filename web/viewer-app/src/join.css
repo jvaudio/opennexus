@@ -1,0 +1,82 @@
+/* The join page (M46): the invite bar above the session's last shared view. */
+
+.join-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.join-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  padding: 14px 20px;
+  background: var(--share-card);
+  border-bottom: 1px solid var(--share-line);
+}
+
+.join-text {
+  flex: 1 1 18rem;
+}
+
+.join-bar h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.join-bar p {
+  margin: 2px 0 0;
+  color: var(--share-muted);
+}
+
+.join-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+}
+
+.join-actions a {
+  color: var(--share-accent);
+  font-weight: 600;
+}
+
+.join-actions a.join-open {
+  padding: 7px 16px;
+  border-radius: 8px;
+  background: var(--share-accent);
+  color: #ffffff;
+  text-decoration: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .join-actions a.join-open {
+    color: #1d1d1f;
+  }
+}
+
+.join-actions a:focus-visible {
+  outline: 2px solid var(--share-accent);
+  outline-offset: 2px;
+}
+
+.join-main {
+  display: flex;
+  flex: 1 1 0;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.join-note {
+  margin: 0;
+  padding: 10px 20px;
+  color: var(--share-muted);
+}
+
+.join-main #opennexus-viewer {
+  flex: 1 1 0;
+  height: auto;
+  min-height: 0;
+}

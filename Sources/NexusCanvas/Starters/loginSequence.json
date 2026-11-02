@@ -1,0 +1,120 @@
+{
+  "aliases": [
+    "login",
+    "sign in",
+    "2fa",
+    "one-time code",
+    "mfa"
+  ],
+  "category": "software",
+  "collection": "engineering",
+  "details": [
+    {
+      "note": "Compares the password with its hash in constant time, and gives the same error for an unknown email or a wrong password.",
+      "topic": "Login service"
+    },
+    {
+      "note": "The cookie holds only a random session id, marked HttpOnly and Secure.",
+      "topic": "Session store"
+    },
+    {
+      "note": "Codes last five minutes and allow three tries; after that the user starts again.",
+      "topic": "Code sender"
+    }
+  ],
+  "id": "loginSequence",
+  "kicker": "SEQUENCE",
+  "name": "Login sequence",
+  "note": "Two steps to sign in: the password first, then a code sent to the user's phone. Read the messages top to bottom and adapt them to your own flow, for example a code from an authenticator app instead of a text.",
+  "order": 43,
+  "outline": [
+    "Sign in with a one-time code",
+    "  User >actor",
+    "  Browser >client",
+    "  Login service >service",
+    "  User database >db",
+    "  Session store >db",
+    "  Code sender >participant"
+  ],
+  "relationships": [
+    {
+      "from": "User",
+      "label": "Email and password",
+      "to": "Browser"
+    },
+    {
+      "from": "Browser",
+      "label": "POST /login",
+      "to": "Login service"
+    },
+    {
+      "from": "Login service",
+      "label": "Find user by email",
+      "to": "User database"
+    },
+    {
+      "from": "User database",
+      "kind": "return",
+      "label": "Password hash",
+      "to": "Login service"
+    },
+    {
+      "from": "Login service",
+      "label": "Send one-time code",
+      "to": "Code sender"
+    },
+    {
+      "from": "Code sender",
+      "kind": "return",
+      "label": "Queued",
+      "to": "Login service"
+    },
+    {
+      "from": "Login service",
+      "kind": "return",
+      "label": "Ask for the code",
+      "to": "Browser"
+    },
+    {
+      "from": "Code sender",
+      "label": "Text with six digits",
+      "to": "User"
+    },
+    {
+      "from": "User",
+      "label": "Enter code",
+      "to": "Browser"
+    },
+    {
+      "from": "Browser",
+      "label": "POST /login/code",
+      "to": "Login service"
+    },
+    {
+      "from": "Login service",
+      "label": "Create session",
+      "to": "Session store"
+    },
+    {
+      "from": "Session store",
+      "kind": "return",
+      "label": "Session id",
+      "to": "Login service"
+    },
+    {
+      "from": "Login service",
+      "kind": "return",
+      "label": "Set session cookie",
+      "to": "Browser"
+    },
+    {
+      "from": "Browser",
+      "kind": "return",
+      "label": "Signed in",
+      "to": "User"
+    }
+  ],
+  "summary": "Password, then a one-time code",
+  "title": "Sign in with a one-time code",
+  "type": "sequence"
+}

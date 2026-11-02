@@ -4,6 +4,7 @@ import NexusCore
 import NexusFormat
 import NexusInterchange
 import NexusKeys
+import NexusScene
 import PDFKit
 import SwiftUI
 import UniformTypeIdentifiers
@@ -15,7 +16,9 @@ extension DocumentWindowController {
     static let windowCommands: Set<CommandID> = [
         .newCanvas, .inspector, .importFile, .setPassword, .recoverySnapshots, .renameCanvas, .moveCanvasToWindow,
         .duplicateCanvas, .deleteCanvas, .copyCanvas, .pasteCanvas, .saveCanvasAsDocument, .mergeDocuments,
-        .printDocument, .export, .mapShot, .splitByBranch, .nextPanel, .previousPanel,
+        .printDocument, .export, .exportHTML, .shareLink, .manageShareLinks, .mapShot, .splitByBranch, .nextPanel,
+        .previousPanel, .syncHistory, .resolveConflicts, .mergeConflictCopies, .collaborate, .joinSession,
+        .saveCanvasAsStarter, .installStarter,
     ]
 
     func runWindowCommand(_ id: CommandID) {
@@ -32,9 +35,19 @@ extension DocumentWindowController {
         case .copyCanvas: controller.copyCanvas()
         case .pasteCanvas: controller.pasteCanvas()
         case .saveCanvasAsDocument: controller.saveCanvasAsDocument()
+        case .saveCanvasAsStarter: saveCanvasAsStarter()
+        case .installStarter: StarterInstaller.choose()
         case .mergeDocuments: controller.openMerge()
         case .printDocument: controller.openPrint()
         case .export: controller.openExport()
+        case .exportHTML: controller.openExport(.html)
+        case .shareLink: controller.openShareLink()
+        case .manageShareLinks: controller.manageLinks = true
+        case .syncHistory: controller.openSyncHistory()
+        case .resolveConflicts: controller.openResolveConflicts()
+        case .mergeConflictCopies: findConflictCopies(offer: false)
+        case .collaborate: controller.openCollaborate()
+        case .joinSession: controller.openJoinSession()
         case .mapShot: controller.openMapShot()
         case .splitByBranch: controller.splitByBranch()
         case .nextPanel: moveFocus(forward: true)
@@ -42,7 +55,10 @@ extension DocumentWindowController {
         default: break
         }
         if let w = window, w.firstResponder !== host.canvasView, controller.passwordSheet == false,
-            controller.exportState == nil
+            controller.exportState == nil, controller.shareState == nil, controller.shareNotice == nil,
+            !controller.manageLinks, controller.resolveState == nil, controller.syncHistory == nil,
+            controller.conflictCopies.isEmpty, controller.collabSheet == nil, controller.joinSheet == nil,
+            controller.collabNotice == nil
         {
             w.makeFirstResponder(host.canvasView)
         }
@@ -68,6 +84,23 @@ extension DocumentWindowController {
         controller.rememberLook()
     }
 
+    /// A window coming forward looks for changes from other Macs (M45).
+    func windowDidBecomeKey(_ notification: Notification) {
+        SyncCenter.shared.windowBecameKey(document_.fileURL)
+    }
+
+    /// Copies other apps' sync left beside this document (M45). At open they're offered;
+    /// File › Merge Conflicting Copies… merges them at once.
+    func findConflictCopies(offer: Bool) {
+        let copies = document_.fileURL.map { ConflictCopies.find(for: $0) } ?? []
+        guard !copies.isEmpty else {
+            if !offer { controller.showToast(Loc.t("No conflicting copies of this document")) }
+            return
+        }
+        controller.offerConflictCopies(copies)
+        if !offer { controller.mergeConflictCopies() }
+    }
+
     func wireFileHooks() {
         // Set Node Type… (M41) opens the Format panel; it never closes it.
         controller.onShowFormatPanel = { [weak self] in
@@ -86,6 +119,10 @@ extension DocumentWindowController {
         controller.onRemovePassword = { [weak self] in
             self?.document_.removePassword()
             self?.controller.showToast(Loc.t("Password removed"))
+        }
+        controller.onConflictCopiesMerged = { [weak self] copies in
+            guard let url = self?.document_.fileURL else { return }
+            ConflictCopies.finish(copies, of: url)
         }
         controller.onRestoreSnapshot = { [weak self] s in
             guard let self else { return }
@@ -355,6 +392,7 @@ struct CanvasTabMenu: View {
         Button("Paste Canvas") { on { controller.pasteCanvas() } }.disabled(!controller.canPasteCanvas)
         Divider()
         Button("Save Canvas as Document…") { on { controller.saveCanvasAsDocument() } }
+        Button("Save Canvas as Starter…") { on { send(.saveCanvasAsStarter) } }
         Button("Move to New Window") { on { send(.moveCanvasToWindow) } }
         Divider()
         Button("Delete Canvas…", role: .destructive) { on { send(.deleteCanvas) } }

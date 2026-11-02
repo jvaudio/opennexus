@@ -6,6 +6,7 @@ import Testing
 @testable import NexusCore
 @testable import NexusFormat
 @testable import NexusKeys
+@testable import NexusScene
 
 @MainActor
 @Suite(.serialized) struct TechInteractionTests {
@@ -86,8 +87,9 @@ import Testing
         h.press("return")
         #expect(h.canvas.nodes[id]?.text == "x^2 + \\alpha")
         let rendered = h.controller.scene.nodes[id]!.textStyle.attributed(
-            "x^2 + \\alpha", marks: [], color: .black)
-        #expect(rendered.string.contains("α"))
+            "x^2 + \\alpha", marks: [], color: .fixed(CGColor(gray: 0, alpha: 1)))
+        // Typeset by MathJax since M48: one formula stands in for the source.
+        #expect(MathText.runs(in: rendered).map(\.0.source) == ["x^2 + \\alpha"])
     }
 
     /// S5: Tab from a decision opens the branch's label pre-filled "Yes", then "No".
@@ -254,16 +256,18 @@ import Testing
 
     @Test func codeHighlighting() {
         let s = CodeText.render(
-            "func retry(op) { // again\n  for i in 0..<3 { }\n}", size: 12, color: .white,
-            paragraph: NSParagraphStyle.default)
-        let kw = s.attribute(.foregroundColor, at: 0, effectiveRange: nil) as? NSColor
-        #expect(kw == CodeText.keyword)
+            "func retry(op) { // again\n  for i in 0..<3 { }\n}", size: 12, color: .system(.white),
+            paragraph: TextParagraph())
+        let kw = s.attribute(TextKey.color, at: 0, effectiveRange: nil)
+        #expect(TextColorValue(attribute: kw)?.cgColor == CodeText.keyword)
         let ns = s.string as NSString
-        let comment =
-            s.attribute(.foregroundColor, at: ns.range(of: "// again").location, effectiveRange: nil) as? NSColor
-        #expect(comment == CodeText.comment)
-        let m = MathText.render("E[X] = \\sum_i x_i \\cdot p(x_i)", size: 16, color: .black, paragraph: .default)
-        #expect(m.string.contains("Σ") && m.string.contains("·") && !m.string.contains("\\"))
+        let comment = s.attribute(TextKey.color, at: ns.range(of: "// again").location, effectiveRange: nil)
+        #expect(TextColorValue(attribute: comment)?.cgColor == CodeText.comment)
+        // Equations are typeset by MathJax since M48: one formula stands in for the source.
+        let font = Fonts.system(16)
+        let m = MathText.block(
+            "E[X] = \\sum_i x_i \\cdot p(x_i)", base: [TextKey.font: font], font: font, errorColor: .system(.red))
+        #expect(MathText.runs(in: m).count == 1 && !m.string.contains("\\"))
     }
 }
 

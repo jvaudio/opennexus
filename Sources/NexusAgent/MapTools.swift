@@ -3,6 +3,7 @@ import NexusCanvas
 import NexusCore
 import NexusFormat
 import NexusInterchange
+import NexusScene
 
 /// The tools an MCP client can call (artboard 40; M22 added set_task and add_comment).
 /// Each one checks Settings › Integrations (the folders, then Read / Edit / Create & export:
@@ -29,6 +30,8 @@ public struct MapTools {
     public var ask: (String) -> Bool?
     /// The MCP client's name, used to sign comments.
     public var client: String?
+    /// The user's own starters, listed after the built-ins (M50).
+    public var mine = MyStarters(folder: nil)
 
     public init(policy: AgentPolicy, ask: @escaping (String) -> Bool? = { _ in nil }) {
         self.policy = policy
@@ -216,10 +219,24 @@ public struct MapTools {
                         "description":
                             "Every zone: each writes a file per zone, named after it, into the \"out\" folder; pages writes one pdf with a page per zone.",
                     ],
+                    "notes": [
+                        "type": "boolean", "description": "html: include notes (default true).",
+                    ],
+                    "comments": [
+                        "type": "boolean", "description": "html: include comments (default true).",
+                    ],
+                    "attachments": [
+                        "type": "boolean", "description": "html: embed attachments (default false).",
+                    ],
+                    "layouts": [
+                        "type": "string", "enum": ["saved", "both"],
+                        "description":
+                            "html: only the layout as saved, or Everything (every branch open) too (default both). An html export holds every canvas unless \"canvas\" is given.",
+                    ],
                 ], required: ["path", "format"]), readOnly: true),
         tool(
             "list_starters", "List starters",
-            "Lists the starters a new map can begin from (M40): a Blank one for every diagram type, and the built-in templates, with id, type, category and summary. `nexus new \"<title>\" --starter <id>` creates a map from one.",
+            "Lists the starters a new map can begin from (M40): a Blank one for every diagram type, the built-in templates, and the user's own (M50), with id, type, category and summary. `nexus new \"<title>\" --starter <id>` creates a map from one.",
             schema(
                 [
                     "query": [
@@ -734,10 +751,10 @@ public struct MapTools {
         return Output(text: "Set \(changed.joined(separator: ", ")).")
     }
 
-    /// Built-in data only, so no folder or permission applies.
+    /// Starters only, so no folder or permission applies: the built-ins, then the user's own.
     func listStarters(_ args: [String: JSONValue]) -> Output {
         let q = args["query"]?.stringValue ?? ""
-        let lines = StarterGallery.search(q, in: StarterLibrary.all).map {
+        let lines = StarterGallery.search(q, in: StarterLibrary.all + mine.all).map {
             "\($0.id) — \($0.name) (\($0.type.rawValue), \($0.category.rawValue)): \($0.summary)"
         }
         guard !lines.isEmpty else { return Output(text: "No starter matches “\(q)”.") }
@@ -780,7 +797,11 @@ public struct MapTools {
             branch: args["branch"]?.stringValue, zone: args["zone"]?.stringValue, zones: args["zones"]?.stringValue,
             format: f, in: doc.canvases[cid]!)
         if part == .eachZone { return try exportZones(doc, cid, f, out: args["out"]?.stringValue) }
-        guard let data = f.export(doc, canvas: cid, scope: part) else {
+        let html = try ExportState.HTMLOptions.from(
+            canvasNamed: args["canvas"]?.stringValue.map { !$0.isEmpty } ?? false, notes: args["notes"]?.boolValue,
+            comments: args["comments"]?.boolValue, attachments: args["attachments"]?.boolValue,
+            layouts: args["layouts"]?.stringValue)
+        guard let data = f.export(doc, canvas: cid, scope: part, html: html) else {
             throw ToolError("Couldn't export \(f.rawValue).")
         }
         if let out = args["out"]?.stringValue, !out.isEmpty {
@@ -803,6 +824,7 @@ public struct MapTools {
                 ]
             ])
         }
+        if f == .html { throw ToolError("html is a page to open in a browser; give “out” to write it to a file.") }
         throw ToolError("\(f.rawValue) is a binary format; give “out” to write it to a file.")
     }
 

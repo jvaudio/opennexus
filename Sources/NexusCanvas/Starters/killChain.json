@@ -1,0 +1,73 @@
+{
+  "aliases": [
+    "kill chain",
+    "attack stages",
+    "intrusion",
+    "ransomware",
+    "detection"
+  ],
+  "category": "security",
+  "collection": "security",
+  "details": [
+    {
+      "note": "The attacker lists the partners from the firm's website and probes its remote-access portal.",
+      "topic": "Reconnaissance"
+    },
+    {
+      "note": "They register a domain one letter off a client's and build an invoice document with a malicious macro.",
+      "topic": "Weaponisation"
+    },
+    {
+      "note": "The invoice arrives by email, addressed by name to the accounts team.",
+      "topic": "Delivery"
+    },
+    {
+      "note": "A clerk enables editing and the macro runs a script.",
+      "topic": "Exploitation"
+    },
+    {
+      "note": "The script installs a backdoor that survives a restart.",
+      "topic": "Installation"
+    },
+    {
+      "note": "The backdoor calls home every few minutes for instructions.",
+      "topic": "Command and control"
+    },
+    {
+      "note": "They copy client files, delete the backups, then encrypt the file server and demand payment.",
+      "topic": "Actions on objectives"
+    }
+  ],
+  "id": "killChain",
+  "kicker": "TIMELINE",
+  "name": "Kill chain",
+  "note": "Each event is one stage of an attack, in order, following a ransomware attack on a small law firm. Under each stage, write what your logs would show and the control that breaks the chain there; the earlier you break it, the cheaper it is.",
+  "order": 59,
+  "outline": [
+    "Ransomware at a law firm",
+    "  Reconnaissance",
+    "    Watch: portal scans, staff lookups",
+    "    Break: trim public staff details",
+    "  Weaponisation",
+    "    Watch: lookalike domain registrations",
+    "    Break: block newly registered domains",
+    "  Delivery",
+    "    Watch: invoices from unknown senders",
+    "    Break: quarantine attachments with macros",
+    "  Exploitation",
+    "    Watch: office apps starting scripts",
+    "    Break: disable macros from the internet",
+    "  Installation",
+    "    Watch: new scheduled tasks, services",
+    "    Break: allow-list what can run",
+    "  Command and control",
+    "    Watch: regular beacons to new domains",
+    "    Break: filter outbound DNS and web",
+    "  Actions on objectives",
+    "    Watch: mass renames, deleted backups",
+    "    Break: offline backups, segmented shares"
+  ],
+  "summary": "Seven stages to spot and break",
+  "title": "Ransomware at a law firm",
+  "type": "timeline"
+}

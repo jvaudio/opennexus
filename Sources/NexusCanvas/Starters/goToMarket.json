@@ -1,0 +1,62 @@
+{
+  "aliases": [
+    "go to market",
+    "gtm",
+    "launch plan",
+    "marketing plan"
+  ],
+  "category": "planning",
+  "collection": "business",
+  "details": [
+    {
+      "note": "The narrow group you'll win first, and who signs off the purchase.",
+      "topic": "Target customers"
+    },
+    {
+      "note": "The one problem you solve better than what they use today.",
+      "topic": "Positioning"
+    },
+    {
+      "note": "Where these customers already look and listen.",
+      "topic": "Channels"
+    },
+    {
+      "note": "Numbers that say the launch worked. Agree them before you start.",
+      "topic": "Success measures"
+    }
+  ],
+  "id": "goToMarket",
+  "kicker": "MIND MAP",
+  "name": "Go-to-market plan",
+  "note": "Start with Target customers and Positioning; pricing, channels and the launch follow from them. Give every success measure a number and a date.",
+  "order": 32,
+  "outline": [
+    "Clinic booking app launch",
+    "  Target customers",
+    "    Independent dental clinics",
+    "    Two to ten chairs",
+    "    Practice manager buys",
+    "  Positioning",
+    "    Fewer missed appointments",
+    "    Set up in an afternoon",
+    "    Instead of phone and paper diary",
+    "  Pricing",
+    "    £30 per chair a month",
+    "    Free 30-day trial",
+    "  Channels",
+    "    Dental trade shows",
+    "    Clinic-to-clinic referrals",
+    "    Dental supplier newsletters",
+    "  Launch",
+    "    Pilot with five clinics",
+    "    Case study from pilot",
+    "    Regional launch",
+    "  Success measures",
+    "    40 paying clinics in six months",
+    "    No-shows down by a third",
+    "    Trial-to-paid above 25%"
+  ],
+  "summary": "Customers, message, price, channels, launch",
+  "title": "Clinic booking app launch",
+  "type": "mindmap"
+}

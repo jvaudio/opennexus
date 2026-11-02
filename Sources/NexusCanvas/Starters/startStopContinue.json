@@ -1,0 +1,68 @@
+{
+  "aliases": [
+    "start stop continue",
+    "retro",
+    "retrospective",
+    "feedback"
+  ],
+  "category": "thinking",
+  "collection": "meetings",
+  "details": [
+    {
+      "note": "New things worth trying.",
+      "topic": "Start"
+    },
+    {
+      "note": "What isn't working, wastes time or isn't safe.",
+      "topic": "Stop"
+    },
+    {
+      "note": "What works and should stay.",
+      "topic": "Continue"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Text rota reminders"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Locking up alone"
+    },
+    {
+      "markers": [
+        "star-gold"
+      ],
+      "topic": "Saturday tea break"
+    }
+  ],
+  "id": "startStopContinue",
+  "kicker": "WHITEBOARD",
+  "name": "Start, stop, continue",
+  "note": "Give everyone five quiet minutes to add notes under Start, Stop and Continue, then group the duplicates. Vote, star the top idea in each, and agree who does what.",
+  "order": 38,
+  "outline": [
+    "Food bank volunteer review",
+    "  Start",
+    "    Text rota reminders",
+    "    Pair new volunteers up",
+    "    Weigh donations at the door",
+    "    Ask visitors what's missing",
+    "  Stop",
+    "    Sorting tins on the floor",
+    "    Last-minute shift swaps",
+    "    Accepting out-of-date stock",
+    "    Locking up alone",
+    "  Continue",
+    "    Saturday tea break",
+    "    Thank-you notes to donors",
+    "    Clear shelf labels",
+    "    Warm welcome for visitors"
+  ],
+  "summary": "Begin, drop, keep doing",
+  "title": "Food bank volunteer review",
+  "type": "whiteboard"
+}

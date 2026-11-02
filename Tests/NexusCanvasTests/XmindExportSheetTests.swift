@@ -5,6 +5,7 @@ import NexusInterchange
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 /// M15: Xmind in the export sheet: the whole document with a thumbnail, a size line, and
 /// the report of what doesn't carry over.

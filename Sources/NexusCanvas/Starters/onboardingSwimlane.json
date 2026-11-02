@@ -1,0 +1,109 @@
+{
+  "aliases": [
+    "onboarding",
+    "new starter",
+    "new hire",
+    "induction",
+    "hr"
+  ],
+  "category": "process",
+  "collection": "process",
+  "details": [
+    {
+      "edge": "No",
+      "topic": "Chase missing forms"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Set up payroll"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Close onboarding"
+    },
+    {
+      "edge": "No",
+      "topic": "Agree a support plan"
+    },
+    {
+      "note": "A peer outside the reporting line who answers the small questions.",
+      "topic": "Assign a buddy"
+    }
+  ],
+  "id": "onboardingSwimlane",
+  "kicker": "SWIMLANE",
+  "lanes": [
+    {
+      "title": "New hire",
+      "topics": [
+        "Return signed forms",
+        "Collect laptop and logins"
+      ]
+    },
+    {
+      "title": "Manager",
+      "topics": [
+        "Plan the first week",
+        "30-day check-in"
+      ]
+    },
+    {
+      "title": "IT",
+      "topics": [
+        "Order laptop"
+      ]
+    },
+    {
+      "title": "People team",
+      "topics": [
+        "Offer accepted",
+        "Forms complete?",
+        "Close onboarding"
+      ]
+    }
+  ],
+  "name": "Employee onboarding",
+  "note": "Each lane is who does the step; read left to right. Rename the lanes and steps to match your organisation, and label every branch out of a decision.",
+  "order": 71,
+  "outline": [
+    "Offer accepted >start",
+    "  Send contract and forms >process",
+    "    Return signed forms >io",
+    "      Forms complete? >decision",
+    "        Chase missing forms >process",
+    "        Set up payroll >process",
+    "          Order laptop >process",
+    "            Create accounts >process",
+    "              Issue building pass >process",
+    "          Plan the first week >process",
+    "            Assign a buddy >process",
+    "              Welcome on day one >process",
+    "                Collect laptop and logins >io",
+    "                  Read the handbook >document",
+    "                    Complete induction >process",
+    "                      30-day check-in >process",
+    "                        Settling in well? >decision",
+    "                          Close onboarding >end",
+    "                          Agree a support plan >process"
+  ],
+  "relationships": [
+    {
+      "from": "Chase missing forms",
+      "label": "Resend",
+      "to": "Return signed forms"
+    },
+    {
+      "from": "Issue building pass",
+      "label": "Kit ready",
+      "to": "Collect laptop and logins"
+    },
+    {
+      "from": "Agree a support plan",
+      "label": "Check again",
+      "to": "30-day check-in"
+    }
+  ],
+  "summary": "From signed offer to first month",
+  "title": "Employee onboarding",
+  "type": "swimlane"
+}

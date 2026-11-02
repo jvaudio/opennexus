@@ -1,9 +1,14 @@
-import AppKit
 import NexusFormat
+import NexusScene
 import SwiftUI
 
+#if os(macOS)
+import AppKit
+#endif
+
 /// Quick Capture (✦N from any app, artboard 33): one field on a glass panel. ↩ saves,
-/// ⇥ / ⇧⇥ choose the map, ⌥↩ adds a line, Esc closes.
+/// ⇥ / ⇧⇥ choose the map, ⌥↩ adds a line, Esc closes. On iOS a widget opens it as a sheet
+/// (M47c).
 @MainActor
 @Observable
 public final class QuickCaptureModel {
@@ -25,6 +30,7 @@ public final class QuickCaptureModel {
     }
 }
 
+#if os(macOS)
 public struct QuickCaptureView: View {
     @Bindable var model: QuickCaptureModel
     @FocusState private var focused: Bool
@@ -50,12 +56,12 @@ public struct QuickCaptureView: View {
                     .accessibilityLabel("Quick Capture")
             }
             HStack(spacing: 6) {
-                Text("→").foregroundStyle(.secondary)
+                Text("→").foregroundStyle(.chromeSecondary)
                 Text(model.saved ?? targetLine)
                     .foregroundStyle(model.saved == nil ? Color.primary.opacity(0.75) : Color.green)
                     .lineLimit(1)
                 Spacer(minLength: 12)
-                Text("↩ save · ⇥ choose map").foregroundStyle(.secondary)
+                Text("↩ save · ⇥ choose map").foregroundStyle(.chromeSecondary)
             }
             .font(.chrome(13))
         }
@@ -74,3 +80,4 @@ public struct QuickCaptureView: View {
         return t.targets.count > 1 ? "\(current) · \(t.current.title)" : current
     }
 }
+#endif

@@ -1,5 +1,8 @@
-import AppKit
+import CoreGraphics
+import Foundation
+import ImageIO
 import NexusCore
+import NexusScene
 import NexusTheme
 import UniformTypeIdentifiers
 
@@ -36,6 +39,9 @@ public enum ImageExporter {
         public var aspect = "fit"
         public var mat = RGBA(hex: "#E9E6FF")
         public var displayP3 = false
+        /// Formulas drawn into the picture; a PDF leaves them out and draws them over it as
+        /// paths (M48).
+        public var formulas = true
         public init() {}
     }
 
@@ -63,8 +69,13 @@ public enum ImageExporter {
         o.scope == .zone && c.zones.contains { $0.id == o.zone } ? o.zone : nil
     }
 
-    /// An offscreen controller showing `canvas` with the export's scope and theme.
+    /// An offscreen controller showing `canvas` with the export's scope and theme. Exports
+    /// wait for every formula (M48).
     static func controller(_ model: DocumentModel, canvas id: CanvasID, _ o: Options) -> CanvasController {
+        MathEngine.waiting { makeController(model, canvas: id, o) }
+    }
+
+    private static func makeController(_ model: DocumentModel, canvas id: CanvasID, _ o: Options) -> CanvasController {
         var m = model
         if let t = o.theme { m.canvases[id]?.style.theme = t }
         let controller = CanvasController(store: DocumentStore(model: m))
@@ -99,6 +110,13 @@ public enum ImageExporter {
     /// as Map Shot does.
     public static func image(_ model: DocumentModel, canvas id: CanvasID, _ o: Options, crop: CGRect? = nil) -> CGImage?
     {
+        MathEngine.waiting { render(model, canvas: id, o, crop: crop) }
+    }
+
+    private static func render(_ model: DocumentModel, canvas id: CanvasID, _ o: Options, crop: CGRect?) -> CGImage? {
+        let hid = MathLayout.hidesFormulas
+        MathLayout.hidesFormulas = !o.formulas
+        defer { MathLayout.hidesFormulas = hid }
         let controller = controller(model, canvas: id, o)
         let b = controller.scene.bounds
         let rect =
@@ -108,42 +126,51 @@ public enum ImageExporter {
         let k = effectiveScale(rect, o.scale)
         let size = CGSize(width: (rect.width * k).rounded(), height: (rect.height * k).rounded())
         guard size.width >= 1, size.height >= 1 else { return nil }
-        let view = CanvasView(controller: controller)
-        view.reduceMotionOverride = true
-        view.exportMode = true
-        let window = NSWindow(
-            contentRect: CGRect(origin: .zero, size: size), styleMask: [.borderless], backing: .buffered, defer: true)
-        window.contentView = view
-        view.frame = CGRect(origin: .zero, size: size)
-        window.layoutIfNeeded()
-        view.layoutSubtreeIfNeeded()
-        // The view lays itself out at zoom k, so text rasterises at the export's resolution.
-        view.setCamera(Camera(offset: CGPoint(x: -rect.minX * k, y: -rect.minY * k), zoom: k), animated: false)
-        view.layoutSubtreeIfNeeded()
+        // The layers are laid out at zoom k, so text rasterises at the export's resolution.
+        let renderer = renderer(controller, size: size)
+        renderer.place(Camera(offset: CGPoint(x: -rect.minX * k, y: -rect.minY * k), zoom: k))
         let bg: RGBA? =
             switch o.background {
             case .theme: controller.scene.canvasColor
             case .white: RGBA(r: 1, g: 1, b: 1, a: 1)
             case .transparent: nil
             }
-        let img = draw(view, size: size, background: bg, displayP3: o.displayP3)
-        window.contentView = nil
+        let img = draw(renderer, size: size, background: bg, displayP3: o.displayP3)
         guard let img, crop == nil, o.frame != "none" || o.aspect != "fit" else { return img }
         return framed(img, o, scale: k, canvas: controller.scene.canvasColor)
+    }
+
+    /// The export's formulas, each with its baseline's left end in world points (M48).
+    static func formulas(_ model: DocumentModel, canvas id: CanvasID, _ o: Options) -> [MathLayout.Placed] {
+        MathEngine.waiting {
+            let scene = controller(model, canvas: id, o).scene
+            return scene.order.flatMap {
+                scene.nodes[$0]?.formulas(theme: scene.theme, canvas: scene.canvasColor) ?? []
+            }
+        }
+    }
+
+    /// Formulas as paths over a PDF's picture of the world rect `rect`, drawn `scale` times
+    /// its size with its top-left corner at `topLeft` (PDF space, y up).
+    static func drawFormulas(
+        _ formulas: [MathLayout.Placed], in ctx: CGContext, from rect: CGRect, scale: CGFloat, topLeft: CGPoint
+    ) {
+        for f in formulas {
+            let at = CGPoint(
+                x: topLeft.x + (f.origin.x - rect.minX) * scale, y: topLeft.y - (f.origin.y - rect.minY) * scale)
+            f.run.glyphs.draw(
+                in: ctx, at: at, fontSize: f.run.fontSize * scale,
+                color: f.color?.cgColor ?? CGColor(gray: 0, alpha: 1), flipped: false)
+        }
     }
 
     /// The six image frames of Settings › Export (artboard 39), padded to the aspect ratio.
     static func framed(_ img: CGImage, _ o: Options, scale k: CGFloat, canvas: RGBA) -> CGImage? {
         let w = CGFloat(img.width)
         let h = CGFloat(img.height)
-        let pad: CGFloat = o.frame == "none" ? 0 : 48 * k
-        let bar: CGFloat = o.frame == "window" ? 28 * k : 0
-        var outW = w + pad * 2
-        var outH = h + bar + pad * 2
-        let ratios: [String: CGFloat] = ["1:1": 1, "4:3": 4 / 3, "16:9": 16 / 9, "9:16": 9 / 16]
-        if let r = ratios[o.aspect] {
-            if outW / outH > r { outH = outW / r } else { outW = outH * r }
-        }
+        let (out, card, bar) = frameGeometry(CGSize(width: w, height: h), o, scale: k)
+        let outW = out.width
+        let outH = out.height
         let space = CGColorSpace(name: o.displayP3 ? CGColorSpace.displayP3 : CGColorSpace.sRGB)!
         guard
             let ctx = CGContext(
@@ -169,7 +196,6 @@ public enum ImageExporter {
             ctx.fill(full)
         default: break  // soft shadow and window sit on transparency
         }
-        let card = CGRect(x: (outW - w) / 2, y: (outH - h - bar) / 2, width: w, height: h + bar)
         let radius: CGFloat = o.frame == "none" ? 0 : 12 * k
         if o.frame != "none" && o.frame != "paper" {
             ctx.saveGState()
@@ -200,46 +226,78 @@ public enum ImageExporter {
         return ctx.makeImage()
     }
 
-    static func draw(_ view: CanvasView, size: CGSize, background: RGBA?, displayP3: Bool = false) -> CGImage? {
+    /// A framed image's size, and the card holding the picture (`size`, pixels) and the
+    /// window's bar above it, from the bottom-left corner (y up).
+    static func frameGeometry(_ size: CGSize, _ o: Options, scale k: CGFloat) -> (CGSize, CGRect, CGFloat) {
+        let w = size.width
+        let h = size.height
+        let pad: CGFloat = o.frame == "none" ? 0 : 48 * k
+        let bar: CGFloat = o.frame == "window" ? 28 * k : 0
+        var outW = w + pad * 2
+        var outH = h + bar + pad * 2
+        let ratios: [String: CGFloat] = ["1:1": 1, "4:3": 4 / 3, "16:9": 16 / 9, "9:16": 9 / 16]
+        if let r = ratios[o.aspect] {
+            if outW / outH > r { outH = outW / r } else { outW = outH * r }
+        }
+        let card = CGRect(x: (outW - w) / 2, y: (outH - h - bar) / 2, width: w, height: h + bar)
+        return (CGSize(width: outW, height: outH), card, bar)
+    }
+
+    /// A canvas as a PDF page's picture (Export › PDF › All canvases): the image, framed
+    /// as the export's options say, without its formulas, which `pdfPages` draws over it
+    /// as paths (M48).
+    struct PDFPicture {
+        var image: CGImage
+        var formulas: [MathLayout.Placed]
+        /// The content's world rect, its pixels per point, and its top-left corner in the
+        /// image (pixels, y up).
+        var rect: CGRect
+        var scale: CGFloat
+        var topLeft: CGPoint
+    }
+
+    static func pdfPicture(_ model: DocumentModel, canvas id: CanvasID, _ o: Options) -> PDFPicture? {
+        var o = o
+        o.formulas = false
+        guard let img = image(model, canvas: id, o) else { return nil }
+        let rect = contentRect(model, canvas: id, o)
+        let k = effectiveScale(rect, o.scale)
+        let content = CGSize(width: (rect.width * k).rounded(), height: (rect.height * k).rounded())
+        let card =
+            o.frame == "none" && o.aspect == "fit"
+            ? CGRect(origin: .zero, size: content) : frameGeometry(content, o, scale: k).1
+        return PDFPicture(
+            image: img, formulas: formulas(model, canvas: id, o), rect: rect, scale: k,
+            topLeft: CGPoint(x: card.minX, y: card.minY + content.height))
+    }
+
+    /// A renderer showing the controller's scene in a view of `size`, as an export draws
+    /// it: final frames, no selection ring or grid, Reduce Motion. One pixel per point,
+    /// so text rasterises at the export's own scale, whatever the display.
+    static func renderer(_ controller: CanvasController, size: CGSize) -> SceneRenderer {
+        let renderer = SceneRenderer()
+        renderer.backingScale = 1
+        renderer.exportMode = true
+        renderer.viewSize = size
+        renderer.asset = { [weak controller] in controller?.store.model.assets[$0] }
+        renderer.update(controller.scene, state: controller.renderState(reduceMotion: true), animated: false)
+        return renderer
+    }
+
+    static func draw(_ renderer: SceneRenderer, size: CGSize, background: RGBA?, displayP3: Bool = false) -> CGImage? {
         guard
             let ctx = CGContext(
                 data: nil, width: Int(size.width), height: Int(size.height), bitsPerComponent: 8, bytesPerRow: 0,
                 space: CGColorSpace(name: displayP3 ? CGColorSpace.displayP3 : CGColorSpace.sRGB)!,
                 bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue)
         else { return nil }
-        if let background {
-            ctx.setFillColor(background.cgColor)
-            ctx.fill(CGRect(origin: .zero, size: size))
-        }
-        let root = view.sceneLayer
-        root.isGeometryFlipped = true
-        root.layoutIfNeeded()
-        // The background is ours to paint (or leave transparent).
-        let rootBackground = root.backgroundColor
-        root.backgroundColor = nil
-        defer { root.backgroundColor = rootBackground }
-        func redraw(_ l: CALayer) {
-            if l is TextLayer || l is DecorLayer {
-                l.setNeedsDisplay()
-                l.displayIfNeeded()
-            }
-            l.sublayers?.forEach(redraw)
-        }
-        redraw(root)
-        ctx.saveGState()
-        ctx.translateBy(x: 0, y: size.height)
-        ctx.scaleBy(x: 1, y: -1)
-        NSGraphicsContext.saveGraphicsState()
-        NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: true)
-        root.render(in: ctx)
-        NSGraphicsContext.restoreGraphicsState()
-        ctx.restoreGState()
+        renderer.render(in: ctx, background: background)
         return ctx.makeImage()
     }
 
     // MARK: Encoders
 
-    public static func png(_ img: CGImage) -> Data {
+    nonisolated public static func png(_ img: CGImage) -> Data {
         let data = NSMutableData()
         guard let dest = CGImageDestinationCreateWithData(data, UTType.png.identifier as CFString, 1, nil) else {
             return Data()
@@ -247,6 +305,14 @@ public enum ImageExporter {
         CGImageDestinationAddImage(dest, img, nil)
         CGImageDestinationFinalize(dest)
         return data as Data
+    }
+
+    /// A pasted or dropped bitmap (PNG, TIFF, HEIC…) as PNG, with its size in pixels.
+    nonisolated public static func png(fromImage data: Data) -> (Data, CGSize)? {
+        guard let src = CGImageSourceCreateWithData(data as CFData, nil),
+            let img = CGImageSourceCreateImageAtIndex(src, 0, nil)
+        else { return nil }
+        return (png(img), CGSize(width: img.width, height: img.height))
     }
 
     /// JPEG has no alpha: transparent areas become `matte`.
@@ -357,6 +423,8 @@ public enum PrintLayout {
         public var background = false
         public var notesAppendix = true
         public var header = true
+        /// Formulas in topics and notes typeset (Settings › Editing › Typeset math in text).
+        public var typesetMath = true
         public var title = ""
         public var date = Date()
         public init() {}
@@ -367,6 +435,9 @@ public enum PrintLayout {
         }
     }
 
+    /// Print text is always dark on paper: the light appearance's label colours.
+    static let ink = CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 216.0 / 255)
+    static let inkSecondary = CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 127.0 / 255)
     static let margin: CGFloat = 36
     static let headerHeight: CGFloat = 22
 
@@ -388,6 +459,10 @@ public enum PrintLayout {
     /// The print document as PDF: map pages (fit, single or tiled with cut marks), an
     /// outline for Outline content, and the notes appendix.
     public static func pdf(_ model: DocumentModel, canvas id: CanvasID, _ o: Options) -> (data: Data, pages: Int) {
+        MathEngine.waiting { make(model, canvas: id, o) }
+    }
+
+    private static func make(_ model: DocumentModel, canvas id: CanvasID, _ o: Options) -> (data: Data, pages: Int) {
         guard let canvas = model.canvases[id] else { return (Data(), 0) }
         let data = NSMutableData()
         var box = CGRect(origin: .zero, size: o.pageSize)
@@ -407,36 +482,39 @@ public enum PrintLayout {
             if o.header {
                 text(
                     "\(title) · \(dateText)", at: CGPoint(x: margin, y: o.pageSize.height - margin - 12), size: 9,
-                    color: .secondaryLabelColor)
+                    color: inkSecondary)
                 if total > 1 {
                     text(
                         "\(n) / \(total)",
                         at: CGPoint(x: o.pageSize.width - margin - 40, y: o.pageSize.height - margin - 12), size: 9,
-                        color: .secondaryLabelColor)
+                        color: inkSecondary)
                 }
             }
         }
-        func text(_ s: String, at p: CGPoint, size: CGFloat, color: NSColor, bold: Bool = false, width: CGFloat? = nil)
+        func text(_ s: String, at p: CGPoint, size: CGFloat, color: CGColor, bold: Bool = false, width: CGFloat? = nil)
         {
-            NSGraphicsContext.saveGraphicsState()
-            NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: false)
-            let attr = NSAttributedString(
-                string: s,
-                attributes: [
-                    .font: NSFont.systemFont(ofSize: size, weight: bold ? .semibold : .regular),
-                    .foregroundColor: color,
-                ])
+            let a = TextAttributes(font: Fonts.system(size, bold ? .semibold : .regular), color: .fixed(color))
+            let attr = o.typesetMath ? MathText.styled(s, a) : StyledText(s, a)
             if let width {
-                attr.draw(with: CGRect(x: p.x, y: p.y, width: width, height: 1000), options: [.usesLineFragmentOrigin])
+                // Unflipped, wrapped text hangs from the rect's top, so the rect is its height.
+                let h = ceil(
+                    attr.boundingRect(size: CGSize(width: width, height: 10_000), options: [.lineFragmentOrigin]).height
+                )
+                attr.draw(
+                    with: CGRect(x: p.x, y: p.y, width: width, height: h), options: [.lineFragmentOrigin], in: ctx,
+                    flipped: false)
             } else {
-                attr.draw(at: p)
+                attr.draw(at: p, in: ctx, flipped: false)
             }
-            NSGraphicsContext.restoreGraphicsState()
         }
 
         if o.content == .outline {
             var lines: [(String, Int, String?)] = []
-            canvas.walk { _, n, d in lines.append((n.text, d, n.note?.text)) }
+            canvas.walk { _, n, d in
+                let math = n.textFormat == "math" && o.typesetMath
+                lines.append(
+                    (math ? "$$\(n.text.trimmingCharacters(in: .whitespacesAndNewlines))$$" : n.text, d, n.note?.text))
+            }
             outlinePages(lines, title: title, begin: begin, text: text, o: o, ctx: ctx)
         } else {
             var io = ImageExporter.Options()
@@ -455,7 +533,9 @@ public enum PrintLayout {
             let fit = min(area.width / rect.width, area.height / rect.height, 1)
             let printScale = o.fitPage || !o.tile ? fit : 1
             io.scale = Double(printScale * 3)
+            io.formulas = false
             guard let img = ImageExporter.image(model, canvas: id, io) else { return (Data(), 0) }
+            let formulas = ImageExporter.formulas(model, canvas: id, io)
             let drawn = CGSize(width: rect.width * printScale, height: rect.height * printScale)
             let (cols, rows) = grid(content: drawn, o)
             let total = cols * rows
@@ -470,6 +550,8 @@ public enum PrintLayout {
                         area.maxY + CGFloat(r) * area.height - (total == 1 ? (area.height - drawn.height) / 2 : 0)
                     ctx.interpolationQuality = .high
                     ctx.draw(img, in: CGRect(x: x, y: yTop - drawn.height, width: drawn.width, height: drawn.height))
+                    ImageExporter.drawFormulas(
+                        formulas, in: ctx, from: rect, scale: printScale, topLeft: CGPoint(x: x, y: yTop))
                     ctx.restoreGState()
                     if total > 1 { cutMarks(ctx, area) }
                     ctx.endPDFPage()
@@ -499,7 +581,7 @@ public enum PrintLayout {
 
     static func cutMarks(_ ctx: CGContext, _ r: CGRect) {
         ctx.saveGState()
-        ctx.setStrokeColor(NSColor.gray.cgColor)
+        ctx.setStrokeColor(CGColor.calibratedWhite(0.5))
         ctx.setLineWidth(0.5)
         let l: CGFloat = 10
         for (x, y) in [(r.minX, r.minY), (r.maxX, r.minY), (r.minX, r.maxY), (r.maxX, r.maxY)] {
@@ -516,7 +598,7 @@ public enum PrintLayout {
 
     static func outlinePages(
         _ lines: [(String, Int, String?)], title: String, begin: (Int, Int) -> Void,
-        text: (String, CGPoint, CGFloat, NSColor, Bool, CGFloat?) -> Void, o: Options, ctx: CGContext
+        text: (String, CGPoint, CGFloat, CGColor, Bool, CGFloat?) -> Void, o: Options, ctx: CGContext
     ) {
         let area = printable(o)
         var y = area.maxY
@@ -532,12 +614,12 @@ public enum PrintLayout {
                 y = area.maxY
             }
             y -= size + 6
-            text(t, CGPoint(x: area.minX + CGFloat(d) * 16, y: y), size, .labelColor, d <= 1, nil)
+            text(t, CGPoint(x: area.minX + CGFloat(d) * 16, y: y), size, ink, d <= 1, nil)
             if let note, !note.isEmpty {
                 y -= 13
                 text(
                     note.replacingOccurrences(of: "\n", with: " "), CGPoint(x: area.minX + CGFloat(d) * 16 + 8, y: y),
-                    9, .secondaryLabelColor, false, nil)
+                    9, inkSecondary, false, nil)
             }
         }
         ctx.endPDFPage()
@@ -545,27 +627,27 @@ public enum PrintLayout {
 
     static func appendix(
         _ notes: [(String, String)], begin: (Int, Int) -> Void,
-        text: (String, CGPoint, CGFloat, NSColor, Bool, CGFloat?) -> Void, o: Options, ctx: CGContext
+        text: (String, CGPoint, CGFloat, CGColor, Bool, CGFloat?) -> Void, o: Options, ctx: CGContext
     ) {
         let area = printable(o)
         begin(0, 0)
         var y = area.maxY - 20
-        text("Notes", CGPoint(x: area.minX, y: y), 16, .labelColor, true, nil)
+        text("Notes", CGPoint(x: area.minX, y: y), 16, ink, true, nil)
         y -= 12
         for (path, note) in notes {
-            let body = NSAttributedString(string: note, attributes: [.font: NSFont.systemFont(ofSize: 10)])
-            let h = body.boundingRect(
-                with: CGSize(width: area.width, height: 10_000), options: [.usesLineFragmentOrigin]
-            ).height
+            let a = TextAttributes(font: Fonts.system(10))
+            let body = o.typesetMath ? MathText.styled(note, a) : StyledText(note, a)
+            let h = body.boundingRect(size: CGSize(width: area.width, height: 10_000), options: [.lineFragmentOrigin])
+                .height
             if y - h - 30 < area.minY {
                 ctx.endPDFPage()
                 begin(0, 0)
                 y = area.maxY
             }
             y -= 16
-            text(path, CGPoint(x: area.minX, y: y), 10, .labelColor, true, nil)
+            text(path, CGPoint(x: area.minX, y: y), 10, ink, true, nil)
             y -= h + 4
-            text(note, CGPoint(x: area.minX, y: y), 10, .secondaryLabelColor, false, area.width)
+            text(note, CGPoint(x: area.minX, y: y), 10, inkSecondary, false, area.width)
             y -= 8
         }
         ctx.endPDFPage()
@@ -600,11 +682,15 @@ public enum PrintLayout {
         let rect = ImageExporter.contentRect(model, canvas: id, io)
         var x = io
         x.scale = max(io.scale, 2)
+        x.formulas = false
         guard let img = ImageExporter.image(model, canvas: id, x) else { return }
         var box = CGRect(origin: .zero, size: rect.size)
         ctx.beginPDFPage(
             [kCGPDFContextMediaBox as String: Data(bytes: &box, count: MemoryLayout<CGRect>.size)] as CFDictionary)
         ctx.draw(img, in: box)
+        ImageExporter.drawFormulas(
+            ImageExporter.formulas(model, canvas: id, x), in: ctx, from: rect, scale: 1,
+            topLeft: CGPoint(x: 0, y: rect.height))
         // Settings › Export › Clickable topic links: web links become link annotations.
         if links {
             let scene = ImageExporter.controller(model, canvas: id, io).scene

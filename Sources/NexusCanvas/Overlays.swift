@@ -1,5 +1,6 @@
 import NexusCore
 import NexusKeys
+import NexusScene
 import NexusTheme
 import SwiftUI
 
@@ -11,9 +12,16 @@ extension RGBA {
 struct Keycap: View {
     var text: String
 
+    #if os(macOS)
+    static let weight = Font.Weight.medium
+    #else
+    /// Key glyphs are thin strokes (⇥ ↩ ⌦ —), which measure short of 4.5:1 unless bold (D408).
+    static let weight = Font.Weight.bold
+    #endif
+
     var body: some View {
         Text(text)
-            .font(.chrome(11, weight: .medium, design: .monospaced))
+            .font(.chrome(11, weight: Self.weight, design: .monospaced))
             .padding(.horizontal, 6)
             .frame(minWidth: 22, minHeight: 20)
             .background(.background.opacity(0.9), in: RoundedRectangle(cornerRadius: 5))
@@ -25,6 +33,9 @@ struct Keycap: View {
 /// Bottom-left: the always-visible state pill and the context hints beside it (P0).
 public struct CanvasStatusBar: View {
     var controller: CanvasController
+    #if os(iOS)
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    #endif
 
     public init(controller: CanvasController) { self.controller = controller }
 
@@ -36,20 +47,46 @@ public struct CanvasStatusBar: View {
     var bar: some View {
         HStack(spacing: 12) {
             StatePill(mode: controller.mode, theme: controller.theme)
-            HStack(spacing: 14) {
-                ForEach(hints, id: \.label) { h in
-                    HStack(spacing: 6) {
-                        Keycap(text: h.key)
-                        Text(h.label).font(.chrome(13)).foregroundStyle(.secondary).fixedSize()
+            #if os(macOS)
+            strip(hints)
+            #else
+            // The iPhone's bottom toolbar adds topics; only the pill fits beside the zoom
+            // control (M47c).
+            if sizeClass != .compact {
+                // The iPad's canvas can be narrower than every hint: drop them from the end
+                // rather than run under the zoom control (M47b).
+                ViewThatFits(in: .horizontal) {
+                    ForEach([hints.count, 6, 4, 2].filter { $0 <= hints.count }, id: \.self) { n in
+                        strip(Array(hints.prefix(n)))
                     }
                 }
+                .padding(.trailing, 230)
             }
-            .padding(.horizontal, 14)
-            .padding(.vertical, 7)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
-            .accessibilityElement(children: .combine)
+            #endif
         }
         .animation(UIMotion.animation(.snappy(duration: 0.18)), value: controller.mode)
+    }
+
+    func strip(_ hints: [Hint]) -> some View {
+        HStack(spacing: 14) {
+            ForEach(hints, id: \.label) { h in
+                HStack(spacing: 6) {
+                    Keycap(text: h.key)
+                    Text(h.label).font(.chrome(13)).foregroundStyle(.chromeSecondary).fixedSize()
+                }
+            }
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 7)
+        #if os(macOS)
+        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
+        #else
+        // Solid on the iPad, as the counts bar is: on glass, the hints' contrast depends on
+        // the map behind them (D408).
+        .background(Color.textBackground, in: RoundedRectangle(cornerRadius: 12))
+        .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
+        #endif
+        .accessibilityElement(children: .combine)
     }
 
     struct Hint {
@@ -179,7 +216,7 @@ public struct CheatSheetView: View {
                         Text(Loc.t(title))
                             .font(.chrome(11, weight: .semibold, design: .monospaced))
                             .tracking(1.2)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(.chromeSecondary)
                         ForEach(ids, id: \.self) { id in
                             if let c = controller.registry[id] {
                                 HStack {
@@ -210,7 +247,7 @@ struct ConnectFieldView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 6) {
-                Text("Connect to").foregroundStyle(.secondary)
+                Text("Connect to").foregroundStyle(.chromeSecondary)
                 Text(state.query).fontWeight(.semibold)
                 Rectangle().fill(Color.primary).frame(width: 1.5, height: 15)
                 Spacer(minLength: 0)

@@ -524,6 +524,60 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         #expect(ImageText.endMark("-", last: true) == nil)
     }
 
+    /// A connector between two topics on one row, read as a mark between them, cuts the
+    /// line; a piece another line already reads goes (D483). Vision on CI's second Mac read
+    /// the balanced offsite map's "Two nights", and again "nights - Hotel for the team".
+    @Test func aConnectorAcrossALineCutsIt() {
+        var ink = InkMap(imageWidth: 700, imageHeight: 300)
+        ink.line(from: (282, 114), to: (366, 114))
+        // Letters' stems: taller than a third of the line.
+        for x in Array(stride(from: 128.0, through: 258, by: 9)) + stride(from: 392.0, through: 616, by: 9) {
+            ink.line(from: (x, 105), to: (x, 123))
+        }
+        let line = CGRect(x: 176, y: 100, width: 442, height: 29)
+        #expect(ink.strokes(across: line).map(\.lowerBound) == [282])
+        #expect(ink.strokes(across: CGRect(x: 380, y: 100, width: 238, height: 29)).isEmpty, "text alone")
+        // Vision's box for part of a line, shared out by characters (over the connector), or
+        // with `beyond`, the first word's past the connector.
+        func read(_ s: String, _ line: CGRect, _ ink: InkMap?, beyond: Bool = false) -> [(
+            box: TextBox, span: ClosedRange<Double>?
+        )] {
+            ImageText.boxes(s, line: line, confidence: 1, ink: ink, font: nil) { r in
+                let i = s.distance(from: s.startIndex, to: r.lowerBound)
+                let j = s.distance(from: s.startIndex, to: r.upperBound)
+                let w = line.width / Double(s.count)
+                let x = beyond && i == 0 ? 400 : line.minX + w * Double(i)
+                return CGRect(x: x, y: line.minY + 6, width: w * Double(j - i), height: line.height)
+            }
+        }
+        let cut = read("nights - Hotel for the team", line, ink)
+        #expect(cut.map(\.box.text) == ["nights", "Hotel for the team"])
+        #expect(cut.last?.box.minX == 367 && cut.last?.box.indent == 392, "the box starts past the connector")
+        #expect(cut.map(\.span) == [176...282, 367...618])
+        var two = box("Two nights", 121, 100, 138, 26)
+        two.inked = 128...258
+        for pieces in [cut, read("nights - Hotel for the team", line, ink, beyond: true)] {
+            let spans = Dictionary(uniqueKeysWithValues: pieces.enumerated().map { ($0.offset + 1, $0.element.span!) })
+            let kept = ImageText.dropRepeats([two] + pieces.map(\.box), pieces: spans)
+            #expect(kept.map(\.text) == ["Two nights", "Hotel for the team"])
+        }
+        #expect(ImageText.dropRepeats([two] + cut.map(\.box), pieces: [:]).count == 3, "whole lines all stay")
+        let merged = read("Two nights - Hotel for the team", CGRect(x: 121, y: 100, width: 497, height: 29), ink)
+        #expect(merged.map(\.box.text) == ["Two nights", "Hotel for the team"])
+
+        // A dash, a dot or a slash in text is shorter than a connector.
+        var dash = InkMap(imageWidth: 700, imageHeight: 300)
+        dash.line(from: (190, 114), to: (204, 114))
+        let beta = CGRect(x: 120, y: 100, width: 140, height: 29)
+        #expect(read("Beta - Nov", beta, dash).map(\.box.text) == ["Beta - Nov"])
+        #expect(read("GA · Jan", beta, InkMap(imageWidth: 700, imageHeight: 300)).map(\.box.text) == ["GA · Jan"])
+        #expect(read("Beta - Nov", beta, nil).map(\.span) == [nil])
+        // A connector with no mark Vision put near it cuts nothing.
+        var far = InkMap(imageWidth: 700, imageHeight: 300)
+        far.line(from: (500, 114), to: (600, 114))
+        #expect(read("Beta - Nov", CGRect(x: 120, y: 100, width: 500, height: 29), far).count == 1)
+    }
+
     /// Boxes as Vision reads `ImageVisionTests.fishboneWithSubCauses` (head on the right),
     /// with one sub-cause of a sub-cause ("Agency staff") set back again under "New hires".
     static let fishboneWithSubCauses = RecognisedImage(

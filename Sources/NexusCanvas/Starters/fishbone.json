@@ -5,6 +5,7 @@
     "ishikawa"
   ],
   "category": "process",
+  "collection": "process",
   "id": "fishbone",
   "kicker": "FISHBONE",
   "name": "Root cause analysis",

@@ -1,0 +1,10 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["TEAMID.com.opennexus.OpenNexus"],
+        "components": [{ "/": "/join/*", "comment": "Live session invites (M46): opens OpenNexus with the invite in the fragment" }]
+      }
+    ]
+  }
+}

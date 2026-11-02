@@ -1,7 +1,13 @@
-import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// FMT-2: the Style tab for relationships, boundaries, callouts, summaries and zones.
 struct ElementStyleTab: View {
@@ -74,7 +80,7 @@ struct RelationshipSection: View {
                 Keycap(text: controller.bindings(for: .connect).first?.glyphs ?? "⇧⌘L")
             }
         ) {
-            Text("LINE SHAPE").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+            Text("LINE SHAPE").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
                 ForEach(Self.shapes, id: \.0) { id, d in
                     Tile(selected: rel.line == id, height: 44) {
@@ -90,9 +96,9 @@ struct RelationshipSection: View {
             .accessibilityElement(children: .contain)
             .accessibilityLabel("Relationship / edge")
             HStack {
-                Text("START / END CAPS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                Text("START / END CAPS").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
                 Spacer()
-                Text("11 each").font(.chrome(11)).foregroundStyle(.secondary)
+                Text("11 each").font(.chrome(11)).foregroundStyle(.chromeSecondary)
                 Button("⇄ swap") { set { $0.ends = $0.ends.reversed() } }.buttonStyle(.plain).font(.chrome(12))
             }
             capGrid(index: 0)
@@ -168,7 +174,7 @@ struct RelationshipSection: View {
 
     func capGrid(index: Int) -> some View {
         HStack(spacing: 4) {
-            Text(index == 0 ? Loc.t("Start") : Loc.t("End")).font(.chrome(11)).foregroundStyle(.secondary).frame(
+            Text(index == 0 ? Loc.t("Start") : Loc.t("End")).font(.chrome(11)).foregroundStyle(.chromeSecondary).frame(
                 width: 30, alignment: .leading)
             ForEach(Self.caps, id: \.0) { id, d, filled in
                 Tile(selected: rel.ends[index] == id, height: 24) {
@@ -336,7 +342,7 @@ struct CalloutSection: View {
                 .frame(maxWidth: 200)
             }
             Text("Fill and text style: select the bubble's text and use the topic controls.")
-                .font(.chrome(11)).foregroundStyle(.secondary)
+                .font(.chrome(11)).foregroundStyle(.chromeSecondary)
         }
     }
 }
@@ -360,7 +366,7 @@ struct SummarySection: View {
                 Keycap(text: controller.bindings(for: .summary).first?.glyphs ?? "⇧⌘]")
             }
         ) {
-            Text("BRACKET").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+            Text("BRACKET").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 4), spacing: 6) {
                 ForEach(Self.brackets, id: \.0) { id, d in
                     Tile(selected: summary.bracket == id, height: 40) {

@@ -2,6 +2,7 @@ import AppKit
 import NexusCanvas
 import NexusCore
 import NexusKeys
+import NexusScene
 import NexusTheme
 import SwiftUI
 import UniformTypeIdentifiers
@@ -274,6 +275,13 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         controller.onViewMode = { [weak self] m in self?.applyViewMode(m) }
         controller.onOpenAISettings = { AppPreferences.shared.showSettings(pane: "ai") }
         controller.onRebind = { AppPreferences.shared.showSettings(pane: "shortcuts", record: $0) }
+        controller.onOpenSettings = { AppPreferences.shared.showSettings(pane: $0) }
+        controller.documentPath = document_.fileURL?.path
+        // Live co-editing (M46).
+        controller.documentIDProvider = { [weak self] in self?.document_.documentID ?? UUID().uuidString }
+        controller.onJoinSession = { CollabJoin.join($0) }
+        controller.onCollabAttached = { [weak self] s in self?.document_.attachSession(s) }
+        controller.onCollabEnded = { [weak self] in self?.document_.undoManager?.removeAllActions() }
         controller.externalCommands.insert(.inspector)
         controller.onZen = { [weak self] on in self?.setImmersive(on) }
         host.onPresentChange = { [weak self] on in
@@ -342,6 +350,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         }
         guard let window, window.attachedSheet == nil else { return }
         let gallery = StarterGallery(purpose: .canvas)
+        gallery.readURL = ShareCenter.shared.networkOn ? { try await ShareCenter.shared.readStarter($0) } : nil
         let sheet = NSWindow(contentViewController: NSHostingController(rootView: StarterGalleryView(model: gallery)))
         sheet.title = Loc.t("New Canvas")
         gallery.onCancel = { [weak window, weak sheet] in
@@ -359,7 +368,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     // MARK: Toolbar
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.flexibleSpace, .viewSwitcher, .flexibleSpace, .diagramType, .theme, .aiStatus, .share, .inspector]
+        [.flexibleSpace, .viewSwitcher, .flexibleSpace, .collab, .diagramType, .theme, .aiStatus, .share, .inspector]
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -386,6 +395,8 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
             return hosted(id, label: Loc.t("Theme"), ThemeButton(controller: controller))
         case .aiStatus:
             return hosted(id, label: "AI", AIStatusChip(controller: controller))
+        case .collab:
+            return hosted(id, label: Loc.t("Live session"), CollabToolbarView(controller: controller))
         case .inspector:
             let item = NSToolbarItem(itemIdentifier: id)
             item.label = Loc.t("Format")
@@ -397,6 +408,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         case .share:
             let item = NSSharingServicePickerToolbarItem(itemIdentifier: id)
             item.label = Loc.t("Share")
+            item.delegate = self
             return item
         default:
             return nil
@@ -415,6 +427,7 @@ extension NSToolbarItem.Identifier {
     static let viewSwitcher = Self("viewSwitcher")
     static let diagramType = Self("diagramType")
     static let theme = Self("theme")
+    static let collab = Self("collab")
     static let aiStatus = Self("aiStatus")
     static let share = Self("share")
     static let inspector = Self("inspector")
@@ -560,4 +573,42 @@ struct CanvasTabsView: View {
 
     /// The tab's square: the type's colour, as on Home (D287).
     func color(for type: DiagramType) -> Color { RGBA(hex: DiagramDescriptor[type].tint).swiftUIColor }
+}
+
+// MARK: Share (the toolbar button)
+
+/// The document file, plus Share Link… (M44) for a link anyone can open in a browser.
+extension DocumentWindowController: NSSharingServicePickerToolbarItemDelegate {
+    func items(for pickerToolbarItem: NSSharingServicePickerToolbarItem) -> [Any] {
+        document_.fileURL.map { [$0] } ?? [document_.displayName as Any]
+    }
+
+    func sharingServicePicker(
+        _ sharingServicePicker: NSSharingServicePicker, sharingServicesForItems items: [Any],
+        proposedSharingServices proposedServices: [NSSharingService]
+    ) -> [NSSharingService] {
+        let link = NSSharingService(
+            title: Loc.t("Share Link…"),
+            image: NSImage(systemSymbolName: "link", accessibilityDescription: nil) ?? NSImage(),
+            alternateImage: nil
+        ) { [weak self] in
+            MainActor.assumeIsolated { self?.controller.openShareLink() }
+        }
+        let collab = NSSharingService(
+            title: Loc.t("Collaborate…"),
+            image: NSImage(systemSymbolName: "person.2", accessibilityDescription: nil) ?? NSImage(),
+            alternateImage: nil
+        ) { [weak self] in
+            MainActor.assumeIsolated { self?.controller.openCollaborate() }
+        }
+        return [link, collab] + proposedServices
+    }
+
+    /// After a save: the file's path for this document's links, and "Update when I save"
+    /// (at once for ⌘S, 30 seconds after the last autosave).
+    func documentSaved(to url: URL, _ op: NSDocument.SaveOperationType) {
+        guard op == .saveOperation || op == .saveAsOperation || op == .autosaveInPlaceOperation else { return }
+        controller.documentPath = url.path
+        controller.republishShareLinks(after: op == .autosaveInPlaceOperation ? .seconds(30) : .zero)
+    }
 }

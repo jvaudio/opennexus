@@ -5,7 +5,7 @@
   </picture>
 </h1>
 
-An open-source, native **macOS 27** app for mind maps and technical diagrams:
+An open-source, native **macOS 27**, **iPadOS 27** and **iOS 27** app for mind maps and technical diagrams:
 Xmind's keyboard flow, plus flowcharts, data flow diagrams, threat models, architecture
 and sequence diagrams, and on-device AI. Apple silicon only.
 
@@ -27,14 +27,32 @@ Sources/
                        MindManager, Mermaid, PlantUML, draw.io, images and PDF to map
   NexusAI              on-device AI (Apple Intelligence), never the network
   NexusAgent           the nexus CLI and MCP server's tools
-  NexusCanvas          AppKit canvas and SwiftUI chrome (rendering, editing, animation)
+  NexusNet             HTTP client and share destinations, linked only into OpenNexusNet.xpc
+                       on the Mac and into the iPad and iPhone app's own process
+  NexusSync            library sync through your own bucket: encryption, merging, history
+  NexusReplica         live co-editing: the CRDT behind sessions, invites and the room client
+  NexusScene           scenes, text, layers and the renderer that draws them for the canvas
+                       and exports (CoreGraphics and CoreText; no AppKit or UIKit)
+  NexusCanvas          the editing controller for every platform, the SwiftUI chrome, and
+                       on the Mac the AppKit canvas
+  NexusTouch           the iPad's and iPhone's canvas, outline, documents, windows and Home
+                       (UIKit; the iPhone's layout is the compact size class)
   NexusWidgetsUI       widgets
   nexus                command-line tool
-App/                   Xcode project for the macOS app and its extensions (thin shell)
-  tools/               make_project.py, release.sh, axaudit.swift
+App/                   Xcode projects (thin shells): OpenNexus.xcodeproj for the Mac app and
+                       its extensions, OpenNexusiOS.xcodeproj for the iPad and iPhone app
+                       (App/iOS)
+  tools/               make_project.py, make_ios_project.py, release.sh, axaudit.swift
 schema/                published JSON Schema for .nexus files
+web/                   the interactive viewer (viewer-core) and the viewer site (viewer-app):
+                       opens documents in the browser, share links and invites; an
+                       offline PWA. The Obsidian plugin (obsidian) and its test vault
+server/                OpenNexus Server: stores share links, relays live sessions (Swift, Docker)
 brand/                 the Aperture brand kit: spec (BRAND.md), icons, marks, lockups
-scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints)
+scripts/               build-icons.sh (document icon from brand/), lint.sh (what CI lints),
+                       build-ios.sh (the shared modules for the iOS Simulator),
+                       release-obsidian.sh (the Obsidian plugin's release), and the
+                       test-*.sh scripts that run against Docker
 Handoff/               design handoff package (brief, artboards, screenshots, specs)
 ```
 
@@ -58,11 +76,67 @@ swift run nexus validate path/to/Map.nexus
 swift run nexus --help
 ```
 
-Lint as CI does: Swift formatting, and the brand checks (no old logo, document icon up to
-date with `brand/`):
+Lint as CI does: Swift formatting, the brand checks (no old logo, document icon up to
+date with `brand/`), and no AppKit, UIKit or SwiftUI in the modules the iPad app shares:
 
 ```bash
 scripts/lint.sh
+```
+
+Build the shared modules, NexusCanvas included, for the iOS Simulator:
+
+```bash
+scripts/build-ios.sh
+```
+
+Build the iPad and iPhone app and run its tests (the goldens, text and timing checks, the
+compact layout, then F1 and the accessibility audits in XCUITest) on the iPad Pro 13-inch
+(M5) simulator, then on the iPhone 17 Pro:
+
+```bash
+xcodebuild test -project App/OpenNexusiOS.xcodeproj -scheme "OpenNexus iOS" -destination "platform=iOS Simulator,name=iPad Pro 13-inch (M5)"
+```
+
+```bash
+xcodebuild test -project App/OpenNexusiOS.xcodeproj -scheme "OpenNexus iOS" -destination "platform=iOS Simulator,name=iPhone 17 Pro"
+```
+
+The web parts (viewer, site and Obsidian plugin): typecheck, ESLint, Vitest, the builds,
+the browser fixtures and Playwright in Chromium and WebKit. Where Obsidian is installed, it
+also runs the plugin in a throwaway Obsidian with a profile of its own, so it runs beside
+one that's already open:
+
+```bash
+cd web && npm run check
+```
+
+Share links for real: MinIO and two OpenNexus Servers in Docker, links made against them,
+then opened in Chromium and WebKit (needs Docker; everything stays on `127.0.0.1`):
+
+```bash
+scripts/test-share.sh
+```
+
+Sync for real: MinIO in Docker, the sync property test and the upload and speed checks
+through the real network service, then a longer property run in memory:
+
+```bash
+scripts/test-sync.sh
+```
+
+Live sessions for real: an OpenNexus Server in Docker, four Macs' worth of windows editing
+through the real network code, then the server's files searched for anything readable:
+
+```bash
+scripts/test-collab.sh
+```
+
+The iPad with a Mac for real: MinIO and the relay in Docker; a shared folder and an S3
+library edited on both and merged, the iPad joining a session the Mac hosts, and a share
+link made on the iPad opened in Chromium and WebKit:
+
+```bash
+scripts/test-ipad.sh
 ```
 
 ## Install
@@ -90,12 +164,71 @@ The app itself still has no network permission. Sparkle's separate update servic
 every update must carry the project's signature before it's installed. Version 0.1 predates
 updates, so install 0.2 by hand once.
 
+### Share links
+
+File › Share Link… (⌃⌘S) turns a map, a canvas, a branch or a zone into a link anyone can
+open in a browser. The map is encrypted on your Mac and the key is only in the link, so the
+place that stores it (your own S3-compatible bucket, a secret GitHub gist, or an
+[OpenNexus Server](server/README.md) you run) holds bytes it can't read.
+
+Sharing is off until you turn it on in Settings › Privacy & Data › Network. Even then the
+app has no network permission: a separate service, OpenNexusNet, makes every request, only
+to the destinations you set up in Settings › Sharing, and Privacy & Data lists each one.
+
+### Sync
+
+Settings › Sync keeps a folder of documents (a library) the same on each of your Macs
+through an S3-compatible bucket you own: AWS, Cloudflare R2, Backblaze B2, MinIO and others.
+Everything is encrypted on your Mac first; Show Recovery Key… gives the key (as text and a
+QR code) to set up your other Macs. Changes from two Macs are merged topic by topic, and
+where both changed the same topic, your Mac's version stays until you choose in File ›
+Resolve Conflicts…. File › Sync History… restores any earlier version, and deleted documents
+can be restored for 30 days. Like sharing, sync is off until you turn it on in Privacy &
+Data › Network, and only OpenNexusNet makes its requests.
+
+Folders that iCloud Drive, Dropbox, Google Drive, OneDrive or Syncthing sync work too: when
+those apps leave a conflicting copy, opening the document offers to merge it in.
+
+For maps kept in Git, run this once in the repository so Git merges them topic by topic and
+shows diffs as outlines:
+
+```bash
+nexus git setup
+```
+
+### Live sessions (Labs)
+
+File › Collaborate… (⌃⌘L) lets several people edit a document at the same time, each on
+their own Mac. Choose an OpenNexus Server from Settings › Sharing and whether the invite
+lets people edit or only watch, then send the link. Everyone sees each other's selections
+and edits as they happen, every copy ends up the same, and ⌘Z undoes only your own changes.
+Everything is sealed with a key that's only in the invite, so the server passes along bytes
+it can't read. People without the app see the host's latest view in the browser. End
+Session deletes what the server kept; everyone keeps their copy. Turn on "Live co-editing"
+in Settings › Privacy & Data › Network first.
+
 ### Command-line tool
 
 The command-line tool is inside the app. To use it from Terminal:
 
 ```bash
 ln -sf /Applications/OpenNexus.app/Contents/Helpers/nexus /usr/local/bin/nexus
+```
+
+`nexus bundle` prints the viewer bundle that the browser and Obsidian draw: a map's viewer
+copy, or Markdown read as `nexus import` reads it, with each topic's source line.
+
+### Obsidian
+
+The OpenNexus plugin opens maps in an Obsidian vault, read-only: `.nexusjson` files in a
+tab, `.nexus` packages from their folder's menu, and maps in notes with a ```` ```nexus ````
+block. Links in maps open the vault's notes, Copy link to topic makes an `obsidian://` link
+back to a topic, and on a Mac with OpenNexus installed it shows any note as a map, converts
+notes to maps and opens maps in the app to edit. It makes no network requests. See
+`web/obsidian/README.md`; to install it by hand into a vault:
+
+```bash
+scripts/release-obsidian.sh --install ~/path/to/vault
 ```
 
 ## Make a release
@@ -137,6 +270,23 @@ generate_keys --account opennexus -x ~/opennexus-update-key.txt
 `generate_keys` is in Sparkle's `bin/` folder, under the build's
 `SourcePackages/artifacts/sparkle/Sparkle/bin`. Store the exported file somewhere safe and
 offline, not in Git.
+
+### The Obsidian plugin
+
+```bash
+scripts/release-obsidian.sh
+```
+
+This builds the plugin, checks that `manifest.json`, `versions.json` and `package.json` agree
+on the version and that `main.js` plus `styles.css` is at most 300 KB, and writes
+`dist/obsidian/<version>/`: the three files Obsidian installs and a zip of them. Releases
+live in a mirror repository, `jvaudio/opennexus-obsidian`, because Obsidian's directory reads
+`manifest.json` from a repository's root. Create it once (public, empty), then publish: this
+copies `web/obsidian` into it, tags the version and creates the GitHub release:
+
+```bash
+scripts/release-obsidian.sh --publish
+```
 
 ## File format
 

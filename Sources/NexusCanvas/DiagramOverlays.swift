@@ -1,7 +1,13 @@
-import AppKit
 import NexusCore
+import NexusScene
 import NexusTheme
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 // MARK: Slash menu
 
@@ -13,7 +19,7 @@ struct SlashMenuView: View {
             let items = Array(controller.slashResults.prefix(9))
             VStack(alignment: .leading, spacing: 0) {
                 HStack(spacing: 4) {
-                    Text("/").font(.chrome(13, weight: .bold, design: .monospaced)).foregroundStyle(.secondary)
+                    Text("/").font(.chrome(13, weight: .bold, design: .monospaced)).foregroundStyle(.chromeSecondary)
                     Text(s.query.isEmpty ? Loc.t("Type to filter") : s.query)
                         .font(.chrome(13, design: .monospaced))
                         .foregroundStyle(s.query.isEmpty ? .tertiary : .primary)
@@ -24,7 +30,7 @@ struct SlashMenuView: View {
                 .padding(.vertical, 8)
                 Divider()
                 if items.isEmpty {
-                    Text("No matches").font(.chrome(12)).foregroundStyle(.secondary).padding(12)
+                    Text("No matches").font(.chrome(12)).foregroundStyle(.chromeSecondary).padding(12)
                 }
                 ForEach(Array(items.enumerated()), id: \.element.id) { i, item in
                     HStack(spacing: 10) {
@@ -38,7 +44,7 @@ struct SlashMenuView: View {
                         .frame(width: 22)
                         Text(item.title).font(.chrome(13))
                         Spacer()
-                        Text("/\(item.slug)").font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
+                        Text("/\(item.slug)").font(.chrome(11, design: .monospaced)).foregroundStyle(.chromeSecondary)
                     }
                     .padding(.horizontal, 12)
                     .padding(.vertical, 6)
@@ -138,7 +144,7 @@ struct ConvertSheetView: View {
             .accessibilityLabel("Diagram types")
             if !more.isEmpty {
                 HStack(spacing: 6) {
-                    Text("More").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                    Text("More").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
                     ForEach(more, id: \.self) { t in
                         Button(Loc.t(t.displayName)) { controller.chooseConvertType(t) }
                             .buttonStyle(.plain)
@@ -156,8 +162,8 @@ struct ConvertSheetView: View {
                 "Previews are rendered from **this** canvas. Arrow keys move; ↩ converts; Esc closes. Hierarchy types convert losslessly; technical types ask for node types next."
             )
             .font(.chrome(12))
-            .foregroundStyle(.secondary)
-            .frame(width: 636, alignment: .leading)
+            .foregroundStyle(.chromeSecondary)
+            .fixedWidth(636, alignment: .leading)
         }
         .padding(22)
         .background(.background, in: RoundedRectangle(cornerRadius: 16))
@@ -174,7 +180,7 @@ struct ConvertSheetView: View {
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(on ? 0.06 : 0.08)))
             HStack {
                 Text(Loc.t(t.displayName)).font(.chrome(13, weight: .medium))
-                if current { Text("current").font(.chrome(10)).foregroundStyle(.secondary) }
+                if current { Text("current").font(.chrome(10)).foregroundStyle(.chromeSecondary) }
                 Spacer()
                 Keycap(text: "\(number)")
             }
@@ -200,7 +206,7 @@ struct ConvertSheetView: View {
                     Loc.t(s.highlighted.displayName))
             )
             .font(.chrome(12))
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.chromeSecondary)
             .frame(width: 330, alignment: .leading)
             ForEach(Array(s.rows.enumerated()), id: \.element) { i, row in
                 HStack {
@@ -248,7 +254,7 @@ struct ConvertSheetView: View {
 
 /// A wireframe of a scene: outlines and connector lines, fitted to the tile.
 struct WireframePreview: View {
-    let scene: Scene
+    let scene: NexusScene.Scene
 
     var body: some View {
         Canvas { ctx, size in
@@ -297,7 +303,7 @@ struct WireframePreview: View {
                     case "text": Path()
                     default: Path(roundedRect: r, cornerRadius: 1.5)
                     }
-                ctx.fill(path, with: .color(Color(nsColor: .textBackgroundColor)))
+                ctx.fill(path, with: .color(Color.textBackground))
                 ctx.stroke(path, with: .color(.primary.opacity(0.75)), lineWidth: 1)
             }
         }
@@ -314,7 +320,7 @@ struct DFDPanelView: View {
         if controller.canvas.type == .dfd, controller.present == nil {
             let c = controller.canvas
             VStack(alignment: .leading, spacing: 8) {
-                Text("LEVELS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary)
+                Text("LEVELS").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary)
                 ForEach(controller.levelPath, id: \.id) { l in
                     Text(l.title)
                         .font(.chrome(13, weight: l.id == c.id ? .semibold : .regular))
@@ -337,7 +343,7 @@ struct DFDPanelView: View {
                         .foregroundStyle(c.nodes[p]?.subCanvas != nil ? .primary : .secondary)
                         .accessibleTap { controller.select(p) }
                 }
-                Text("RULE CHECKS").font(.chrome(11, weight: .semibold)).foregroundStyle(.secondary).padding(
+                Text("RULE CHECKS").font(.chrome(11, weight: .semibold)).foregroundStyle(.chromeSecondary).padding(
                     .top, 10)
                 ForEach(DFDRules.summary(controller.violations), id: \.rule.rawValue) { row in
                     HStack(spacing: 8) {
@@ -351,7 +357,7 @@ struct DFDPanelView: View {
                         }
                     }
                 }
-                Text("⌘. drills into a process").font(.chrome(11)).foregroundStyle(.tertiary).padding(.top, 6)
+                Text("⌘. drills into a process").font(.chrome(11)).foregroundStyle(.chromeTertiary).padding(.top, 6)
             }
             .padding(14)
             .frame(width: 230, alignment: .leading)
@@ -411,7 +417,7 @@ struct LevelBreadcrumbView: View {
         if controller.canvas.type == .dfd, path.count > 1, controller.present == nil {
             HStack(spacing: 6) {
                 ForEach(Array(path.enumerated()), id: \.offset) { i, l in
-                    if i > 0 { Text("›").foregroundStyle(.secondary) }
+                    if i > 0 { Text("›").foregroundStyle(.chromeSecondary) }
                     Text(l.title)
                         .font(.chrome(12.5, weight: i == path.count - 1 ? .semibold : .regular))
                         .accessibleTap { controller.switchCanvas(to: l.id) }
@@ -441,7 +447,7 @@ struct ThreatSuggestionCard: View {
                 HStack(spacing: 6) {
                     Text(s.map { Loc.t($0.0.name) }.joined(separator: " · ")).font(.chrome(12))
                     Keycap(text: "⌃⇧↩")
-                    Text("accept all").font(.chrome(12)).foregroundStyle(.secondary)
+                    Text("accept all").font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 }
             }
             .padding(12)
@@ -501,7 +507,7 @@ struct ThreatTableView: View {
                 }
                 .frame(height: 200)
             }
-            .frame(width: 960)
+            .sheetWidth(960)
             .background(.background, in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
         }
@@ -568,7 +574,7 @@ struct IconLibraryView: View {
                 }
                 .accessibilityLabel(Loc.t("Icons"))
                 Text("Click to insert as a child of the selection. Icon packs install from file or URL.")
-                    .font(.chrome(11)).foregroundStyle(.secondary)
+                    .font(.chrome(11)).foregroundStyle(.chromeSecondary)
             }
             .padding(14)
             .frame(width: 290, height: 520)

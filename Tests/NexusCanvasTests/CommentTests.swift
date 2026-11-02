@@ -6,6 +6,7 @@ import NexusKeys
 import Testing
 
 @testable import NexusCanvas
+@testable import NexusScene
 
 /// M14: comments on topics, from the keyboard, with undo, VoiceOver, filters and search.
 @MainActor
@@ -53,11 +54,12 @@ import Testing
         #expect(h.canvas.nodes[id]?.comments.count == 1, "clearing a comment's text deletes it")
     }
 
-    @Test func authorDefaultsToTheMacUser() {
+    @Test func authorDefaultsToTheHostsUser() {
         let (h, _) = harness()
         h.controller.prefs.set("editing.commentAuthor", "  ")
+        #expect(h.controller.commentAuthor == "Test User", "the memory host's user")
         let mac = NSFullUserName().isEmpty ? NSUserName() : NSFullUserName()
-        #expect(h.controller.commentAuthor == mac)
+        #expect(MacCanvasHost().userName == mac)
         h.controller.prefs.set("editing.commentAuthor", "Reviewer")
         #expect(h.controller.commentAuthor == "Reviewer")
         #expect(SettingsSchema.allRows.contains { $0.2.key == "editing.commentAuthor" })

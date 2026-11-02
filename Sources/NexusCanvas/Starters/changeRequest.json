@@ -1,0 +1,75 @@
+{
+  "aliases": [
+    "change request",
+    "change management",
+    "change board",
+    "cab",
+    "rollback"
+  ],
+  "category": "process",
+  "collection": "process",
+  "details": [
+    {
+      "note": "Low-risk, repeatable changes with an agreed procedure skip the board.",
+      "topic": "Standard change?"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Schedule the window"
+    },
+    {
+      "edge": "Yes",
+      "topic": "Verify and monitor"
+    },
+    {
+      "edge": "No",
+      "topic": "Roll back"
+    },
+    {
+      "edge": "No",
+      "topic": "Write a rollback plan"
+    },
+    {
+      "edge": "No",
+      "topic": "Close as rejected"
+    }
+  ],
+  "id": "changeRequest",
+  "kicker": "FLOW",
+  "name": "Change request",
+  "note": "Follow a change from request to close. Decide which changes count as standard for your team, and keep a rollback plan for every change that goes to the board.",
+  "order": 74,
+  "outline": [
+    "Change requested >start",
+    "  Log the request >document",
+    "    Assess risk and impact >process",
+    "      Standard change? >decision",
+    "        Schedule the window >process",
+    "          Notify affected teams >io",
+    "            Implement the change >process",
+    "              Change succeeded? >decision",
+    "                Verify and monitor >process",
+    "                  Close the request >end",
+    "                Roll back >process",
+    "                  Review what went wrong >process",
+    "        Write a rollback plan >document",
+    "          Change board review >process",
+    "            Board approves? >decision",
+    "              Close as rejected >end"
+  ],
+  "relationships": [
+    {
+      "from": "Board approves?",
+      "label": "Yes",
+      "to": "Schedule the window"
+    },
+    {
+      "from": "Review what went wrong",
+      "label": "Try again",
+      "to": "Assess risk and impact"
+    }
+  ],
+  "summary": "Assess, approve, implement, review",
+  "title": "Change request",
+  "type": "flowchart"
+}

@@ -1,4 +1,5 @@
 import Foundation
+import NexusScene
 
 /// Settings as data (README §10: "Generate the panes from a declarative schema … so the
 /// search field in Settings can find every row"). Mirrors the sources' `sec()` and
@@ -123,15 +124,48 @@ private func sec(_ title: String, _ column: Int = 0, _ rows: [SettingRow], footn
 }
 
 public enum SettingsSchema {
-    /// OpenNexus makes no network requests (README §12); rows that would are shown, off.
-    /// Update checks are the one exception, opt-in and made by Sparkle's service (D275).
-    public static let noNetwork = "OpenNexus makes no network requests"
+    /// Rows OpenNexus will never offer, shown off: it collects nothing about you and fetches
+    /// nothing on its own. The network is used only by features under Privacy & Data ›
+    /// Network (D313) and by update checks (D275), each opt-in.
+    public static let noNetwork = "Not offered: OpenNexus collects nothing and fetches nothing on its own"
 
     public static let panes: [SettingPane] = [
-        general, editing, appearance, files, ai, shortcuts, export, integrations, privacy, accessibility,
+        general, editing, appearance, files, ai, shortcuts, export, sharing, sync, integrations, privacy,
+        accessibility,
     ]
 
-    public static func pane(_ id: String) -> SettingPane? { panes.first { $0.id == id } }
+    /// The rows only the Mac has (M47b, D407): windows and tabs, updates, the Hyper key,
+    /// Quick Capture's hot key, Services, code links, the MCP server and the CLI.
+    public static let macOnly: Set<String> = [
+        "general.openIn", "general.restoreWindows", "general.updatesCheck", "general.updatesInstall",
+        "general.updatesChannel", "general.updatesCheckNow", "general.updatesWhere", "shortcuts.hyper",
+        "shortcuts.hyperKey", "shortcuts.hyperTap", "accessibility.stickyHyper", "integrations.captureKey",
+        "integrations.captureAtLogin", "integrations.services", "integrations.codeLinks", "integrations.mcp",
+        "integrations.folders", "integrations.mcpRead", "integrations.mcpEdit", "integrations.mcpFiles",
+        "integrations.cli", "integrations.agentCard",
+    ]
+
+    /// The panes this platform shows: on the iPad, without `macOnly`'s rows and the sections
+    /// they leave empty.
+    public static let shown: [SettingPane] = {
+        #if os(macOS)
+        panes
+        #else
+        panes.map { p in
+            var p = p
+            p.sections = p.sections.compactMap { s in
+                guard !s.rows.isEmpty else { return s }
+                var s = s
+                s.rows.removeAll { macOnly.contains($0.key) }
+                if s.title == "macOS" { s.title = "iPadOS" }
+                return s.rows.isEmpty ? nil : s
+            }
+            return p
+        }
+        #endif
+    }()
+
+    public static func pane(_ id: String) -> SettingPane? { shown.first { $0.id == id } }
 
     public static let allRows: [(SettingPane, SettingSection, SettingRow)] = panes.flatMap { p in
         p.sections.flatMap { s in s.rows.map { (p, s, $0) } }
@@ -146,7 +180,8 @@ public enum SettingsSchema {
         let words = query.lowercased().folding(options: .diacriticInsensitive, locale: nil).split(separator: " ").map(
             String.init)
         guard !words.isEmpty else { return [] }
-        return allRows.filter { p, s, r in
+        let rows = shown.flatMap { p in p.sections.flatMap { s in s.rows.map { (p, s, $0) } } }
+        return rows.filter { p, s, r in
             var hay = [r.title, r.detail ?? "", s.title, p.title] + r.keywords
             switch r.kind {
             case .segmented(let o), .menu(let o): hay += o.map(\.label)
@@ -258,6 +293,10 @@ public enum SettingsSchema {
                         [("generic", "Main Topic"), ("byType", "By type")], "byType"),
                     T("editing.umlFormat", "Auto-format UML members", true, "“+ name: Type” formats itself"),
                     T("editing.slashEmpty", "Slash menu at start of an empty node", true),
+                    T(
+                        "editing.typesetMath", "Typeset math in text", true,
+                        "$…$ and $$…$$ in topics and notes show as formulas; \\$ is a dollar sign",
+                        ["latex", "tex", "equation", "formula", "dollar", "mathjax", "chemistry"]),
                     T(
                         "editing.taskDetails", "Show task details on topics", true,
                         "Owner, dates and progress under a task’s title"),
@@ -451,6 +490,12 @@ public enum SettingsSchema {
                     T(
                         "files.optimiseImages", "Optimise images on import", true,
                         "HEIC → JPEG, strip location metadata"),
+                    T(
+                        "files.viewerCopy", "Save a viewer copy for browsers and Obsidian", true,
+                        "render/viewer.json in packages; never for encrypted documents"),
+                    T(
+                        "files.viewerCopyJSON", "Also in single-file documents", false,
+                        "A “render” key in .nexusjson files"),
                 ]),
             sec(
                 "Recovery", 0,
@@ -609,6 +654,88 @@ public enum SettingsSchema {
                 ]),
         ])
 
+    // MARK: Sharing (M44)
+
+    static let sharing = SettingPane(
+        id: "sharing", glyph: "⤴", title: "Sharing", tint: "#1F7A68",
+        subtitle:
+            "Share links are sealed on this Mac; the key travels only in the link. Store them in a bucket, a gist or your own server.",
+        sections: [
+            sec(
+                "Destinations", 0,
+                [
+                    G(
+                        "sharing.destinations", "", "shareDestinations", nil,
+                        ["s3", "bucket", "r2", "b2", "wasabi", "minio", "gist", "github", "server", "upload", "cors"])
+                ]),
+            sec(
+                "Links", 0,
+                [
+                    G(
+                        "sharing.links", "", "shareLinks", nil,
+                        ["manage", "revoke", "update", "copy", "expire", "share link"])
+                ]
+            ),
+            sec(
+                "Viewer", 1,
+                [
+                    X(
+                        "sharing.viewerAddress", "Viewer address", "https://jvaudio.github.io/opennexus/",
+                        "Where links open. The viewer is a static site anyone can host")
+                ]),
+            sec(
+                "New links", 1,
+                [
+                    M(
+                        "sharing.expiry", "Expire after",
+                        [("never", "Never"), ("day", "1 day"), ("week", "7 days"), ("month", "30 days")], "never")
+                ]),
+        ])
+
+    // MARK: Sync (M45)
+
+    static let sync = SettingPane(
+        id: "sync", glyph: "⇅", title: "Sync", tint: "#3A6EA5",
+        subtitle:
+            "Keep a folder of documents the same on every Mac through a bucket you own. Encrypted on this Mac first; merged topic by topic.",
+        sections: [
+            sec(
+                "Libraries", 0,
+                [
+                    G(
+                        "sync.libraries", "", "syncLibraries", nil,
+                        [
+                            "library", "folder", "bucket", "s3", "r2", "b2", "minio", "recovery key", "encryption",
+                            "sync now", "deleted", "restore", "trash",
+                        ])
+                ]),
+            sec(
+                "Schedule", 1,
+                [
+                    M(
+                        "sync.interval", "Sync every",
+                        [("5", "5 minutes"), ("15", "15 minutes"), ("60", "Hour"), ("0", "Only after saving")], "15",
+                        "Also after each save, when a window comes forward, and with File › Sync Now"),
+                    M(
+                        "sync.keepDeleted", "Keep deleted documents",
+                        [("7", "7 days"), ("30", "30 days"), ("90", "90 days")], "30",
+                        "In the bucket, so any Mac can restore them", ["trash", "restore", "purge"]),
+                ]),
+            sec(
+                "Other ways to sync", 1,
+                [
+                    I(
+                        "sync.otherApps", "iCloud Drive, Dropbox, Syncthing", "Merged",
+                        "Conflicting copies they leave are offered for merging when a document opens"),
+                    I(
+                        "sync.git", "Git", "nexus git setup",
+                        "A merge driver that merges maps topic by topic, and diffs that read as outlines"),
+                ]),
+            sec(
+                "Sync log", 0,
+                [G("sync.log", "", "syncLog", nil, ["log", "activity", "history", "errors"])]),
+        ])
+
     // MARK: 8 Integrations (artboard 40)
 
     static let integrations = SettingPane(
@@ -683,6 +810,25 @@ public enum SettingsSchema {
             "Local by default. Everything that could leave the Mac is listed here and is off unless you turn it on.",
         sections: [
             sec(
+                "Network", 0,
+                [
+                    T(
+                        "network.enabled", "Use the network for sharing, sync and collaboration", false,
+                        "Off, OpenNexus connects to nothing. On, only the features below you turn on, only to places you set up",
+                        ["internet", "online", "offline", "connection"]),
+                    T(
+                        "network.sharing", "Share links", false,
+                        "Uploads sealed maps to a destination in Settings › Sharing", ["share", "link", "upload"]),
+                    T(
+                        "network.sync", "Sync libraries", false,
+                        "Keeps library folders in step through your bucket in Settings › Sync", ["sync", "bucket"]),
+                    T(
+                        "network.collab", "Live co-editing (Labs)", false,
+                        "Edit a document with others at the same time through your OpenNexus Server in Settings › Sharing",
+                        ["collaborate", "co-edit", "live", "session", "realtime", "together", "invite"]),
+                ], footnote: "A separate service makes every request; OpenNexus itself still has no network permission."
+            ),
+            sec(
                 "Network activity · last 7 days", 0,
                 [G("privacy.networkLog", "", "networkLog", nil, ["network", "requests", "telemetry"])]),
             sec(
@@ -698,7 +844,7 @@ public enum SettingsSchema {
                     T(
                         "privacy.linkPreviews", "Fetch link previews and favicons", false,
                         "Makes a web request per link", [], locked: noNetwork),
-                ], footnote: "Unavailable by design: OpenNexus v1 has no network permission."),
+                ], footnote: "Unavailable by design: nothing about you or your documents is ever sent."),
             sec(
                 "AI data", 0,
                 [

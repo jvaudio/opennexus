@@ -187,6 +187,9 @@ public struct Canvas: Hashable, Sendable {
 
     /// Next sequence number for new node ids. Not stored; derived on load.
     public var nextSequence: Int
+    /// Appended to every id made on this canvas (topics, elements) while a co-editing
+    /// session runs (M46), so ids made on different Macs never collide. Not stored.
+    public var idSuffix = ""
 
     public init(id: CanvasID, title: String, type: DiagramType = .mindmap, rootText: String = "Central Topic") {
         self.id = id
@@ -219,10 +222,10 @@ public struct Canvas: Hashable, Sendable {
 
     /// Returns a fresh id that is not in use.
     public mutating func makeNodeID() -> NodeID {
-        var id = NodeID("n\(nextSequence)")
+        var id = NodeID("n\(nextSequence)\(idSuffix)")
         while nodes[id] != nil {
             nextSequence += 1
-            id = NodeID("n\(nextSequence)")
+            id = NodeID("n\(nextSequence)\(idSuffix)")
         }
         nextSequence += 1
         return id

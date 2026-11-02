@@ -1,6 +1,12 @@
-import AppKit
 import NexusCore
+import NexusScene
 import SwiftUI
+
+#if os(macOS)
+import AppKit
+#else
+import UIKit
+#endif
 
 /// A topic's comment thread (M14): oldest first, each with Edit and Delete, and a field
 /// to add one. ⌘↩ adds; Esc closes.
@@ -21,14 +27,14 @@ struct CommentsPopover: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text("Comments").font(.headline)
-                Text(controller.canvas.nodes[node]?.text ?? "").foregroundStyle(.secondary).lineLimit(1)
+                Text(controller.canvas.nodes[node]?.text ?? "").foregroundStyle(.chromeSecondary).lineLimit(1)
                 Spacer()
                 Button("Done", action: close).keyboardShortcut(.cancelAction)
             }
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     if comments.isEmpty {
-                        Text("No comments yet.").foregroundStyle(.secondary).padding(.vertical, 8)
+                        Text("No comments yet.").foregroundStyle(.chromeSecondary).padding(.vertical, 8)
                     }
                     ForEach(Array(comments.enumerated()), id: \.offset) { i, c in
                         row(i, c)
@@ -43,7 +49,7 @@ struct CommentsPopover: View {
                 .focused($focus, equals: .draft)
                 .accessibilityLabel(Loc.t("New comment"))
             HStack {
-                Text("⌘↩ adds the comment").font(.chrome(11)).foregroundStyle(.secondary)
+                Text("⌘↩ adds the comment").font(.chrome(11)).foregroundStyle(.chromeSecondary)
                 Spacer()
                 Button("Add Comment", action: add)
                     .keyboardShortcut(.return, modifiers: .command)
@@ -57,7 +63,8 @@ struct CommentsPopover: View {
     @ViewBuilder
     func row(_ i: Int, _ c: TopicComment) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(CanvasController.commentByline(c)).font(.chrome(11.5, weight: .semibold)).foregroundStyle(.secondary)
+            Text(CanvasController.commentByline(c)).font(.chrome(11.5, weight: .semibold)).foregroundStyle(
+                .chromeSecondary)
             if editing == i {
                 TextField("", text: $editText, axis: .vertical)
                     .textFieldStyle(.roundedBorder)
@@ -83,7 +90,7 @@ struct CommentsPopover: View {
                     Button("Delete", role: .destructive) { controller.deleteComment(i, on: node) }
                         .accessibilityLabel(Loc.f("Delete comment by %@", c.author))
                 }
-                .buttonStyle(.link)
+                .linkButton()
                 .font(.chrome(11.5))
             }
         }

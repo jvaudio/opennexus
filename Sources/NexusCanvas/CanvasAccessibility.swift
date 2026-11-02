@@ -1,6 +1,8 @@
+#if os(macOS)
 import AppKit
 import NexusCore
 import NexusKeys
+import NexusScene
 import NexusTheme
 
 /// The canvas as VoiceOver sees it (M10, README §12): a tree of topics under the central
@@ -635,3 +637,4 @@ final class ZoneItem: NSAccessibilityElement {
         return tree.showMenu(.element(.zone(id)), world: r)
     }
 }
+#endif
