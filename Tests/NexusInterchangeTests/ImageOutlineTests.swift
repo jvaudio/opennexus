@@ -618,6 +618,7 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         #expect(read(ink(fork: true), again: ("Morning", 0.3)) == ["Moring"], "a less sure read is left alone")
         #expect(read(ink(fork: true), again: ("Morning <", 1)) == ["Moring"], "so is one with the fork again")
         #expect(read(ink(fork: true), again: nil) == ["Moring"])
+        #expect(read(ink(fork: true), again: ("<", 1)) == ["Moring"], "or one that is only a mark")
         asked = []
         #expect(read(ink(fork: false), again: ("Morning", 1)) == ["Moring <"], "a mark as tall as the text stays")
         #expect(asked.isEmpty)

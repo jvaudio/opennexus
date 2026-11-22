@@ -162,7 +162,7 @@ public enum ImageText {
             let x1 = min(room.maxX, kept.maxX + pad)
             if x1 > x0, let (again, sure) = reread(CGRect(x: x0, y: line.minY, width: x1 - x0, height: line.height)),
                 sure >= confidence, endMark(again[...], last: true) == nil, endMark(again[...], last: false) == nil,
-                !again.trimmingCharacters(in: .whitespaces).isEmpty
+                again.contains { !$0.isWhitespace && !strokeMarks.contains($0) }
             {
                 clean = again[...]
             }
