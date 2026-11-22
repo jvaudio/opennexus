@@ -62,13 +62,7 @@ public enum ImageText {
     static func read(
         _ image: CGImage, name: String, width w: Double, height h: Double, ink: InkMap? = nil
     ) throws -> [TextBox] {
-        let request = VNRecognizeTextRequest()
-        // The revision these rules were tuned on (D482): left unset, Vision takes the
-        // newest the SDK knows, so a new Xcode could read the same picture differently.
-        request.revision = VNRecognizeTextRequestRevision3
-        request.recognitionLevel = .accurate
-        request.usesLanguageCorrection = true
-        request.automaticallyDetectsLanguage = true
+        let request = textRequest()
         let handler = VNImageRequestHandler(cgImage: image, options: [:])
         do {
             try handler.perform([request])
@@ -85,7 +79,8 @@ public enum ImageText {
         for obs in request.results ?? [] {
             guard let best = obs.topCandidates(1).first else { continue }
             let got = boxes(
-                best.string, line: pixels(obs.boundingBox), confidence: Double(best.confidence), ink: ink, font: font
+                best.string, line: pixels(obs.boundingBox), confidence: Double(best.confidence), ink: ink, font: font,
+                reread: { reread(image, $0, scale: Double(image.width) / w) }
             ) { (try? best.boundingBox(for: $0)).map { pixels($0.boundingBox) } }
             for (b, span) in got {
                 if let span { pieces[lines.count] = span }
@@ -95,26 +90,87 @@ public enum ImageText {
         return dropRepeats(lines, pieces: pieces)
     }
 
+    /// The request every read makes. The revision these rules were tuned on (D482): left
+    /// unset, Vision takes the newest the SDK knows, so a new Xcode could read the same
+    /// picture differently.
+    static func textRequest() -> VNRecognizeTextRequest {
+        let request = VNRecognizeTextRequest()
+        request.revision = VNRecognizeTextRequestRevision3
+        request.recognitionLevel = .accurate
+        request.usesLanguageCorrection = true
+        request.automaticallyDetectsLanguage = true
+        return request
+    }
+
+    /// The one line Vision reads in `region` (picture pixels; `scale` image pixels to each)
+    /// of `image`, with its confidence. Nil when it reads none, or more than one.
+    static func reread(_ image: CGImage, _ region: CGRect, scale: Double) -> (String, Double)? {
+        let r = CGRect(
+            x: region.minX * scale, y: region.minY * scale, width: region.width * scale,
+            height: region.height * scale
+        ).integral.intersection(CGRect(x: 0, y: 0, width: image.width, height: image.height))
+        guard !r.isEmpty, let crop = image.cropping(to: r) else { return nil }
+        let request = textRequest()
+        guard (try? VNImageRequestHandler(cgImage: crop, options: [:]).perform([request])) != nil,
+            let results = request.results, results.count == 1, let best = results[0].topCandidates(1).first
+        else { return nil }
+        return (best.string, Double(best.confidence))
+    }
+
     /// One line Vision read, `string` in `line` (image pixels), as text boxes: without a
     /// connector read as a mark at either end (D284), and cut in pieces where one crosses it
     /// (D483), each piece with the span of the line it can take. `at` is Vision's box for
     /// part of the string.
     static func boxes(
         _ string: String, line: CGRect, confidence: Double, ink: InkMap?, font: CTFont?,
-        at: (Range<String.Index>) -> CGRect?
+        reread: ((CGRect) -> (String, Double)?)? = nil, at: (Range<String.Index>) -> CGRect?
     ) -> [(box: TextBox, span: ClosedRange<Double>?)] {
         var text = string[...]
-        func connector(_ mark: Range<String.Index>) -> Bool {
+        func connector(_ mark: Range<String.Index>, rest: Range<String.Index>) -> Bool {
             guard let ink, let m = at(mark) else { return false }
-            return ink.runsOut(of: line, from: m)
+            if ink.runsOut(of: line, from: m) { return true }
+            // A fork Vision drew the line's box round (D484): its ink stands half as tall
+            // again as the words beside it, which no character in a title does.
+            guard let r = at(rest), let words = ink.inkHeight(in: r), let mine = ink.inkHeight(in: m) else {
+                return false
+            }
+            return mine >= 1.5 * words
         }
+        // The line's room once a connector's mark is dropped: up to the mark.
+        var room = line
         for last in [true, false] {
-            if let (mark, rest) = endMark(text, last: last), connector(mark) { text = string[rest] }
+            if let (mark, rest) = endMark(text, last: last), connector(mark, rest: rest) {
+                text = string[rest]
+                if let m = at(mark) {
+                    if last {
+                        room.size.width = max(0, m.minX - room.minX)
+                    } else {
+                        room = CGRect(x: m.maxX, y: room.minY, width: max(0, room.maxX - m.maxX), height: room.height)
+                    }
+                }
+            }
         }
         let parts = cut(text, line: line, ink: ink, at: at)
+        // Vision misreads the words beside a connector it took for a mark ("Morning" and a
+        // fork as "Moring <"): read the rest again on its own, up to the mark (D484).
+        var clean: Substring?
+        if text.count < string.count, parts.count == 1, let reread,
+            let kept = at(text.startIndex..<text.endIndex)
+        {
+            let pad = 0.15 * kept.height
+            let x0 = max(room.minX, kept.minX - pad)
+            let x1 = min(room.maxX, kept.maxX + pad)
+            if x1 > x0, let (again, sure) = reread(CGRect(x: x0, y: line.minY, width: x1 - x0, height: line.height)),
+                sure >= confidence, endMark(again[...], last: true) == nil, endMark(again[...], last: false) == nil,
+                !again.trimmingCharacters(in: .whitespaces).isEmpty
+            {
+                clean = again[...]
+            }
+        }
         return parts.map { part, span in
             var r = line
             if part.count < string.count, let kept = at(part.startIndex..<part.endIndex) { r = kept }
+            let part = clean ?? part
             if parts.count > 1 {
                 // Vision can share a cut line's width out by characters, over the connector,
                 // or put a piece's box beyond it: the piece keeps to its span, on the line's row.

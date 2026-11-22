@@ -96,6 +96,17 @@ public struct InkMap: Sendable, Equatable {
         return CGRect(x: minX, y: box.minY, width: maxX - minX, height: box.height)
     }
 
+    /// How tall the ink inside `box` (in image pixels) stands, top to bottom; nil when it
+    /// has none.
+    func inkHeight(in box: CGRect) -> Double? {
+        func cell(_ v: Double) -> Int { Int((v / scale).rounded(.down)) }
+        let rows = max(0, cell(box.minY))...max(0, min(height - 1, cell(box.maxY)))
+        let cols = max(0, cell(box.minX))...max(0, min(width - 1, cell(box.maxX)))
+        let inked = rows.filter { y in cols.contains { self[$0, y] } }
+        guard let top = inked.first, let bottom = inked.last else { return nil }
+        return Double(bottom - top + 1) * scale
+    }
+
     /// Where a line in the ink crosses `box` (in image pixels), left to right: columns whose
     /// ink inside the box is under a third of its height tall, side by side for 1.5 box
     /// heights or more. A connector between two topics on one row; a character's columns
