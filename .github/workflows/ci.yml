@@ -21,7 +21,7 @@ jobs:
     env:
       # The tests that time themselves: `Test packages` skips them, `Timing tests` runs them.
       TIMED: >-
-        \.(PerformanceTests|ScalePerformanceTests|MathPerformanceTests)/|GuideTests/matchingBudgets|StarterGalleryTests/pickerAndCreateAreFast|CollabTests/keyToCaretWithTwoPeopleTyping|VoiceOverTreeTests/largeMapsCostNothingUntilRead
+        \.(PerformanceTests|ScalePerformanceTests|MathPerformanceTests)/|GuideTests/matchingBudgets|StarterGalleryTests/pickerAndCreateAreFast|CollabTests/keyToCaretWithTwoPeopleTyping|VoiceOverTreeTests/largeMapsCostNothingUntilRead|SyncTests/typingStaysFastWhileALibrarySyncs
     steps:
       - uses: actions/checkout@v7
 

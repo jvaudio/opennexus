@@ -81,8 +81,10 @@ final class CollabMac {
         h.controller.shareCenter = share
         h.controller.collabCenter = center
         if case .string(let id)? = model.manifestExtra["documentID"] { documentID = id }
-        h.controller.documentIDProvider = { [unowned self] in documentID }
-        h.controller.onAnnounce = { [unowned self] in announcements.append($0) }
+        // Weak, as the app's wiring is: the session can deliver an announcement after
+        // the test that made this Mac has ended (CI crashed reading a freed one).
+        h.controller.documentIDProvider = { [weak self] in self?.documentID ?? "" }
+        h.controller.onAnnounce = { [weak self] in self?.announcements.append($0) }
         harness = h
     }
 
@@ -101,7 +103,8 @@ final class CollabMac {
     /// An invite link: the session's copy opens here once it arrives.
     func join(_ link: String) async throws {
         let s = try center.join(link)
-        s.onReady = { [unowned self] model in
+        s.onReady = { [weak self] model in
+            guard let self else { return }
             open(model)
             if let bound = center.resume(store: store, documentID: documentID) { controller.attach(bound) }
         }
