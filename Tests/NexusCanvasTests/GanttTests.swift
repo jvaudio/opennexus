@@ -45,6 +45,7 @@ func ganttDocument() -> DocumentModel {
     func harness() -> CanvasHarness {
         let h = CanvasHarness(model: ganttDocument())
         h.controller.today = d("2026-11-04")
+        h.controller.refreshView()  // the scene was built with the real date
         h.controller.onViewMode = { [weak h] m in
             h?.host.showGantt(m == .gantt)
             if m == .gantt { h?.host.ganttView.focus() } else { h?.window.makeFirstResponder(h?.host.canvasView) }

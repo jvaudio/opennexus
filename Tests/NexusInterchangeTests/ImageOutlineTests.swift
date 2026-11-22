@@ -578,6 +578,52 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
         #expect(read("Beta - Nov", CGRect(x: 120, y: 100, width: 500, height: 29), far).count == 1)
     }
 
+    /// A fork Vision drew the line's box round reads as a mark at its end, its ink half as
+    /// tall again as the words: it goes, and the words are read again on their own, up to
+    /// the fork (D484). Vision on macOS 27.3 read the offsite map's "Morning" and its fork
+    /// to "Strategy review" and "Roadmap" as "Moring <".
+    @Test func aForkInsideTheLineIsDroppedAndTheWordsReadAgain() {
+        // Letters 28 px tall, and a fork 80 px tall, all inside the 90 px line.
+        func ink(fork: Bool) -> InkMap {
+            var ink = InkMap(imageWidth: 700, imageHeight: 300)
+            for x in stride(from: 104.0, through: 228, by: 9) { ink.line(from: (x, 130), to: (x, 158)) }
+            if fork {
+                ink.line(from: (250, 144), to: (330, 105))
+                ink.line(from: (250, 144), to: (330, 185))
+            } else {
+                ink.line(from: (250, 136), to: (262, 144))
+                ink.line(from: (262, 144), to: (250, 152))
+            }
+            return ink
+        }
+        let line = CGRect(x: 100, y: 100, width: 240, height: 90)
+        let s = "Moring <"
+        func at(_ r: Range<String.Index>) -> CGRect? {
+            r.lowerBound == s.startIndex
+                ? CGRect(x: 100, y: 100, width: r.upperBound == s.endIndex ? 240 : 135, height: 90)
+                : CGRect(x: 245, y: 100, width: 95, height: 90)
+        }
+        var asked: [CGRect] = []
+        func read(_ ink: InkMap, again: (String, Double)?) -> [String] {
+            ImageText.boxes(
+                s, line: line, confidence: 0.5, ink: ink, font: nil,
+                reread: {
+                    asked.append($0)
+                    return again
+                }, at: at
+            ).map(\.box.text)
+        }
+        #expect(read(ink(fork: true), again: ("Morning", 1)) == ["Morning"])
+        #expect(asked.count == 1 && asked[0].maxX == 245 && asked[0].minY == 100, "up to the fork, on the line's row")
+        #expect(read(ink(fork: true), again: ("Morning", 0.3)) == ["Moring"], "a less sure read is left alone")
+        #expect(read(ink(fork: true), again: ("Morning <", 1)) == ["Moring"], "so is one with the fork again")
+        #expect(read(ink(fork: true), again: nil) == ["Moring"])
+        #expect(read(ink(fork: true), again: ("<", 1)) == ["Moring"], "or one that is only a mark")
+        asked = []
+        #expect(read(ink(fork: false), again: ("Morning", 1)) == ["Moring <"], "a mark as tall as the text stays")
+        #expect(asked.isEmpty)
+    }
+
     /// Boxes as Vision reads `ImageVisionTests.fishboneWithSubCauses` (head on the right),
     /// with one sub-cause of a sub-cause ("Agency staff") set back again under "New hires".
     static let fishboneWithSubCauses = RecognisedImage(
