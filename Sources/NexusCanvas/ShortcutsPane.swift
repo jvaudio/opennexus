@@ -333,8 +333,9 @@ struct ShortcutsPane: View {
         let all = rows
         let structures = all.filter { ids.contains($0.id.rawValue) }
         let custom = structures.contains { c.chords[$0.id.rawValue] != nil || c.scopes[$0.id.rawValue] != nil }
-        // One being recorded keeps its own row, so its Recording… and Cancel stay in view.
-        let recordingOne = structures.contains { $0.id == recording }
+        // One being recorded, or whose conflict waits on an answer, keeps its own row, so its
+        // Recording… and Cancel, or the conflict's popover, stay in view.
+        let recordingOne = structures.contains { $0.id == recording || $0.id == pending?.id }
         guard structures.count > 1, !custom, !recordingOne else { return all.map(Line.command) }
         var out: [Line] = []
         for cmd in all {

@@ -125,10 +125,11 @@ public enum SVGExporter {
             w.line("</g>")
         }
         // Structure decor: cells, braces, lifelines, activation bars.
+        let incoming = DecorRenderer.incomingColors(scene)
         for item in scene.decor {
             if case .band = item { continue }
             guard let p = DecorRenderer.path(item, frame: frame) else { continue }
-            let s = DecorRenderer.paint(item, scene: scene)
+            let s = DecorRenderer.paint(item, scene: scene, incoming: incoming)
             var attrs = s.fill.map { paint($0, "fill") } ?? "fill=\"none\""
             if let c = s.stroke { attrs += " " + paint(c, "stroke") + " stroke-width=\"\(n(s.width))\"" }
             if let dash = s.dash { attrs += " stroke-dasharray=\"\(dash.map { n($0) }.joined(separator: " "))\"" }
@@ -579,6 +580,13 @@ public enum SVGExporter {
                 b, at: CGPoint(x: r.midX, y: r.minY + 2 + CTFontGetAscent(SceneBuilder.badgeFont)),
                 font: SceneBuilder.badgeFont,
                 color: filled ? .white : c, anchor: "middle")
+        }
+        if t.flowFlagged {
+            // A flagged flow ends here: the red outline the canvas draws (`NodeLayer`).
+            let r = CGRect(origin: .zero, size: size).insetBy(dx: -3, dy: -3)
+            w.line(
+                "<rect class=\"flow-flag\" x=\"\(n(r.minX))\" y=\"\(n(r.minY))\" width=\"\(n(r.width))\" height=\"\(n(r.height))\" fill=\"none\" stroke=\"\(hex(theme.critical))\" stroke-width=\"2\"/>"
+            )
         }
         if t.flagged {
             let r = CGRect(x: size.width - 17, y: 3, width: 14, height: 14)

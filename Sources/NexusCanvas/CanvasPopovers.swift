@@ -568,23 +568,30 @@ enum PopoverAnchors {
 /// The Quick Look panel for an attachment: one item, the file written out of the package.
 /// The panel is changed only while a responder controls it: the document window accepts
 /// control while there's an item (`hasItem`) and hands over through `begin` and `end`.
+/// The file asked for (`requested`) is kept apart from the one the panel shows (`shown`), so
+/// a previous controller ending mid-handover can't drop a newer request.
 @MainActor
 public final class AttachmentPreview: NSObject, QLPreviewPanelDataSource {
     public static let shared = AttachmentPreview()
-    private var url: URL?
+    private var requested: URL?
+    private var shown: URL?
     private weak var controlled: QLPreviewPanel?
 
-    public var hasItem: Bool { url != nil }
+    public var hasItem: Bool { requested != nil || shown != nil }
 
     func show(_ url: URL) {
-        self.url = url
+        requested = url
+        defer { requested = nil }
         guard let panel = QLPreviewPanel.shared() else {
             NSWorkspace.shared.open(url)
             return
         }
         if panel.isVisible {
             panel.updateController()
-            if controlled === panel { panel.reloadData() }
+            if controlled === panel {
+                shown = url
+                panel.reloadData()
+            }
         } else {
             // Showing the panel asks the responder chain for a controller (`begin`).
             panel.makeKeyAndOrderFront(nil)
@@ -598,19 +605,20 @@ public final class AttachmentPreview: NSObject, QLPreviewPanelDataSource {
 
     public func begin(_ panel: QLPreviewPanel) {
         controlled = panel
+        if let requested { shown = requested }
         panel.dataSource = self
     }
 
     public func end(_ panel: QLPreviewPanel) {
         if panel.dataSource === self { panel.dataSource = nil }
         controlled = nil
-        url = nil
+        shown = nil
     }
 
     public nonisolated func numberOfPreviewItems(in panel: QLPreviewPanel!) -> Int { 1 }
 
     public nonisolated func previewPanel(_ panel: QLPreviewPanel!, previewItemAt index: Int) -> (any QLPreviewItem)! {
-        MainActor.assumeIsolated { url as NSURL? }
+        MainActor.assumeIsolated { shown as NSURL? }
     }
 }
 #endif

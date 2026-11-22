@@ -83,8 +83,9 @@ package final class DecorRenderer {
             t.frame = CGRect(x: rect.minX + 16, y: rect.minY + 12, width: 260, height: 16)
             t.setNeedsDisplay()
         }
+        let incoming = Self.incomingColors(scene)
         for (i, d) in rest.enumerated() {
-            let p = Self.paint(d, scene: scene)
+            let p = Self.paint(d, scene: scene, incoming: incoming)
             style(shapes[i], p)
             accents[i].fillColor = p.accent?.cgColor
         }
@@ -140,10 +141,10 @@ package final class DecorRenderer {
     /// `paint(_:theme:)` with the scene's edges: a brace is a trunk its children share,
     /// so it takes the trunk's colour (ink at the central topic) rather than the first
     /// child's branch colour.
-    package static func paint(_ d: SceneDecor, scene: Scene) -> Paint {
+    package static func paint(_ d: SceneDecor, scene: Scene, incoming: [NodeID: RGBA]? = nil) -> Paint {
         var p = paint(d, theme: scene.theme)
         if case .brace(let parent, _, _, _) = d {
-            p.stroke = trunkColor(parent, family: "brace", scene: scene)
+            p.stroke = trunkColor(parent, family: "brace", scene: scene, incoming: incoming)
         }
         return p
     }
@@ -269,7 +270,8 @@ package final class DecorRenderer {
             guard let pf = scene.nodes[e.parent]?.frame, let cf = scene.nodes[e.child]?.frame else { continue }
             let shape = BranchLineShape(name: e.line.shape)
             guard BranchLines.trunk(from: pf, to: cf, family: e.family, shape: shape) != nil else { continue }
-            let key = "\(e.parent)|\(e.family)"
+            // Children drawn in different shapes each get a trunk that meets their stem.
+            let key = "\(e.parent)|\(e.family)|\(shape)"
             if let i = index[key] {
                 out[i].children.append(e.child)
                 out[i].sides[e.child] = cf.side
@@ -303,7 +305,7 @@ package final class DecorRenderer {
     }
 
     /// Each topic's incoming branch colour (its first edge), looked up once per pass.
-    static func incomingColors(_ scene: Scene) -> [NodeID: RGBA] {
+    package static func incomingColors(_ scene: Scene) -> [NodeID: RGBA] {
         Dictionary(scene.edges.map { ($0.child, $0.color) }, uniquingKeysWith: { first, _ in first })
     }
 
