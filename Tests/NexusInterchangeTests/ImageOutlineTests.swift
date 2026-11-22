@@ -580,7 +580,7 @@ func box(_ text: String, _ x: Double, _ y: Double, _ w: Double, _ h: Double) -> 
 
     /// A fork Vision drew the line's box round reads as a mark at its end, its ink half as
     /// tall again as the words: it goes, and the words are read again on their own, up to
-    /// the fork (D484). Vision on macOS 27.3 read the offsite map's "Morning" and its fork
+    /// the fork (D492). Vision on macOS 27.3 read the offsite map's "Morning" and its fork
     /// to "Strategy review" and "Roadmap" as "Moring <".
     @Test func aForkInsideTheLineIsDroppedAndTheWordsReadAgain() {
         // Letters 28 px tall, and a fork 80 px tall, all inside the 90 px line.
