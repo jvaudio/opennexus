@@ -264,6 +264,7 @@ package final class DecorRenderer {
     package static func trunks(_ scene: Scene) -> [Trunk] {
         var out: [Trunk] = []
         var index: [String: Int] = [:]
+        let incoming = incomingColors(scene)
         for e in scene.edges {
             guard let pf = scene.nodes[e.parent]?.frame, let cf = scene.nodes[e.child]?.frame else { continue }
             let shape = BranchLineShape(name: e.line.shape)
@@ -282,7 +283,9 @@ package final class DecorRenderer {
                 Trunk(
                     parent: e.parent, children: [e.child], family: e.family, shape: shape,
                     paint: Paint(
-                        stroke: trunkColor(e.parent, family: e.family, scene: scene), width: e.width, dash: dash),
+                        stroke: trunkColor(e.parent, family: e.family, scene: scene, incoming: incoming),
+                        width: e.width,
+                        dash: dash),
                     opacity: e.opacity, sides: [e.parent: pf.side, e.child: cf.side]))
         }
         return out
@@ -291,9 +294,17 @@ package final class DecorRenderer {
     /// A trunk's colour: the parent's own branch colour when it has one (a branch drawn as
     /// a fishbone or org chart in a mind map), otherwise ink; an org chart's bus, a
     /// reporting line, is the lighter ink.
-    static func trunkColor(_ parent: NodeID, family: String, scene: Scene) -> RGBA {
-        if let incoming = scene.edges.first(where: { $0.child == parent }) { return incoming.color }
+    static func trunkColor(
+        _ parent: NodeID, family: String, scene: Scene, incoming: [NodeID: RGBA]? = nil
+    ) -> RGBA {
+        let own = incoming.map { $0[parent] } ?? scene.edges.first { $0.child == parent }?.color
+        if let own { return own }
         return family == "org" ? scene.theme.ink2.alpha(0.55) : scene.theme.ink
+    }
+
+    /// Each topic's incoming branch colour (its first edge), looked up once per pass.
+    static func incomingColors(_ scene: Scene) -> [NodeID: RGBA] {
+        Dictionary(scene.edges.map { ($0.child, $0.color) }, uniquingKeysWith: { first, _ in first })
     }
 
     /// A trunk's path from live frames, with the fishbone's arrowhead into its head.

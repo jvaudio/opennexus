@@ -28,9 +28,22 @@ public enum Masker {
         public init() {}
 
         /// The masked form of a hit: a key keeps its type prefix ("sk_live_", "AKIA", "ghp_"),
-        /// which says what it is and isn't secret, and loses the rest (artboard 41).
+        /// which says what it is and isn't secret, and loses the rest (artboard 41). A custom
+        /// pattern that reaches into the prefix masks it too: what the user asked to hide stays
+        /// hidden.
         public func mask(_ hit: String, kind: Kind) -> String {
-            let keep = kind == .keys ? Masker.keyPrefix(hit) : ""
+            var keep = kind == .keys ? Masker.keyPrefix(hit) : ""
+            if !keep.isEmpty, kinds.contains(.custom) {
+                let prefix = NSRange(location: 0, length: (keep as NSString).length)
+                let whole = NSRange(location: 0, length: (hit as NSString).length)
+                let covered = custom.filter { !$0.isEmpty }.contains { p in
+                    guard let re = try? NSRegularExpression(pattern: p) else { return false }
+                    return re.matches(in: hit, range: whole).contains {
+                        NSIntersectionRange($0.range, prefix).length > 0
+                    }
+                }
+                if covered { keep = "" }
+            }
             let rest = (hit as NSString).length - (keep as NSString).length
             return keep + mask(rest)
         }

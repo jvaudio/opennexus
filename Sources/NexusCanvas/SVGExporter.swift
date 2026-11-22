@@ -74,12 +74,12 @@ public enum SVGExporter {
         }
         let pool = DecorRenderer.pool(lanes)
         if let pool {
-            w.line("<clipPath id=\"pool\"><path d=\"\(d(pool.outline))\"/></clipPath>")
+            w.line("<clipPath id=\"\(o.idPrefix)pool\"><path d=\"\(d(pool.outline))\"/></clipPath>")
         }
         for d in scene.decor {
             guard case .band(let r, let title, let color) = d else { continue }
             w.line(
-                "<rect class=\"band\" x=\"\(n(r.minX))\" y=\"\(n(r.minY))\" width=\"\(n(r.width))\" height=\"\(n(r.height))\" \(paint(color.alpha(band % 2 == 0 ? 0.05 : 0.08), "fill"))\(pool == nil ? "" : " clip-path=\"url(#pool)\"")/>"
+                "<rect class=\"band\" x=\"\(n(r.minX))\" y=\"\(n(r.minY))\" width=\"\(n(r.width))\" height=\"\(n(r.height))\" \(paint(color.alpha(band % 2 == 0 ? 0.05 : 0.08), "fill"))\(pool == nil ? "" : " clip-path=\"url(#\(o.idPrefix)pool)\"")/>"
             )
             let font = Fonts.mono(11.5, .semibold)
             w.text(

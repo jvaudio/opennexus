@@ -236,7 +236,7 @@ struct FilterBarView: View {
                                 Image(systemName: "exclamationmark.triangle.fill").font(.chrome(10))
                                     .accessibilityHidden(true)
                             }
-                            Text(c.text).font(.chrome(13)).lineLimit(1).fixedSize()
+                            Text(c.text).font(.chrome(13)).lineLimit(1)
                             Button {
                                 controller.removeFilterClause(at: i)
                             } label: {

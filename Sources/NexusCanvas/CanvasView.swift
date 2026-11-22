@@ -1201,6 +1201,8 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     public override func mouseDragged(with event: NSEvent) {
         pointer.dragged(
             to: convert(event.locationInWindow, from: nil), modifiers: PointerModifiers(event.modifierFlags))
+        // Dragging a topic moves its layers without the display link: keep the chip on it.
+        if countChip?.isHidden == false { positionCountChip() }
     }
 
     public override func mouseUp(with event: NSEvent) {

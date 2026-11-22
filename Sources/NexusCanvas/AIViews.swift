@@ -386,8 +386,11 @@ struct AIPanelView: View {
     func highlightRefs(_ s: String) -> AttributedString {
         var a = AttributedString(s)
         let iris = (controller.theme.isDark ? Tokens.Signal.irisDark : Tokens.Signal.irisLight).color
-        for id in MapContext.references(in: s, canvas: controller.canvas) {
-            guard let t = controller.canvas.nodes[id]?.text else { continue }
+        // Longer titles first, so "@Alpha" can't split "@Alpha Beta".
+        let titles = MapContext.references(in: s, canvas: controller.canvas)
+            .compactMap { controller.canvas.nodes[$0]?.text }
+            .sorted { $0.count > $1.count }
+        for t in titles {
             while let r = a.range(of: "@" + t) {
                 var chip = AttributedString("\u{2009}\(t)\u{2009}")
                 chip.foregroundColor = iris

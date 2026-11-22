@@ -148,9 +148,11 @@ import Testing
         #expect((s.nodes[node(h, "Teams")]?.opacity ?? 1) < 0.3)
         // Pricing's children grow to its own side, as a logic chart (artboard 27), not around
         // it, where they'd land on the dimmed map.
-        let kids = h.canvas.nodes[pricing]!.children.compactMap { s.nodes[$0]?.frame.center.x }
+        let children = h.canvas.nodes[pricing]!.children
+        let kids = children.compactMap { s.nodes[$0]?.frame.center.x }
         let px = s.nodes[pricing]!.frame.center.x
-        #expect(!kids.isEmpty && kids.allSatisfy { $0 > px })
+        #expect(children.count >= 2 && kids.count == children.count)
+        #expect(kids.allSatisfy { $0 > px })
         #expect(h.controller.focusPath.map { h.canvas.nodes[$0]!.text } == ["Launch plan", "Pricing"])
         h.press("esc")
         #expect(h.controller.focusRoot == nil)

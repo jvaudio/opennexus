@@ -333,7 +333,9 @@ struct ShortcutsPane: View {
         let all = rows
         let structures = all.filter { ids.contains($0.id.rawValue) }
         let custom = structures.contains { c.chords[$0.id.rawValue] != nil || c.scopes[$0.id.rawValue] != nil }
-        guard structures.count > 1, !custom else { return all.map(Line.command) }
+        // One being recorded keeps its own row, so its Recording… and Cancel stay in view.
+        let recordingOne = structures.contains { $0.id == recording }
+        guard structures.count > 1, !custom, !recordingOne else { return all.map(Line.command) }
         var out: [Line] = []
         for cmd in all {
             if !ids.contains(cmd.id.rawValue) {

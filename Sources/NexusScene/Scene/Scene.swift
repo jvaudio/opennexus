@@ -343,11 +343,27 @@ public struct Scene {
         }
     }
 
+    /// A technical caption's width as drawn (mono 9.5, tracked 1.2; `NodeLayer`).
+    static func captionWidth(_ caption: String) -> CGFloat {
+        let attributes: [NSAttributedString.Key: Any] = [
+            NSAttributedString.Key(kCTFontAttributeName as String): Fonts.mono(9.5, .medium),
+            NSAttributedString.Key(kCTKernAttributeName as String): 1.2,
+        ]
+        let line = CTLineCreateWithAttributedString(NSAttributedString(string: caption, attributes: attributes))
+        return ceil(CTLineGetTypographicBounds(line, nil, nil, nil))
+    }
+
     public var bounds: CGRect {
         var b = nodes.values.reduce(CGRect.null) { $0.union($1.frame.rect) }
         for z in zones { b = b.union(z.rect) }
         for bd in boundaries { b = b.union(bd.rect) }
         if let l = legend { b = b.union(l.rect) }
+        // A trailing caption (I/O) reads on past the node's right edge.
+        for n in nodes.values {
+            guard let c = n.tech.caption, n.tech.captionPlacement == .trailing else { continue }
+            let box = n.tech.captionRect(nodeSize: n.frame.size).offsetBy(dx: n.frame.rect.minX, dy: n.frame.rect.minY)
+            b = b.union(CGRect(x: box.minX, y: box.minY, width: Self.captionWidth(c), height: box.height))
+        }
         for d in decor {
             switch d {
             case .band(let r, _, _): b = b.union(r)

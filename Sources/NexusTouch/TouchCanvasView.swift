@@ -572,13 +572,15 @@ extension TouchCanvasView: UIDropInteractionDelegate {
     }
 
     public func dropInteraction(_ interaction: UIDropInteraction, performDrop session: any UIDropSession) {
-        let at = session.location(in: self)
+        // Where it lands is decided now: the load finishes later, after the camera may move.
+        let canvasID = controller.canvasID
+        let parent = pointer.node(at: session.location(in: self)) ?? controller.selection.primary
         _ = session.loadObjects(ofClass: NSString.self) { [weak self] items in
             MainActor.assumeIsolated {
-                guard let self, let s = items.first as? String, let info = CanvasController.draggedIcon(s) else {
-                    return
-                }
-                self.controller.insertIcon(info, under: self.pointer.node(at: at))
+                guard let self, let s = items.first as? String, let info = CanvasController.draggedIcon(s),
+                    self.controller.canvasID == canvasID, self.controller.canvas.nodes[parent] != nil
+                else { return }
+                self.controller.insertIcon(info, under: parent)
             }
         }
     }

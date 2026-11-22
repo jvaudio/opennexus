@@ -63,14 +63,14 @@ struct ThemeBuilder: View {
             field(Loc.t("Name")) { TextField("Name", text: $theme.name).textFieldStyle(.roundedBorder).labelsHidden() }
             HStack(alignment: .top, spacing: 12) {
                 field(Loc.t("Start from")) {
-                    Picker("", selection: Binding(get: { base }, set: { id in start(from: id) })) {
+                    Picker(Loc.t("Start from"), selection: Binding(get: { base }, set: { id in start(from: id) })) {
                         if base.isEmpty { Text("Choose…").tag("") }
                         ForEach(Theme.builtIn) { Text($0.name).tag($0.id) }
                     }
                     .labelsHidden()
                 }
                 field(Loc.t("Diagram font")) {
-                    Picker("", selection: $theme.font) {
+                    Picker(Loc.t("Diagram font"), selection: $theme.font) {
                         Text("New York").tag("serif")
                         Text("SF Pro").tag("system")
                         Text("SF Mono").tag("mono")

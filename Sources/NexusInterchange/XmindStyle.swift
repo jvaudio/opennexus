@@ -299,19 +299,29 @@ enum XmindStyle {
         var p: [String: String] = [:]
         let c = color(b, theme: t, canvasType: canvasType, defaults: d)
         let own = b.color != nil || c != (d.color.flatMap(RGBA.init(hexString:)) ?? t.ring)
+        // The boundary as the canvas draws it: a VPC or subnet left at the defaults is an
+        // untinted hairline, dashed by its meaning (D488).
         let opacity = d.fillOpacity ?? 0.06
-        if b.fillOpacity <= 0 || b.shape == "corners" {
+        let fillOpacity = b.drawnFillOpacity
+        if fillOpacity <= 0 || b.shape == "corners" {
             p["fill-pattern"] = "none"
-        } else if own || b.fillOpacity != opacity {
+        } else if own || fillOpacity != opacity {
             // The importer finds the opacity from the fill and the line colour together.
-            p["svg:fill"] = fill(c, opacity: b.fillOpacity, canvas: canvas)
+            p["svg:fill"] = fill(c, opacity: fillOpacity, canvas: canvas)
             p["fill-pattern"] = "solid"
         }
         if own || p["svg:fill"] != nil { p["line-color"] = c.composited(over: canvas).hex }
-        let dash =
-            b.dash ?? (b.meaning == "trust" || b.meaning == "subnet" || b.shape == "dashed" ? "dashed" : "solid")
-        if dash != (d.dash ?? "solid") { p["line-pattern"] = xmind(patterns, dash) ?? "solid" }
-        if b.width != (d.width ?? 2) { p["line-width"] = pt(b.width) }
+        let dash = b.drawnDash
+        if dash != (d.dash ?? "solid") {
+            if dash == "fine" {
+                // Xmind has no fine dash: dotted is the nearest.
+                p["line-pattern"] = "dot"
+                lost.append("Fine dashed boundary line (written as dotted)")
+            } else {
+                p["line-pattern"] = xmind(patterns, dash) ?? "solid"
+            }
+        }
+        if b.drawnWidth != (d.width ?? 2) { p["line-width"] = pt(b.drawnWidth) }
         if b.shape != "rounded" || d.shape != nil {
             if let x = xmind(boundaryShapes, b.shape) {
                 if x != xmind(boundaryShapes, d.shape ?? "rounded") { p["shape-class"] = x }

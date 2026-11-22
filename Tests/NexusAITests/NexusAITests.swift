@@ -45,8 +45,11 @@ private func canvas(_ tree: [(String, [String])], notes: [String: String] = [:])
         #expect(texts.contains("Ask ████████████"))
         #expect(texts.contains("Call +1 (415) 555-0134"))
         // A key keeps its type prefix and loses the secret (artboard 41).
-        #expect(!texts.contains { $0.contains("51HxQe2KfR8vTn3") })
-        #expect(texts.contains { $0.contains("sk_live_█") })
+        #expect(texts.contains("Key sk_live_████████████"))
+        // A custom pattern that covers the prefix masks it too.
+        var custom = Masker.Options()
+        custom.custom = [#"sk_live_\w+"#]
+        #expect(Masker.mask("Key sk_live_51HxQe2KfR8vTn3", options: custom) == "Key ████████████")
         #expect(copy.nodes.values.compactMap(\.note?.text).allSatisfy { !$0.contains("Tim Cook") })
         #expect(c.nodes.values.contains { $0.text == "Ask maria.lopez@acme.io" }, "the original stays")
     }

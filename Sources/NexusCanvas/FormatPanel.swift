@@ -645,7 +645,8 @@ struct StyleTab: View {
                                 $0.taper = true
                                 $0.shape = "curved"
                             } else {
-                                $0.taper = nil
+                                // False, not nil: under a tapered theme nil would taper again.
+                                $0.taper = controller.theme.lineTaper == true ? false : nil
                                 $0.shape = id
                             }
                         }

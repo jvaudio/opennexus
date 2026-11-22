@@ -4,6 +4,7 @@ import NexusCore
 import NexusKeys
 import NexusScene
 import NexusTheme
+import Quartz
 import SwiftUI
 import UniformTypeIdentifiers
 
@@ -342,12 +343,23 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     }
 
     /// ⌘I: the Format panel slides in on the right only when asked (calm chrome).
-    /// The navigation tab to reopen: Outline until one is chosen.
-    private var lastNavigationTab = 2
-
+    /// Closes the open navigation tab, or reopens the last one (`lastNavTab`).
     @objc func toggleNavigation() {
-        if let open = controller.navTab { lastNavigationTab = open }
-        _ = controller.perform(.navigationTab(controller.navTab ?? lastNavigationTab))
+        _ = controller.perform(.navigationTab(controller.navTab ?? controller.lastNavTab))
+    }
+
+    // The window controls the Quick Look panel for attachments, whichever view has focus.
+    // AppKit calls these on the main thread; the overridden declarations are nonisolated.
+    nonisolated override func acceptsPreviewPanelControl(_ panel: QLPreviewPanel!) -> Bool {
+        MainActor.assumeIsolated { AttachmentPreview.shared.hasItem }
+    }
+
+    nonisolated override func beginPreviewPanelControl(_ panel: QLPreviewPanel!) {
+        MainActor.assumeIsolated { AttachmentPreview.shared.begin(panel) }
+    }
+
+    nonisolated override func endPreviewPanelControl(_ panel: QLPreviewPanel!) {
+        MainActor.assumeIsolated { AttachmentPreview.shared.end(panel) }
     }
 
     @objc func toggleFormatPanel() {

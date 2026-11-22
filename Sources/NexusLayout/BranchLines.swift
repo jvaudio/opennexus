@@ -164,6 +164,19 @@ public enum BranchLines {
     ) -> CGPath? {
         guard let points = trunkPoints(from: parent, to: child, family: family, shape: shape) else { return nil }
         let p = CGMutablePath()
+        if family == "org", orgShape(shape) == .roundedElbow, points.count == 3 {
+            // The turn off the parent's stem is round too, as `vertical` draws it.
+            let (start, turn, corner) = (points[0], points[1], points[2])
+            let r = min(8, abs(child.center.x - start.x) / 2, abs(turn.y - start.y))
+            if r > 0.5 {
+                let dir: CGFloat = corner.x >= start.x ? 1 : -1
+                p.move(to: start)
+                p.addLine(to: CGPoint(x: start.x, y: turn.y - r))
+                p.addQuadCurve(to: CGPoint(x: start.x + dir * r, y: turn.y), control: turn)
+                p.addLine(to: corner)
+                return p
+            }
+        }
         p.addLines(between: points)
         return p
     }
