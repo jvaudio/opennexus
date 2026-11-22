@@ -103,11 +103,11 @@ struct TourOverlay: View {
         HStack(spacing: 14) {
             Text("\(t.lesson + 1) · \(t.lessons[t.lesson].title)").font(.chrome(13.5, weight: .semibold))
             dots(t)
-            Button("Skip lesson") { t.skipLesson() }.linkButton()
-            Button("Pause") { t.pause() }.linkButton()
+            Button("Skip lesson") { t.skipLesson() }.irisLink()
+            Button("Pause") { t.pause() }.irisLink()
         }
         .padding(.horizontal, 16).frame(height: 40)
-        .background(Capsule().fill(.regularMaterial))
+        .chromeMaterial(in: Capsule())
         .overlay(Capsule().stroke(.separator))
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Tutorial")
@@ -130,7 +130,7 @@ struct TourOverlay: View {
         HStack(spacing: 10) {
             Circle().fill(Color(hex: "#5850EC")).frame(width: 8, height: 8)
             Text(Loc.f("Tour paused · lesson %lld of %lld", t.lesson + 1, t.lessons.count)).font(.chrome(14))
-            Button("Resume") { t.resume() }.linkButton().font(.chrome(14, weight: .semibold))
+            Button("Resume") { t.resume() }.irisLink().font(.chrome(14, weight: .semibold))
         }
         .padding(.horizontal, 16).frame(height: 40)
         .background(
@@ -206,7 +206,8 @@ struct TipView: View {
                     controller.prefs.set("general.tips", false)
                     controller.tip = nil
                 }
-                .linkButton()
+                .buttonStyle(.plain)
+                .foregroundStyle(.chromeSecondary)
                 .font(.chrome(13))
                 .padding(.leading, 12)
             }
@@ -247,5 +248,13 @@ struct EmptyCanvasHints: View {
             .overlay(RoundedRectangle(cornerRadius: 5).stroke(.separator))
             Text(t).font(.chrome(13)).foregroundStyle(.chromeSecondary)
         }
+    }
+}
+
+extension View {
+    /// The tour's text buttons: Iris (the app's accent), as artboard 31 draws Resume, not the
+    /// system's link blue.
+    fileprivate func irisLink() -> some View {
+        buttonStyle(.plain).foregroundStyle(Color.accentColor)
     }
 }

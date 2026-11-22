@@ -62,7 +62,7 @@ public enum NetworkActivity {
             s +=
                 " "
                 + Loc.t(
-                    "Update checks are off (Settings › General › Updates); the update service connects only when you choose Check for Updates…."
+                    "Update checks are off (Settings › General › Updates); the update service connects only when you choose Check for Updates…"
                 )
         }
         if let d = lastCheck(prefs) {

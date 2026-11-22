@@ -25,6 +25,15 @@ import Testing
     }
 
     /// S11: ⌘K, type, ↩ runs the top row; recent commands come first next time.
+    /// The palette's sentence case keeps acronyms, inner capitals, product and feature names.
+    @Test func paletteTitlesAreSentenceCase() {
+        #expect(CanvasController.paletteTitle("Copy as Mermaid") == "Copy as Mermaid")
+        #expect(CanvasController.paletteTitle("Export Canvas as PNG") == "Export canvas as PNG")
+        #expect(CanvasController.paletteTitle("Open Quick Capture") == "Open Quick Capture")
+        #expect(CanvasController.paletteTitle("Copy as PlantUML") == "Copy as PlantUML")
+        #expect(CanvasController.paletteTitle("Select by Type") == "Select by type")
+    }
+
     @Test func paletteRunsTheTopRow() {
         UserDefaults.standard.removeObject(forKey: CanvasController.recentKey)
         let h = CanvasHarness(model: launchPlanDocument())
@@ -32,16 +41,17 @@ import Testing
         #expect(h.controller.palette != nil)
         h.type("conv")
         let top = h.controller.paletteRows.first
-        #expect(top?.title == "Convert Diagram Type…")
+        // Sentence case, as artboard 25 (the menus keep title case).
+        #expect(top?.title == "Convert diagram type…")
         #expect(top?.keys == "⌥⌘T" && top?.hyper?.contains("T") == true)
         #expect(top?.matched == [0, 1, 2, 3])
         // Commands that can't run here are hidden, not greyed.
-        #expect(!h.controller.paletteRows.contains { $0.title == "Bold" || $0.title == "Connect to Target" })
+        #expect(!h.controller.paletteRows.contains { $0.title == "Bold" || $0.title == "Connect to target" })
         h.press("return")
         #expect(h.controller.palette == nil && h.controller.convert != nil)
         h.press("esc")
         h.press("cmd+k")
-        #expect(h.controller.paletteRows.first?.title == "Convert Diagram Type…", "recent first")
+        #expect(h.controller.paletteRows.first?.title == "Convert diagram type…", "recent first")
         // ⌘↩ runs and keeps the palette open.
         h.type("zoom in")
         h.press("cmd+return")
@@ -59,7 +69,7 @@ import Testing
         h.press("cmd+k")
         h.type("conv")
         let row = h.controller.paletteRows.first { $0.id.hasPrefix("rebind:") }
-        #expect(row?.title == "Shortcuts › Convert Diagram Type…")
+        #expect(row?.title == "Shortcuts › Convert diagram type…")
         h.controller.runPaletteRow(row!)
         #expect(rebound == .convert && h.controller.palette == nil && h.controller.toast == nil)
     }
@@ -136,10 +146,11 @@ import Testing
         #expect(s.nodes[node(h, "Pro")]?.blurred == false)
         #expect(s.nodes[node(h, "Teams")]?.blurred == true)
         #expect((s.nodes[node(h, "Teams")]?.opacity ?? 1) < 0.3)
-        // Pricing's children now surround it (a balanced map of its own).
+        // Pricing's children grow to its own side, as a logic chart (artboard 27), not around
+        // it, where they'd land on the dimmed map.
         let kids = h.canvas.nodes[pricing]!.children.compactMap { s.nodes[$0]?.frame.center.x }
         let px = s.nodes[pricing]!.frame.center.x
-        #expect(kids.contains { $0 < px } && kids.contains { $0 > px })
+        #expect(!kids.isEmpty && kids.allSatisfy { $0 > px })
         #expect(h.controller.focusPath.map { h.canvas.nodes[$0]!.text } == ["Launch plan", "Pricing"])
         h.press("esc")
         #expect(h.controller.focusRoot == nil)

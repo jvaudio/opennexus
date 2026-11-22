@@ -27,6 +27,14 @@ public enum Masker {
         public var glyph = "█"
         public init() {}
 
+        /// The masked form of a hit: a key keeps its type prefix ("sk_live_", "AKIA", "ghp_"),
+        /// which says what it is and isn't secret, and loses the rest (artboard 41).
+        public func mask(_ hit: String, kind: Kind) -> String {
+            let keep = kind == .keys ? Masker.keyPrefix(hit) : ""
+            let rest = (hit as NSString).length - (keep as NSString).length
+            return keep + mask(rest)
+        }
+
         public func mask(_ length: Int) -> String {
             switch glyph {
             case "[redacted]": "[redacted]"
@@ -55,6 +63,12 @@ public enum Masker {
         (.phones, #"(?<![\w@])\+?\d[\d ().-]{7,}\d(?!\w)"#),
     ]
 
+    /// A key's well-known type prefix, if it has one.
+    static func keyPrefix(_ key: String) -> String {
+        let re = #/^(?:(?:sk|pk|rk)_(?:live|test)_|AKIA|gh[pousr]_|xox[abpr]-)/#
+        return key.firstMatch(of: re).map { String($0.output) } ?? ""
+    }
+
     public static func scan(_ c: Canvas, options: Options = Options()) -> [Hit] {
         var out: [Hit] = []
         for id in c.tops.flatMap({ c.subtree($0) }) {
@@ -79,7 +93,7 @@ public enum Masker {
         for h in scan(s, node: "n", field: "text", options: options).sorted(by: {
             $0.range.location > $1.range.location
         }) {
-            ns = ns.replacingCharacters(in: h.range, with: options.mask(h.range.length)) as NSString
+            ns = ns.replacingCharacters(in: h.range, with: options.mask(h.text, kind: h.kind)) as NSString
         }
         return ns as String
     }
@@ -154,7 +168,7 @@ public enum Masker {
             }
             for h in hs.sorted(by: { $0.range.location > $1.range.location })
             where h.range.location + h.range.length <= s.length {
-                s = s.replacingCharacters(in: h.range, with: options.mask(h.range.length)) as NSString
+                s = s.replacingCharacters(in: h.range, with: options.mask(h.text, kind: h.kind)) as NSString
             }
             switch (parts.first, index) {
             case ("comment"?, let i?): n.comments[i].text = s as String

@@ -280,6 +280,20 @@ public final class NodeMeasurer {
                 let mid = ((lo + hi) / 2).rounded(.down)
                 if fit(mid).1 <= lines { hi = mid } else { lo = mid }
             }
+            // Never narrower than the longest word: a word broken in two still makes the same
+            // number of lines ("Workaroun / d available?" in a compact diamond).
+            let words = string.split(whereSeparator: \.isWhitespace)
+            let font = attr.length > 0 ? attr.attributes(at: 0, effectiveRange: nil) : [:]
+            let longest =
+                words.map {
+                    ceil(
+                        engine.boundingRect(
+                            NSAttributedString(string: String($0), attributes: font),
+                            size: CGSize(width: CGFloat.greatestFiniteMagnitude, height: .greatestFiniteMagnitude),
+                            options: options
+                        ).width)
+                }.max() ?? 0
+            if hi < longest { hi = min(width, longest) }
             (fitted, lines) = fit(hi)
         }
         return CGSize(width: ceil(max(fitted.width, 1)), height: lines * style.lineHeight)

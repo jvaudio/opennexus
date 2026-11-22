@@ -10,19 +10,32 @@ import AppKit
 import UIKit
 #endif
 
-/// The theme builder (artboard 03): start from a theme, change font, palette, canvas,
-/// root and branch line, with a live contrast badge; export `.nexustheme` or save.
+/// The theme builder (artboard 04): start from a theme, change font, palette, canvas,
+/// root and branch line, with a live contrast badge; export `.nexustheme` or save. About
+/// 380 pt wide, labels stacked above their controls, as the artboard has it.
 struct ThemeBuilder: View {
     var controller: CanvasController
     @State var theme: Theme
     var done: () -> Void
     @State private var selectedColor = 0
     @State private var accent = Color(.sRGB, red: 0.88, green: 0.48, blue: 0.37)
+    /// The built-in theme "Start from" shows; empty when none is known.
+    @State private var base: String
 
     init(controller: CanvasController, theme: Theme, done: @escaping () -> Void) {
         self.controller = controller
         _theme = State(initialValue: theme)
+        _base = State(initialValue: Self.base(of: theme, current: controller.theme))
         self.done = done
+    }
+
+    /// The built-in a theme starts from: itself, the canvas's theme for a new one (which
+    /// copies it), or the built-in whose canvas and appearance it kept.
+    static func base(of theme: Theme, current: Theme) -> String {
+        let ids = Set(Theme.builtIn.map(\.id))
+        if ids.contains(theme.id) { return theme.id }
+        if theme.id.isEmpty, ids.contains(current.id) { return current.id }
+        return Theme.builtIn.first { $0.canvas == theme.canvas && $0.isDark == theme.isDark }?.id ?? ""
     }
 
     var report: ContrastChecker.Report { ContrastChecker.check(theme) }
@@ -47,16 +60,16 @@ struct ThemeBuilder: View {
                     .accessibilityLabel(Loc.f("Contrast %@", report.badge))
             }
             Divider()
-            LabeledContent("Name") { TextField("Name", text: $theme.name).textFieldStyle(.roundedBorder) }
-            HStack(spacing: 16) {
-                LabeledContent("Start from") {
-                    Picker("", selection: Binding(get: { "" }, set: { id in start(from: id) })) {
-                        Text("Choose…").tag("")
+            field(Loc.t("Name")) { TextField("Name", text: $theme.name).textFieldStyle(.roundedBorder).labelsHidden() }
+            HStack(alignment: .top, spacing: 12) {
+                field(Loc.t("Start from")) {
+                    Picker("", selection: Binding(get: { base }, set: { id in start(from: id) })) {
+                        if base.isEmpty { Text("Choose…").tag("") }
                         ForEach(Theme.builtIn) { Text($0.name).tag($0.id) }
                     }
                     .labelsHidden()
                 }
-                LabeledContent("Diagram font") {
+                field(Loc.t("Diagram font")) {
                     Picker("", selection: $theme.font) {
                         Text("New York").tag("serif")
                         Text("SF Pro").tag("system")
@@ -66,19 +79,21 @@ struct ThemeBuilder: View {
                     .labelsHidden()
                 }
             }
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Branch palette").font(.chrome(13))
+            field(Loc.t("Branch palette")) {
                 HStack(spacing: 8) {
                     ForEach(Array(theme.palette.enumerated()), id: \.offset) { i, c in
-                        Swatch(color: c, selected: i == selectedColor, size: 30) { selectedColor = i }
+                        Swatch(color: c, selected: i == selectedColor, size: 36) { selectedColor = i }
                     }
                 }
-                HStack {
+                HStack(spacing: 8) {
                     ColorPicker(
                         Loc.t("Selected colour"),
                         selection: Binding(
                             get: { theme.palette[min(selectedColor, theme.palette.count - 1)].color },
-                            set: { theme.palette[min(selectedColor, theme.palette.count - 1)] = RGBA(color: $0) }))
+                            set: { theme.palette[min(selectedColor, theme.palette.count - 1)] = RGBA(color: $0) })
+                    )
+                    .labelsHidden()
+                    .accessibilityLabel(Loc.t("Selected colour"))
                     Spacer()
                     ColorPicker("", selection: $accent).labelsHidden()
                         .accessibilityLabel("Custom colour")
@@ -89,51 +104,58 @@ struct ThemeBuilder: View {
                 }
                 .font(.chrome(12))
             }
-            HStack(spacing: 16) {
-                LabeledContent("Canvas") {
-                    ColorPicker(
-                        "", selection: Binding(get: { theme.canvas.color }, set: { theme.canvas = RGBA(color: $0) })
-                    )
-                    .labelsHidden()
-                    .accessibilityLabel("Custom colour")
-                    Picker("", selection: Binding(get: { gridName }, set: { setGrid($0) })) {
-                        Text("Plain").tag("plain")
-                        Text("Dots").tag("dots")
-                        Text("Lines").tag("lines")
+            HStack(alignment: .top, spacing: 12) {
+                field(Loc.t("Canvas")) {
+                    HStack(spacing: 6) {
+                        ColorPicker(
+                            "", selection: Binding(get: { theme.canvas.color }, set: { theme.canvas = RGBA(color: $0) })
+                        )
+                        .labelsHidden()
+                        .accessibilityLabel("Custom colour")
+                        Picker("", selection: Binding(get: { gridName }, set: { setGrid($0) })) {
+                            Text("Plain").tag("plain")
+                            Text("Dots").tag("dots")
+                            Text("Lines").tag("lines")
+                        }
+                        .labelsHidden()
                     }
-                    .labelsHidden()
-                    .frame(width: 90)
                 }
-                LabeledContent("Root") {
-                    ColorPicker(
-                        "",
-                        selection: Binding(
-                            get: { theme.root.background.color }, set: { theme.root.background = RGBA(color: $0) })
-                    )
-                    .labelsHidden()
-                    .accessibilityLabel("Custom colour")
-                    Picker(
-                        "",
-                        selection: Binding(
-                            get: { theme.rootRadius >= 99 ? "pill" : "rounded" },
-                            set: { theme.rootRadius = $0 == "pill" ? 999 : Tokens.Radius.root })
-                    ) {
-                        Text("Filled · Rounded").tag("rounded")
-                        Text("Filled · Pill").tag("pill")
+                // Only as wide as it needs, so Root's longer choice isn't cut short.
+                .fixedSize()
+                field(Loc.t("Root")) {
+                    HStack(spacing: 6) {
+                        ColorPicker(
+                            "",
+                            selection: Binding(
+                                get: { theme.root.background.color }, set: { theme.root.background = RGBA(color: $0) })
+                        )
+                        .labelsHidden()
+                        .accessibilityLabel("Custom colour")
+                        Picker(
+                            "",
+                            selection: Binding(
+                                get: { theme.rootRadius >= 99 ? "pill" : "rounded" },
+                                set: { theme.rootRadius = $0 == "pill" ? 999 : Tokens.Radius.root })
+                        ) {
+                            Text("Filled · Rounded").tag("rounded")
+                            Text("Filled · Pill").tag("pill")
+                        }
+                        .labelsHidden()
                     }
-                    .labelsHidden()
                 }
             }
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Branch line").font(.chrome(13))
+            field(Loc.t("Branch line")) {
                 Segments(
                     options: [
                         ("curved", Loc.t("Curved")), ("straight", Loc.t("Straight")), ("elbow", Loc.t("Elbow")),
-                        ("rounded", Loc.t("Rounded")),
-                        ("zigzag", Loc.t("Zigzag")),
+                        ("rounded", Loc.t("Rounded")), ("tapered", Loc.t("Tapered")),
                     ],
-                    selection: theme.lineShape
-                ) { theme.lineShape = $0 }
+                    selection: theme.lineTaper == true ? "tapered" : theme.lineShape
+                ) { id in
+                    // Tapered is a curved line drawn thick → thin, as Format › Branch line has it.
+                    theme.lineTaper = id == "tapered" ? true : nil
+                    theme.lineShape = id == "tapered" ? "curved" : id
+                }
             }
             GroupBox {
                 VStack(alignment: .leading, spacing: 6) {
@@ -165,8 +187,17 @@ struct ThemeBuilder: View {
                 .keyboardShortcut(.defaultAction)
             }
         }
-        .padding(20)
-        .fixedWidth(520, height: 640)
+        .padding(18)
+        .fixedWidth(380)
+    }
+
+    /// A label stacked above its control, as the artboard lays the form out.
+    func field(_ label: String, @ViewBuilder _ content: () -> some View) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label).font(.chrome(12, weight: .medium)).foregroundStyle(.chromeSecondary)
+            content()
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     func modeRow(_ label: String, _ key: String, _ options: [String: String]) -> some View {
@@ -205,6 +236,7 @@ struct ThemeBuilder: View {
 
     func start(from id: String) {
         guard !id.isEmpty else { return }
+        base = id
         let keepID = theme.id
         let keepName = theme.name
         theme = Theme.named(id)

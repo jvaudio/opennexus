@@ -278,14 +278,11 @@ enum XmindStyle {
         ("line", "org.xmind.summaryShape.square"), ("curly", "org.xmind.summaryShape.angle"),
     ]
 
-    /// A boundary's colour as the canvas draws it: its own, else its meaning's, the
-    /// canvas's default (D245) or the ring.
-    static func color(_ b: Boundary, theme t: Theme, defaults d: ElementStyles.BoundaryStyle = .init()) -> RGBA {
-        b.color.flatMap(RGBA.init(hexString:))
-            ?? (b.meaning == "trust"
-                ? t.critical
-                : b.meaning == "vpc" || b.meaning == "subnet"
-                    ? t.entityLine : d.color.flatMap(RGBA.init(hexString:)) ?? t.ring)
+    /// A boundary's colour as the canvas draws it (`Boundary.drawnColor`).
+    static func color(
+        _ b: Boundary, theme t: Theme, canvasType: DiagramType, defaults d: ElementStyles.BoundaryStyle = .init()
+    ) -> RGBA {
+        b.drawnColor(theme: t, canvasType: canvasType, canvasDefault: d.color)
     }
 
     /// Xmind's fill for a boundary: its colour at its fill opacity, mixed over the canvas.
@@ -296,11 +293,11 @@ enum XmindStyle {
     /// A boundary as Xmind properties: only what differs from the theme's boundary class,
     /// which holds OpenNexus's defaults (D217) with the canvas's own over them (D245).
     static func properties(
-        _ b: Boundary, theme t: Theme, canvas: RGBA, defaults d: ElementStyles.BoundaryStyle = .init(),
-        lost: inout [String]
+        _ b: Boundary, theme t: Theme, canvas: RGBA, canvasType: DiagramType = .mindmap,
+        defaults d: ElementStyles.BoundaryStyle = .init(), lost: inout [String]
     ) -> [String: String] {
         var p: [String: String] = [:]
-        let c = color(b, theme: t, defaults: d)
+        let c = color(b, theme: t, canvasType: canvasType, defaults: d)
         let own = b.color != nil || c != (d.color.flatMap(RGBA.init(hexString:)) ?? t.ring)
         let opacity = d.fillOpacity ?? 0.06
         if b.fillOpacity <= 0 || b.shape == "corners" {
@@ -538,7 +535,8 @@ enum XmindStyle {
             ? env.palette.map(\.hex)
             : [env.canvasStyle.singleColor.flatMap(hex) ?? t.ink2.hex]
         if !colors.isEmpty { map["multi-line-colors"] = colors.joined(separator: " ") }
-        let taper = env.canvasStyle.lineWidth == "taper" || env.theme.lineShape == "tapered"
+        let taper =
+            env.canvasStyle.lineWidth == "taper" || env.theme.lineShape == "tapered" || env.theme.lineTaper == true
         map["line-tapered"] = taper ? "tapered" : "none"
         if env.canvasStyle.nodeStyle != "outline" || env.canvasStyle.colorTheme != "rainbow"
             || env.canvasStyle.paletteShift != 0 || env.canvasStyle.pattern != nil
@@ -730,7 +728,7 @@ enum XmindStyle {
         // The central topic's line class draws its main branches, the most visible lines.
         let lineClass = props("centralTopic")["line-class"] ?? props("mainTopic")["line-class"]
         if let line = nexus(branchLines, lineClass), line != base.lineShape,
-            !(line == "curved" && base.lineShape == "tapered")
+            !(line == "curved" && (base.lineShape == "tapered" || base.lineTaper == true))
         {
             s.lineShape = line
         }

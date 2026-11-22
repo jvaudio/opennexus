@@ -141,6 +141,7 @@ public final class CanvasHostView: NSView {
             addSubview(h)
         }
         status.sizingOptions = [.intrinsicContentSize]
+        status.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         cheat.sizingOptions = [.intrinsicContentSize]
         toast.sizingOptions = [.intrinsicContentSize]
         dfd.sizingOptions = [.intrinsicContentSize]
@@ -148,6 +149,9 @@ public final class CanvasHostView: NSView {
         violation.sizingOptions = [.intrinsicContentSize]
         threatCard.sizingOptions = [.intrinsicContentSize]
         table.sizingOptions = [.intrinsicContentSize]
+        // Docked edge to edge: the window's width wins over the table's own.
+        table.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+        table.setContentHuggingPriority(.defaultLow, for: .horizontal)
         icons.sizingOptions = [.intrinsicContentSize]
         convert.sizingOptions = [.intrinsicContentSize]
         filter.sizingOptions = [.intrinsicContentSize]
@@ -243,9 +247,9 @@ public final class CanvasHostView: NSView {
             violation.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -64),
             threatCard.centerXAnchor.constraint(equalTo: centerXAnchor),
             threatCard.topAnchor.constraint(equalTo: topAnchor, constant: 16),
-            table.centerXAnchor.constraint(equalTo: centerXAnchor),
-            table.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -60),
-            table.leadingAnchor.constraint(greaterThanOrEqualTo: leadingAnchor, constant: 16),
+            table.leadingAnchor.constraint(equalTo: leadingAnchor),
+            table.trailingAnchor.constraint(equalTo: trailingAnchor),
+            table.bottomAnchor.constraint(equalTo: bottomAnchor),
             convert.centerXAnchor.constraint(equalTo: centerXAnchor),
             convert.centerYAnchor.constraint(equalTo: centerYAnchor),
         ])
@@ -270,6 +274,9 @@ public final class CanvasHostView: NSView {
             canvasView.bottomAnchor.constraint(equalTo: bottomAnchor),
             status.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 16),
             status.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -16),
+            // Bounded, so the hints can drop from the end rather than run under the zoom
+            // control on a narrow canvas.
+            status.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -16),
             toast.centerXAnchor.constraint(equalTo: centerXAnchor),
             toast.topAnchor.constraint(equalTo: topAnchor, constant: 20),
             cheat.centerXAnchor.constraint(equalTo: centerXAnchor),

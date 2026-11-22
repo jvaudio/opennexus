@@ -107,6 +107,9 @@ public struct Theme: Sendable, Identifiable, Equatable, Codable {
     public var font: String = "system"
     /// Branch line shape: curved, straight, elbow, rounded.
     public var lineShape: String = "curved"
+    /// Branch lines taper thick → thin (the builder's Tapered). Optional so themes saved
+    /// before it existed decode unchanged; nil reads as false and isn't written.
+    public var lineTaper: Bool?
     /// Multiplier on the default branch-line widths.
     public var lineWidth: Double = 1
     public var nodeRadius: Double = Tokens.Radius.node

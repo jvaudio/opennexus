@@ -211,4 +211,16 @@ import Testing
             ], 1024)
         expectClose(mark, layers, 1024, "app icon")
     }
+
+    /// The drawn icon tile (iOS's `AppIconTile`, which has no API for its own icon) is the
+    /// kit's full-bleed icon: gradient angle, mark size, position and weight.
+    @Test func iconTileArtMatchesTheFullBleedIcon() throws {
+        for n in [1024, 168] {
+            let r = ImageRenderer(content: IconTileArt(size: CGFloat(n)))
+            r.scale = 1
+            let art = try #require(r.cgImage)
+            let kit = try Self.reference(["icon/reference/appicon-default-fullbleed.svg"], n)
+            expectClose(art, kit, n, "icon tile \(n)")
+        }
+    }
 }

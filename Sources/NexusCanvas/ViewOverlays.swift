@@ -94,7 +94,7 @@ struct PaletteView: View {
                 .padding(.vertical, 10)
             }
             .fixedWidth(640)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 16))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(.separator))
             .shadow(color: .black.opacity(0.22), radius: 30, y: 12)
             .accessibilityElement(children: .contain)
@@ -103,11 +103,19 @@ struct PaletteView: View {
     }
 
     func paletteRow(_ row: PaletteRow, on: Bool, details: Bool) -> some View {
-        HStack(spacing: 12) {
+        let dark = controller.theme.isDark
+        return HStack(spacing: 12) {
+            let (ink, fill): (Color, Color) =
+                switch row.tile {
+                case .connect: (BrandColor.lower.resolved(dark: dark).color, controller.theme.amber.color.opacity(0.22))
+                case .ai: (controller.theme.ai.color, controller.theme.ai.color.opacity(0.14))
+                case .plain: (.primary, Color.secondary.opacity(0.12))
+                }
             Text(row.glyph)
                 .font(.chrome(13, weight: .semibold))
+                .foregroundStyle(ink)
                 .frame(width: 28, height: 28)
-                .background(RoundedRectangle(cornerRadius: 7).fill(Color.secondary.opacity(0.12)))
+                .background(RoundedRectangle(cornerRadius: 7).fill(fill))
             VStack(alignment: .leading, spacing: 1) {
                 Highlighted(text: row.title, matched: row.matched, size: 14.5)
                 if !row.subtitle.isEmpty {
@@ -196,11 +204,11 @@ struct JumpView: View {
                 .accessibilityLabel(Loc.t("Topics"))
                 .frame(maxHeight: 420)
                 Divider()
-                Text("↩ flies the camera there and selects the node · ⇧↩ adds to selection")
+                Text("↩ flies the camera there (400 ms) and selects the node · ⇧↩ adds to selection")
                     .font(.chrome(12)).foregroundStyle(.chromeSecondary).padding(12)
             }
             .fixedWidth(560)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 16))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 16))
             .overlay(RoundedRectangle(cornerRadius: 16).stroke(.separator))
             .shadow(color: .black.opacity(0.22), radius: 30, y: 12)
             .accessibilityElement(children: .contain)
@@ -223,7 +231,12 @@ struct FilterBarView: View {
                 HStack(spacing: 8) {
                     ForEach(Array(controller.filterClauses.enumerated()), id: \.offset) { i, c in
                         HStack(spacing: 4) {
-                            Text(c.text).font(.chrome(13))
+                            // Colour is never the only signal: a critical clause also carries ▲.
+                            if isCritical(c) {
+                                Image(systemName: "exclamationmark.triangle.fill").font(.chrome(10))
+                                    .accessibilityHidden(true)
+                            }
+                            Text(c.text).font(.chrome(13)).lineLimit(1).fixedSize()
                             Button {
                                 controller.removeFilterClause(at: i)
                             } label: {
@@ -276,24 +289,32 @@ struct FilterBarView: View {
             }
             .padding(14)
             .fixedWidth(680)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
             .onAppear { focused = true }
         }
     }
 
+    func isCritical(_ c: NodeFilter.Clause) -> Bool { c.field == "type" || c.field == "risk" }
+
     func chipColor(_ c: NodeFilter.Clause) -> Color {
-        switch c.field {
-        case "type", "risk": Color(cgColor: controller.theme.critical.cgColor)
-        default: .primary
-        }
+        isCritical(c) ? Color(cgColor: controller.theme.critical.cgColor) : .primary
     }
 }
 
+/// The canvas's top-leading overlay: the focus breadcrumb, and in Split view the
+/// live-link chip above it (artboard 26).
 struct FocusBreadcrumbView: View {
     var controller: CanvasController
 
     var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            LiveLinkChip(controller: controller)
+            breadcrumb
+        }
+    }
+
+    @ViewBuilder var breadcrumb: some View {
         let path = controller.focusPath
         if !path.isEmpty {
             HStack(spacing: 8) {
@@ -316,7 +337,43 @@ struct FocusBreadcrumbView: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 9)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(.separator))
+        }
+    }
+}
+
+/// Split view's note that the panes are one document (artboard 26): shown on the canvas
+/// pane until dismissed, then never again.
+struct LiveLinkChip: View {
+    var controller: CanvasController
+    static let dismissedKey = "split.liveLinkChipDismissed"
+    @State private var dismissed = false
+
+    var body: some View {
+        if controller.viewMode == .split, controller.present == nil, !dismissed,
+            !controller.prefs.defaults.bool(forKey: Self.dismissedKey)
+        {
+            HStack(spacing: 8) {
+                Circle()
+                    .fill((controller.theme.isDark ? Tokens.Signal.irisDark : Tokens.Signal.irisLight).color)
+                    .frame(width: 7, height: 7)
+                    .accessibilityHidden(true)
+                Text("Live-linked: selecting or typing in either pane updates both")
+                    .font(.chrome(12.5))
+                    .foregroundStyle(.chromeSecondary)
+                Button {
+                    controller.prefs.defaults.set(true, forKey: Self.dismissedKey)
+                    dismissed = true
+                } label: {
+                    Image(systemName: "xmark").font(.chrome(9, weight: .bold)).foregroundStyle(.chromeTertiary)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(Loc.t("Close"))
+            }
+            .padding(.horizontal, 12)
+            .padding(.vertical, 7)
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 10))
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(.separator))
         }
     }
@@ -335,7 +392,8 @@ struct CountsControl: View {
     #endif
 
     var body: some View {
-        if !controller.zen && controller.present == nil {
+        // Gives way to the threat table, docked along the bottom (artboard 21).
+        if !controller.zen && controller.present == nil && !controller.threatTableVisible {
             let all = controller.canvasCounts
             HStack(spacing: 10) {
                 Button {
@@ -369,7 +427,7 @@ struct CountsControl: View {
             .padding(.horizontal, 12)
             .padding(.vertical, Self.verticalPadding)
             #if os(macOS)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 9))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 9))
             #else
             // Solid on the iPad: over a material, the text's contrast depends on the map
             // behind it, which the audit reports (D408).
@@ -489,7 +547,7 @@ struct NavigationPanelView: View {
             }
             .frame(width: 320)
             .frame(maxHeight: .infinity)
-            .background(.regularMaterial)
+            .chromeMaterial()
             .overlay(alignment: .trailing) { Divider() }
         }
     }
@@ -533,12 +591,13 @@ struct SearchTab: View {
             }
             .padding(9)
             .background(RoundedRectangle(cornerRadius: 8).stroke(.separator))
-            HStack(spacing: 6) {
+            // The toggles wrap rather than truncate: four scope pills don't fit 320 points.
+            FlowLayout(spacing: 6) {
                 toggle(Loc.t("Aa Match case"), s.options.matchCase) { $0.matchCase.toggle() }
                 toggle(Loc.t("Whole words"), s.options.wholeWords) { $0.wholeWords.toggle() }
                 toggle(Loc.t(".* Regex"), s.options.regex) { $0.regex.toggle() }
             }
-            HStack(spacing: 6) {
+            FlowLayout(spacing: 6) {
                 toggle(Loc.t("This canvas"), !s.options.allCanvases) { $0.allCanvases = false }
                 toggle(Loc.t("All canvases"), s.options.allCanvases) { $0.allCanvases = true }
                 toggle(Loc.t("+ Notes"), s.options.notes) { $0.notes.toggle() }
@@ -578,7 +637,7 @@ struct SearchTab: View {
             change(&o)
             controller.updateSearch(options: o)
         } label: {
-            Text(title).font(.chrome(11.5)).lineLimit(1)
+            Text(title).font(.chrome(11.5)).lineLimit(1).fixedSize()
                 .padding(.horizontal, 8)
                 .padding(.vertical, 4)
                 .foregroundStyle(on ? Color.textBackground : .primary)

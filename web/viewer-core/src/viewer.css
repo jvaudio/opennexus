@@ -4,14 +4,14 @@
   --onx-canvas: #ffffff;
   --onx-ink: #1d1d1f;
   --onx-ink2: #5b5b66;
-  --onx-accent: #6e56cf;
+  --onx-accent: #5850ec;
   --onx-chrome: #f6f6f8;
   --onx-panel: #ffffff;
   --onx-line: #d9d9e0;
   --onx-text: #1d1d1f;
   --onx-muted: #55555f;
   --onx-hover: #ebebf0;
-  --onx-focus: #4b39b8;
+  --onx-focus: #5850ec;
   --onx-hit: rgb(255 196 0 / 0.35);
   --onx-hit-current: rgb(255 150 0 / 0.55);
   display: flex;
@@ -30,7 +30,7 @@
   --onx-text: #f2f2f5;
   --onx-muted: #b4b4be;
   --onx-hover: #33333a;
-  --onx-focus: #b3a5ff;
+  --onx-focus: #8f89ff;
   color-scheme: dark;
 }
 

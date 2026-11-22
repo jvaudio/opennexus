@@ -37,7 +37,7 @@ public enum ImageExporter {
         public var frame = "none"
         /// fit, 1:1, 4:3, 16:9 or 9:16: the framed image is padded out to this ratio.
         public var aspect = "fit"
-        public var mat = RGBA(hex: "#E9E6FF")
+        public var mat = RGBA(hex: "#C9C5FA")
         public var displayP3 = false
         /// Formulas drawn into the picture; a PDF leaves them out and draws them over it as
         /// paths (M48).

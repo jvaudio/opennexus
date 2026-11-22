@@ -7,7 +7,7 @@
   --share-text: #1d1d1f;
   --share-muted: #55555f;
   --share-line: #d9d9e0;
-  --share-accent: #5b45c2;
+  --share-accent: #5850ec;
   --share-error: #b3261e;
 }
 
@@ -18,7 +18,7 @@
     --share-text: #f2f2f5;
     --share-muted: #b4b4bd;
     --share-line: #3a3a40;
-    --share-accent: #b9a8ff;
+    --share-accent: #8f89ff;
     --share-error: #ffb4ab;
   }
 }

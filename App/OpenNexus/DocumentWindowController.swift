@@ -88,7 +88,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
             panel.widthAnchor.constraint(equalToConstant: 330),
         ])
         (panel.isHidden ? canvasTrailing : canvasToPanel).isActive = true
-        let th = tabs.heightAnchor.constraint(equalToConstant: 40)
+        let th = tabs.heightAnchor.constraint(equalToConstant: 34)
         th.isActive = true
         tabsHeight = th
         modeConstraints = [
@@ -138,11 +138,22 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         displayName.hasSuffix(".nexus") ? displayName : displayName + ".nexus"
     }
 
-    /// "16 topics · autosaved" (macOS adds its own "Edited" to the title for unsaved documents).
-    func updateSubtitle() {
-        let n = controller.canvas.nodes.count
-        let topics = Loc.n("%lld topic", "%lld topics", n)
-        window?.subtitle = document_.fileURL == nil ? topics : Loc.f("%@ · autosaved", topics)
+    /// Where the file is and whether it's saved, as artboard 17's "iCloud Drive · edited";
+    /// a new document that has never been saved counts its topics instead.
+    func updateSubtitle(edited: Bool? = nil) {
+        guard let url = document_.fileURL else {
+            window?.subtitle = Loc.n("%lld topic", "%lld topics", controller.canvas.nodes.count)
+            return
+        }
+        let folder = HomeView.prettyPath(url.deletingLastPathComponent())
+        let where_ = folder.hasSuffix(" › ") ? String(folder.dropLast(3)) : folder
+        window?.subtitle =
+            (edited ?? document_.isDocumentEdited) ? Loc.f("%@ · edited", where_) : Loc.f("%@ · saved", where_)
+    }
+
+    override func setDocumentEdited(_ dirtyFlag: Bool) {
+        super.setDocumentEdited(dirtyFlag)
+        updateSubtitle(edited: dirtyFlag)
     }
 
     // MARK: Commands handled at window level
@@ -191,7 +202,7 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
         } else if let before = chromeBeforeImmersion {
             chromeBeforeImmersion = nil
             window.toolbar?.isVisible = true
-            tabsHeight?.constant = 40
+            tabsHeight?.constant = 34
             tabsView?.isHidden = false
             if before.panel && panel.isHidden { toggleFormatPanel() }
             if !before.fullScreen && window.styleMask.contains(.fullScreen) { window.toggleFullScreen(nil) }
@@ -331,6 +342,14 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     }
 
     /// ⌘I: the Format panel slides in on the right only when asked (calm chrome).
+    /// The navigation tab to reopen: Outline until one is chosen.
+    private var lastNavigationTab = 2
+
+    @objc func toggleNavigation() {
+        if let open = controller.navTab { lastNavigationTab = open }
+        _ = controller.perform(.navigationTab(controller.navTab ?? lastNavigationTab))
+    }
+
     @objc func toggleFormatPanel() {
         let show = panel.isHidden
         panel.isHidden = !show
@@ -368,7 +387,10 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
     // MARK: Toolbar
 
     func toolbarDefaultItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
-        [.flexibleSpace, .viewSwitcher, .flexibleSpace, .collab, .diagramType, .theme, .aiStatus, .share, .inspector]
+        [
+            .navigator, .flexibleSpace, .viewSwitcher, .flexibleSpace, .collab, .diagramType, .theme, .aiStatus, .share,
+            .inspector,
+        ]
     }
 
     func toolbarAllowedItemIdentifiers(_ toolbar: NSToolbar) -> [NSToolbarItem.Identifier] {
@@ -405,6 +427,16 @@ final class DocumentWindowController: NSWindowController, NSWindowDelegate, NSTo
             item.target = self
             item.action = #selector(toggleFormatPanel)
             return item
+        case .navigator:
+            // The leading sidebar button of artboard 17: the navigation panel (search,
+            // outline, notes, tags, to-dos), opened on the tab used last.
+            let item = NSToolbarItem(itemIdentifier: id)
+            item.label = Loc.t("Navigation")
+            item.toolTip = Loc.t("Navigation panel (⌃⌘1–5)")
+            item.image = NSImage(systemSymbolName: "sidebar.left", accessibilityDescription: Loc.t("Navigation panel"))
+            item.target = self
+            item.action = #selector(toggleNavigation)
+            return item
         case .share:
             let item = NSSharingServicePickerToolbarItem(itemIdentifier: id)
             item.label = Loc.t("Share")
@@ -431,6 +463,7 @@ extension NSToolbarItem.Identifier {
     static let aiStatus = Self("aiStatus")
     static let share = Self("share")
     static let inspector = Self("inspector")
+    static let navigator = Self("navigator")
 }
 
 // MARK: Toolbar content
@@ -446,7 +479,10 @@ struct DiagramTypeButton: View {
         } label: {
             HStack(spacing: 8) {
                 Text(Loc.t(controller.canvas.type.displayName))
+                // A keycap, as on artboard 17.
                 Text("⌥⌘T").font(.chrome(11, design: .monospaced)).foregroundStyle(.secondary)
+                    .padding(.horizontal, 5).frame(height: 18)
+                    .overlay(RoundedRectangle(cornerRadius: 4).stroke(.separator))
             }
         }
         .fixedSize()

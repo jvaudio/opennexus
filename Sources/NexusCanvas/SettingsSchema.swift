@@ -284,7 +284,7 @@ public enum SettingsSchema {
                     S(
                         "editing.typing", "Typing on a selected node",
                         [("replace", "Replaces text"), ("append", "Appends")], "replace"),
-                    I("editing.space", "Space", "Edit, keep text"),
+                    I("editing.space", "Space", "", "Edit, keep text"),
                     S(
                         "editing.newTopic", "New topics start with",
                         [("placeholder", "Placeholder"), ("empty", "Empty")], "placeholder"),
@@ -311,7 +311,7 @@ public enum SettingsSchema {
                         "editing.newCanvasLayout", "New canvases use",
                         [("auto", "Auto-layout"), ("free", "Free layout")], "auto"),
                     T(
-                        "editing.guides", "Always show alignment guides", false,
+                        "editing.guides", "Always show alignment guides", true,
                         "Smart guidelines while dragging, in any layout"),
                     T("editing.snapGrid", "Snap to grid in free layout", true),
                     R("editing.gridSize", "Grid size", 8, "pt", 2, 64, 2),
@@ -343,7 +343,7 @@ public enum SettingsSchema {
             sec(
                 "New documents", 1,
                 [
-                    T("editing.useLast", "Use last skeleton, node style and colour theme", false),
+                    T("editing.useLast", "Use last skeleton, node style and colour theme", true),
                     M(
                         "editing.defaultStructure", "Default structure",
                         [
@@ -445,13 +445,15 @@ public enum SettingsSchema {
                         [
                             ("light", "Light"), ("dark", "Dark"), ("ultraLight", "Ultra light"),
                             ("ultraDark", "Ultra dark"),
-                        ], "light"),
-                    T("appearance.zenTimer", "“Today” focus timer in ZEN", false),
+                        ], "dark"),
+                    T("appearance.zenTimer", "“Today” focus timer in ZEN", true),
                     T("appearance.zenCount", "Topic & word count in ZEN", true),
                     T(
                         "appearance.glass", "Liquid Glass chrome", true,
                         "Off uses opaque bars; Reduce Transparency forces off"),
-                    S("appearance.toolbar", "Toolbar", [("iconsText", "Icons + text"), ("icons", "Icons")], "icons"),
+                    S(
+                        "appearance.toolbar", "Toolbar", [("iconsText", "Icons + text"), ("icons", "Icons")],
+                        "iconsText"),
                 ]),
         ])
 
@@ -464,7 +466,7 @@ public enum SettingsSchema {
             sec(
                 "Saving", 0,
                 [
-                    I("files.autosave", "Autosave", "Always on", "Every change, always on"),
+                    I("files.autosave", "Autosave", "", "Every change, always on"),
                     I(
                         "files.versions", "Keep versions", "Hourly, 30 days",
                         "macOS keeps them; browse with File › Revert To…"),
@@ -596,7 +598,7 @@ public enum SettingsSchema {
                     S(
                         "export.aspect", "Aspect ratio",
                         [("fit", "Fit"), ("1:1", "1:1"), ("4:3", "4:3"), ("16:9", "16:9"), ("9:16", "9:16")], "fit"),
-                    G("export.matColor", "Mat colour", "matColor", .string("#E9E6FF")),
+                    G("export.matColor", "Mat colour", "matColor", .string("#C9C5FA")),
                 ]),
             sec(
                 "Images", 0,
@@ -605,7 +607,8 @@ public enum SettingsSchema {
                     S(
                         "export.background", "Background",
                         [("theme", "Theme"), ("white", "White"), ("transparent", "Transparent")], "theme"),
-                    R("export.padding", "Padding", 48, "px", 0, 400, 4),
+                    // 48 px sits at 40%, as on artboard 39; the Export sheet still goes to 400.
+                    R("export.padding", "Padding", 48, "px", 0, 120, 4),
                     T("export.split", "Split by main branch", false, "One image per first-level branch"),
                     M(
                         "export.colorProfile", "Colour profile", [("sRGB", "sRGB"), ("displayP3", "Display P3")],
@@ -648,10 +651,10 @@ public enum SettingsSchema {
                         "export.masking", "Data masking", [("ask", "Ask"), ("always", "Always"), ("never", "Never")],
                         "ask", "Hides emails, keys and names in the export"),
                     T("export.stripAI", "Strip AI provenance metadata", false),
-                    I(
-                        "export.watermark", "Watermark", "Never",
-                        "Xmind adds “Presented with Xmind” unless removed. OpenNexus exports never carry a watermark."),
-                ]),
+                    I("export.watermark", "Watermark", "", "Never"),
+                ],
+                footnote:
+                    "Xmind adds “Presented with Xmind” unless removed. OpenNexus exports never carry a watermark."),
         ])
 
     // MARK: Sharing (M44)
@@ -914,7 +917,7 @@ public enum SettingsSchema {
                 [
                     T("accessibility.announceLevel", "Announce level and child count", true),
                     T("accessibility.announceConnect", "Announce Connect mode targets", true),
-                    T("accessibility.speakHints", "Speak shortcut hints", false, "e.g. “Tab adds a child”"),
+                    T("accessibility.speakHints", "Speak shortcut hints", true, "e.g. “Tab adds a child”"),
                     S(
                         "accessibility.readEdges", "Read edges", [("source", "With source"), ("demand", "On demand")],
                         "source"),
@@ -924,7 +927,9 @@ public enum SettingsSchema {
                 [
                     T("accessibility.fullKeyboard", "Full keyboard access to panels", true),
                     T("accessibility.stickyHyper", "Sticky Hyper", false, "Press Hyper, release, then the key"),
-                    R("accessibility.cheatDelay", "Hold ⌘ cheat sheet delay", 1.0, "s", 0.3, 3, 0.1),
+                    // From the shortest delay the canvas allows (`cheatSheetDelay`), with 1 s at the
+                    // middle as on artboard 42.
+                    R("accessibility.cheatDelay", "Hold ⌘ cheat sheet delay", 1.0, "s", 0.2, 1.8, 0.1),
                     S(
                         "accessibility.coachSize", "Keycap coach size", [("regular", "Regular"), ("large", "Large")],
                         "regular"),

@@ -49,6 +49,19 @@ package final class SceneRenderer {
     package var scales: [NodeID: SpringScalar] = [:]
     /// Topics whose springs are still running.
     package var moving = Set<NodeID>()
+    /// Topics travelling on the `settle` spring, with its slight overshoot, rather than
+    /// `snap` (artboard 05: reorder, reparent and drop). A topic leaves when it comes to rest.
+    package private(set) var settling = Set<NodeID>()
+    /// Topics gliding to a new place on the `glide` curve (structure change, Convert).
+    private var glides: [NodeID: Glide] = [:]
+    /// The last update's parents and draw order, to tell which topics a reorder or a
+    /// reparent moved.
+    private var lastParents: [NodeID: NodeID] = [:]
+    private var lastOrder: [NodeID] = []
+    /// The topic under the pointer (artboard 11, "Hover · lift 1 px").
+    package private(set) var hovered: NodeID?
+    /// Whether the hovered topic rises 1 pt; under Reduce Motion only its shadow shows.
+    private var hoverRises = true
     private var edgesByNode: [NodeID: [NodeID]] = [:]
     private var edgeInfo: [NodeID: SceneEdge] = [:]
     private var capLayers: [NodeID: CAShapeLayer] = [:]
@@ -123,12 +136,27 @@ package final class SceneRenderer {
 
     // MARK: Updates
 
+    /// How topics travel to a new layout (artboard 05). A reorder or reparent always takes
+    /// the `settle` spring, whatever the update asks for.
+    package enum Travel: Equatable, Sendable {
+        /// Create, delete and reflow: the `snap` spring.
+        case snap
+        /// Structure change and Convert: the `glide` curve over this many seconds.
+        case glide(Double)
+    }
+
     /// Rebuilds layers from `scene`. With `animated`, new topics grow from their parent's
     /// connector point, leaving ones shrink into their nearest remaining ancestor, and
-    /// every topic's spring heads for its new place; `morph` also morphs their looks
-    /// (⌥⌘S). Returns whether springs are still running (the host steps them).
+    /// every topic heads for its new place as `travel` says; `morph` also morphs their
+    /// looks (⌥⌘S). Returns whether topics are still moving (the host steps them).
     @discardableResult
-    package func update(_ scene: Scene, state: State, animated animate: Bool, morph: Bool = false) -> Bool {
+    package func update(
+        _ scene: Scene, state: State, animated animate: Bool, morph: Bool = false, travel: Travel = .snap
+    ) -> Bool {
+        let previous = self.scene
+        if animate { settling.formUnion(reorderedOrReparented(scene, state.parents, previous: previous)) }
+        lastParents = state.parents
+        lastOrder = scene.order
         self.scene = scene
         let theme = scene.theme
         NodeLayer.ringWidth = state.ringWidth
@@ -153,6 +181,8 @@ package final class SceneRenderer {
             nodeLayers[id] = nil
             springs[id] = nil
             scales[id] = nil
+            glides[id] = nil
+            settling.remove(id)
             moving.remove(id)
         }
 
@@ -197,13 +227,24 @@ package final class SceneRenderer {
                         ? .source
                         : c.target?.node == id ? .target : c.matches.contains { $0.node == id } ? .candidate : .dimmed
                 }, theme: theme)
-            springs[id]?.target = n.frame.center
+            let to = n.frame.center
+            if animate, case .glide(let duration) = travel, let s = springs[id], s.value != to, scales[id] == nil {
+                glides[id] = Glide(from: s.value, to: to, duration: duration)
+            } else if glides[id].map({ $0.to != to }) ?? false {
+                // New input retargets: the spring takes over from where the glide got to.
+                glides[id] = nil
+            }
+            springs[id]?.target = to
             if !animate {
                 springs[id]?.snap()
                 scales[id] = nil
+                glides[id] = nil
+                settling.remove(id)
             }
             moving.insert(id)
         }
+        // A topic marked to settle that has nowhere to go is at rest already.
+        settling = settling.filter { springs[$0].map { !$0.isSettled } ?? false }
 
         // Branch lines, keyed by child.
         var seen = Set<NodeID>()
@@ -285,6 +326,39 @@ package final class SceneRenderer {
         return false
     }
 
+    /// The topics that were on the canvas before and now have another parent or another
+    /// place among the same siblings, with their branches (which travel with them).
+    private func reorderedOrReparented(_ scene: Scene, _ parents: [NodeID: NodeID], previous: Scene) -> Set<NodeID> {
+        func places(_ order: [NodeID], _ parents: [NodeID: NodeID]) -> (index: [NodeID: Int], count: [NodeID: Int]) {
+            var index: [NodeID: Int] = [:]
+            var count: [NodeID: Int] = [:]
+            index.reserveCapacity(order.count)
+            for id in order {
+                guard let p = parents[id] else { continue }
+                index[id] = count[p, default: 0]
+                count[p, default: 0] += 1
+            }
+            return (index, count)
+        }
+        let old = places(lastOrder, lastParents)
+        let new = places(scene.order, parents)
+        var moved = Set<NodeID>()
+        // Parents come before their children in draw order.
+        for id in scene.order where previous.nodes[id] != nil {
+            let p = parents[id]
+            if let p, moved.contains(p) {
+                moved.insert(id)
+            } else if p != lastParents[id] {
+                moved.insert(id)
+            } else if let p, new.index[id] != old.index[id], new.count[p] == old.count[p] {
+                // Same parent, same number of siblings, another place: a reorder (not a
+                // sibling added or removed before it).
+                moved.insert(id)
+            }
+        }
+        return moved
+    }
+
     private func exit(_ layer: NodeLayer, toward point: CGPoint?, animate: Bool) {
         guard animate else {
             layer.removeFromSuperlayer()
@@ -331,7 +405,7 @@ package final class SceneRenderer {
         var dirtyEdges = Set<NodeID>()
         for id in ids {
             guard let layer = nodeLayers[id], let s = springs[id] else { continue }
-            layer.position = s.value
+            layer.position = id == hovered && hoverRises ? CGPoint(x: s.value.x, y: s.value.y - 1) : s.value
             let k = scales[id]?.value ?? 1
             layer.transform = k == 1 ? CATransform3DIdentity : CATransform3DMakeScale(k, k, 1)
             for c in edgesByNode[id] ?? [] { dirtyEdges.insert(c) }
@@ -340,9 +414,11 @@ package final class SceneRenderer {
             guard let l = edgeLayers[child], let e = edgeInfo[child], let pf = animatedFrame(e.parent),
                 let cf = animatedFrame(child)
             else { continue }
+            // Each child's own stem or bone; the trunk its siblings share (org bus, timeline
+            // axis, fishbone spine) is drawn once, in ink, by the decor layer.
             let path = BranchLines.path(
                 from: pf, to: cf, family: e.family, shape: BranchLineShape(name: e.line.shape),
-                parentBaseline: e.parentBaseline, childBaseline: e.childBaseline)
+                parentBaseline: e.parentBaseline, childBaseline: e.childBaseline, trunk: false)
             l.path =
                 e.line.taper
                 ? BranchLines.tapered(path, startWidth: e.line.width * 1.8, endWidth: max(1, e.line.width * 0.5)) : path
@@ -416,6 +492,8 @@ package final class SceneRenderer {
             springs[id]?.snap()
             scales[id] = nil
         }
+        glides.removeAll()
+        settling.removeAll()
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         applyFrames(all: true)
@@ -423,15 +501,36 @@ package final class SceneRenderer {
         moving.removeAll()
     }
 
-    /// Advances the springs by `dt` seconds (inside the host's transaction) and moves the
-    /// layers, lines and elements with them. Returns whether any are still running.
-    package func step(_ dt: Double, morph: Bool, selected: ElementRef?, connect: ConnectState?) -> Bool {
+    /// Holds a dragged topic at `p`, out of any glide; let go, it settles on the `settle`
+    /// spring (artboard 05: drop).
+    package func drag(_ id: NodeID, to p: CGPoint) {
+        springs[id] = SpringValue(p)
+        glides[id] = nil
+        settling.insert(id)
+    }
+
+    /// Advances the topics by `dt` seconds (inside the host's transaction) and moves the
+    /// layers, lines and elements with them: gliding ones along the `glide` curve, the rest
+    /// on their springs (`settle` for a reorder, reparent or drop, else `snap`; `morph`
+    /// for a structure change on a host that doesn't glide). Returns whether any are
+    /// still moving.
+    package func step(_ dt: Double, morph: Bool = false, selected: ElementRef?, connect: ConnectState?) -> Bool {
         var settled = Set<NodeID>()
         for id in moving {
-            springs[id]?.step(dt, spring: morph ? Motion.morph : Motion.snap)
+            if var g = glides[id] {
+                g.elapsed += dt
+                springs[id]?.value = g.value
+                glides[id] = g.elapsed < g.duration ? g : nil
+            } else {
+                let kind = morph ? Motion.morph : settling.contains(id) ? Motion.settle : Motion.snap
+                springs[id]?.step(dt, spring: kind)
+            }
             scales[id]?.step(dt, spring: Motion.snap)
             if scales[id]?.isSettled == true { scales[id] = nil }
-            if springs[id]?.isSettled ?? true, scales[id] == nil { settled.insert(id) }
+            if glides[id] == nil, springs[id]?.isSettled ?? true, scales[id] == nil {
+                settled.insert(id)
+                settling.remove(id)
+            }
         }
         applyFrames(all: false)
         elements.updateGeometry(
@@ -441,7 +540,38 @@ package final class SceneRenderer {
         return !moving.isEmpty
     }
 
+    // MARK: Hover
+
+    /// Lifts the topic under the pointer 1 pt with a soft shadow (artboard 11) and lets the
+    /// last one down; nil when the pointer leaves or a drag starts. With `rise` false
+    /// (Reduce Motion) the topic stays put and only the shadow shows.
+    package func setHover(_ id: NodeID?, rise: Bool) {
+        guard id != hovered || rise != hoverRises else { return }
+        let old = hovered
+        hovered = id
+        hoverRises = rise
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        if let old, let l = nodeLayers[old] {
+            l.shadowOpacity = 0
+            if let s = springs[old] { l.position = s.value }
+        }
+        if let id, let l = nodeLayers[id] {
+            // The artboard's 0 4 14 rgba(23,23,28,.12).
+            l.shadowColor = RGBA(hex: "#17171C").cgColor
+            l.shadowOpacity = 0.12
+            l.shadowRadius = 7
+            l.shadowOffset = .layerShadow(0, 4)
+            if let s = springs[id] { l.position = rise ? CGPoint(x: s.value.x, y: s.value.y - 1) : s.value }
+        }
+        CATransaction.commit()
+    }
+
     // MARK: Camera
+
+    /// Below this zoom the map gets depth: the grid drifts a little slower than the topics
+    /// (artboard 05: "below 40% zoom").
+    package static let parallaxZoom: CGFloat = 0.4
 
     /// The scale topic text rasterises at: the backing scale, times the zoom in quarter
     /// steps once past 1×.
@@ -560,6 +690,20 @@ package final class SceneRenderer {
             l.displayIfNeeded()
         }
         l.sublayers?.forEach(redrawText)
+    }
+}
+
+/// A topic's way from where it was to its new place on the `glide` curve, `duration`
+/// seconds long (artboard 05: structure change 450–600 ms, Convert 600 ms).
+private struct Glide {
+    var from: CGPoint
+    var to: CGPoint
+    var duration: Double
+    var elapsed: Double = 0
+
+    var value: CGPoint {
+        let k = CGFloat(Bezier(c: Motion.glide)(elapsed / duration))
+        return CGPoint(x: from.x + (to.x - from.x) * k, y: from.y + (to.y - from.y) * k)
     }
 }
 

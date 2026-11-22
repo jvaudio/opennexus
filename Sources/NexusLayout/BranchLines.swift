@@ -47,10 +47,12 @@ public enum BranchLines {
 
     /// The connector from a parent to one child, in canvas coordinates.
     /// Underline-style nodes attach lines to their baseline (`parentBaseline`,
-    /// `childBaseline`), and the line runs on under the child's text.
+    /// `childBaseline`), and the line runs on under the child's text. With `trunk` false it
+    /// leaves out the stretch the child's siblings share (`trunk(from:to:family:shape:)`),
+    /// which the structure draws once in ink: only the child's own stem or bone is left.
     public static func path(
         from parent: NodeFrame, to child: NodeFrame, family: String, shape: BranchLineShape = .curved,
-        parentBaseline: Bool = false, childBaseline: Bool = false
+        parentBaseline: Bool = false, childBaseline: Bool = false, trunk: Bool = true
     ) -> CGPath {
         let p = CGMutablePath()
         let pr = parent.rect
@@ -79,11 +81,12 @@ public enum BranchLines {
             p.addLine(to: CGPoint(x: (lean > 0 ? cr.maxX : cr.minX) + lean * fishboneOffset(child.size.height), y: y))
             p.addLine(to: CGPoint(x: lean > 0 ? cr.minX : cr.maxX, y: y))
             return p
-        case "timeline", "timelineAlt":
-            // The axis: siblings sit on one line, so segments join behind the events.
-            let right = child.center.x >= parent.center.x
-            p.move(to: CGPoint(x: right ? pr.maxX : pr.minX, y: parent.center.y))
-            p.addLine(to: CGPoint(x: right ? cr.minX : cr.maxX, y: child.center.y))
+        case "timeline", "timelineAlt", "timelineV":
+            // The axis: siblings sit on one line, so segments join behind the events. It's
+            // all trunk.
+            if trunk, let axis = trunkPoints(from: parent, to: child, family: family, shape: shape) {
+                p.addLines(between: axis)
+            }
             return p
         case "timelineUp", "timelineDown":
             // A stem from the event's centre, up or down past the axis, then across to the
@@ -93,19 +96,17 @@ public enum BranchLines {
             p.addLine(to: CGPoint(x: parent.center.x, y: child.center.y))
             p.addLine(to: CGPoint(x: child.side == .left ? cr.maxX : cr.minX, y: child.center.y))
             return p
-        case "timelineV":
-            p.move(to: CGPoint(x: parent.center.x, y: pr.maxY))
-            p.addLine(to: CGPoint(x: child.center.x, y: cr.minY))
-            return p
         case "fishbone":
-            // Spine from the head to the bone's foot, then the bone up (or down) to its label.
-            let bodyLeft = child.side == .left
-            let lean: CGFloat = bodyLeft ? 1 : -1
+            // Spine from the head to the bone's foot (the trunk), then the bone up (or down)
+            // to its label.
             let topBone = child.center.y < parent.center.y
-            let reach = abs(child.center.y - parent.center.y) - child.size.height / 2
-            let foot = CGPoint(x: child.center.x + lean * reach * fishboneSlope, y: parent.center.y)
-            p.move(to: CGPoint(x: bodyLeft ? pr.minX : pr.maxX, y: parent.center.y))
-            p.addLine(to: foot)
+            let foot = fishboneFoot(from: parent, to: child)
+            if trunk {
+                p.move(to: CGPoint(x: child.side == .left ? pr.minX : pr.maxX, y: parent.center.y))
+                p.addLine(to: foot)
+            } else {
+                p.move(to: foot)
+            }
             p.addLine(to: CGPoint(x: child.center.x, y: topBone ? cr.maxY : cr.minY))
             return p
         case "fishboneCause":
@@ -124,8 +125,19 @@ public enum BranchLines {
         if child.side == .down {
             let start = CGPoint(x: parent.center.x, y: parent.center.y + parent.size.height / 2)
             let end = CGPoint(x: child.center.x, y: child.center.y - child.size.height / 2)
-            // Org charts read as reporting lines: a curved default becomes a bus.
-            vertical(p, start, end, shape: family == "org" && shape == .curved ? .elbow : shape)
+            if !trunk, let bus = trunkPoints(from: parent, to: child, family: family, shape: shape),
+                let corner = bus.last
+            {
+                // The stem from the bus down to the child, round at the corner when the bus is.
+                p.move(to: corner)
+                let r = abs(end.x - corner.x)
+                if r > 0.5 {
+                    p.addQuadCurve(to: CGPoint(x: end.x, y: corner.y + r), control: CGPoint(x: end.x, y: corner.y))
+                }
+                p.addLine(to: end)
+                return p
+            }
+            vertical(p, start, end, shape: family == "org" ? orgShape(shape) : shape)
             return p
         }
         let dir = CGFloat(child.side.rawValue)
@@ -140,6 +152,80 @@ public enum BranchLines {
             p.addLine(to: CGPoint(x: child.center.x + dir * child.size.width / 2, y: end.y))
         }
         return p
+    }
+
+    /// The stretch of the line to `child` that its siblings' lines share: the org chart's
+    /// bus (from the parent down and along to above the child), the timeline's axis, the
+    /// fishbone's spine to the bone's foot. The structure draws these once, in ink (or the
+    /// parent's branch colour below the central topic), so the shared line isn't painted
+    /// over in each child's colour. Nil when the family's lines share nothing.
+    public static func trunk(
+        from parent: NodeFrame, to child: NodeFrame, family: String, shape: BranchLineShape = .curved
+    ) -> CGPath? {
+        guard let points = trunkPoints(from: parent, to: child, family: family, shape: shape) else { return nil }
+        let p = CGMutablePath()
+        p.addLines(between: points)
+        return p
+    }
+
+    /// The open arrowhead where a fishbone's spine runs into its head (the effect), drawn
+    /// with the spine at `width`. `bodyLeft` when the bones are on the head's left.
+    public static func fishboneArrow(head: NodeFrame, bodyLeft: Bool, width: CGFloat) -> CGPath {
+        let dir: CGFloat = bodyLeft ? 1 : -1
+        let r = head.rect
+        // Its round join just meets the head.
+        let tip = CGPoint(x: (bodyLeft ? r.minX : r.maxX) - dir * width / 2, y: head.center.y)
+        let back = tip.x - dir * width * 4
+        let half = width * 14 / 3
+        let p = CGMutablePath()
+        p.addLines(between: [CGPoint(x: back, y: tip.y - half), tip, CGPoint(x: back, y: tip.y + half)])
+        return p
+    }
+
+    private static func trunkPoints(
+        from parent: NodeFrame, to child: NodeFrame, family: String, shape: BranchLineShape
+    ) -> [CGPoint]? {
+        let pr = parent.rect
+        let cr = child.rect
+        switch family {
+        case "timeline", "timelineAlt":
+            let right = child.center.x >= parent.center.x
+            return [
+                CGPoint(x: right ? pr.maxX : pr.minX, y: parent.center.y),
+                CGPoint(x: right ? cr.minX : cr.maxX, y: child.center.y),
+            ]
+        case "timelineV":
+            return [CGPoint(x: parent.center.x, y: pr.maxY), CGPoint(x: child.center.x, y: cr.minY)]
+        case "fishbone":
+            return [
+                CGPoint(x: child.side == .left ? pr.minX : pr.maxX, y: parent.center.y),
+                fishboneFoot(from: parent, to: child),
+            ]
+        case "org" where child.side == .down:
+            let shape = orgShape(shape)
+            guard shape == .elbow || shape == .roundedElbow else { return nil }
+            let start = CGPoint(x: parent.center.x, y: pr.maxY)
+            let end = CGPoint(x: child.center.x, y: cr.minY)
+            let midY = (start.y + end.y) / 2
+            // A rounded bus stops where the child's corner starts to turn down.
+            let r = shape == .roundedElbow ? min(8, abs(end.x - start.x) / 2, abs(midY - start.y)) : 0
+            let dir: CGFloat = end.x >= start.x ? 1 : -1
+            return [start, CGPoint(x: start.x, y: midY), CGPoint(x: end.x - dir * r, y: midY)]
+        default:
+            return nil
+        }
+    }
+
+    /// Org charts read as reporting lines: a curved default becomes a bus.
+    private static func orgShape(_ shape: BranchLineShape) -> BranchLineShape {
+        shape == .curved ? .elbow : shape
+    }
+
+    /// Where a fishbone bone meets the spine.
+    private static func fishboneFoot(from parent: NodeFrame, to child: NodeFrame) -> CGPoint {
+        let lean: CGFloat = child.side == .left ? 1 : -1
+        let reach = abs(child.center.y - parent.center.y) - child.size.height / 2
+        return CGPoint(x: child.center.x + lean * reach * fishboneSlope, y: parent.center.y)
     }
 
     /// Where a topic's branch lines leave it, for its fold control and "+N" badge (D250):

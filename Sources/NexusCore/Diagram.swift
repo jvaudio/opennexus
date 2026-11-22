@@ -176,7 +176,7 @@ public enum DiagramCatalog {
         return rows.map { id, name, icon, cat in
             NodeTypeInfo(
                 id: NodeType(rawValue: id), name: name, caption: captions[id] ?? name.uppercased(), slug: id,
-                shape: "rectangle", look: .icon, icon: icon, category: cat)
+                shape: "rounded", look: .icon, icon: icon, category: cat)
         }
     }()
 
@@ -185,7 +185,7 @@ public enum DiagramCatalog {
             id: .start, name: "Start", caption: "START", slug: "start", shape: "stadium", look: .terminal, icon: nil,
             category: "Flow"),
         NodeTypeInfo(
-            id: .process, name: "Process", caption: "PROCESS", slug: "step", shape: "rectangle", look: .step,
+            id: .process, name: "Process", caption: "PROCESS", slug: "step", shape: "rounded", look: .step,
             icon: nil, category: "Flow"),
         NodeTypeInfo(
             id: .decision, name: "Decision", caption: "DECISION", slug: "decision", shape: "diamond",

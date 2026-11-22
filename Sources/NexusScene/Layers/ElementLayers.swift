@@ -295,7 +295,8 @@ package enum RelationshipGeometry {
 
 /// Boundary outlines (FMT-2: 9 shapes).
 package enum BoundaryShapes {
-    package static func path(_ shape: String, in r: CGRect) -> CGPath {
+    /// `radius` rounds the default (rounded) shape.
+    package static func path(_ shape: String, in r: CGRect, radius: CGFloat = 14) -> CGPath {
         switch shape {
         case "rectangle", "corners":
             if shape == "corners" {
@@ -379,7 +380,8 @@ package enum BoundaryShapes {
             p.closeSubpath()
             return p
         default:  // rounded, dashed
-            return CGPath(roundedRect: r, cornerWidth: 14, cornerHeight: 14, transform: nil)
+            let k = min(radius, r.width / 2, r.height / 2)
+            return CGPath(roundedRect: r, cornerWidth: k, cornerHeight: k, transform: nil)
         }
     }
 
@@ -419,8 +421,10 @@ extension Scene {
         r.labelPosition == "start" ? 0.22 : r.labelPosition == "end" ? 0.78 : 0.5
     }
 
+    /// Edge labels are set in mono (design tokens: "mono · code, keys, metadata, ports, edge
+    /// labels"), as every artboard draws them; the sequence layout measures them in it too.
     package static func labelFont(_ r: Relationship) -> CTFont {
-        Fonts.system(12, r.labelStyle == "plain" ? .medium : .semibold)
+        Fonts.mono(12, r.labelStyle == "plain" ? .medium : .semibold)
     }
 
     /// The label chip at its place along the line (above a sequence message), nudged
@@ -649,26 +653,26 @@ package final class ElementRenderer {
             let title = g.sublayers![1] as! TextLayer
             let hatch = g.sublayers![2] as! CAShapeLayer
             let bd = b.boundary
-            let path = BoundaryShapes.path(bd.shape, in: b.rect)
+            let path = BoundaryShapes.path(bd.shape, in: b.rect, radius: CGFloat(bd.drawnCornerRadius))
             shape.path = path
             let on = selected == .boundary(bd.id)
-            shape.fillColor = bd.shape == "corners" ? nil : b.color.alpha(bd.fillOpacity).cgColor
+            shape.fillColor = bd.shape == "corners" ? nil : b.color.alpha(bd.drawnFillOpacity).cgColor
             shape.strokeColor = (on ? scene.theme.ring : b.color).cgColor
-            shape.lineWidth = on ? bd.width + 1.5 : bd.width
-            let dash =
-                bd.dash
-                ?? (bd.meaning == "trust" || bd.meaning == "subnet" || bd.shape == "dashed" ? "dashed" : "solid")
+            let width = CGFloat(bd.drawnWidth)
+            shape.lineWidth = on ? width + 1.5 : width
+            let dash = bd.drawnDash
             shape.lineDashPattern =
                 switch dash {
                 case "dashed": [6, 4]
+                case "fine": [3, 3]
                 case "dotted": [1.5, 3.5]
                 default: nil
                 }
             shape.lineCap = dash == "dotted" ? .round : .butt
             // Trust level adds a pattern: high = none, medium = hatch, low = dense hatch.
-            if bd.hatch, let trust = bd.trust, trust != "high" {
+            if let level = b.hatchLevel {
                 hatch.isHidden = false
-                hatch.path = BoundaryShapes.hatch(in: b.rect, dense: trust == "low")
+                hatch.path = BoundaryShapes.hatch(in: b.rect, dense: level == "low")
                 hatch.strokeColor = b.color.alpha(0.18).cgColor
                 hatch.lineWidth = 1
                 let mask = CAShapeLayer()
@@ -677,19 +681,13 @@ package final class ElementRenderer {
             } else {
                 hatch.isHidden = true
             }
-            let prefix: String =
-                switch bd.meaning {
-                case "vpc": "VPC"
-                case "subnet": "SUBNET"
-                case "trust": Loc.t("TRUST BOUNDARY")
-                case "zone": "ZONE"
-                default: ""
-                }
-            let parts = [prefix, bd.title].filter { !$0.isEmpty }
-            let text = parts.joined(separator: " · ")
+            let (text, technical) = b.title
             title.isHidden = text.isEmpty
             title.attributed = StyledText(
-                text, TextAttributes(font: Fonts.system(11.5, .semibold), color: .fixed(b.color.cgColor)))
+                text,
+                TextAttributes(
+                    font: SceneBoundary.titleFont(technical: technical), color: .fixed(b.color.cgColor),
+                    kern: technical ? 1.2 : nil))
             title.contentsScale = textScale
             title.frame = CGRect(x: b.rect.minX + 12, y: b.rect.minY + 6, width: max(10, b.rect.width - 24), height: 16)
         }
@@ -805,7 +803,7 @@ package final class ElementRenderer {
                 let glow = CABasicAnimation(keyPath: "shadowOpacity")
                 glow.fromValue = 0.9
                 glow.toValue = 0
-                glow.duration = 0.6
+                glow.duration = Motion.connectDraw
                 l.line.add(glow, forKey: "glow")
             }
             drawnRelationships.insert(id)
@@ -813,7 +811,7 @@ package final class ElementRenderer {
             if r.flagged && !flaggedFlows.contains(id) && animated {
                 let shake = CAKeyframeAnimation(keyPath: "transform.translation.x")
                 shake.values = [0, -7, 7, -5, 5, -2, 0]
-                shake.duration = 0.42
+                shake.duration = Motion.errorShake
                 l.add(shake, forKey: "shake")
             }
         }

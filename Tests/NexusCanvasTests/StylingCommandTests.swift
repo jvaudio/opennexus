@@ -28,6 +28,20 @@ import Testing
         #expect(h.canvas.style.nodeStyle == "minimal")
     }
 
+    /// Format › Update style › Save into this theme writes the topic's look into the
+    /// document's style for its role (D211), so other main topics take it; one undo step.
+    @Test func saveStyleIntoThemeReachesTheRole() {
+        let h = harness()
+        let mains = h.canvas.nodes[h.canvas.root]!.children
+        h.controller.select(mains[0])
+        h.controller.updateSelectionStyle { $0.shape = "hexagon" }
+        h.controller.saveStyleIntoTheme()
+        #expect(h.canvas.style.roles["main"]?.shape == "hexagon")
+        #expect(h.controller.scene.nodes[mains[1]]?.appearance.shape == "hexagon")
+        h.undo.undo(h.store)
+        #expect(h.canvas.style.roles["main"]?.shape == nil)
+    }
+
     @Test func copyPasteResetStyle() {
         let h = harness()
         let mains = h.canvas.nodes[h.canvas.root]!.children

@@ -44,7 +44,9 @@ private func canvas(_ tree: [(String, [String])], notes: [String: String] = [:])
         let texts = Set(copy.nodes.values.map(\.text))
         #expect(texts.contains("Ask ████████████"))
         #expect(texts.contains("Call +1 (415) 555-0134"))
-        #expect(!texts.contains { $0.contains("sk_live") })
+        // A key keeps its type prefix and loses the secret (artboard 41).
+        #expect(!texts.contains { $0.contains("51HxQe2KfR8vTn3") })
+        #expect(texts.contains { $0.contains("sk_live_█") })
         #expect(copy.nodes.values.compactMap(\.note?.text).allSatisfy { !$0.contains("Tim Cook") })
         #expect(c.nodes.values.contains { $0.text == "Ask maria.lopez@acme.io" }, "the original stays")
     }

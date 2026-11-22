@@ -75,7 +75,7 @@ struct AINoticeView: View {
             }
             .padding(16)
             .fixedWidth(400, alignment: .leading)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
             .shadow(color: .black.opacity(0.15), radius: 14, y: 6)
         }
@@ -381,12 +381,19 @@ struct AIPanelView: View {
         }
     }
 
-    /// `@Churn` in the user's question shows as a topic chip colour.
+    /// `@Churn` in the user's question shows as an Iris chip that reads "Churn" (artboard 28):
+    /// the "@" is how it was typed, not how it reads. Thin spaces pad the chip's tint.
     func highlightRefs(_ s: String) -> AttributedString {
         var a = AttributedString(s)
+        let iris = (controller.theme.isDark ? Tokens.Signal.irisDark : Tokens.Signal.irisLight).color
         for id in MapContext.references(in: s, canvas: controller.canvas) {
-            guard let t = controller.canvas.nodes[id]?.text, let r = a.range(of: "@" + t) else { continue }
-            a[r].foregroundColor = .accentColor
+            guard let t = controller.canvas.nodes[id]?.text else { continue }
+            while let r = a.range(of: "@" + t) {
+                var chip = AttributedString("\u{2009}\(t)\u{2009}")
+                chip.foregroundColor = iris
+                chip.backgroundColor = iris.opacity(0.14)
+                a.replaceSubrange(r, with: chip)
+            }
         }
         return a
     }
@@ -394,12 +401,17 @@ struct AIPanelView: View {
     /// Topic names in an answer pick up the topic's emphasis.
     func highlightTopics(_ s: String) -> AttributedString {
         var a = AttributedString(s)
-        // The first topic the answer names gets a pill (artboard 28); longer names win ties.
-        let names = controller.canvas.nodes.values.map(\.text).filter { $0.count > 2 }.sorted { $0.count > $1.count }
-        let first = names.compactMap { n in a.range(of: n) }.min { $0.lowerBound < $1.lowerBound }
-        if let r = first {
-            a[r].foregroundColor = Color(red: 0.8, green: 0.27, blue: 0.13)
-            a[r].backgroundColor = Color.orange.opacity(0.14)
+        // The first topic the answer names gets a pill (artboard 28) in its branch colour;
+        // longer names win ties.
+        let topics = controller.canvas.nodes.filter { $0.value.text.count > 2 }.sorted {
+            $0.value.text.count > $1.value.text.count
+        }
+        let first = topics.compactMap { id, n in a.range(of: n.text).map { (id, $0) } }
+            .min { $0.1.lowerBound < $1.1.lowerBound }
+        if let (id, r) = first {
+            let color = (controller.scene.nodes[id]?.branchColor ?? controller.theme.ring).color
+            a[r].foregroundColor = color
+            a[r].backgroundColor = color.opacity(0.14)
         }
         return a
     }

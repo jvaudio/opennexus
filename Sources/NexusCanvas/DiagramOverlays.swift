@@ -14,6 +14,13 @@ import UIKit
 struct SlashMenuView: View {
     var controller: CanvasController
 
+    /// Each type's icon colour (artboard 17): the hue it takes on the canvas, so the list
+    /// reads by type before the words do. Others (the note among them) stay ink.
+    static let tints: [String: String] = [
+        "process": "#9B51E0", "db": "#0F7F7A", "actor": "#1E6FB8", "decision": "#E0A100", "code": "#5850EC",
+        "math": "#D6408B",
+    ]
+
     var body: some View {
         if let s = controller.slash {
             let items = Array(controller.slashResults.prefix(9))
@@ -42,19 +49,26 @@ struct SlashMenuView: View {
                             }
                         }
                         .frame(width: 22)
+                        .foregroundStyle(Self.tints[item.slug].map { RGBA(hex: $0).color } ?? .primary)
                         Text(item.title).font(.chrome(13))
                         Spacer()
                         Text("/\(item.slug)").font(.chrome(11, design: .monospaced)).foregroundStyle(.chromeSecondary)
                     }
-                    .padding(.horizontal, 12)
+                    .padding(.horizontal, 8)
                     .padding(.vertical, 6)
-                    .background(i == s.highlighted ? Color.accentColor.opacity(0.16) : .clear)
+                    .background(
+                        RoundedRectangle(cornerRadius: 7).fill(
+                            i == s.highlighted
+                                ? (controller.theme.isDark ? Tokens.Signal.irisDark : Tokens.Signal.irisLight).color
+                                    .opacity(0.12) : .clear)
+                    )
+                    .padding(.horizontal, 4)
                     .contentShape(Rectangle())
                     .accessibleTap { controller.applySlash(item) }
                 }
             }
             .frame(width: 300)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 10))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 10))
             .overlay(RoundedRectangle(cornerRadius: 10).stroke(.separator))
             .shadow(color: .black.opacity(0.18), radius: 14, y: 6)
             .accessibilityElement(children: .contain)
@@ -97,7 +111,7 @@ struct ProtocolSuggestionsView: View {
                 }
             }
             .frame(width: 190)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 8))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 8))
             .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.accentColor.opacity(0.6)))
         }
     }
@@ -252,13 +266,27 @@ struct ConvertSheetView: View {
     }
 }
 
-/// A wireframe of a scene: outlines and connector lines, fitted to the tile.
+/// A wireframe of a scene: outlines and connector lines, fitted to the tile. A sequence also
+/// draws its lifelines and messages, so its tile reads as a sequence and not a row of boxes.
 struct WireframePreview: View {
     let scene: NexusScene.Scene
 
+    /// Each participant's frame and where its lifeline ends.
+    var lifelines: [(frame: CGRect, bottom: CGFloat)] {
+        scene.decor.compactMap { d in
+            guard case .lifeline(let id, let bottom, _) = d, let f = scene.nodes[id]?.frame.rect else { return nil }
+            return (f, max(bottom, f.maxY))
+        }
+        .sorted { $0.frame.midX < $1.frame.midX }
+    }
+
     var body: some View {
         Canvas { ctx, size in
-            let b = scene.nodes.values.reduce(CGRect.null) { $0.union($1.frame.rect) }
+            let lifelines = lifelines
+            let nodes = scene.nodes.values.reduce(CGRect.null) { $0.union($1.frame.rect) }
+            let b = lifelines.reduce(nodes) { b, l in
+                b.union(CGRect(x: l.frame.minX, y: l.frame.minY, width: l.frame.width, height: l.bottom - l.frame.minY))
+            }
             guard !b.isNull, b.width > 0, b.height > 0 else { return }
             let k = min((size.width - 16) / b.width, (size.height - 12) / b.height, 0.35)
             let dx = (size.width - b.width * k) / 2 - b.minX * k
@@ -285,6 +313,23 @@ struct WireframePreview: View {
                 }
                 lines.move(to: CGPoint(x: t(a).midX, y: t(a).midY))
                 lines.addLine(to: CGPoint(x: t(c).midX, y: t(c).midY))
+            }
+            for l in lifelines {
+                let r = t(l.frame)
+                lines.move(to: CGPoint(x: r.midX, y: r.maxY))
+                lines.addLine(to: CGPoint(x: r.midX, y: l.bottom * k + dy))
+            }
+            // A hierarchy has no messages yet: one stair of calls between neighbours shows the
+            // shape the participants take once it has some.
+            if lifelines.count > 1, !scene.relationships.contains(where: { $0.points != nil }) {
+                let top = lifelines.map { t($0.frame).maxY }.max() ?? 0
+                let bottom = lifelines.map { $0.bottom * k + dy }.min() ?? top
+                let step = (bottom - top) / CGFloat(lifelines.count)
+                for i in 0..<lifelines.count - 1 {
+                    let y = top + step * CGFloat(i + 1) * 0.8
+                    lines.move(to: CGPoint(x: t(lifelines[i].frame).midX, y: y))
+                    lines.addLine(to: CGPoint(x: t(lifelines[i + 1].frame).midX, y: y))
+                }
             }
             ctx.stroke(lines, with: .color(.secondary.opacity(0.7)), lineWidth: 1)
             for n in scene.nodes.values {
@@ -361,7 +406,7 @@ struct DFDPanelView: View {
             }
             .padding(14)
             .frame(width: 230, alignment: .leading)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
         }
     }
@@ -401,7 +446,7 @@ struct ViolationCardView: View {
                 }
             }
             .padding(16)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(red.opacity(0.6)))
             .accessibilityElement(children: .contain)
             .accessibilityLabel(Loc.f("Rule check: %@", v.title))
@@ -426,7 +471,7 @@ struct LevelBreadcrumbView: View {
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(.regularMaterial, in: Capsule())
+            .chromeMaterial(in: Capsule())
         }
     }
 }
@@ -440,12 +485,21 @@ struct ThreatSuggestionCard: View {
         let s = controller.strideSuggestionsForSelection
         if controller.canvas.type == .threatModel, !s.isEmpty, controller.mode == .select, controller.present == nil {
             let teal = controller.theme.ai.color
-            let name = controller.canvas.nodes[controller.selection.primary]?.text ?? ""
+            let c = controller.canvas
+            let id = controller.selection.primary
+            // A process goes by its number ("2.0"), as on the canvas; "more" once it has threats.
+            let subject = DFDRules.numbers(c)[id] ?? c.nodes[id]?.text ?? ""
+            let more = controller.threats.contains { $0.element == id }
+            let count =
+                more
+                ? Loc.n("%lld more STRIDE threat", "%lld more STRIDE threats", s.count)
+                : Loc.n("%lld STRIDE threat", "%lld STRIDE threats", s.count)
             VStack(alignment: .leading, spacing: 4) {
-                Text(Loc.f("✦ %@ suggested for %@", Loc.n("%lld STRIDE threat", "%lld STRIDE threats", s.count), name))
+                Text(Loc.f("✦ %@ suggested for %@", count, subject))
                     .font(.chrome(13, weight: .semibold)).foregroundStyle(teal)
                 HStack(spacing: 6) {
-                    Text(s.map { Loc.t($0.0.name) }.joined(separator: " · ")).font(.chrome(12))
+                    Text(s.map { $0.0 == .denialOfService ? Loc.t("DoS") : Loc.t($0.0.name) }.joined(separator: " · "))
+                        .font(.chrome(12))
                     Keycap(text: "⌃⇧↩")
                     Text("accept all").font(.chrome(12)).foregroundStyle(.chromeSecondary)
                 }
@@ -487,29 +541,21 @@ struct ThreatTableView: View {
                 .padding(12)
                 Divider()
                 Table(rows) {
-                    TableColumn("ID", value: \.id).width(52)
+                    TableColumn("ID") { Text($0.id).font(.chrome(12, design: .monospaced)) }.width(52)
                     TableColumn("Element", value: \.elementName)
                     TableColumn("STRIDE") { Text($0.category.map { Loc.t($0.name) } ?? "—") }
                     TableColumn("Threat", value: \.title)
-                    TableColumn("Risk") { t in
-                        Text(Loc.t(t.risk))
-                            .font(.chrome(11, weight: .bold, design: .monospaced))
-                            .padding(.horizontal, 5)
-                            .background(
-                                RoundedRectangle(cornerRadius: 3).fill(
-                                    t.risk == "High"
-                                        ? controller.theme.critical.color.opacity(0.2)
-                                        : controller.theme.amber.color.opacity(0.2)))
-                    }
-                    .width(60)
+                    TableColumn("Risk") { RiskPill(risk: $0.risk, dark: controller.theme.isDark) }
+                        .width(60)
                     TableColumn("Mitigation") { Text($0.mitigation ?? "—") }
                     TableColumn("Status") { Text(Loc.t($0.status)) }.width(80)
                 }
                 .frame(height: 200)
             }
-            .sheetWidth(960)
-            .background(.background, in: RoundedRectangle(cornerRadius: 12))
-            .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
+            // Docked full width under the canvas, as artboard 21 draws it, not a card over it.
+            .frame(maxWidth: .infinity)
+            .background(.background)
+            .overlay(alignment: .top) { Divider() }
         }
     }
 }
@@ -519,6 +565,14 @@ struct ThreatTableView: View {
 struct IconLibraryView: View {
     var controller: CanvasController
     @State private var query = ""
+
+    /// Tile labels: a 62-point tile fits about ten characters, so the long catalog names get
+    /// the short words the artboard uses. The full name stays the accessibility label and is
+    /// what an inserted node is called.
+    static let tileNames: [String: String] = [
+        "gateway": "Gateway", "lb": "Balancer", "stream": "Stream", "storage": "Storage", "saas": "SaaS",
+        "auth": "Auth", "monitor": "Monitor", "entity": "Entity", "store": "Data store",
+    ]
 
     var body: some View {
         if controller.iconLibraryVisible {
@@ -545,8 +599,10 @@ struct IconLibraryView: View {
                             ], id: \.0
                         ) { cat, title in
                             if let items = groups[cat] {
-                                Text(title.uppercased()).font(.chrome(11, weight: .semibold)).foregroundStyle(
-                                    .secondary)
+                                Text(title.uppercased())
+                                    .font(.chrome(11, weight: .semibold, design: .monospaced))
+                                    .tracking(1.2)
+                                    .foregroundStyle(.secondary)
                                 LazyVGrid(
                                     columns: Array(repeating: GridItem(.fixed(62), spacing: 6), count: 4), spacing: 6
                                 ) {
@@ -556,12 +612,17 @@ struct IconLibraryView: View {
                                         } label: {
                                             VStack(spacing: 4) {
                                                 IconGlyph(icon: info.icon ?? info.slug).frame(width: 22, height: 22)
-                                                Text(Loc.t(info.name)).font(.chrome(10)).lineLimit(1)
+                                                Text(Loc.t(Self.tileNames[info.slug] ?? info.name))
+                                                    .font(.chrome(10)).lineLimit(1)
                                             }
                                             .frame(width: 62, height: 58)
                                             .background(RoundedRectangle(cornerRadius: 8).stroke(.separator))
                                         }
                                         .buttonStyle(.plain)
+                                        .onDrag {
+                                            NSItemProvider(
+                                                object: (CanvasController.iconDragPrefix + info.slug) as NSString)
+                                        }
                                         .help("/\(info.slug)")
                                         .accessibilityLabel(Loc.t(info.name))
                                     }
@@ -573,12 +634,14 @@ struct IconLibraryView: View {
                     }
                 }
                 .accessibilityLabel(Loc.t("Icons"))
-                Text("Click to insert as a child of the selection. Icon packs install from file or URL.")
-                    .font(.chrome(11)).foregroundStyle(.chromeSecondary)
+                Text(
+                    "Drag onto the canvas, or click to insert as a child of the selection. Icon packs install from file or URL."
+                )
+                .font(.chrome(11)).foregroundStyle(.chromeSecondary)
             }
             .padding(14)
             .frame(width: 290, height: 520)
-            .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+            .chromeMaterial(in: RoundedRectangle(cornerRadius: 12))
             .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
         }
     }

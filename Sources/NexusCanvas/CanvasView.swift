@@ -74,8 +74,12 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
     private var foldCursor = false
     private var aidsTracking: NSTrackingArea?
     private var hintsHost: NSHostingView<EmptyCanvasHints>?
-    private var morphUntil: CFTimeInterval = 0
     private var lastMorphSerial = 0
+    /// The diagram type the last update showed: a structure change that changes it is a
+    /// conversion, which glides a little longer.
+    private var lastDiagramType: DiagramType?
+    /// "Multi-selected · count chip" (artboard 11), at the primary topic's top-right corner.
+    private var countChip: PassThroughHostingView<SelectionCountChip>?
     private(set) var popovers: CanvasPopovers?
 
     /// A topic's rect in view coordinates (popover anchors).
@@ -85,10 +89,20 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
 
     // MARK: Drop files on topics (attachments, images) or on empty canvas (image to map)
 
-    public override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation { .copy }
+    public override func draggingEntered(_ sender: any NSDraggingInfo) -> NSDragOperation {
+        // Files, and icons from the library; other text isn't taken.
+        let pb = sender.draggingPasteboard
+        if let s = pb.string(forType: .string), CanvasController.draggedIcon(s) != nil { return .copy }
+        return pb.canReadObject(forClasses: [NSURL.self], options: nil) ? .copy : []
+    }
 
     public override func performDragOperation(_ sender: any NSDraggingInfo) -> Bool {
         let p = convert(sender.draggingLocation, from: nil)
+        // An icon from the library: a child of the topic it lands on, else of the selection.
+        if let s = sender.draggingPasteboard.string(forType: .string), let info = CanvasController.draggedIcon(s) {
+            controller.insertIcon(info, under: node(at: p))
+            return true
+        }
         guard let urls = sender.draggingPasteboard.readObjects(forClasses: [NSURL.self]) as? [URL] else { return false }
         guard let id = node(at: p) else {
             // A picture dropped on empty canvas becomes a map (M12).
@@ -152,6 +166,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         let world = renderer.world
         world.insertSublayer(presence, above: renderer.nodesLayer)
         pointer = CanvasPointer(controller: controller, renderer: renderer, surface: self)
+        pointer.reduceMotion = { [weak self] in self?.reduceMotion ?? false }
 
         editor.controller = controller
         editor.isHidden = true
@@ -196,7 +211,7 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         controller.onRequest = { [weak self] r in self?.popovers?.handle(r) }
         // Code files open in the editor chosen in Settings › Integrations (M9).
         controller.onOpenURL = { [weak controller] url in CodeLinks.open(url, prefs: controller?.prefs ?? .shared) }
-        registerForDraggedTypes([.fileURL])
+        registerForDraggedTypes([.fileURL, .string])
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -250,6 +265,14 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         let animate = animated && !reduceMotion && window != nil && controller.animateReflow
         let morph = morphNextUpdate && animate
         morphNextUpdate = false
+        // Structure changes and Convert glide (artboard 05); everything else springs.
+        var travel = SceneRenderer.Travel.snap
+        if controller.morphSerial != lastMorphSerial {
+            lastMorphSerial = controller.morphSerial
+            let converted = lastDiagramType.map { $0 != controller.canvas.type } ?? false
+            travel = .glide(converted ? Motion.convert : Motion.structureChange)
+        }
+        lastDiagramType = controller.canvas.type
         let editing = controller.edit.flatMap { $0.element == nil ? $0.node : nil }
         CATransaction.begin()
         CATransaction.setDisableActions(true)
@@ -261,13 +284,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         }
         let running = renderer.update(
             controller.scene, state: controller.renderState(reduceMotion: reduceMotion), animated: animate,
-            morph: morph)
+            morph: morph, travel: travel)
         CATransaction.commit()
         updateConnectField()
-        if controller.morphSerial != lastMorphSerial {
-            lastMorphSerial = controller.morphSerial
-            morphUntil = CACurrentMediaTime() + Motion.convert + 0.15
-        }
         refreshOverlays()
         if editing != nil || controller.edit != nil { positionEditor() }
         updateAccessibility()
@@ -296,9 +315,9 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         lastTick = now
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        let running = renderer.step(
-            dt, morph: now < morphUntil, selected: controller.selectedElement, connect: controller.connect)
+        let running = renderer.step(dt, selected: controller.selectedElement, connect: controller.connect)
         if !presence.isEmpty { refreshPresence() }
+        positionCountChip()
         var cameraDone = true
         if let tween = cameraTween {
             let (c, done) = tween.value(at: now)
@@ -343,8 +362,14 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         }
         let zoomChanged = c.zoom != camera.zoom
         if zoomChanged { controller.zoom = Double(c.zoom) }
-        // Depth parallax when zoomed out: the grid drifts a little slower than the map.
-        renderer.place(c, parallax: controller.prefs.bool("appearance.parallax") && c.zoom < 0.6 && !reduceMotion)
+        // Depth parallax when zoomed out: the grid drifts a little slower than the map. The
+        // artboard also has deep levels drift 2–4% slower than the root; moving topics apart
+        // would bend every branch line between levels on each pan frame, so only the grid
+        // drifts.
+        renderer.place(
+            c,
+            parallax: controller.prefs.bool("appearance.parallax") && c.zoom < SceneRenderer.parallaxZoom
+                && !reduceMotion)
         minimap?.refresh(panning: true)
         if zoomChanged, !presence.isEmpty { refreshPresence() }
         if bounds.width > 0 {
@@ -1022,6 +1047,33 @@ public final class CanvasView: NSView, RegistryCommandTarget, ContextMenuTarget,
         anchoredView(&toolbarHost, { FloatingToolbarView(controller: c) }) { size in
             bar ? CGPoint(x: max(8, r!.minX), y: max(8, r!.minY - size.height - 10)) : nil
         }
+        positionCountChip()
+    }
+
+    /// The count chip shows while more than one topic is selected, centred just outside the
+    /// primary topic's top-right corner (clear of the selection ring), and follows the topic
+    /// as the camera and the springs move.
+    func positionCountChip() {
+        let c = controller
+        let show =
+            c.selection.nodes.count > 1 && c.edit == nil && c.present == nil && c.mapShot == nil && !exportMode
+        guard show, let r = animatedFrame(c.selection.primary).map({ camera.toView($0.rect) }) else {
+            countChip?.isHidden = true
+            return
+        }
+        let chip =
+            countChip
+            ?? {
+                let h = PassThroughHostingView(rootView: SelectionCountChip(controller: c))
+                h.sizingOptions = [.intrinsicContentSize]
+                addSubview(h)
+                countChip = h
+                return h
+            }()
+        let size = chip.intrinsicContentSize
+        chip.frame = CGRect(
+            x: r.maxX + 6 - size.width / 2, y: r.minY - 6 - size.height / 2, width: size.width, height: size.height)
+        chip.isHidden = false
     }
 
     public override func updateTrackingAreas() {

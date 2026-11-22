@@ -105,6 +105,37 @@ Every row of the inventory, with what changed and how it was checked. Screenshot
   `app-icon.png` is `NSWorkspace.icon(forFile:)` for the built app: the image the Dock and
   Finder draw.
 
+## Audit · 2026-11-21 (after M43–M50)
+
+The kit was checked again against `main` at `69e0afd`, with the zip re-downloaded: it is
+identical to `brand/` except `tools/raster.js`, whose only difference is the repo's
+`CHROMIUM` override. Every catalog asset and colour set in the Mac and iOS apps is
+byte-identical to `brand/xcode`, and `BrandColor` matches the colour sets. The iOS app icon
+(Default and Dark, full bleed) matches the kit's full-bleed renders. Welcome, Settings ›
+General, Home and Quick Capture were rendered in Light and Dark and compared with
+`brand/reference/in-context/` and the Handoff artboards.
+
+M43–M50 added surfaces that the first pass couldn't cover:
+
+| # | Surface | Found | Now |
+| --- | --- | --- | --- |
+| 23 | iOS app icon | Kit full-bleed art, Default and Dark | [x] Unchanged |
+| 24 | iOS `AppIconTile` (Welcome, About, the external display) | Drawn with the 50-unit viewBox spanning 78/112 of the tile, where the kit spans the 64-unit grid (the mark 28% too large, a unit off centre), at the automatic optical size rather than the icon's b = 1.1, and with the gradient straight down rather than at 155° | [x] `IconTileArt` draws the kit's full-bleed icon. `ApertureMarkTests.iconTileArtMatchesTheFullBleedIcon` compares it with `appicon-default-fullbleed.svg` at 1024 and 168 px; the old placement fails it |
+| 25 | Web viewer site (`web/viewer-app`, `viewer-core`) | Accent `#5b45c2` / `#b9a8ff` / `#6e56cf`, none of them Iris; one 192 px PNG as the front page's favicon, none on the share and join pages | [x] Iris `#5850EC` / `#8F89FF` for the accent, focus ring, `theme-color` and manifest. `favicon.ico`, `favicon.svg` and `apple-touch-icon.png` from `brand/web` on all three pages, precached by the service worker. The share and join pages' CSP allows `img-src 'self'` so browsers that apply it to icons load them. The embedded viewer (`Sources/NexusCanvas/Viewer`) is rebuilt |
+| 26 | Obsidian plugin | Lucide `git-fork` for its views and menu item | [ ] Left: Obsidian draws icons from its Lucide set. Registering the mono mark with `addIcon` is possible; not done here |
+
+Found on screens already in the checklist:
+
+- **Settings cards in Dark mode** (the About card of row 6, and the Recovery, Agent, Masking,
+  VoiceOver and mouse-aids previews): `Card` forced the light colour scheme, so each was a
+  white slab in a dark pane. Cards now follow the window's appearance; Light mode is
+  unchanged.
+- **Shortcuts tiles** (`33-Integration`): the artboard shows the mark on each App Shortcut in
+  a different colour. App Shortcuts take an SF Symbol and one tile colour for the app
+  (`shortcutTileColor = .purple`), so they keep their SF Symbols. No change.
+- **Home** (row 10): artboard 16 has no logo; the sidebar's lockup follows the brief's Step 5.
+  No change.
+
 ## Human step: Icon Composer (about 5 minutes)
 
 Apple documents `.icon` files only as something you create in the Icon Composer app ("Creating

@@ -7,6 +7,7 @@ import UniformTypeIdentifiers
 
 #if os(macOS)
 import AppKit
+import Quartz
 #else
 import UIKit
 #endif
@@ -72,7 +73,9 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
             let name = n.attachments[index].name ?? n.attachments[index].asset
             let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
             try? data.write(to: url)
-            NSWorkspace.shared.open(url)
+            // Quick Look, as on the iPad and Finder (artboard 24: "Quick Look · Space"); the
+            // panel offers Open With for the file's own app.
+            AttachmentPreview.shared.show(url)
         }
     }
 
@@ -558,5 +561,31 @@ enum PopoverAnchors {
     static func gantt(_ c: CanvasController) -> Anchor? { gantts.object(forKey: c)?.anchor }
     static func setOutline(_ c: CanvasController, _ a: @escaping Anchor) { outlines.setObject(Box(a), forKey: c) }
     static func setGantt(_ c: CanvasController, _ a: @escaping Anchor) { gantts.setObject(Box(a), forKey: c) }
+}
+#endif
+
+#if os(macOS)
+/// The Quick Look panel for an attachment: one item, the file written out of the package.
+@MainActor
+final class AttachmentPreview: NSObject, QLPreviewPanelDataSource {
+    static let shared = AttachmentPreview()
+    private var url: URL?
+
+    func show(_ url: URL) {
+        self.url = url
+        guard let panel = QLPreviewPanel.shared() else {
+            NSWorkspace.shared.open(url)
+            return
+        }
+        panel.dataSource = self
+        panel.reloadData()
+        panel.makeKeyAndOrderFront(nil)
+    }
+
+    nonisolated func numberOfPreviewItems(in panel: QLPreviewPanel!) -> Int { 1 }
+
+    nonisolated func previewPanel(_ panel: QLPreviewPanel!, previewItemAt index: Int) -> (any QLPreviewItem)! {
+        MainActor.assumeIsolated { url as NSURL? }
+    }
 }
 #endif

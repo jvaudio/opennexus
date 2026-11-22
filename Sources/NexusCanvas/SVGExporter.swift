@@ -66,18 +66,31 @@ public enum SVGExporter {
         case .transparent: break
         }
         let frame: (NodeID) -> CGRect? = { scene.nodes[$0]?.frame.rect }
-        // Swimlane bands sit below everything.
+        // Swimlane bands sit below everything: tinted lanes clipped to one rounded pool, with
+        // single dividers between them, as the canvas draws them.
         var band = 0
+        let lanes = scene.decor.compactMap { d -> CGRect? in
+            if case .band(let r, _, _) = d { return r } else { return nil }
+        }
+        let pool = DecorRenderer.pool(lanes)
+        if let pool {
+            w.line("<clipPath id=\"pool\"><path d=\"\(d(pool.outline))\"/></clipPath>")
+        }
         for d in scene.decor {
             guard case .band(let r, let title, let color) = d else { continue }
             w.line(
-                "<rect class=\"band\" x=\"\(n(r.minX))\" y=\"\(n(r.minY))\" width=\"\(n(r.width))\" height=\"\(n(r.height))\" \(paint(color.alpha(band % 2 == 0 ? 0.05 : 0.08), "fill")) \(paint(color.alpha(0.25), "stroke"))/>"
+                "<rect class=\"band\" x=\"\(n(r.minX))\" y=\"\(n(r.minY))\" width=\"\(n(r.width))\" height=\"\(n(r.height))\" \(paint(color.alpha(band % 2 == 0 ? 0.05 : 0.08), "fill"))\(pool == nil ? "" : " clip-path=\"url(#pool)\"")/>"
             )
             let font = Fonts.mono(11.5, .semibold)
             w.text(
                 title, at: CGPoint(x: r.minX + 16, y: r.minY + 12 + CTFontGetAscent(font)), font: font, color: color,
                 kern: 1.2)
             band += 1
+        }
+        if let pool {
+            let line = paint(DecorRenderer.poolLine(scene.theme), "stroke")
+            w.line("<path class=\"pool\" d=\"\(d(pool.outline))\" fill=\"none\" \(line)/>")
+            w.line("<path class=\"pool\" d=\"\(d(pool.dividers))\" fill=\"none\" \(line)/>")
         }
         // Zones and boundaries.
         for z in scene.zones {
@@ -90,16 +103,24 @@ public enum SVGExporter {
             w.line("</g>")
         }
         for bd in scene.boundaries {
+            // As the canvas draws it: the boundary's line, width, tint, corner and title.
             let r = bd.rect
+            let b = bd.boundary
             let dash =
-                bd.boundary.dash.map { $0 == "solid" ? "" : " stroke-dasharray=\"6 4\"" } ?? " stroke-dasharray=\"6 4\""
+                switch b.drawnDash {
+                case "dashed": " stroke-dasharray=\"6 4\""
+                case "fine": " stroke-dasharray=\"3 3\""
+                case "dotted": " stroke-dasharray=\"1.5 3.5\" stroke-linecap=\"round\""
+                default: ""
+                }
             w.line(
-                "<g class=\"boundary\"><rect x=\"\(n(r.minX))\" y=\"\(n(r.minY))\" width=\"\(n(r.width))\" height=\"\(n(r.height))\" rx=\"12\" fill=\"\(hex(bd.color))\" fill-opacity=\"\(n(bd.boundary.fillOpacity))\" stroke=\"\(hex(bd.color))\" stroke-width=\"\(n(bd.boundary.width))\"\(dash)/>"
+                "<g class=\"boundary\"><rect x=\"\(n(r.minX))\" y=\"\(n(r.minY))\" width=\"\(n(r.width))\" height=\"\(n(r.height))\" rx=\"\(n(b.drawnCornerRadius))\" fill=\"\(hex(bd.color))\" fill-opacity=\"\(n(b.drawnFillOpacity))\" stroke=\"\(hex(bd.color))\" stroke-width=\"\(n(b.drawnWidth))\"\(dash)/>"
             )
-            if !bd.boundary.title.isEmpty {
+            let (title, technical) = bd.title
+            if !title.isEmpty {
                 w.text(
-                    bd.boundary.title, at: CGPoint(x: r.minX + 12, y: r.minY + 18),
-                    font: Fonts.system(12, .semibold), color: bd.color)
+                    title, at: CGPoint(x: r.minX + 12, y: r.minY + 18),
+                    font: SceneBoundary.titleFont(technical: technical), color: bd.color, kern: technical ? 1.2 : 0)
             }
             w.line("</g>")
         }
@@ -107,11 +128,22 @@ public enum SVGExporter {
         for item in scene.decor {
             if case .band = item { continue }
             guard let p = DecorRenderer.path(item, frame: frame) else { continue }
-            let s = DecorRenderer.paint(item, theme: scene.theme)
+            let s = DecorRenderer.paint(item, scene: scene)
             var attrs = s.fill.map { paint($0, "fill") } ?? "fill=\"none\""
             if let c = s.stroke { attrs += " " + paint(c, "stroke") + " stroke-width=\"\(n(s.width))\"" }
             if let dash = s.dash { attrs += " stroke-dasharray=\"\(dash.map { n($0) }.joined(separator: " "))\"" }
             w.line("<path class=\"decor\" d=\"\(d(p))\" \(attrs) stroke-linecap=\"round\" stroke-linejoin=\"round\"/>")
+            if let accent = s.accent, let stripe = DecorRenderer.accentPath(item, frame: frame) {
+                w.line("<path class=\"decor\" d=\"\(d(stripe))\" \(paint(accent, "fill"))/>")
+            }
+        }
+        // Shared trunks (org bus, timeline axis, fishbone spine), each drawn once.
+        for t in DecorRenderer.trunks(scene) {
+            guard let p = DecorRenderer.path(t, frame: frame), let c = t.paint.stroke else { continue }
+            let dash = t.paint.dash.map { " stroke-dasharray=\"\($0.map { n($0) }.joined(separator: " "))\"" } ?? ""
+            w.line(
+                "<path class=\"trunk\" d=\"\(d(p))\" fill=\"none\" \(paint(c, "stroke")) stroke-width=\"\(n(t.paint.width))\"\(dash)\(opacity(t.opacity)) stroke-linecap=\"round\" stroke-linejoin=\"round\"/>"
+            )
         }
         // Branch lines.
         w.line("<g class=\"branches\" fill=\"none\" stroke-linecap=\"round\">")
@@ -120,7 +152,7 @@ public enum SVGExporter {
             guard let pf = scene.nodes[e.parent]?.frame, let cf = scene.nodes[e.child]?.frame else { continue }
             let path = BranchLines.path(
                 from: pf, to: cf, family: e.family, shape: BranchLineShape(name: e.line.shape),
-                parentBaseline: e.parentBaseline, childBaseline: e.childBaseline)
+                parentBaseline: e.parentBaseline, childBaseline: e.childBaseline, trunk: false)
             if e.line.taper {
                 let t = BranchLines.tapered(path, startWidth: e.line.width * 1.8, endWidth: max(1, e.line.width * 0.5))
                 w.line("<path d=\"\(d(t))\" fill=\"\(hex(e.color))\" stroke=\"none\"\(opacity(e.opacity))/>")
@@ -467,11 +499,13 @@ public enum SVGExporter {
             error: sn.mathErrorColor(theme: theme, canvas: scene.canvasColor), struck: sn.todo?.done == true)
         if sn.hiddenCount > 0 { badge(sn, &w, canvas: scene.canvasColor) }
         if let c = sn.tech.caption {
+            // Where the canvas puts it: above, below or beside the node.
             let font = Fonts.mono(9.5, .medium)
+            let box = sn.tech.captionRect(nodeSize: r.size)
+            let trailing = sn.tech.captionPlacement == .trailing
             w.text(
-                c, at: CGPoint(x: r.width / 2, y: -17 + CTFontGetAscent(font)), font: font, color: theme.ink2,
-                anchor: "middle",
-                kern: 1.2)
+                c, at: CGPoint(x: trailing ? box.minX : box.midX, y: box.minY + CTFontGetAscent(font)), font: font,
+                color: theme.ink2, anchor: trailing ? "start" : "middle", kern: 1.2)
         }
         w.indent -= 1
         w.line("</g>")

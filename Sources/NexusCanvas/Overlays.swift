@@ -40,15 +40,33 @@ public struct CanvasStatusBar: View {
     public init(controller: CanvasController) { self.controller = controller }
 
     public var body: some View {
-        // Slides right of the navigation panel when it's open.
-        if !controller.zen && controller.present == nil { bar.padding(.leading, controller.navTab != nil ? 320 : 0) }
+        // Slides right of the navigation panel when it's open; gives way to the threat table,
+        // docked along the bottom (artboard 21).
+        if !controller.zen && controller.present == nil && !controller.threatTableVisible {
+            // Leading in its frame: when hints drop to fit, the rest stay at the left.
+            bar.padding(.leading, controller.navTab != nil ? 320 : 0)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// How many hints to try, most first: all, then 6, 4 and 2, each once (a canvas with six
+    /// hints would offer 6 twice, which `ViewThatFits` refuses).
+    var hintCounts: [Int] {
+        Array(Set([hints.count, 6, 4, 2].filter { $0 <= hints.count })).sorted(by: >)
     }
 
     var bar: some View {
         HStack(spacing: 12) {
             StatePill(mode: controller.mode, theme: controller.theme)
             #if os(macOS)
-            strip(hints)
+            // A narrow canvas (Split, a small window) can't fit every hint: drop them from
+            // the end rather than run under the zoom control, as on the iPad.
+            ViewThatFits(in: .horizontal) {
+                ForEach(hintCounts, id: \.self) { n in
+                    strip(Array(hints.prefix(n)))
+                }
+            }
+            .padding(.trailing, 230)
             #else
             // The iPhone's bottom toolbar adds topics; only the pill fits beside the zoom
             // control (M47c).
@@ -56,7 +74,7 @@ public struct CanvasStatusBar: View {
                 // The iPad's canvas can be narrower than every hint: drop them from the end
                 // rather than run under the zoom control (M47b).
                 ViewThatFits(in: .horizontal) {
-                    ForEach([hints.count, 6, 4, 2].filter { $0 <= hints.count }, id: \.self) { n in
+                    ForEach(hintCounts, id: \.self) { n in
                         strip(Array(hints.prefix(n)))
                     }
                 }
@@ -79,7 +97,7 @@ public struct CanvasStatusBar: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 7)
         #if os(macOS)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 12))
+        .chromeGlass(in: RoundedRectangle(cornerRadius: 12))
         #else
         // Solid on the iPad, as the counts bar is: on glass, the hints' contrast depends on
         // the map behind them (D408).
@@ -112,11 +130,45 @@ public struct CanvasStatusBar: View {
                 Hint(key: "↑↓", label: "move"), Hint(key: "↩", label: "connect"), Hint(key: "esc", label: "cancel"),
             ]
         case .select:
-            [
-                Hint(key: key(.addChild), label: "child"), Hint(key: key(.addSiblingAfter), label: "sibling"),
+            selectHints + [
+                Hint(key: key(.undo), label: "undo"), Hint(key: Loc.t("hold ⌘"), label: Loc.t("all keys")),
+            ]
+        }
+    }
+
+    /// What Tab and Return mean on this kind of canvas, worded as each artboard words it
+    /// (19, 20, 22, 23); mind maps and the other structures keep child and sibling.
+    private var selectHints: [Hint] {
+        let child = key(.addChild)
+        let sibling = key(.addSiblingAfter)
+        switch controller.canvas.type {
+        case .flowchart, .swimlane:
+            return [
+                Hint(key: child, label: Loc.t("next step")), Hint(key: sibling, label: Loc.t("parallel step")),
+                Hint(key: key(.slashMenu), label: Loc.t("shape")), Hint(key: key(.connect), label: "connect"),
+            ]
+        case .dfd:
+            return [
+                Hint(key: child, label: Loc.t("downstream + flow")),
+                Hint(key: sibling, label: Loc.t("sibling fed by same source")),
+                Hint(key: key(.focusBranch), label: Loc.t("drill into process")),
+            ]
+        case .architecture:
+            return [
+                Hint(key: child, label: Loc.t("dependency")), Hint(key: sibling, label: Loc.t("peer service")),
+                Hint(key: key(.boundary), label: Loc.t("wrap in VPC/subnet")),
+            ]
+        case .sequence:
+            return [
+                Hint(key: child, label: Loc.t("message to next participant")),
+                Hint(key: sibling, label: Loc.t("next message in time")),
+                Hint(key: "⌥↩", label: Loc.t("return message")),
+            ]
+        default:
+            return [
+                Hint(key: child, label: "child"), Hint(key: sibling, label: "sibling"),
                 Hint(key: key(.editKeepText), label: "edit"), Hint(key: key(.connect), label: "connect"),
                 Hint(key: key(.convert), label: "convert"), Hint(key: key(.aiGhosts), label: Loc.t("AI ideas")),
-                Hint(key: key(.undo), label: "undo"), Hint(key: Loc.t("hold ⌘"), label: Loc.t("all keys")),
             ]
         }
     }
@@ -141,8 +193,8 @@ public struct StatePill: View {
                 .tracking(1.2)
         }
         .foregroundStyle(fg)
-        .padding(.horizontal, 16)
-        .frame(height: 40)
+        .padding(.horizontal, 12)
+        .frame(height: 30)
         .background(bg, in: Capsule())
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(Loc.f("%@ mode", mode.rawValue.capitalized))
@@ -172,7 +224,7 @@ public struct ToastView: View {
                     .font(.chrome(13))
                     .padding(.horizontal, 16)
                     .padding(.vertical, 9)
-                    .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 10))
+                    .chromeGlass(in: RoundedRectangle(cornerRadius: 10))
                     .transition(.move(edge: .top).combined(with: .opacity))
                     .id(t.serial)
                     .accessibilityIdentifier("toast")
@@ -231,7 +283,7 @@ public struct CheatSheetView: View {
                 }
             }
             .padding(24)
-            .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 20))
+            .chromeGlass(in: RoundedRectangle(cornerRadius: 20))
             .transition(.opacity)
             .accessibilityIdentifier("cheat-sheet")
         }

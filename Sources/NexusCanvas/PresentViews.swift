@@ -3,6 +3,10 @@ import NexusScene
 import NexusTheme
 import SwiftUI
 
+/// Present's accent: Aurora, as artboard 32 draws the strip, the current slide, the
+/// progress dot and the timer (the canvas's step ring is Aurora too).
+let presentAccent = Tokens.Signal.auroraDark.color
+
 #if os(macOS)
 import AppKit
 #else
@@ -91,7 +95,7 @@ struct PresentOverlayView: View {
             if !p.typed.isEmpty {
                 Text(Loc.f("Go to slide %@ ↩", p.typed)).font(.chrome(22, weight: .semibold, design: .monospaced))
                     .padding(.horizontal, 18).padding(.vertical, 10)
-                    .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
+                    .chromeMaterial(in: RoundedRectangle(cornerRadius: 12))
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .allowsHitTesting(false)
                     .accessibilityLabel(Loc.f("Go to slide %@", p.typed))
@@ -120,7 +124,7 @@ struct PresentDots: View {
                 HStack(spacing: spacing) {
                     ForEach(Array(slides.enumerated()), id: \.offset) { i, s in
                         Capsule()
-                            .fill(i == index ? Color.accentColor : ink.opacity(s.skipped ? 0.15 : 0.35))
+                            .fill(i == index ? presentAccent : ink.opacity(s.skipped ? 0.15 : 0.35))
                             .frame(width: i == index ? current : size, height: size)
                     }
                 }
@@ -198,7 +202,7 @@ struct SlideStripView: View {
         }
         .padding(16)
         .frame(height: Self.height)
-        .background(.regularMaterial)
+        .chromeMaterial()
         .overlay(alignment: .top) { Divider() }
     }
 
@@ -211,9 +215,9 @@ struct SlideStripView: View {
             Text(c.title).font(.chrome(12.5))
                 .padding(.horizontal, 10)
                 .padding(.vertical, 4)
-                .foregroundStyle(filled ? Color.white : .primary)
+                .foregroundStyle(filled ? Color(white: 0.09) : .primary)
                 .background(
-                    RoundedRectangle(cornerRadius: 6).fill(filled ? Color.accentColor : Color.secondary.opacity(0.14)))
+                    RoundedRectangle(cornerRadius: 6).fill(filled ? presentAccent : Color.secondary.opacity(0.14)))
         }
         .buttonStyle(.plain)
         .overlay(focusRing(c))
@@ -263,7 +267,7 @@ struct SlideStripView: View {
                 .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
                 .overlay(
                     RoundedRectangle(cornerRadius: 8).stroke(
-                        i == state.index ? Color.accentColor : Color.secondary.opacity(0.25),
+                        i == state.index ? presentAccent : Color.secondary.opacity(0.25),
                         lineWidth: i == state.index ? 2 : 1))
             Text(controller.slideTitle(s) + (s.skipped ? Loc.t(" · skipped") : ""))
                 .font(.chrome(12))
@@ -301,7 +305,7 @@ struct SlideWireframe: View {
                 let on = hi.isEmpty || hi.contains(id)
                 ctx.stroke(
                     Path(roundedRect: t, cornerRadius: min(t.height / 2, 4)),
-                    with: .color(on ? .accentColor : .secondary.opacity(0.5)), lineWidth: on ? 1.4 : 0.8)
+                    with: .color(on ? presentAccent : .secondary.opacity(0.5)), lineWidth: on ? 1.4 : 0.8)
             }
         }
         .accessibilityHidden(true)
@@ -337,7 +341,7 @@ struct PresentKeysView: View {
             }
         }
         .padding(22)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
+        .chromeMaterial(in: RoundedRectangle(cornerRadius: 14))
         .overlay(RoundedRectangle(cornerRadius: 14).stroke(.separator))
     }
 }
@@ -406,7 +410,7 @@ public struct PresenterView: View {
             Text("Elapsed").font(.chrome(12, weight: .medium)).foregroundStyle(.chromeSecondary)
             Text(String(format: "%02d:%02d", elapsed / 60, elapsed % 60))
                 .font(.chrome(34, weight: .semibold, design: .monospaced))
-                .foregroundStyle(Color.accentColor)
+                .foregroundStyle(presentAccent)
         }
         .accessibilityElement(children: .combine)
     }
@@ -477,7 +481,7 @@ public struct PresenterView: View {
                         .accessibilityLabel(Loc.f("Time: %@", now.formatted(date: .omitted, time: .shortened)))
                     Text(String(format: "%02d:%02d", elapsed / 60, elapsed % 60))
                         .font(.chrome(34, weight: .semibold, design: .monospaced))
-                        .foregroundStyle(Color.accentColor)
+                        .foregroundStyle(presentAccent)
                         .padding(.leading, 16)
                         .accessibilityLabel(Loc.f("Elapsed: %lld minutes %lld seconds", elapsed / 60, elapsed % 60))
                 }
