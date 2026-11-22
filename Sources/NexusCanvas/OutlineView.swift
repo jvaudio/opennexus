@@ -35,6 +35,7 @@ public final class OutlineView: NSView {
             scroll.topAnchor.constraint(equalTo: topAnchor),
             scroll.bottomAnchor.constraint(equalTo: bottomAnchor),
             hints.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 40),
+            hints.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -16),
             hints.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -20),
         ])
         setAccessibilityRole(.outline)
@@ -67,18 +68,28 @@ public final class OutlineView: NSView {
     }
 }
 
+/// The outline's key hints. Split view's pane can be narrower than the whole line, so the
+/// hints give up "Notes edit inline", then their spacing, rather than cut "reorder" off.
 struct OutlineHints: View {
     var body: some View {
-        HStack(spacing: 14) {
+        ViewThatFits(in: .horizontal) {
+            line(spacing: 14, note: true)
+            line(spacing: 14, note: false)
+            line(spacing: 8, note: false)
+        }
+        .font(.chrome(12.5))
+    }
+
+    func line(spacing: CGFloat, note: Bool) -> some View {
+        HStack(spacing: spacing) {
             ForEach([("↩", "sibling"), ("⇥", "indent"), ("⇧⇥", "outdent"), ("⌥⌘↑↓", "reorder")], id: \.0) { k, v in
                 HStack(spacing: 5) {
                     Keycap(text: k)
-                    Text(v).foregroundStyle(.chromeSecondary)
+                    Text(v).foregroundStyle(.chromeSecondary).fixedSize()
                 }
             }
-            Text("Notes edit inline").foregroundStyle(.chromeSecondary)
+            if note { Text("Notes edit inline").foregroundStyle(.chromeSecondary).fixedSize() }
         }
-        .font(.chrome(12.5))
     }
 }
 

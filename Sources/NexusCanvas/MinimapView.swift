@@ -18,8 +18,8 @@ final class MinimapView: NSView {
     func refresh(panning: Bool) {
         guard let c = canvas else { return }
         // Slides and exports move the camera too, but there's nothing to navigate: the
-        // minimap would cover Present's strip.
-        if c.controller.present != nil || c.exportMode {
+        // minimap would cover Present's strip, or the threat table docked along the bottom.
+        if c.controller.present != nil || c.exportMode || c.controller.threatTableVisible {
             hideTimer?.invalidate()
             hideTimer = nil
             isHidden = true

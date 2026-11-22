@@ -67,7 +67,7 @@ public struct QuickCaptureView: View {
         }
         .padding(.horizontal, 22).padding(.vertical, 18)
         .frame(width: 560, alignment: .leading)
-        .glassEffect(.regular, in: RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .chromeGlass(in: RoundedRectangle(cornerRadius: 22, style: .continuous))
         .onAppear { focused = true }
         .onChange(of: model.text) { if !model.text.isEmpty { model.saved = nil } }
     }

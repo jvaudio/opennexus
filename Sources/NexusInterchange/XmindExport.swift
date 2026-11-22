@@ -358,7 +358,8 @@ public enum XmindWriter {
                 if !b.title.isEmpty { o["title"] = b.title }
                 var lost: [String] = []
                 let p = XmindStyle.properties(
-                    b, theme: env.theme, canvas: env.canvas, defaults: canvas.style.elements.boundary, lost: &lost)
+                    b, theme: env.theme, canvas: env.canvas, canvasType: canvas.type,
+                    defaults: canvas.style.elements.boundary, lost: &lost)
                 lose(lost)
                 if !p.isEmpty { o["style"] = ["id": "\(canvas.id.rawValue)-\(b.id)-style", "properties": p] }
                 if ids.count == 1, parents[first] == nil {

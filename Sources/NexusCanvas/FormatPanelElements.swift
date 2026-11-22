@@ -240,8 +240,8 @@ struct BoundarySection: View {
         PanelSection(Loc.t("Meaning · technical canvases"), key: "boundary.meaning") {
             Segments(
                 options: [
-                    ("group", Loc.t("Group")), ("zone", Loc.t("Zone")), ("vpc", "VPC"), ("subnet", Loc.t("Subnet")),
-                    ("trust", Loc.t("Trust")),
+                    ("group", Loc.t("Group")), ("zone", Loc.t("Zone")), ("region", Loc.t("Region")), ("vpc", "VPC"),
+                    ("subnet", Loc.t("Subnet")), ("trust", Loc.t("Trust")),
                 ],
                 selection: boundary.meaning
             ) { v in set { $0.meaning = v } }
@@ -277,6 +277,7 @@ struct BoundarySection: View {
                     Text("Auto").tag("auto")
                     Text("Solid").tag("solid")
                     Text("- - Dashed").tag("dashed")
+                    Text("-- Fine").tag("fine")
                     Text("· · Dotted").tag("dotted")
                 }
                 .labelsHidden()

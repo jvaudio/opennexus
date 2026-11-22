@@ -124,8 +124,8 @@ public enum NodeStyle: String, Sendable, CaseIterable, Identifiable, Codable {
             if root {
                 return Self.s {
                     $0.fill = "solid"; $0.fillColor = "#FFE14D"; $0.textColor = "#17171C"; $0.border = "solid"
-                    $0.borderWidth = 2.5; $0.borderColor = "#17171C"; $0.cornerRadius = 6; $0.shadow = "hard"
-                    $0.shadowColor = "#17171C"; $0.fontWeight = "heavy"
+                    $0.borderWidth = 2.5; $0.borderColor = "ink"; $0.cornerRadius = 6; $0.shadow = "hard"
+                    $0.shadowColor = "ink"; $0.fontWeight = "heavy"
                 }
             }
             if sub {
@@ -173,7 +173,8 @@ public enum NodeStyle: String, Sendable, CaseIterable, Identifiable, Codable {
     /// glowing lines for Glow.
     public var line: LineStyle {
         switch self {
-        case .brutal: LineStyle(shape: "elbow", color: "#17171C", width: 2.2)
+        // Ink, not black: the theme's ink stays visible on Graphite and Blueprint.
+        case .brutal: LineStyle(shape: "elbow", color: "ink", width: 2.2)
         case .minimal: LineStyle(width: 1.4, dash: "dotted")
         case .glow: LineStyle(glow: true)
         default: LineStyle()

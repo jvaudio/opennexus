@@ -64,8 +64,7 @@ public struct CanvasOverlayStack: View {
             }
             .pinned(.bottomTrailing)
             Group {
-                ThreatTableView(controller: controller).named(Loc.t("Threat table")).padding(.horizontal, 16)
-                    .padding(.bottom, 60)
+                ThreatTableView(controller: controller).named(Loc.t("Threat table"))
                 MapShotBar(controller: controller).named(Loc.t("Map Shot")).padding(.bottom, 40)
                 TourOverlay(controller: controller, part: .bar).named(Loc.t("Tutorial")).padding(.bottom, 70)
                 TipView(controller: controller).named(Loc.t("Tip")).padding(.bottom, 72)

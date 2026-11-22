@@ -107,7 +107,10 @@ private struct ExportSheet: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(spacing: 0) {
-                formatList.frame(width: 260)
+                // The preview and options set the sheet's height and the formats scroll
+                // inside it: the list has grown (Xmind, tasks, calendar) past what a window
+                // holds, and pushed the footer off the sheet.
+                Color.clear.frame(width: 260).overlay { formatList }
                 Divider()
                 VStack(alignment: .leading, spacing: 18) {
                     previewArea
@@ -195,10 +198,14 @@ private struct ExportSheet: View {
         ZStack(alignment: .bottomTrailing) {
             if let text {
                 ScrollView([.vertical, .horizontal]) {
-                    Text(text).font(.chrome(13, design: .monospaced)).foregroundStyle(.white.opacity(0.92))
-                        .textSelection(.enabled)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(18)
+                    Text(
+                        state.format == .mermaid || state.format == .plantuml
+                            ? Self.colored(text) : AttributedString(text)
+                    )
+                    .font(.chrome(13, design: .monospaced)).foregroundStyle(.white.opacity(0.92))
+                    .textSelection(.enabled)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(18)
                 }
                 .accessibilityLabel(Loc.t("Preview"))
                 .background(RoundedRectangle(cornerRadius: 12).fill(Color(red: 0.11, green: 0.11, blue: 0.13)))
@@ -232,6 +239,44 @@ private struct ExportSheet: View {
             }
         }
         .frame(height: 520)
+    }
+
+    /// Diagram code coloured as on artboard 30: the ids a line defines in Iris, edge and
+    /// message labels in amber, everything else the preview's plain ink.
+    static let codeRules: [(NSRegularExpression, Color)] = [
+        // A node defined with its shape (`A([Start])`, `B{Ok?}`), a Mermaid participant
+        // (`participant P1 as …`) or a PlantUML alias (`"…" as P1`).
+        (
+            try! NSRegularExpression(
+                pattern:
+                    #"^\s*([A-Za-z_][\w-]*)(?=[\[\(\{>])|^\s*(?:participant|actor)\s+([A-Za-z_][\w-]*)\s+as\b|"\s+as\s+([A-Za-z_][\w-]*)"#
+            ), Tokens.Signal.irisDark.color
+        ),
+        // `-->|Yes|`, `-- Yes -->`, and a message's or PlantUML arrow's `: label`.
+        (
+            try! NSRegularExpression(
+                pattern: #"\|([^|\n]+)\||--\s+([^-\n>][^\n>]*?)\s+-->|[->]>?\s*\w+\s*:\s*(.+)$"#),
+            Tokens.Signal.amber.color
+        ),
+    ]
+
+    static func colored(_ code: String) -> AttributedString {
+        var out = AttributedString()
+        for (i, line) in code.components(separatedBy: "\n").enumerated() {
+            var a = AttributedString(line)
+            let ns = line as NSString
+            for (re, color) in codeRules {
+                for m in re.matches(in: line, range: NSRange(location: 0, length: ns.length)) {
+                    for g in 1..<m.numberOfRanges where m.range(at: g).location != NSNotFound {
+                        guard let r = Range(m.range(at: g), in: line), let ar = Range(r, in: a) else { continue }
+                        a[ar].foregroundColor = color
+                    }
+                }
+            }
+            if i > 0 { out += AttributedString("\n") }
+            out += a
+        }
+        return out
     }
 
     /// Xmind (M15): which Xmind (M18), what the file holds, and what doesn't carry over.
@@ -277,17 +322,29 @@ private struct ExportSheet: View {
         case .visual:
             visualOptions
             if state.format == .svg {
-                HStack(spacing: 18) {
+                HStack(alignment: .top, spacing: 18) {
                     FileSegments(
                         items: [(false, Loc.t("Embed fonts")), (true, Loc.t("Outline text"))],
                         selection: Binding(get: { state.svg.outlineText }, set: { v in set { $0.svg.outlineText = v } })
                     )
                     .frame(width: 300)
-                    Toggle(
-                        "Include metadata (types, fields)",
-                        isOn: Binding(get: { state.svg.metadata }, set: { v in set { $0.svg.metadata = v } })
-                    )
-                    .toggleStyle(.switch)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Toggle(
+                            "Include metadata (types, fields)",
+                            isOn: Binding(get: { state.svg.metadata }, set: { v in set { $0.svg.metadata = v } })
+                        )
+                        .toggleStyle(.switch)
+                        // What the metadata looks like in the file, so the toggle's effect is concrete.
+                        if state.svg.metadata {
+                            Text(verbatim: "<g data-nexus-type=\"service\"\n   data-owner=\"Team Atlas\">…")
+                                .font(.chrome(12, design: .monospaced)).foregroundStyle(.chromeSecondary)
+                                .padding(.horizontal, 10).padding(.vertical, 8)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(RoundedRectangle(cornerRadius: 8).fill(Color.secondary.opacity(0.08)))
+                                .accessibilityLabel(Loc.t("Metadata sample"))
+                        }
+                        Text("Scope and scale shared with PNG.").font(.chrome(12.5)).foregroundStyle(.chromeSecondary)
+                    }
                 }
             }
             if state.format == .jpeg {
@@ -1107,7 +1164,7 @@ struct ImportReportView: View {
                     }
                 }
                 Text(
-                    "Also imports MindNode, Word (.docx), TextBundle, OPML, Markdown, Mermaid, PlantUML subset, draw.io, FreeMind and MindManager (best effort), and indented text."
+                    "Also imports MindNode, Word (.docx), TextBundle, OPML, Markdown, Mermaid, PlantUML subset, draw.io, FreeMind and MindManager (best effort), indented text, and images or PDFs via AI."
                 )
                 .font(.chrome(13)).foregroundStyle(.chromeSecondary)
                 .fixedSize(horizontal: false, vertical: true)

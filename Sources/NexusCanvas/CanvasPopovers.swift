@@ -7,6 +7,7 @@ import UniformTypeIdentifiers
 
 #if os(macOS)
 import AppKit
+import Quartz
 #else
 import UIKit
 #endif
@@ -72,7 +73,9 @@ final class CanvasPopovers: NSObject, NSPopoverDelegate {
             let name = n.attachments[index].name ?? n.attachments[index].asset
             let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
             try? data.write(to: url)
-            NSWorkspace.shared.open(url)
+            // Quick Look, as on the iPad and Finder (artboard 24: "Quick Look · Space"); the
+            // panel offers Open With for the file's own app.
+            AttachmentPreview.shared.show(url)
         }
     }
 
@@ -558,5 +561,64 @@ enum PopoverAnchors {
     static func gantt(_ c: CanvasController) -> Anchor? { gantts.object(forKey: c)?.anchor }
     static func setOutline(_ c: CanvasController, _ a: @escaping Anchor) { outlines.setObject(Box(a), forKey: c) }
     static func setGantt(_ c: CanvasController, _ a: @escaping Anchor) { gantts.setObject(Box(a), forKey: c) }
+}
+#endif
+
+#if os(macOS)
+/// The Quick Look panel for an attachment: one item, the file written out of the package.
+/// The panel is changed only while a responder controls it: the document window accepts
+/// control while there's an item (`hasItem`) and hands over through `begin` and `end`.
+/// The file asked for (`requested`) is kept apart from the one the panel shows (`shown`), so
+/// a previous controller ending mid-handover can't drop a newer request.
+@MainActor
+public final class AttachmentPreview: NSObject, QLPreviewPanelDataSource {
+    public static let shared = AttachmentPreview()
+    private var requested: URL?
+    private var shown: URL?
+    private weak var controlled: QLPreviewPanel?
+
+    public var hasItem: Bool { requested != nil || shown != nil }
+
+    func show(_ url: URL) {
+        requested = url
+        defer { requested = nil }
+        guard let panel = QLPreviewPanel.shared() else {
+            NSWorkspace.shared.open(url)
+            return
+        }
+        if panel.isVisible {
+            panel.updateController()
+            if controlled === panel {
+                shown = url
+                panel.reloadData()
+            }
+        } else {
+            // Showing the panel asks the responder chain for a controller (`begin`).
+            panel.makeKeyAndOrderFront(nil)
+        }
+        if controlled !== panel {
+            // No document window took control: open the file in its own app instead.
+            if panel.currentController == nil { panel.orderOut(nil) }
+            NSWorkspace.shared.open(url)
+        }
+    }
+
+    public func begin(_ panel: QLPreviewPanel) {
+        controlled = panel
+        if let requested { shown = requested }
+        panel.dataSource = self
+    }
+
+    public func end(_ panel: QLPreviewPanel) {
+        if panel.dataSource === self { panel.dataSource = nil }
+        controlled = nil
+        shown = nil
+    }
+
+    public nonisolated func numberOfPreviewItems(in panel: QLPreviewPanel!) -> Int { 1 }
+
+    public nonisolated func previewPanel(_ panel: QLPreviewPanel!, previewItemAt index: Int) -> (any QLPreviewItem)! {
+        MainActor.assumeIsolated { shown as NSURL? }
+    }
 }
 #endif

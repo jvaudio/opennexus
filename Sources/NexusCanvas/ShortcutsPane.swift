@@ -209,13 +209,17 @@ struct ShortcutsPane: View {
                 }
                 Text(
                     Loc.f(
-                        "%@ acts as ⌃⌥⇧⌘ pressed together, giving OpenNexus a clash-free namespace. Tap alone: %@.",
-                        prefs.string("shortcuts.hyperKey") == "rightOption"
-                            ? Loc.t("Right Option") : Loc.t("Caps Lock"),
-                        prefs.string("shortcuts.hyperTap") == "esc" ? Loc.t("Esc") : Loc.t("nothing"))
+                        "%@ acts as ⌃⌥⇧⌘ pressed together, giving OpenNexus a clash-free namespace.",
+                        Loc.t(Self.label(prefs.string("shortcuts.hyperKey"), of: "shortcuts.hyperKey")))
                 )
                 .font(.chrome(13)).foregroundStyle(.white.opacity(0.7)).fixedSize(
                     horizontal: false, vertical: true)
+                HStack(spacing: 6) {
+                    hyperChoice("shortcuts.hyperKey", Loc.t("Key:"))
+                    Text(verbatim: "·").foregroundStyle(.white.opacity(0.7))
+                    hyperChoice("shortcuts.hyperTap", Loc.t("Tap alone:"))
+                }
+                .font(.chrome(13))
             }
         }
         .padding(18)
@@ -252,6 +256,50 @@ struct ShortcutsPane: View {
         }
     }
 
+    /// A schema row's options (`SettingsSchema`), so the card offers what Settings stores.
+    static func options(_ key: String) -> [SettingRow.Option] {
+        switch SettingsSchema.allRows.first(where: { $0.2.key == key })?.2.kind {
+        case .menu(let o), .segmented(let o): o
+        default: []
+        }
+    }
+
+    static func label(_ value: String, of key: String) -> String {
+        options(key).first { $0.value == value }?.label ?? value
+    }
+
+    /// "Key: Caps Lock ▾" and "Tap alone: Esc ▾", chosen in place as on artboard 08.
+    func hyperChoice(_ key: String, _ title: String) -> some View {
+        HStack(spacing: 4) {
+            Text(title).foregroundStyle(.white)
+            Menu {
+                Picker(
+                    title,
+                    selection: Binding(
+                        get: { prefs.string(key) },
+                        set: { v in
+                            let asks = key == "shortcuts.hyperKey" && v == "capsLock" && prefs.string(key) != v
+                            prefs.set(key, v)
+                            // Caps Lock needs Input Monitoring: ask as turning Hyper on does.
+                            if asks && prefs.bool("shortcuts.hyper") { hyperPrompt = true }
+                        })
+                ) {
+                    ForEach(Self.options(key), id: \.value) { Text(Loc.t($0.label)).tag($0.value) }
+                }
+                .pickerStyle(.inline)
+                .labelsHidden()
+            } label: {
+                Text(Loc.t(Self.label(prefs.string(key), of: key)) + " ▾").foregroundStyle(.white.opacity(0.7))
+            }
+            .menuStyle(.button)
+            .buttonStyle(.plain)
+            .menuIndicator(.hidden)
+            .fixedSize()
+            .accessibilityLabel(title)
+            .accessibilityValue(Loc.t(Self.label(prefs.string(key), of: key)))
+        }
+    }
+
     // MARK: Table
 
     var rows: [CommandDescriptor] {
@@ -262,6 +310,42 @@ struct ShortcutsPane: View {
                 && (q.isEmpty || c.title.lowercased().contains(q) || c.id.rawValue.contains(q))
                 && c.scope != .find
         }
+    }
+
+    /// A line of the table: one command, or the nine Branch Structure commands as one
+    /// (artboard 08's "Change branch structure ⌥⌘1 … 9").
+    enum Line: Identifiable {
+        case command(CommandDescriptor)
+        case structures([CommandDescriptor])
+        var id: String {
+            switch self {
+            case .command(let c): c.id.rawValue
+            case .structures: "structures"
+            }
+        }
+    }
+
+    /// The rows, the Branch Structure commands folded into one line while more than one
+    /// shows and none has a key of its own; searching for one ("structure 3") shows it alone,
+    /// to record.
+    func lines(_ c: KeyCustomization) -> [Line] {
+        let ids = Set((1...9).map { CommandID.structure($0).rawValue })
+        let all = rows
+        let structures = all.filter { ids.contains($0.id.rawValue) }
+        let custom = structures.contains { c.chords[$0.id.rawValue] != nil || c.scopes[$0.id.rawValue] != nil }
+        // One being recorded, or whose conflict waits on an answer, keeps its own row, so its
+        // Recording… and Cancel, or the conflict's popover, stay in view.
+        let recordingOne = structures.contains { $0.id == recording || $0.id == pending?.id }
+        guard structures.count > 1, !custom, !recordingOne else { return all.map(Line.command) }
+        var out: [Line] = []
+        for cmd in all {
+            if !ids.contains(cmd.id.rawValue) {
+                out.append(.command(cmd))
+            } else if cmd.id == structures[0].id {
+                out.append(.structures(structures))
+            }
+        }
+        return out
     }
 
     static func scopeName(_ s: Scope) -> String {
@@ -295,16 +379,24 @@ struct ShortcutsPane: View {
             // Every row at once on the iPad: a lazy stack makes rows anew as the text size
             // changes, which the audit reports as text that can't grow (D408).
             Rows(spacing: 0) {
-                ForEach(rows, id: \.id) { cmd in
-                    let keys = reg.bindings(for: cmd.id, profile: c.keyProfile, custom: c.custom)
-                    row(cmd, standard: keys.filter { !$0.isHyper }, hyper: keys.first(where: \.isHyper), c)
-                        .font(.chrome(14))
-                        .padding(.horizontal, 18).padding(.vertical, 9)
-                        .background(recording == cmd.id ? Color.red.opacity(0.06) : .clear)
-                        .popover(
-                            isPresented: Binding(get: { pending?.id == cmd.id }, set: { if !$0 { pending = nil } }),
-                            arrowEdge: .top
-                        ) { conflictCard }
+                ForEach(lines(c)) { line in
+                    switch line {
+                    case .command(let cmd):
+                        let keys = reg.bindings(for: cmd.id, profile: c.keyProfile, custom: c.custom)
+                        row(cmd, standard: keys.filter { !$0.isHyper }, hyper: keys.first(where: \.isHyper), c)
+                            .font(.chrome(14))
+                            .padding(.horizontal, 18).padding(.vertical, 9)
+                            .background(recording == cmd.id ? Color.red.opacity(0.06) : .clear)
+                            .popover(
+                                isPresented: Binding(
+                                    get: { pending?.id == cmd.id }, set: { if !$0 { pending = nil } }),
+                                arrowEdge: .top
+                            ) { conflictCard }
+                    case .structures(let cmds):
+                        structuresRow(cmds, reg, c)
+                            .font(.chrome(14))
+                            .padding(.horizontal, 18).padding(.vertical, 9)
+                    }
                     Divider()
                 }
             }
@@ -374,6 +466,41 @@ struct ShortcutsPane: View {
         #endif
     }
 
+    /// The nine Branch Structure commands as one line: the first's keys to the last's
+    /// number ("⌥⌘1 … 9"). Shown, not recorded; each is recorded on its own line.
+    @ViewBuilder
+    func structuresRow(_ cmds: [CommandDescriptor], _ reg: CommandRegistry, _ c: KeyCustomization) -> some View {
+        let first = reg.bindings(for: cmds[0].id, profile: c.keyProfile, custom: c.custom)
+        let last = reg.bindings(for: cmds[cmds.count - 1].id, profile: c.keyProfile, custom: c.custom)
+        let standard = first.first { !$0.isHyper }.map {
+            $0.glyphs + " … " + (last.first { !$0.isHyper }?.key.glyph ?? "")
+        }
+        let title = Loc.t("Change branch structure")
+        let help = Loc.t("Search for one, such as “Branch Structure 3”, to change its key")
+        #if os(macOS)
+        let hyper = first.first(where: \.isHyper).map {
+            "✦ " + $0.key.glyph + " … " + (last.first(where: \.isHyper)?.key.glyph ?? "")
+        }
+        HStack {
+            Text(title).frame(maxWidth: .infinity, alignment: .leading)
+            Text(Self.scopeName(cmds[0].scope)).foregroundStyle(.chromeSecondary).frame(
+                width: 120, alignment: .leading)
+            cap(standard ?? "—", hyper: false).help(help).frame(width: 260, alignment: .leading)
+            Group {
+                if let hyper { cap(hyper, hyper: true) } else { Text("") }
+            }
+            .frame(width: 110, alignment: .leading)
+        }
+        #else
+        TitleAndControl {
+            Text(Self.nameAndScope(title, cmds[0].scope))
+            cap(standard ?? "—", hyper: false)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(help)
+        #endif
+    }
+
     func keys(_ cmd: CommandDescriptor, standard: [KeyChord], _ c: KeyCustomization) -> some View {
         HStack(spacing: 6) {
             if recording == cmd.id {
@@ -412,7 +539,11 @@ struct ShortcutsPane: View {
     static func nameAndScope(_ cmd: CommandDescriptor) -> AttributedString {
         var name = Loc.t(cmd.title)
         if name.hasSuffix("…") { name.removeLast() }
-        var scope = AttributedString(scopeName(cmd.scope))
+        return nameAndScope(name, cmd.scope)
+    }
+
+    static func nameAndScope(_ name: String, _ s: Scope) -> AttributedString {
+        var scope = AttributedString(scopeName(s))
         scope.font = .chrome(12.5)
         scope.foregroundColor = Color(uiColor: .chromeSecondary)
         return AttributedString(name + "\n") + scope

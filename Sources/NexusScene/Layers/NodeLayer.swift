@@ -69,8 +69,10 @@ package final class NodeLayer: CALayer {
     package var showsFoldButton = false {
         didSet { if oldValue != showsFoldButton { foldButton.isHidden = !showsFoldButton || !badge.isHidden } }
     }
-    /// Technical caption above the node (PROCESS, START, EXTERNAL ENTITY).
+    /// Technical caption outside the node (PROCESS, START, EXTERNAL ENTITY).
     package let caption = TextLayer()
+    /// A DFD rule check's red outline on the store a flagged flow touches (artboard 20).
+    package let flagRing = CAShapeLayer()
     /// Search hits and the present step glow around the node.
     package let glowLayer = CAShapeLayer()
     package private(set) var node: SceneNode?
@@ -154,6 +156,9 @@ package final class NodeLayer: CALayer {
         addSublayer(foldButton)
         caption.isHidden = true
         addSublayer(caption)
+        flagRing.fillColor = nil
+        flagRing.isHidden = true
+        addSublayer(flagRing)
         glowLayer.fillColor = nil
         glowLayer.isHidden = true
         glowLayer.actions = Self.noActions
@@ -161,6 +166,7 @@ package final class NodeLayer: CALayer {
         actions = Self.noActions
         for l in [
             shape, inner, gradient, gradientMask, text, ring, halo, lead, badge, badgeText, decor, imageLayer, caption,
+            flagRing,
         ]
             as [CALayer]
         {
@@ -210,8 +216,8 @@ package final class NodeLayer: CALayer {
         let size = n.frame.size
         if sizeChanged { bounds = CGRect(origin: .zero, size: size) }
 
-        if sizeChanged || lookChanged {
-            drawShape(n, canvas: canvas)
+        if sizeChanged || lookChanged || stateChanged {
+            drawShape(n, theme: theme, editing: editing)
         }
 
         if contentChanged {
@@ -232,14 +238,21 @@ package final class NodeLayer: CALayer {
                 let a = StyledText(
                     c,
                     TextAttributes(
-                        font: Fonts.mono(9.5, .medium), color: .fixed(theme.ink2.cgColor), paragraph: .centered,
-                        kern: 1.2))
+                        font: Fonts.mono(9.5, .medium), color: .fixed(theme.ink2.cgColor),
+                        paragraph: n.tech.captionPlacement == .trailing ? nil : .centered, kern: 1.2))
                 caption.attributed = a
                 caption.isHidden = false
-                caption.frame = CGRect(x: -60, y: -17, width: n.frame.size.width + 120, height: 13)
+                caption.frame = n.tech.captionRect(nodeSize: n.frame.size)
                 caption.setNeedsDisplay()
             } else {
                 caption.isHidden = true
+            }
+            flagRing.isHidden = !n.tech.flowFlagged
+            if n.tech.flowFlagged {
+                let r = CGRect(origin: .zero, size: n.frame.size).insetBy(dx: -3, dy: -3)
+                flagRing.path = CGPath(rect: r, transform: nil)
+                flagRing.strokeColor = theme.critical.cgColor
+                flagRing.lineWidth = 2
             }
         }
         if let image, !n.imageRect.isEmpty {
@@ -272,9 +285,11 @@ package final class NodeLayer: CALayer {
         if n.glow {
             let r = CGRect(origin: .zero, size: n.frame.size).insetBy(dx: -4, dy: -4)
             glowLayer.path = CGPath(roundedRect: r, cornerWidth: 12, cornerHeight: 12, transform: nil)
-            glowLayer.strokeColor = CGColor(srgbRed: 1, green: 0.8, blue: 0.25, alpha: 0.75)
+            // Present's current step: an Aurora ring and glow (artboard 32).
+            let aurora = Tokens.Signal.auroraDark
+            glowLayer.strokeColor = aurora.alpha(0.75).cgColor
             glowLayer.lineWidth = 5
-            glowLayer.shadowColor = CGColor(srgbRed: 1, green: 0.8, blue: 0.25, alpha: 1)
+            glowLayer.shadowColor = aurora.cgColor
             glowLayer.shadowOpacity = 0.8
             glowLayer.shadowRadius = 8
             glowLayer.shadowOffset = .zero
@@ -306,7 +321,7 @@ package final class NodeLayer: CALayer {
         }
     }
 
-    private func drawShape(_ n: SceneNode, canvas: RGBA) {
+    private func drawShape(_ n: SceneNode, theme: Theme, editing: Bool) {
         let a = n.appearance
         let size = n.frame.size
         let bw = CGFloat(a.borderWidth)
@@ -329,7 +344,12 @@ package final class NodeLayer: CALayer {
         } else {
             shape.path = outline
             switch a.fill {
-            case .solid(let c) where !open: shape.fillColor = c.cgColor
+            case .solid(let c) where !open:
+                // A topic being edited turns the surface colour under its Iris ring and halo
+                // (artboard 17), where its text still reads.
+                let surface = (theme.isDark ? Tokens.neutralsDark : Tokens.neutralsLight).surface
+                let lifts = editing && Contrast.ratio(a.text, surface) >= Contrast.Level.aa.minimum
+                shape.fillColor = (lifts ? surface : c).cgColor
             default: shape.fillColor = nil
             }
         }

@@ -144,8 +144,10 @@ public struct SceneViewState: Equatable {
 
 /// What a node type adds to a topic on technical canvases (artboards 19–23).
 public struct TechDecor: Equatable {
-    /// Small caps above the node, outside it (PROCESS, EXTERNAL ENTITY, START).
+    /// Small caps outside the node (PROCESS, EXTERNAL ENTITY, START).
     public var caption: String?
+    /// Where the caption sits: clear of the flow arriving from above (artboards 19, 20).
+    public var captionPlacement: CaptionPlacement = .above
     /// A line above the title inside the node (1.0, SERVICE).
     public var kicker: String?
     public var kickerRect: CGRect = .zero
@@ -165,8 +167,29 @@ public struct TechDecor: Equatable {
     public var tint: RGBA?
     /// A rule check flags this node.
     public var flagged = false
+    /// A flagged flow ends here: the node takes a red outline (artboard 20's D1 Orders).
+    public var flowFlagged = false
 
     public init() {}
+
+    public enum CaptionPlacement: Equatable, Sendable {
+        /// Centred over the node (START, PROCESS, DECISION).
+        case above
+        /// Centred under it (END, where the flow arrives from above).
+        case below
+        /// Beside its right edge (I/O, beside the slanted shape).
+        case trailing
+    }
+
+    /// The caption's line box in the node's own coordinates, for a node of `size`: 13 pt
+    /// tall, wide enough for any caption when centred.
+    public func captionRect(nodeSize size: CGSize) -> CGRect {
+        switch captionPlacement {
+        case .above: CGRect(x: -60, y: -17, width: size.width + 120, height: 13)
+        case .below: CGRect(x: -60, y: size.height + 5, width: size.width + 120, height: 13)
+        case .trailing: CGRect(x: size.width + 8, y: (size.height - 13) / 2, width: 160, height: 13)
+        }
+    }
 }
 
 /// Paths a structure draws behind or between topics, recomputed from live frames.
@@ -217,6 +240,40 @@ public struct SceneBoundary: Equatable {
     public var color: RGBA
     /// Nesting level (0 = innermost), for region › VPC › subnet padding.
     public var level: Int
+    /// The trust level its meaning implies when none is set: a zone (PCI, artboard 20) and
+    /// a threat model's trust boundary (artboard 21) hatch as medium.
+    public var impliedTrust: String?
+
+    /// The hatch drawn inside: medium (hatch) or low (dense), never colour alone; nil for
+    /// high trust or none.
+    public var hatchLevel: String? {
+        guard boundary.hatch, let level = boundary.trust ?? impliedTrust, level != "high" else { return nil }
+        return level
+    }
+
+    /// The title as drawn, and whether it's a technical one. Technical boundaries title as
+    /// the artboards do: mono capitals, letter-spaced ("VPC · PROD 10.0.0.0/16", "PCI ZONE"),
+    /// without repeating a kind the title already names. Group boundaries keep their title
+    /// as typed. The canvas and the SVG export both draw this.
+    public var title: (text: String, technical: Bool) {
+        let prefix: String =
+            switch boundary.meaning {
+            case "region": "REGION"
+            case "vpc": "VPC"
+            case "subnet": "SUBNET"
+            case "trust": Loc.t("TRUST BOUNDARY")
+            case "zone": "ZONE"
+            default: ""
+            }
+        guard !prefix.isEmpty else { return (boundary.title, false) }
+        let named = boundary.title.range(of: prefix, options: .caseInsensitive) != nil
+        let text = [named ? "" : prefix, boundary.title].filter { !$0.isEmpty }.joined(separator: " · ")
+        return (text.uppercased(), true)
+    }
+
+    public static func titleFont(technical: Bool) -> CTFont {
+        technical ? Fonts.mono(10.5, .semibold) : Fonts.system(11.5, .semibold)
+    }
 }
 
 public struct SceneSummary: Equatable {
@@ -286,11 +343,27 @@ public struct Scene {
         }
     }
 
+    /// A technical caption's width as drawn (mono 9.5, tracked 1.2; `NodeLayer`).
+    static func captionWidth(_ caption: String) -> CGFloat {
+        let attributes: [NSAttributedString.Key: Any] = [
+            NSAttributedString.Key(kCTFontAttributeName as String): Fonts.mono(9.5, .medium),
+            NSAttributedString.Key(kCTKernAttributeName as String): 1.2,
+        ]
+        let line = CTLineCreateWithAttributedString(NSAttributedString(string: caption, attributes: attributes))
+        return ceil(CTLineGetTypographicBounds(line, nil, nil, nil))
+    }
+
     public var bounds: CGRect {
         var b = nodes.values.reduce(CGRect.null) { $0.union($1.frame.rect) }
         for z in zones { b = b.union(z.rect) }
         for bd in boundaries { b = b.union(bd.rect) }
         if let l = legend { b = b.union(l.rect) }
+        // A trailing caption (I/O) reads on past the node's right edge.
+        for n in nodes.values {
+            guard let c = n.tech.caption, n.tech.captionPlacement == .trailing else { continue }
+            let box = n.tech.captionRect(nodeSize: n.frame.size).offsetBy(dx: n.frame.rect.minX, dy: n.frame.rect.minY)
+            b = b.union(CGRect(x: box.minX, y: box.minY, width: Self.captionWidth(c), height: box.height))
+        }
         for d in decor {
             switch d {
             case .band(let r, _, _): b = b.union(r)
@@ -553,6 +626,20 @@ public struct SceneBuilder {
                     role: role, depth: depth, node: node, branch: branch, env: env)
                 if env.canvasStyle.font.map({ !$0.isEmpty && $0 != "system" }) == true, merged.font == env.theme.font {
                     appearance.font = env.canvasStyle.font!
+                }
+                // A matrix quadrant's title is its cell's heading (artboard 18): bold text in the
+                // branch colour on the cell, no box of its own, unless the topic is styled.
+                if let p = parents[id], node.style == nil, node.quickStyle == nil,
+                    (p == canvas.root && family == "matrix") || canvas.nodes[p]?.structure?.family == "matrix"
+                {
+                    let cell = env.theme.isDark ? env.canvas : RGBA.white
+                    appearance.fill = .none
+                    appearance.border = .none
+                    appearance.borderWidth = 0
+                    appearance.shadow = nil
+                    appearance.fontWeight = .bold
+                    appearance.textBackground = cell
+                    appearance.text = Contrast.adjusted(branch, on: cell)
                 }
                 // Settings › Appearance / Accessibility: text never smaller than this at 100%.
                 if view.minFontSize > 0, appearance.fontSize < view.minFontSize {
@@ -837,7 +924,10 @@ public struct SceneBuilder {
         }
         // Focus: lay the branch out as a whole map where it stands.
         if let f = focus, !technical, let at = frames[f] {
-            let s = canvas.nodes[f]?.structure ?? .mindmapBalanced
+            let s =
+                canvas.nodes[f]?.structure
+                ?? Self.focusStructure(
+                    f, at: at, canvas: canvas, parents: parents, root: rootStructure)
             let r = TreeLayout.layout(root: f, nodes: layoutNodes, structure: s, origin: at.center, spacing: space)
             frames.merge(r.frames) { _, b in b }
             families.merge(r.families) { _, b in b }
@@ -1031,14 +1121,12 @@ public struct SceneBuilder {
                 r.origin.y -= Self.boundaryTitle
                 r.size.height += Self.boundaryTitle
             }
-            let color: RGBA =
-                b.color.flatMap(RGBA.init(hexString:))
-                ?? (b.meaning == "trust"
-                    ? env.theme.critical
-                    : b.meaning == "vpc" || b.meaning == "subnet"
-                        ? env.theme.entityLine
-                        : canvas.style.elements.boundary.color.flatMap(RGBA.init(hexString:)) ?? env.theme.ring)
-            scene.boundaries.append(SceneBoundary(boundary: b, rect: r, color: color, level: level))
+            let color = b.drawnColor(
+                theme: env.theme, canvasType: canvas.type, canvasDefault: canvas.style.elements.boundary.color)
+            let implied =
+                b.meaning == "zone" || (b.meaning == "trust" && canvas.type == .threatModel) ? "medium" : nil
+            scene.boundaries.append(
+                SceneBoundary(boundary: b, rect: r, color: color, level: level, impliedTrust: implied))
         }
         scene.boundaries.sort { $0.level > $1.level }
         var messageIndex = 0
@@ -1097,6 +1185,13 @@ public struct SceneBuilder {
                 scene.relationships[i].flagged = true
                 scene.relationships[i].color = env.theme.critical
                 scene.relationships[i].relationship.dash = "dashed"
+                // The store it writes to (or reads from) is outlined too.
+                for case .topic(let n) in [
+                    scene.relationships[i].relationship.from, scene.relationships[i].relationship.to,
+                ]
+                where nodeTypes[n] == .store {
+                    scene.nodes[n]?.tech.flowFlagged = true
+                }
             }
         }
 
@@ -1212,6 +1307,27 @@ public struct SceneBuilder {
         let todos = kids.compactMap { canvas.nodes[$0]?.todo }
         guard !todos.isEmpty else { return nil }
         return ToDoProgress(done: todos.filter(\.done).count, total: todos.count)
+    }
+
+    /// The structure a focused branch with none of its own is laid out in: the one it
+    /// inherits, except that inside a mind map or logic chart it grows to its own side
+    /// (artboard 27), so it never folds back over the dimmed map behind it.
+    package static func focusStructure(
+        _ id: NodeID, at frame: NodeFrame, canvas: Canvas, parents: [NodeID: NodeID], root: LayoutStructure
+    ) -> LayoutStructure {
+        // A floating topic lays out as a logic chart; the root as the map does.
+        var inherited: LayoutStructure = id == canvas.root ? root : .logicRight
+        var cursor = parents[id]
+        while let p = cursor {
+            if let s = canvas.nodes[p]?.structure {
+                inherited = s
+                break
+            }
+            if p == canvas.root { inherited = root }
+            cursor = parents[p]
+        }
+        guard id != canvas.root, inherited.family == "mindmap" || inherited.family == "logic" else { return inherited }
+        return frame.side == .left ? .logicLeft : .logicRight
     }
 
     package static func applyCase(_ c: String, _ s: String, keepingMath: Bool = false) -> String {

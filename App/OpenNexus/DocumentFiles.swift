@@ -70,9 +70,8 @@ extension DocumentWindowController {
         let prefs = Preferences.shared
         window?.toolbar?.displayMode = prefs.string("appearance.toolbar") == "iconsText" ? .iconAndLabel : .iconOnly
         window?.tabbingMode = prefs.string("general.openIn") == "windows" ? .disallowed : .preferred
-        let glass =
-            prefs.bool("appearance.glass") && !NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency
-            && prefs.string("accessibility.reduceTransparency") != "on"
+        let glass = ChromeSurface.glass(
+            prefs, systemReduces: NSWorkspace.shared.accessibilityDisplayShouldReduceTransparency)
         window?.titlebarAppearsTransparent = !glass ? false : window?.titlebarAppearsTransparent ?? false
         tabsView?.layer?.backgroundColor = glass ? nil : NSColor.windowBackgroundColor.cgColor
         tabsView?.wantsLayer = true

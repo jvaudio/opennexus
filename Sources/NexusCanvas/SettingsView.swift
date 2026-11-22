@@ -324,33 +324,63 @@ struct SectionView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            if !section.title.isEmpty {
-                Text(Loc.t(title))
-                    .font(.chrome(14, weight: .semibold))
-                    .foregroundStyle(.chromeSecondary)
-                    .padding(.leading, 4)
-            }
-            let cards = section.rows.allSatisfy { if case .card = $0.kind { return true } else { return false } }
-            if cards {
-                ForEach(section.rows) { r in
-                    CardView(row: r, prefs: prefs, availability: availability, onAction: onAction).id(r.key)
-                }
+            if let lead = CardView.framedCard(section) {
+                framed(dark: CardView.dark.contains(lead))
             } else {
-                VStack(spacing: 0) {
-                    ForEach(Array(section.rows.enumerated()), id: \.element.key) { i, r in
-                        RowView(row: r, prefs: prefs, availability: availability, onAction: onAction)
-                            .background(highlight == r.key ? Color.accentColor.opacity(0.12) : .clear)
-                            .id(r.key)
-                        if i < section.rows.count - 1 { Divider().padding(.leading, 18) }
-                    }
-                }
-                .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
-                .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator.opacity(0.6)))
+                listed
             }
             if let f = section.footnote {
                 Text(Loc.t(f)).font(.chrome(13)).foregroundStyle(.chromeSecondary).padding(.horizontal, 4)
                     .fixedSize(horizontal: false, vertical: true)
             }
+        }
+    }
+
+    /// A section that opens with an illustration card is that card (artboards 36, 37, 39,
+    /// 41 and 42): its caption an uppercase kicker inside, as the Recovery and "Connect an
+    /// agent" cards draw theirs, then its rows without dividers.
+    func framed(dark: Bool) -> some View {
+        SettingsCard(dark: dark) {
+            VStack(alignment: .leading, spacing: 12) {
+                if !title.isEmpty {
+                    Text(Loc.t(title)).textCase(.uppercase)
+                        .font(.chrome(12, weight: .semibold))
+                        .foregroundStyle(.chromeSecondary)
+                }
+                ForEach(section.rows) { r in
+                    RowView(row: r, prefs: prefs, availability: availability, inset: false, onAction: onAction)
+                        .background(highlight == r.key ? Color.accentColor.opacity(0.12) : .clear)
+                        .id(r.key)
+                }
+            }
+        }
+    }
+
+    /// The other sections: a header over their rows, which share a card with dividers
+    /// between them, or over their cards.
+    @ViewBuilder var listed: some View {
+        if !section.title.isEmpty {
+            Text(Loc.t(title))
+                .font(.chrome(14, weight: .semibold))
+                .foregroundStyle(.chromeSecondary)
+                .padding(.leading, 4)
+        }
+        let cards = section.rows.allSatisfy { if case .card = $0.kind { return true } else { return false } }
+        if cards {
+            ForEach(section.rows) { r in
+                CardView(row: r, prefs: prefs, availability: availability, onAction: onAction).id(r.key)
+            }
+        } else {
+            VStack(spacing: 0) {
+                ForEach(Array(section.rows.enumerated()), id: \.element.key) { i, r in
+                    RowView(row: r, prefs: prefs, availability: availability, onAction: onAction)
+                        .background(highlight == r.key ? Color.accentColor.opacity(0.12) : .clear)
+                        .id(r.key)
+                    if i < section.rows.count - 1 { Divider().padding(.leading, 18) }
+                }
+            }
+            .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
+            .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator.opacity(0.6)))
         }
     }
 }
@@ -371,36 +401,33 @@ struct RowView: View {
     let row: SettingRow
     var prefs: Preferences
     var availability: AIAvailability
+    /// Padded as a row of a list; off inside a section's card, which pads its content.
+    var inset = true
     var onAction: (String) -> Void
 
     var body: some View {
         let _ = prefs.revision
-        if case .card = row.kind {
-            CardView(row: row, prefs: prefs, availability: availability, onAction: onAction).padding(14)
-        } else {
-            arranged
-                .padding(.horizontal, 14)
-                .padding(.vertical, 8)
-                .accessibilityElement(children: combines ? .combine : .contain)
+        Group {
+            if case .card = row.kind {
+                CardView(row: row, prefs: prefs, availability: availability, onAction: onAction)
+            } else {
+                arranged.accessibilityElement(children: combines ? .combine : .contain)
+            }
         }
+        .padding(.horizontal, inset ? 14 : 0)
+        .padding(.vertical, inset ? 8 : 0)
     }
 
-    /// Side by side when it fits; otherwise (long translations, large text) the control
-    /// moves under the title instead of truncating.
+    /// Side by side, the title wrapping beside a trailing control as on the artboards;
+    /// the control moves under the title only when it would take most of the row (long
+    /// translations, large text).
     @ViewBuilder var arranged: some View {
         #if os(macOS)
-        ViewThatFits(in: .horizontal) {
-            HStack(alignment: .center, spacing: 12) {
-                titleBlock
-                Spacer(minLength: 12)
-                lockedControl
-            }
-            VStack(alignment: .leading, spacing: 8) {
-                titleBlock
-                lockedControl
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
+        TrailingControl {
+            titleBlock
+            lockedControl
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         #else
         // One layout either way, so the title and control stay the same views as the
         // text size changes (D408).
@@ -518,10 +545,6 @@ struct RowView: View {
                     Circle().fill(Color.green).frame(width: 7, height: 7)
                     Text(Loc.t(v)).foregroundStyle(Color.statusGreen)
                 }
-            } else if v == "Never" {
-                Text(Loc.t(v)).font(.chrome(13, weight: .semibold)).foregroundStyle(.white)
-                    .padding(.horizontal, 10).padding(.vertical, 4)
-                    .background(RoundedRectangle(cornerRadius: 6).fill(Color.badgeGreen))
             } else {
                 Text(Loc.t(v)).foregroundStyle(.chromeSecondary)
             }
@@ -530,6 +553,51 @@ struct RowView: View {
         }
     }
 }
+
+#if os(macOS)
+/// A row's title and control on the Mac: the control at its ideal size on the trailing
+/// edge and the title wrapping in what's left, as the settings artboards draw every row.
+/// Stacked, the control under the title, only when the control would leave the title
+/// less than 45% of the row. `ViewThatFits` measured the title on one line, so any long
+/// subtitle sent the control under it.
+struct TrailingControl: Layout {
+    let gap: CGFloat = 24
+    let below: CGFloat = 8
+
+    func sideBySide(_ width: CGFloat, _ control: CGSize) -> Bool {
+        width - gap - control.width >= width * 0.45
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        guard subviews.count == 2 else { return .zero }
+        let control = subviews[1].sizeThatFits(.unspecified)
+        let title = subviews[0].sizeThatFits(.unspecified)
+        let width = proposal.width ?? title.width + gap + control.width
+        if sideBySide(width, control) {
+            let t = subviews[0].sizeThatFits(ProposedViewSize(width: width - gap - control.width, height: nil))
+            return CGSize(width: width, height: max(t.height, control.height))
+        }
+        let t = subviews[0].sizeThatFits(ProposedViewSize(width: width, height: nil))
+        return CGSize(width: width, height: t.height + below + control.height)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        guard subviews.count == 2 else { return }
+        let control = subviews[1].sizeThatFits(.unspecified)
+        if sideBySide(bounds.width, control) {
+            subviews[0].place(
+                at: CGPoint(x: bounds.minX, y: bounds.midY), anchor: .leading,
+                proposal: ProposedViewSize(width: bounds.width - gap - control.width, height: nil))
+            subviews[1].place(at: CGPoint(x: bounds.maxX, y: bounds.midY), anchor: .trailing, proposal: .unspecified)
+        } else {
+            let width = ProposedViewSize(width: bounds.width, height: nil)
+            let t = subviews[0].sizeThatFits(width)
+            subviews[0].place(at: bounds.origin, proposal: width)
+            subviews[1].place(at: CGPoint(x: bounds.minX, y: bounds.minY + t.height + below), proposal: .unspecified)
+        }
+    }
+}
+#endif
 
 #if os(iOS)
 /// A row's title and control: side by side when both fit at their ideal widths, with

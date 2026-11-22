@@ -4,6 +4,7 @@ import NexusCore
 import NexusKeys
 import NexusScene
 import NexusTheme
+import SwiftUI
 import UIKit
 
 /// The iPad's canvas (M47b): the Mac's `SceneRenderer` in a `UIView`, driven by touch,
@@ -23,7 +24,10 @@ public final class TouchCanvasView: UIView, PointerSurface {
     private var displayLink: CADisplayLink?
     private var lastTick: CFTimeInterval = 0
     private var hasPlacedCamera = false
-    private var morphUntil: CFTimeInterval = 0
+    /// The diagram type at the last update: a change to it is a Convert, which glides longer.
+    private var lastDiagramType: DiagramType?
+    /// The multi-selection's count chip (artboard 11), over the canvas, never taking touches.
+    private var countChip: UIHostingController<SelectionCountChip>?
     private var lastMorphSerial = 0
     /// Set before an update that should morph node looks (⌥⌘S).
     public var morphNextUpdate = false
@@ -76,6 +80,8 @@ public final class TouchCanvasView: UIView, PointerSurface {
         layer.addSublayer(renderer.rootLayer)
         renderer.asset = { [weak controller] in controller?.store.model.assets[$0] }
         pointer = CanvasPointer(controller: controller, renderer: renderer, surface: self)
+        addInteraction(UIDropInteraction(delegate: self))
+        pointer.reduceMotion = { [weak self] in self?.reduceMotion ?? false }
 
         editor.controller = controller
         editor.keyTarget = self
@@ -180,6 +186,15 @@ public final class TouchCanvasView: UIView, PointerSurface {
         let animate = animated && !reduceMotion && window != nil && controller.animateReflow
         let morph = morphNextUpdate && animate
         morphNextUpdate = false
+        // Structure changes and Convert glide (artboard 05); everything else springs, as on
+        // the Mac.
+        var travel = SceneRenderer.Travel.snap
+        if controller.morphSerial != lastMorphSerial {
+            lastMorphSerial = controller.morphSerial
+            let converted = lastDiagramType.map { $0 != controller.canvas.type } ?? false
+            travel = .glide(converted ? Motion.convert : Motion.structureChange)
+        }
+        lastDiagramType = controller.canvas.type
         CATransaction.begin()
         CATransaction.setDisableActions(true)
         if animated && reduceMotion && window != nil {
@@ -190,13 +205,10 @@ public final class TouchCanvasView: UIView, PointerSurface {
         }
         let running = renderer.update(
             controller.scene, state: controller.renderState(reduceMotion: reduceMotion), animated: animate,
-            morph: morph)
+            morph: morph, travel: travel)
         CATransaction.commit()
-        if controller.morphSerial != lastMorphSerial {
-            lastMorphSerial = controller.morphSerial
-            morphUntil = CACurrentMediaTime() + Motion.convert + 0.15
-        }
         if controller.edit != nil { positionEditor() }
+        positionCountChip()
         accessibilityChanged()
         if running { startTicking() }
     }
@@ -220,8 +232,7 @@ public final class TouchCanvasView: UIView, PointerSurface {
         lastTick = now
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        let running = renderer.step(
-            dt, morph: now < morphUntil, selected: controller.selectedElement, connect: controller.connect)
+        let running = renderer.step(dt, selected: controller.selectedElement, connect: controller.connect)
         var cameraDone = true
         if let tween = cameraTween {
             let (c, done) = tween.value(at: now)
@@ -230,6 +241,7 @@ public final class TouchCanvasView: UIView, PointerSurface {
         }
         CATransaction.commit()
         if controller.edit != nil { positionEditor() }
+        positionCountChip()
         if !running && cameraDone {
             link.invalidate()
             displayLink = nil
@@ -252,13 +264,17 @@ public final class TouchCanvasView: UIView, PointerSurface {
         if zoomChanged { controller.zoom = Double(c.zoom) }
         CATransaction.begin()
         CATransaction.setDisableActions(true)
-        renderer.place(c, parallax: controller.prefs.bool("appearance.parallax") && c.zoom < 0.6 && !reduceMotion)
+        renderer.place(
+            c,
+            parallax: controller.prefs.bool("appearance.parallax") && c.zoom < SceneRenderer.parallaxZoom
+                && !reduceMotion)
         CATransaction.commit()
         if bounds.width > 0 {
             controller.viewport = CGRect(
                 origin: c.toWorld(.zero), size: CGSize(width: bounds.width / c.zoom, height: bounds.height / c.zoom))
         }
         if controller.edit != nil { positionEditor() }
+        positionCountChip()
         onCameraMoved?()
     }
 
@@ -357,6 +373,32 @@ public final class TouchCanvasView: UIView, PointerSurface {
         default: return false
         }
         return true
+    }
+
+    /// The count chip shows while more than one topic is selected, centred just outside the
+    /// primary topic's top-right corner, as on the Mac (`CanvasView.positionCountChip`).
+    func positionCountChip() {
+        let c = controller
+        let show = c.selection.nodes.count > 1 && c.edit == nil && c.present == nil && c.mapShot == nil
+        guard show, let r = viewRect(of: c.selection.primary) else {
+            countChip?.view.isHidden = true
+            return
+        }
+        let chip =
+            countChip
+            ?? {
+                let h = UIHostingController(rootView: SelectionCountChip(controller: c))
+                h.view.backgroundColor = .clear
+                h.view.isUserInteractionEnabled = false
+                h.sizingOptions = [.intrinsicContentSize]
+                addSubview(h.view)
+                countChip = h
+                return h
+            }()
+        let size = chip.view.intrinsicContentSize
+        chip.view.frame = CGRect(
+            x: r.maxX + 6 - size.width / 2, y: r.minY - 6 - size.height / 2, width: size.width, height: size.height)
+        chip.view.isHidden = false
     }
 
     /// A topic's rect in view coordinates (popover anchors).
@@ -511,6 +553,36 @@ final class PaddedLabel: UILabel {
     override func sizeThatFits(_ size: CGSize) -> CGSize {
         let s = super.sizeThatFits(size)
         return CGSize(width: s.width + insets.left + insets.right, height: s.height + insets.top + insets.bottom)
+    }
+}
+#endif
+
+#if os(iOS)
+// MARK: Icons dropped from the library (artboard 22)
+
+extension TouchCanvasView: UIDropInteractionDelegate {
+    public func dropInteraction(_ interaction: UIDropInteraction, canHandle session: any UIDropSession) -> Bool {
+        session.canLoadObjects(ofClass: NSString.self)
+    }
+
+    public func dropInteraction(_ interaction: UIDropInteraction, sessionDidUpdate session: any UIDropSession)
+        -> UIDropProposal
+    {
+        UIDropProposal(operation: .copy)
+    }
+
+    public func dropInteraction(_ interaction: UIDropInteraction, performDrop session: any UIDropSession) {
+        // Where it lands is decided now: the load finishes later, after the camera may move.
+        let canvasID = controller.canvasID
+        let parent = pointer.node(at: session.location(in: self)) ?? controller.selection.primary
+        _ = session.loadObjects(ofClass: NSString.self) { [weak self] items in
+            MainActor.assumeIsolated {
+                guard let self, let s = items.first as? String, let info = CanvasController.draggedIcon(s),
+                    self.controller.canvasID == canvasID, self.controller.canvas.nodes[parent] != nil
+                else { return }
+                self.controller.insertIcon(info, under: parent)
+            }
+        }
     }
 }
 #endif

@@ -174,16 +174,6 @@ extension Color {
         Color(uiColor: .statusTeal)
         #endif
     }
-    /// The fill behind a badge's white text (Watermark's "Never"): the system's green on the
-    /// Mac; on the iPad, light mode's status green in both modes, under which white text
-    /// keeps 5.6:1 (D408).
-    public static var badgeGreen: Color {
-        #if os(macOS)
-        .green
-        #else
-        Color(red: 0, green: 0.47, blue: 0.2)
-        #endif
-    }
 }
 
 #if os(iOS)

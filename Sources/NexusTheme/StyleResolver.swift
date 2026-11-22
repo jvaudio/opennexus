@@ -297,7 +297,7 @@ public enum StyleResolver {
         childDepth: Int, family: String, branch: RGBA, parentLine: LineStyle?,
         inherited: [LineStyle], env: StyleEnvironment
     ) -> BranchLineAppearance {
-        var l = LineStyle(shape: env.theme.lineShape, color: "branch")
+        var l = LineStyle(shape: env.theme.lineShape, color: "branch", taper: env.theme.lineTaper)
         l = env.nodeStyle.line.merged(over: l)
         if let skeleton = env.canvasStyle.lineShape { l.shape = skeleton }
         for anc in inherited.reversed() { l = anc.merged(over: l) }

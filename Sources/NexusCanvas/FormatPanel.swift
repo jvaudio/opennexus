@@ -126,12 +126,14 @@ struct StyleTab: View {
                     Button {
                         controller.applyQuickStyle(q.id)
                     } label: {
-                        HStack(spacing: 8) {
+                        // Tighter than before so "Very important" fits a half-width tile
+                        // (artboard 44) instead of truncating.
+                        HStack(spacing: 6) {
                             QuickGlyph(quick: q, theme: controller.theme)
-                            Text(q.name).font(.chrome(13)).lineLimit(1)
+                            Text(q.name).font(.chrome(13)).lineLimit(1).minimumScaleFactor(0.9)
                             Spacer(minLength: 0)
                         }
-                        .padding(6)
+                        .padding(4)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
                                 .strokeBorder(
@@ -158,14 +160,24 @@ struct StyleTab: View {
                 actionRow(Loc.t("Copy style"), key(.copyStyle)) { controller.copyStyle() }
                 actionRow(Loc.t("Paste style"), key(.pasteStyle)) { controller.pasteStyle() }
                 actionRow(Loc.t("Reset style"), key(.resetStyle)) { controller.resetStyle() }
+                // Drawn as its label alone, so it lines up with the rows around it (a
+                // borderless menu insets its title).
                 Menu {
                     updateStyleItems
                 } label: {
-                    Text("Update style").font(.chrome(13)).accessibilityHidden(true)
+                    HStack(spacing: 4) {
+                        Text("Update style").font(.chrome(13))
+                        Text(verbatim: "▸").font(.chrome(10)).foregroundStyle(.chromeSecondary)
+                        Spacer()
+                    }
+                    .padding(.vertical, 4)
+                    .contentShape(Rectangle())
+                    .accessibilityHidden(true)
                 }
-                .borderlessMenu()
+                .menuStyle(.button)
+                .buttonStyle(.plain)
+                .menuIndicator(.hidden)
                 .accessibilityLabel("Update style")
-                .padding(.vertical, 4)
                 actionRow(Loc.t("Save as Quick Style…"), "") { askingQuickName = true }
                 actionRow(Loc.t("Select topics with this style"), "") { controller.selectTopicsWithSameStyle() }
             }
@@ -187,7 +199,7 @@ struct StyleTab: View {
         Button("Apply to all subtopics of this branch") { controller.updateStyle(.subtopics) }
         Divider()
         Button("Save as Quick Style…") { askingQuickName = true }
-        Button("Save into this theme") { controller.updateStyle(.sameLevel) }
+        Button("Save into this theme") { controller.saveStyleIntoTheme() }
     }
 
     func actionRow(_ title: String, _ keys: String, _ action: @escaping () -> Void) -> some View {
@@ -212,6 +224,15 @@ struct StyleTab: View {
         return all.map { ($0, CanvasController.structureName($0)) }
     }
 
+    /// The picker's title for a structure that also comes mirrored ("Logic Chart → right",
+    /// artboard 44), so it reads apart from its "(left)" twin.
+    static func directed(_ s: LayoutStructure, _ name: String) -> String {
+        switch s {
+        case .logicRight, .braceRight: Loc.f("%@ → right", name)
+        default: name
+        }
+    }
+
     var structure: some View {
         let current = node?.structure ?? controller.canvas.layout.structure
         let shortcut = CanvasController.structureCycle.firstIndex(of: current)
@@ -221,7 +242,9 @@ struct StyleTab: View {
                     Loc.t("Structure"),
                     selection: Binding(get: { current }, set: { controller.setStructure($0) })
                 ) {
-                    ForEach(Self.structureOptions(current: current), id: \.0) { s, name in Text(name).tag(s) }
+                    ForEach(Self.structureOptions(current: current), id: \.0) { s, name in
+                        Text(Self.directed(s, name)).tag(s)
+                    }
                 }
                 .labelsHidden()
                 if let shortcut { Keycap(text: key(.structure(shortcut + 1))) }
@@ -266,33 +289,64 @@ struct StyleTab: View {
                 ],
                 selection: style.fill ?? "solid"
             ) { v in set(Loc.t("Fill")) { $0.fill = v } }
-            HStack(spacing: 7) {
-                ForEach(palette, id: \.self) { c in
-                    Swatch(color: c, selected: override.fillColor == c.hex) {
-                        set(Loc.t("Fill Colour")) {
-                            $0.fillColor = c.hex
-                            if $0.fill == nil || $0.fill == "none" { $0.fill = "solid" }
-                        }
-                    }
+            // The Branch menu trails the swatches (artboard 44), dropping below them when
+            // the panel is too narrow for both.
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 6) {
+                    fillSwatches
+                    Spacer(minLength: 4)
+                    branchFillMenu
                 }
-                ColorPicker(
-                    "",
-                    selection: hexBinding(override.fillColor, fallback: branch) { hex in
-                        set(Loc.t("Fill Colour")) { $0.fillColor = hex }
-                    }
-                )
-                .labelsHidden()
-                .accessibilityLabel("Custom colour")
-                .frame(width: 34)
-                Spacer(minLength: 0)
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 7) { fillSwatches }
+                    branchFillMenu
+                }
             }
-            LabeledMenu(Loc.t("Branch colour")) {
-                Button("Follow branch colour") { set(Loc.t("Fill Colour")) { $0.fillColor = "branch" } }
-                Button("Branch tint") { set(Loc.t("Fill Colour")) { $0.fillColor = "branch@0.16" } }
-                Button("Theme default") { set(Loc.t("Fill Colour")) { $0.fillColor = nil } }
-            }
-            .fixedSize()
         }
+    }
+
+    /// The colour the fill shows now: the topic's own hex, else what its style resolves to
+    /// (the branch colour when it follows the branch), opaque, so its swatch is ringed. None
+    /// when the topic has no fill.
+    var currentFill: RGBA? {
+        guard style.fill != "none" else { return nil }
+        if let hex = override.fillColor, let c = RGBA(hexString: hex) { return c }
+        return StyleResolver.resolveColor(style.fillColor, branch: branch, env: controller.styleEnvironment)?.alpha(1)
+    }
+
+    @ViewBuilder var fillSwatches: some View {
+        let current = currentFill
+        ForEach(palette, id: \.self) { c in
+            Swatch(color: c, selected: c == current) {
+                set(Loc.t("Fill Colour")) {
+                    $0.fillColor = c.hex
+                    if $0.fill == nil || $0.fill == "none" { $0.fill = "solid" }
+                }
+            }
+        }
+        ColorPicker(
+            "",
+            selection: hexBinding(override.fillColor, fallback: branch) { hex in
+                set(Loc.t("Fill Colour")) { $0.fillColor = hex }
+            }
+        )
+        .labelsHidden()
+        .controlSize(.small)
+        .accessibilityLabel("Custom colour")
+        .frame(width: 34)
+    }
+
+    var branchFillMenu: some View {
+        Menu {
+            Button("Follow branch colour") { set(Loc.t("Fill Colour")) { $0.fillColor = "branch" } }
+            Button("Branch tint") { set(Loc.t("Fill Colour")) { $0.fillColor = "branch@0.16" } }
+            Button("Theme default") { set(Loc.t("Fill Colour")) { $0.fillColor = nil } }
+        } label: {
+            Text("Branch").accessibilityHidden(true)
+        }
+        .accessibilityLabel(Loc.t("Branch colour"))
+        .controlSize(.small)
+        .fixedSize()
     }
 
     var border: some View {
@@ -580,7 +634,8 @@ struct StyleTab: View {
     }
 
     var branchLine: some View {
-        let shape = line.taper == true ? "tapered" : (line.shape ?? controller.theme.lineShape)
+        let shape =
+            (line.taper ?? controller.theme.lineTaper) == true ? "tapered" : (line.shape ?? controller.theme.lineShape)
         return PanelSection(Loc.t("Branch line"), key: "line") {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3), spacing: 6) {
                 ForEach(Self.lineShapes, id: \.0) { id, name, d in
@@ -590,7 +645,8 @@ struct StyleTab: View {
                                 $0.taper = true
                                 $0.shape = "curved"
                             } else {
-                                $0.taper = nil
+                                // False, not nil: under a tapered theme nil would taper again.
+                                $0.taper = controller.theme.lineTaper == true ? false : nil
                                 $0.shape = id
                             }
                         }
@@ -679,7 +735,7 @@ struct StyleTab: View {
                 actionRow(Loc.f("Apply to all level-%lld topics", depth + 1), "") { controller.updateStyle(.sameLevel) }
                 actionRow(Loc.t("Apply to all subtopics of this branch"), "") { controller.updateStyle(.subtopics) }
                 actionRow(Loc.t("Save as Quick Style…"), "") { askingQuickName = true }
-                actionRow(Loc.t("Save into this theme"), "") { controller.updateStyle(.sameLevel) }
+                actionRow(Loc.t("Save into this theme"), "") { controller.saveStyleIntoTheme() }
             }
         }
     }
@@ -708,5 +764,34 @@ struct QuickGlyph: View {
                         style: StrokeStyle(
                             lineWidth: border == nil ? 0.5 : 1.5,
                             dash: quick.style.border == "dashed" ? [3, 2] : [])))
+    }
+}
+
+extension CanvasController {
+    /// Update Style › Save into this theme: the primary topic's look (its quick style and
+    /// own style) becomes the document theme's style for its kind of topic (root, main,
+    /// sub or floating: `style.roles`, D211). Every topic of that kind takes it, including
+    /// ones added later. It sits over the theme and node style and under level styles, so
+    /// "Apply to all level-N topics" still wins.
+    func saveStyleIntoTheme() {
+        let id = selection.primary
+        let c = canvas
+        guard let node = c.nodes[id] else { return }
+        var look =
+            node.quickStyle.flatMap { q in styleEnvironment.quickStyles.first { $0.id == q }?.style }
+            ?? TopicStyle()
+        if let own = node.style { look = own.merged(over: look) }
+        // Numbering belongs to one parent's children, not to a kind of topic.
+        look.numbering = nil
+        guard !look.isEmpty else {
+            showToast(Loc.t("This topic has no style of its own to save"))
+            return
+        }
+        let depth = c.depth(of: id)
+        let role: NodeRoleStyle = depth == 0 ? (id == c.root ? .root : .floating) : depth == 1 ? .main : .sub
+        updateCanvasStyle(Loc.t("Save Style into Theme")) {
+            $0.roles[role.rawValue] = look.merged(over: $0.roles[role.rawValue] ?? TopicStyle())
+        }
+        showToast(Loc.t("Style saved into this theme"))
     }
 }

@@ -1,5 +1,6 @@
 import AppKit
 import Foundation
+import NexusTheme
 import Testing
 
 @testable import NexusCanvas
@@ -52,6 +53,31 @@ import Testing
         h.press("opt+cmd+t")
         h.type("1")
         #expect(h.canvas.type == .mindmap && h.canvas.layout.structure == .mindmapBalanced)
+    }
+
+    /// A tile dragged from the icon library lands as a child of the topic it's dropped on
+    /// (artboard 22); other text names no icon.
+    @Test func iconDroppedFromTheLibrary() throws {
+        let info = try #require(CanvasController.draggedIcon(CanvasController.iconDragPrefix + "db"))
+        #expect(info.slug == "db")
+        #expect(CanvasController.draggedIcon("db") == nil)
+        let h = CanvasHarness(model: launchPlanDocument())
+        let pricing = try #require(h.canvas.nodes.first { $0.value.text == "Pricing" }?.key)
+        h.controller.select(h.canvas.root)
+        h.controller.insertIcon(info, under: pricing)
+        let added = try #require(h.canvas.nodes[pricing]?.children.last)
+        #expect(h.canvas.nodes[added]?.nodeType == info.id)
+    }
+
+    /// A matrix quadrant's title is its cell's heading: no box, bold, in its branch colour
+    /// (artboard 18).
+    @Test func matrixTitlesAreHeadings() throws {
+        let c = TechSamples.structures(.matrix)
+        let h = CanvasHarness(model: DocumentModel(canvases: [c]))
+        let title = try #require(h.canvas.nodes[h.canvas.root]?.children.first)
+        let a = try #require(h.controller.scene.nodes[title]?.appearance)
+        #expect(a.fill == .none && a.border == .none && a.fontWeight == .bold)
+        #expect(Contrast.ratio(a.text, a.textBackground) >= 4.5)
     }
 
     @Test func slashMenuInSelectMode() {

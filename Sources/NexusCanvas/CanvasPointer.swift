@@ -44,6 +44,8 @@ package final class CanvasPointer {
     package let dropIndicator = CAShapeLayer()
     /// The topic showing its "−" fold control (D215).
     package private(set) var foldHover: NodeID?
+    /// Whether Reduce Motion is on: a hovered topic then shows its shadow without rising.
+    package var reduceMotion: () -> Bool = { false }
 
     package init(controller: CanvasController, renderer: SceneRenderer, surface: any PointerSurface) {
         self.controller = controller
@@ -123,22 +125,33 @@ package final class CanvasPointer {
         return !n.children.isEmpty && !n.folded
     }
 
-    /// Shows the "−" on the topic under the pointer, and keeps it while the pointer is on
-    /// it. Returns whether the pointer is on a fold control (the Mac's pointing hand).
+    /// Lifts the topic under the pointer (artboard 11) and shows its "−", keeping the "−"
+    /// while the pointer is on it. Returns whether the pointer is on a fold control (the
+    /// Mac's pointing hand).
     @discardableResult
     package func updateFoldHover(_ p: CGPoint) -> Bool {
         let c = controller
-        guard c.mode == .select, c.present == nil, c.mapShot == nil, !renderer.exportMode else {
+        guard c.mode == .select, c.present == nil, c.mapShot == nil, !renderer.exportMode, !isMovingSomething
+        else {
             setFoldHover(nil)
             return false
         }
         let w = camera.toWorld(p)
+        let over = node(at: p).flatMap { CanvasController.ghostIndex($0) == nil ? $0 : nil }
+        renderer.setHover(over, rise: !reduceMotion())
         if let h = foldHover, foldControl(h)?.contains(w) == true { return true }
-        setFoldHover(node(at: p).flatMap { offersFoldButton($0) ? $0 : nil })
+        showFoldButton(over.flatMap { offersFoldButton($0) ? $0 : nil })
         return foldTarget(atWorld: w) != nil
     }
 
+    /// Shows the "−" on `id`; nil ends the hover (the pointer left, or a drag began), which
+    /// also lets the lifted topic down.
     package func setFoldHover(_ id: NodeID?) {
+        if id == nil { renderer.setHover(nil, rise: !reduceMotion()) }
+        showFoldButton(id)
+    }
+
+    private func showFoldButton(_ id: NodeID?) {
         guard id != foldHover else { return }
         if let old = foldHover { renderer.nodeLayers[old]?.showsFoldButton = false }
         foldHover = id
@@ -365,6 +378,7 @@ package final class CanvasPointer {
             let dy = w.y - start.y
             if !active && hypot(dx, dy) * camera.zoom < 4 { return }
             guard id != controller.canvas.root else { return }
+            if !active { setFoldHover(nil) }
             active = true
             var offset = CGSize(width: dx, height: dy)
             var target: DropTarget?
@@ -438,8 +452,7 @@ package final class CanvasPointer {
             CATransaction.setDisableActions(true)
             for d in sub {
                 guard let o = origins[d] else { continue }
-                let moved = CGPoint(x: o.x + offset.width, y: o.y + offset.height)
-                renderer.springs[d] = SpringValue(moved)
+                renderer.drag(d, to: CGPoint(x: o.x + offset.width, y: o.y + offset.height))
                 renderer.nodeLayers[d]?.zPosition = 10
                 if d == id {
                     renderer.nodeLayers[d]?.shadowOpacity = 1
@@ -466,12 +479,13 @@ package final class CanvasPointer {
             let dx = w.x - start.x
             let dy = w.y - start.y
             if !active && hypot(dx, dy) * camera.zoom < 4 { return }
+            if !active { setFoldHover(nil) }
             active = true
             CATransaction.begin()
             CATransaction.setDisableActions(true)
             for d in members {
                 guard let o = origins[d] else { continue }
-                renderer.springs[d] = SpringValue(CGPoint(x: o.x + dx, y: o.y + dy))
+                renderer.drag(d, to: CGPoint(x: o.x + dx, y: o.y + dy))
             }
             renderer.applyFrames(all: true)
             CATransaction.commit()

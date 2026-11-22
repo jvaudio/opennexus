@@ -1,5 +1,6 @@
 import NexusCore
 import NexusScene
+import NexusTheme
 import SwiftUI
 
 #if os(macOS)
@@ -10,6 +11,10 @@ import UIKit
 
 struct AISettingsPane: View {
     var availability: AIAvailability
+    @Environment(\.colorScheme) private var scheme
+    /// The chosen model is marked in Aurora, the on-device AI colour (artboard 29), not the
+    /// system's teal.
+    var aurora: Color { (scheme == .dark ? Tokens.Signal.auroraDark : Tokens.Signal.auroraLight).color }
     #if os(iOS)
     @Environment(\.horizontalSizeClass) private var sizeClass
     /// The iPhone's: the model's status goes under its description, not beside it.
@@ -69,7 +74,7 @@ struct AISettingsPane: View {
         HStack(alignment: .top, spacing: 14) {
             Image(systemName: selected ? "largecircle.fill.circle" : "circle")
                 .font(.chrome(18))
-                .foregroundStyle(selected ? Color.teal : .secondary)
+                .foregroundStyle(selected ? aurora : .secondary)
             VStack(alignment: .leading, spacing: 4) {
                 #if os(macOS)
                 HStack(spacing: 8) { name(title, badge: badge) }
@@ -88,15 +93,15 @@ struct AISettingsPane: View {
         .background(RoundedRectangle(cornerRadius: 12).fill(Color.controlBackground))
         .overlay(
             RoundedRectangle(cornerRadius: 12).stroke(
-                selected ? Color.teal : Color.secondary.opacity(0.25), lineWidth: selected ? 2 : 1))
+                selected ? aurora : Color.secondary.opacity(0.25), lineWidth: selected ? 2 : 1))
     }
 
     @ViewBuilder func name(_ title: String, badge: String?) -> some View {
         Text(title).font(.chrome(16, weight: .semibold))
         if let badge {
-            Text(badge).font(.chrome(12, weight: .medium)).foregroundStyle(Color.statusTeal)
+            Text(badge).font(.chrome(12, weight: .medium)).foregroundStyle(aurora)
                 .padding(.horizontal, 6).padding(.vertical, 2)
-                .background(RoundedRectangle(cornerRadius: 4).fill(Color.teal.opacity(0.12)))
+                .background(RoundedRectangle(cornerRadius: 4).fill(aurora.opacity(0.12)))
         }
     }
 

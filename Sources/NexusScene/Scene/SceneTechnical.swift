@@ -16,26 +16,36 @@ extension SceneBuilder {
         t.border = "solid"
         t.shadow = "none"
         t.fontWeight = "medium"
-        switch info.look {
+        // A sequence draws every participant alike, an icon type only adding its icon
+        // (artboard 23).
+        let look: NodeTypeInfo.Look = diagram == .sequence && info.look == .icon ? .participant : info.look
+        switch look {
         case .terminal:
             t.shape = "pill"
             t.fillColor = "ink"
             t.textColor = "canvas"
             t.border = "none"
             t.fontWeight = "semibold"
-        case .step, .io, .participant:
+        case .step, .io:
+            // Steps are rounded, outlined in the secondary ink (artboard 19).
+            t.fillColor = "canvas"
+            t.textColor = "ink"
+            t.borderColor = "ink2"
+            t.cornerRadius = 8
+        case .participant:
             t.fillColor = "canvas"
             t.textColor = "ink"
             t.borderColor = "ink"
-            t.cornerRadius = info.look == .participant ? 8 : 4
-            if info.look == .participant {
-                t.borderWidth = 2
-                t.fontWeight = "semibold"
-            }
+            t.cornerRadius = 8
+            t.borderWidth = 2
+            t.fontWeight = "semibold"
         case .decision:
             t.fillColor = "decision"
             t.border = "none"
             t.fontWeight = "semibold"
+            // A question wraps onto two lines in a compact diamond rather than one wide, flat
+            // one ("Account / exists?", artboard 19), wide enough that no word breaks.
+            t.width = 130
         case .entity:
             t.shape = "rectangle"
             t.fillColor = "entity"
@@ -68,18 +78,21 @@ extension SceneBuilder {
             t.borderWidth = 2
             t.cornerRadius = 8
         case .asset:
+            // Violet, as artboard 21 draws assets: teal is the AI colour.
             t.shape = "rounded"
-            t.fillColor = "ai@0.08"
-            t.borderColor = "ai"
+            t.fillColor = "#9B51E0@0.08"
+            t.borderColor = "#9B51E0"
             t.borderWidth = 2
             t.cornerRadius = 8
         case .icon:
-            t.shape = "rectangle"
+            t.shape = "rounded"
             t.fillColor = "mainBg"
             t.borderColor = "ink2"
             t.cornerRadius = 4
             t.font = "mono"
             t.align = "left"
+            // A third-party service sits outside the system: dashed (artboard 22).
+            if info.id == "saas" { t.border = "dashed" }
         }
         return t
     }
@@ -106,8 +119,14 @@ extension SceneBuilder {
         var d = TechDecor()
         let t = env.theme
         switch canvas.type {
-        case .flowchart, .swimlane:
+        case .flowchart:
+            // Captions keep clear of the arriving flow: END under the terminal, I/O and
+            // DOCUMENT beside the slanted shape (artboard 19). Swimlane steps have none.
             d.caption = info.caption
+            d.captionPlacement =
+                info.id == .end ? .below : info.look == .io ? .trailing : .above
+            d.tint = t.ink2
+        case .swimlane:
             d.tint = t.ink2
         case .dfd, .threatModel:
             switch info.look {
@@ -136,8 +155,8 @@ extension SceneBuilder {
             case .asset:
                 d.icon = "asset"
                 d.badge = "ASSET"
-                d.tint = t.ai
-                d.badgeColor = t.ai
+                d.tint = RGBA(hex: "#9B51E0")
+                d.badgeColor = RGBA(hex: "#9B51E0")
             default:
                 break
             }
@@ -148,7 +167,7 @@ extension SceneBuilder {
         case .sequence:
             if let icon = info.icon, info.look == .icon {
                 d.icon = icon
-                d.tint = t.entityLine
+                d.tint = icon == "db" ? t.storeLine : t.entityLine
             }
         default:
             break
@@ -247,7 +266,8 @@ extension SceneBuilder {
             }
             let r = GraphLayout.layout(nodes: sizes, order: included, edges: edges, options: o)
             out.frames = r.frames
-            let laneColors = [env.theme.entityLine, env.theme.ai, env.theme.storeLine, env.theme.amber]
+            // Customer blue, support indigo, finance teal (artboard 19).
+            let laneColors = [env.theme.entityLine, env.theme.processLine, env.theme.storeLine, env.theme.amber]
             for (i, band) in r.bands.enumerated() {
                 let title = i < canvas.diagram.lanes.count ? canvas.diagram.lanes[i].title : Loc.f("Lane %lld", i + 1)
                 out.decor.append(.band(rect: band, title: title.uppercased(), color: laneColors[i % laneColors.count]))
@@ -290,6 +310,8 @@ extension SceneBuilder {
         case .architecture:
             r.line = "elbow"
             r.labelStyle = "boxed"
+            // Calls leaving the system for a third-party service are dashed (artboard 22).
+            if types[child] == "saas" { r.dash = "dashed" }
         case .threatModel:
             r.line = "elbow"
             switch types[child] {
@@ -307,7 +329,7 @@ extension SceneBuilder {
             case .asset?:
                 r.ends = ["none", "none"]
                 r.dash = "dotted"
-                color = t.ai
+                color = RGBA(hex: "#9B51E0")
                 r.line = "straight"
             default:
                 break

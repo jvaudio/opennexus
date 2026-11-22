@@ -27,6 +27,16 @@ public enum Masker {
         public var glyph = "█"
         public init() {}
 
+        /// The masked form of a hit: a key keeps its type prefix ("sk_live_", "AKIA", "ghp_"),
+        /// which says what it is and isn't secret, and loses the rest (artboard 41), unless a
+        /// custom pattern covers the prefix (`Hit.prefixMasked`): what the user asked to hide
+        /// stays hidden.
+        public func mask(_ hit: Hit) -> String {
+            let keep = hit.kind == .keys && !hit.prefixMasked ? Masker.keyPrefix(hit.text) : ""
+            let rest = (hit.text as NSString).length - (keep as NSString).length
+            return keep + mask(rest)
+        }
+
         public func mask(_ length: Int) -> String {
             switch glyph {
             case "[redacted]": "[redacted]"
@@ -43,6 +53,9 @@ public enum Masker {
         public var field: String
         public var range: NSRange
         public var text: String
+        /// A key whose type prefix a custom pattern also matches, in the field as written:
+        /// the prefix is masked with the rest.
+        public var prefixMasked = false
         public var id: String { "\(node.rawValue)/\(field)/\(range.location)" }
     }
 
@@ -54,6 +67,12 @@ public enum Masker {
         ),
         (.phones, #"(?<![\w@])\+?\d[\d ().-]{7,}\d(?!\w)"#),
     ]
+
+    /// A key's well-known type prefix, if it has one.
+    static func keyPrefix(_ key: String) -> String {
+        let re = #/^(?:(?:sk|pk|rk)_(?:live|test)_|AKIA|gh[pousr]_|xox[abpr]-)/#
+        return key.firstMatch(of: re).map { String($0.output) } ?? ""
+    }
 
     public static func scan(_ c: Canvas, options: Options = Options()) -> [Hit] {
         var out: [Hit] = []
@@ -79,7 +98,7 @@ public enum Masker {
         for h in scan(s, node: "n", field: "text", options: options).sorted(by: {
             $0.range.location > $1.range.location
         }) {
-            ns = ns.replacingCharacters(in: h.range, with: options.mask(h.range.length)) as NSString
+            ns = ns.replacingCharacters(in: h.range, with: options.mask(h)) as NSString
         }
         return ns as String
     }
@@ -91,14 +110,23 @@ public enum Masker {
         let all =
             patterns.filter { options.kinds.contains($0.0) }
             + (options.kinds.contains(.custom) ? options.custom.filter { !$0.isEmpty }.map { (Kind.custom, $0) } : [])
+        var customRanges: [NSRange] = []
         for (kind, p) in all {
             guard let re = try? NSRegularExpression(pattern: p) else { continue }
-            for m in re.matches(in: s, range: NSRange(location: 0, length: ns.length))
-            where !taken.contains(where: { NSIntersectionRange($0, m.range).length > 0 }) {
+            for m in re.matches(in: s, range: NSRange(location: 0, length: ns.length)) {
+                if kind == .custom { customRanges.append(m.range) }
+                guard !taken.contains(where: { NSIntersectionRange($0, m.range).length > 0 }) else { continue }
                 taken.append(m.range)
                 hits.append(
                     Hit(kind: kind, node: node, field: field, range: m.range, text: ns.substring(with: m.range)))
             }
+        }
+        // A custom match the key took over still masks the key's prefix. Matched against the
+        // whole field, so a pattern that needs context around the key ("token=…") counts.
+        for i in hits.indices where hits[i].kind == .keys {
+            let prefix = NSRange(location: hits[i].range.location, length: (keyPrefix(hits[i].text) as NSString).length)
+            hits[i].prefixMasked =
+                prefix.length > 0 && customRanges.contains { NSIntersectionRange($0, prefix).length > 0 }
         }
         // Person names from NaturalLanguage's named-entity tagger.
         guard options.kinds.contains(.names) else { return hits }
@@ -154,7 +182,7 @@ public enum Masker {
             }
             for h in hs.sorted(by: { $0.range.location > $1.range.location })
             where h.range.location + h.range.length <= s.length {
-                s = s.replacingCharacters(in: h.range, with: options.mask(h.range.length)) as NSString
+                s = s.replacingCharacters(in: h.range, with: options.mask(h)) as NSString
             }
             switch (parts.first, index) {
             case ("comment"?, let i?): n.comments[i].text = s as String

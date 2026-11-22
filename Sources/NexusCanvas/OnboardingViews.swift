@@ -23,13 +23,16 @@ public struct WelcomeView: View {
     public var body: some View {
         ZStack {
             Color(white: 0.07)
+            DotGrid().opacity(0.25)
             SelfBuildingMap().opacity(0.35)
             VStack(spacing: 0) {
-                AppIconTile(size: 84).padding(.bottom, 26)
+                AppIconTile(size: 84).padding(.bottom, 22)
                 Text("WELCOME TO OPENNEXUS").font(.chrome(13, weight: .medium, design: .monospaced)).kerning(2)
                     .foregroundStyle(.white.opacity(0.6)).padding(.bottom, 10)
                 Text(Loc.t("Think at the speed\nof your keyboard.")).font(.chrome(44, weight: .heavy)).kerning(-1.3)
-                    .multilineTextAlignment(.center).foregroundStyle(.white).padding(.bottom, 36)
+                    // The artboard's 1.05 leading; the font's own is about 1.2.
+                    .lineHeight(.multiple(factor: 1.05))
+                    .multilineTextAlignment(.center).foregroundStyle(.white).padding(.bottom, 28)
                 Button(action: onTour) {
                     HStack(spacing: 12) {
                         Text("Start the 4-minute tour").font(.chrome(17, weight: .medium))
@@ -48,7 +51,7 @@ public struct WelcomeView: View {
                     secondary(Loc.t("Skip to a blank map"), onSkip)
                     secondary(Loc.t("Import from Xmind…"), onImport)
                 }
-                .padding(.top, 12)
+                .padding(.top, 10)
                 HStack(spacing: 18) {
                     Text("Runs entirely on this Mac")
                     Text("·")
@@ -56,9 +59,9 @@ public struct WelcomeView: View {
                     Text("·")
                     Text("Open source")
                 }
-                .font(.chrome(13.5)).foregroundStyle(.white.opacity(0.55)).padding(.top, 30)
+                .font(.chrome(12.5)).foregroundStyle(.white.opacity(0.55)).padding(.top, 24)
             }
-            .padding(.horizontal, 48).padding(.vertical, 44)
+            .padding(.horizontal, 48).padding(.top, 44).padding(.bottom, 36)
             .fixedWidth(640)
             .background(
                 RoundedRectangle(cornerRadius: 30).fill(Color(red: 0.11, green: 0.11, blue: 0.13).opacity(0.94))
@@ -181,9 +184,11 @@ public struct RolePickerView: View {
                     .font(.chrome(14)).foregroundStyle(.chromeSecondary)
                 }
                 .padding(.bottom, 28)
+                // Every card as tall as the tallest one's content.
                 HStack(alignment: .top, spacing: 18) {
                     ForEach(Array(Role.allCases.enumerated()), id: \.offset) { i, r in card(r, number: i + 1) }
                 }
+                .fixedSize(horizontal: false, vertical: true)
                 HStack {
                     HStack(spacing: 6) {
                         ForEach(0..<9, id: \.self) { i in
@@ -192,14 +197,23 @@ public struct RolePickerView: View {
                         }
                     }
                     Spacer()
-                    Button("Skip tour") { onSkip(role) }.buttonStyle(FileButtonStyle()).controlSize(.large)
+                    Button {
+                        onSkip(role)
+                    } label: {
+                        Text("Skip tour").font(.chrome(15))
+                            .padding(.horizontal, 16).frame(height: 40)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(Color.textBackground))
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(.separator))
+                            .contentShape(RoundedRectangle(cornerRadius: 12))
+                    }
+                    .buttonStyle(.plain)
                     Button {
                         onContinue(role)
                     } label: {
                         Text(Loc.f("Continue as %@", role.title.components(separatedBy: " · ").first ?? role.title))
-                            .font(.chrome(16, weight: .semibold)).foregroundStyle(.white)
-                            .padding(.horizontal, 22).frame(height: 44)
-                            .background(RoundedRectangle(cornerRadius: 10).fill(Color(white: 0.1)))
+                            .font(.chrome(15, weight: .medium)).foregroundStyle(.white)
+                            .padding(.horizontal, 18).frame(height: 40)
+                            .background(RoundedRectangle(cornerRadius: 12).fill(Color(white: 0.1)))
                     }
                     .buttonStyle(.plain)
                     .keyboardShortcut(.defaultAction)
@@ -238,7 +252,7 @@ public struct RolePickerView: View {
         let (icon, tint): (String, Color) =
             switch r {
             case .engineer: ("chevron.left.forwardslash.chevron.right", Color(hex: "#5850EC"))
-            case .architect: ("building.columns", Color(hex: "#1E6FB8"))
+            case .architect: ("building.2", Color(hex: "#1E6FB8"))
             case .security: ("checkmark.shield", Color(hex: "#D93A3F"))
             case .planner: ("calendar", Color(hex: "#0F9F9A"))
             }
@@ -262,13 +276,20 @@ public struct RolePickerView: View {
                 detail(Loc.t("Shelf"), r.shelfSummary)
             }
             .padding(22)
-            .frame(maxWidth: .infinity, minHeight: 340, alignment: .topLeading)
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
             .background(RoundedRectangle(cornerRadius: 18).fill(Color.textBackground))
-            .overlay(
-                RoundedRectangle(cornerRadius: 18).stroke(
-                    on ? Color(hex: "#5850EC") : Color.secondary.opacity(0.12), lineWidth: on ? 3 : 1)
+            .overlay {
+                // Only the chosen card is outlined: an Iris stroke inside a soft Iris ring.
+                if on {
+                    RoundedRectangle(cornerRadius: 18).stroke(Color(hex: "#5850EC"), lineWidth: 2)
+                    RoundedRectangle(cornerRadius: 21).stroke(Color(hex: "#5850EC").opacity(0.15), lineWidth: 4)
+                        .padding(-3)
+                }
+            }
+            .shadow(
+                color: on ? Color(hex: "#5850EC").opacity(0.18) : .black.opacity(0.06), radius: on ? 10 : 8,
+                y: on ? 0 : 2
             )
-            .shadow(color: on ? Color(hex: "#5850EC").opacity(0.18) : .clear, radius: 10)
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

@@ -16,6 +16,7 @@ public struct PaletteRow: Identifiable, Equatable, Sendable {
         case selectByType(NodeType)
         case rebind(CommandID)
     }
+    public enum Tile: Equatable, Sendable { case plain, connect, ai }
     public var id: String
     public var section: String
     public var title: String
@@ -24,6 +25,8 @@ public struct PaletteRow: Identifiable, Equatable, Sendable {
     public var keys: String?
     public var hyper: String?
     public var action: Action
+    /// The glyph tile's colour: amber for Connect, aurora for on-device AI (artboard 25).
+    public var tile: Tile = .plain
     /// Indices into `title` that matched the query (drawn in the accent colour).
     public var matched: [Int] = []
 }
@@ -215,6 +218,38 @@ extension CanvasController {
         return canPerform(id)
     }
 
+    /// A command's title as the palette shows it: sentence case in English ("Convert diagram
+    /// type…", artboard 25), keeping acronyms, words with inner capitals and product names;
+    /// menus keep the registry's title case, as macOS menus are. A translated title is left
+    /// as its language writes it.
+    static func paletteTitle(_ title: String) -> String {
+        let shown = Loc.t(title)
+        guard shown == title else { return shown }
+        let names: Set<String> = [
+            "Mermaid", "Markdown", "Gantt", "Xmind", "Keynote", "Word", "Excel", "Mac", "Spotlight", "Finder",
+            "Shortcuts",
+        ]
+        // Feature names stay whole: joined by a no-break space while the words are cased.
+        let phrases = ["Quick Capture", "Quick Look", "Map Shot"]
+        var text = shown
+        for p in phrases {
+            text = text.replacingOccurrences(of: p, with: p.replacingOccurrences(of: " ", with: "\u{A0}"))
+        }
+        var first = true
+        let cased = text.split(separator: " ", omittingEmptySubsequences: false).map { part -> String in
+            defer { if !part.isEmpty { first = false } }
+            let w = String(part)
+            guard !first, let head = w.first, head.isUppercase else { return w }
+            let letters = w.filter(\.isLetter)
+            let acronym = letters.count > 1 && letters.allSatisfy(\.isUppercase)
+            let innerCaps = letters.dropFirst().contains(where: \.isUppercase)
+            let name = names.contains(String(w.prefix { $0.isLetter }))
+            let phrase = w.contains("\u{A0}")
+            return acronym || innerCaps || name || phrase ? w : w.prefix(1).lowercased() + w.dropFirst()
+        }.joined(separator: " ")
+        return cased.replacingOccurrences(of: "\u{A0}", with: " ")
+    }
+
     /// Rows for the palette: context-aware (commands that can't run are hidden), recent
     /// first, then fuzzy match.
     public var paletteRows: [PaletteRow] {
@@ -227,9 +262,10 @@ extension CanvasController {
             let section = d.category == .ai ? Loc.t("AI · ON-DEVICE") : "COMMANDS"
             let rank = recent.firstIndex(of: d.id.rawValue).map { 2000 - $0 * 10 } ?? 0
             let base = PaletteRow(
-                id: d.id.rawValue, section: section, title: Loc.t(d.title),
-                subtitle: Loc.t(d.note.isEmpty ? d.category.rawValue : d.note),
-                glyph: Self.glyph(for: d), keys: keys, hyper: hyper, action: .command(d.id))
+                id: d.id.rawValue, section: section, title: Self.paletteTitle(d.title),
+                subtitle: d.note.isEmpty ? "" : Loc.t(d.note), glyph: Self.glyph(for: d), keys: keys, hyper: hyper,
+                action: .command(d.id),
+                tile: d.category == .ai ? .ai : Self.connectCommands.contains(d.id) ? .connect : .plain)
             if q.isEmpty {
                 rows.append((rank, base))
             } else if let (score, idx) = Fuzzy.match(q, in: base.title) {
@@ -277,8 +313,35 @@ extension CanvasController {
         return Array(order.flatMap { s in out.filter { $0.section == s } }.prefix(40))
     }
 
+    /// Commands that draw relationships: their tiles are amber, the Connect colour.
+    static let connectCommands: Set<CommandID> = [.connect, .connectConfirm, .connectCancel, .ganttLink, .ganttUnlink]
+
+    /// A glyph per command, so the palette reads by action (artboard 25); a command not
+    /// listed takes its category's.
+    static let glyphs: [CommandID: String] = [
+        .convert: "⇄", .undo: "↶", .redo: "↷", .copyMermaid: "⧉", .copy: "⧉", .cut: "✂", .paste: "⎘",
+        .connect: "—", .addChild: "+", .addSiblingAfter: "+", .addSiblingBefore: "+", .addParent: "⤒",
+        .addFloating: "◌", .duplicate: "⧉", .delete: "⌫", .deleteKeepChildren: "⌫", .fold: "▸", .foldAll: "▸",
+        .moveUp: "↑", .moveDown: "↓", .promote: "←", .demote: "→", .find: "⌕", .replace: "⌕", .replaceAll: "⌕",
+        .quickJump: "⤳", .flyBack: "↩", .selectRoot: "◎", .selectSiblings: "◎", .selectChildren: "◎",
+        .selectAll: "◎", .selectAllZones: "◎", .zoomIn: "＋", .zoomOut: "−", .actualSize: "1:1",
+        .fitToWindow: "⤢", .focusBranch: "◉", .zen: "◯", .toggleOutline: "☰", .showOutline: "☰",
+        .showCanvas: "▣", .showSplit: "◫", .inspector: "◧", .filterBar: "⏚", .present: "▶",
+        .presentFromTopic: "▶", .toggleLegend: "▤", .editLegend: "▤", .guide: "?", .boundary: "▢", .summary: "}",
+        .callout: "❝", .note: "≡", .hyperlink: "↗", .comment: "✎", .image: "▨", .label: "#", .toggleTodo: "☐",
+        .markerPicker: "●", .zone: "▭", .duplicateZone: "▭", .bringToFront: "⇡", .sendToBack: "⇣",
+        .copyStyle: "◐", .pasteStyle: "◐", .resetStyle: "◐", .cycleNodeStyle: "◐", .smartColor: "◐",
+        .slashMenu: "/", .iconLibrary: "▦", .threatTable: "▤", .setNodeType: "◇", .suggestThreats: "✦",
+        .newCanvas: "+", .newCanvasFromTopic: "+", .export: "⇪", .exportHTML: "⇪", .shareLink: "⇗",
+        .manageShareLinks: "⇗", .syncNow: "↻", .syncHistory: "↻", .collaborate: "◑", .joinSession: "◑",
+        .mapShot: "◰", .copyAsImage: "◰", .copyAsMarkdown: "M", .home: "⌂", .printDocument: "⎙",
+        .printBranch: "⎙", .importFile: "⇩", .mergeDocuments: "⇉", .setPassword: "⚿", .recoverySnapshots: "⟲",
+        .showGantt: "▥", .exportGantt: "▥", .taskDetails: "☐",
+    ]
+
     static func glyph(for d: CommandDescriptor) -> String {
-        switch d.category {
+        if let g = glyphs[d.id] { return g }
+        return switch d.category {
         case .create: "+"
         case .edit: "✎"
         case .navigate: "⌕"

@@ -1,7 +1,7 @@
 import Foundation
 
 /// A shape around one or more branches (⇧⌘B). In technical canvases it doubles as a
-/// group, zone, VPC, subnet or trust boundary.
+/// group, zone, region, VPC, subnet or trust boundary.
 public struct Boundary: Hashable, Sendable, JSONRepresentable {
     /// A title or a technical meaning label sits in a band above the content.
     public var hasTitleBand: Bool { !title.isEmpty || meaning != "group" }
@@ -12,7 +12,7 @@ public struct Boundary: Hashable, Sendable, JSONRepresentable {
     public var title: String
     /// rounded, rectangle, stadium, ellipse, wave, scallop, polygon, dashed, corners
     public var shape: String = "rounded"
-    /// group, zone, vpc, subnet, trust
+    /// group, zone, region, vpc, subnet, trust
     public var meaning: String = "group"
     /// high, medium, low (trust boundaries)
     public var trust: String?
@@ -67,6 +67,35 @@ public struct Boundary: Hashable, Sendable, JSONRepresentable {
         w.set("hatch", hatch, omitting: true)
         return w.value
     }
+
+    /// Region, VPC and subnet: the network nesting artboard 22 draws as plain outlines.
+    public var isNetwork: Bool { meaning == "region" || meaning == "vpc" || meaning == "subnet" }
+
+    /// The line as drawn: the boundary's own dash, else its meaning's. A region is solid, a
+    /// VPC dashed and a subnet finely dashed (`fine`), so the nesting reads without colour;
+    /// trust boundaries and zones are dashed (artboards 20–22).
+    public var drawnDash: String {
+        if let dash { return dash }
+        switch meaning {
+        case "subnet": return "fine"
+        case "vpc", "trust", "zone": return "dashed"
+        case "region": return "solid"
+        default: return shape == "dashed" ? "dashed" : "solid"
+        }
+    }
+
+    /// The stroke width as drawn: network boundaries left at the default are hairlines,
+    /// a subnet finer than the region and VPC around it (artboard 22).
+    public var drawnWidth: Double {
+        guard isNetwork, width == 2 else { return width }
+        return meaning == "subnet" ? 1 : 1.5
+    }
+
+    /// The tint as drawn: network boundaries left at the default have none (artboard 22).
+    public var drawnFillOpacity: Double { isNetwork && fillOpacity == 0.06 ? 0 : fillOpacity }
+
+    /// Corner radius as drawn on the rounded shape: network boundaries are barely rounded.
+    public var drawnCornerRadius: Double { isNetwork ? 6 : 14 }
 }
 
 /// A bracket over a run of siblings (⇧⌘]) that owns its own topic.

@@ -63,6 +63,23 @@ import Testing
         }
     }
 
+    /// The theme's taper (the builder's Tapered line, artboard 04) is optional: a theme
+    /// written before it decodes and re-encodes the same, and a tapered theme draws its
+    /// branch lines tapered.
+    @Test func themeTaperIsOptionalAndTapersLines() throws {
+        let classic = try ThemeCodec.encode(.classic)
+        #expect(!String(decoding: classic, as: UTF8.self).contains("lineTaper"))
+        #expect(try ThemeCodec.decode(classic).lineTaper == nil)
+        var t = Theme.classic
+        t.lineTaper = true
+        let back = try ThemeCodec.decode(try ThemeCodec.encode(t))
+        #expect(back.lineTaper == true)
+        let line = StyleResolver.line(
+            childDepth: 1, family: "mindmap", branch: .white, parentLine: nil, inherited: [],
+            env: StyleEnvironment(theme: back, canvasStyle: CanvasStyle()))
+        #expect(line.taper)
+    }
+
     @Test func paletteGenerationKeepsLightness() {
         let p = ColorPalette.generated(from: RGBA(hex: "#E07A5F"))
         #expect(p.colors.count == 6)

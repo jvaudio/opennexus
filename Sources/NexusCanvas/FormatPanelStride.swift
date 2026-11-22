@@ -103,23 +103,60 @@ struct StrideTab: View {
             }
             Spacer()
             if let threat {
-                LabeledMenu(Loc.t(threat.risk)) {
+                // The pill is the menu's label, so the risk reads in its colour and still changes in place.
+                Menu {
                     ForEach(Stride.risks, id: \.self) { r in
                         Button(Loc.t(r)) { controller.setThreatField(threat.node, Stride.riskKey, r) }
                     }
+                } label: {
+                    RiskPill(risk: threat.risk, dark: controller.theme.isDark)
                 }
-                .borderlessMenu()
+                .menuStyle(.button)
+                .buttonStyle(.plain)
+                .menuIndicator(.hidden)
                 .fixedSize()
-                .font(.chrome(11, weight: .bold, design: .monospaced))
+                .accessibilityLabel(Loc.t("Risk"))
+                .accessibilityValue(Loc.t(threat.risk))
             } else if let suggestion {
                 Button("+") { controller.acceptStride(s, suggestion.1, suggestion.2, on: element) }
                     .help("Add this threat")
+            } else if applies {
+                // Applicable but unrecorded: a dash, so "N/A" keeps meaning "doesn't apply".
+                Text(verbatim: "—").font(.chrome(11, design: .monospaced)).foregroundStyle(.chromeTertiary)
+                    .accessibilityLabel(Loc.t("No threat recorded"))
             } else {
-                Text("N/A").font(.chrome(11, design: .monospaced)).foregroundStyle(.chromeTertiary)
+                RiskPill(risk: "N/A", dark: controller.theme.isDark)
             }
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
         .background(threat?.risk == "High" ? Color.red.opacity(0.05) : .clear)
+    }
+}
+
+/// A threat's risk as a solid pill (artboard 21): red High, amber Med, green-tint Low and
+/// grey N/A, each with its word in mono, so colour is never the only signal.
+struct RiskPill: View {
+    let risk: String
+    var dark = false
+
+    /// Fill and ink per risk. High and Med are solid in both appearances; Low and N/A are
+    /// tints, inverted in dark so they stay quiet against a dark surface.
+    var colors: (fill: String, ink: String) {
+        switch risk {
+        case "High": ("#C62F35", "#FFFFFF")
+        case "Med": ("#E08A00", "#17171C")
+        case "Low": dark ? ("#1E6B41", "#E6F5EC") : ("#E6F5EC", "#1E6B41")
+        default: dark ? ("#2B2C33", "#B4B4BE") : ("#F1F1F4", "#4A4A55")
+        }
+    }
+
+    var body: some View {
+        Text(Loc.t(risk))
+            .font(.chrome(11, weight: .bold, design: .monospaced))
+            .foregroundStyle(RGBA(hex: colors.ink).color)
+            .padding(.horizontal, 6)
+            .padding(.vertical, 2)
+            .background(RoundedRectangle(cornerRadius: 4).fill(RGBA(hex: colors.fill).color))
     }
 }

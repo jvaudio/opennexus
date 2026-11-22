@@ -1,8 +1,8 @@
 // Builds the static site into dist/: site/ as it is, plus the front page's open.js and
 // open.css (M47d), s/share.js and s/share.css (viewer-core and the share page), and
-// join/join.js and join/join.css (the join page, M46); the brand's icons for the web app
-// manifest; and sw.js with the list of every file it precaches and a hash of them all as its
-// version (M47d). GitHub Pages serves dist/ (.github/workflows/pages.yml).
+// join/join.js and join/join.css (the join page, M46); the brand's favicons and the icons for
+// the web app manifest; and sw.js with the list of every file it precaches and a hash of them
+// all as its version (M47d). GitHub Pages serves dist/ (.github/workflows/pages.yml).
 import { createHash } from "node:crypto";
 import { copyFile, cp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
@@ -10,7 +10,7 @@ import { build } from "esbuild";
 
 await rm("dist", { recursive: true, force: true });
 await cp("site", "dist", { recursive: true });
-for (const icon of ["icon-192.png", "icon-512.png", "apple-touch-icon.png"]) {
+for (const icon of ["favicon.ico", "favicon.svg", "icon-192.png", "icon-512.png", "apple-touch-icon.png"]) {
   await copyFile(path.join("../../brand/web", icon), path.join("dist", icon));
 }
 await build({

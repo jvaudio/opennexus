@@ -44,7 +44,17 @@ private func canvas(_ tree: [(String, [String])], notes: [String: String] = [:])
         let texts = Set(copy.nodes.values.map(\.text))
         #expect(texts.contains("Ask ████████████"))
         #expect(texts.contains("Call +1 (415) 555-0134"))
-        #expect(!texts.contains { $0.contains("sk_live") })
+        // A key keeps its type prefix and loses the secret (artboard 41).
+        #expect(texts.contains("Key sk_live_████████████"))
+        // A custom pattern that covers the prefix masks it too.
+        var custom = Masker.Options()
+        custom.custom = [#"sk_live_\w+"#]
+        #expect(Masker.mask("Key sk_live_51HxQe2KfR8vTn3", options: custom) == "Key ████████████")
+        // Also when the pattern needs context outside the key.
+        custom.custom = [#"(?<=token=)sk_live_"#]
+        #expect(Masker.mask("token=sk_live_abcdefghijklmnop", options: custom) == "token=████████████")
+        custom.custom = []
+        #expect(Masker.mask("token=sk_live_abcdefghijklmnop", options: custom) == "token=sk_live_████████████")
         #expect(copy.nodes.values.compactMap(\.note?.text).allSatisfy { !$0.contains("Tim Cook") })
         #expect(c.nodes.values.contains { $0.text == "Ask maria.lopez@acme.io" }, "the original stays")
     }

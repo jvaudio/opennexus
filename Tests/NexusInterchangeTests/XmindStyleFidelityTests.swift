@@ -149,8 +149,11 @@ import Testing
             ])
         let r = try #require(back.canvases.first)
         #expect(r.boundaries[1].shape == "rounded")
-        // A trust boundary is written in the colour and dash the canvas draws it with.
-        #expect(r.boundaries[2].color == Theme.classic.critical.hex && r.boundaries[2].dash == "dashed")
+        // A trust boundary is written in the colour and dash the canvas draws it with: violet
+        // off a threat model (artboard 20; `Boundary.drawnColor`). On Classic that is the
+        // ring, the default boundary colour, so no colour is written and it reads back the same.
+        let drawn = r.boundaries[2].color ?? Theme.classic.ring.hex
+        #expect(drawn == Theme.classic.processLine.hex && r.boundaries[2].dash == "dashed")
         #expect(r.summaries[0].bracket == "square")
     }
 

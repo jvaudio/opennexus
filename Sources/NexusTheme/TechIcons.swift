@@ -2,44 +2,46 @@ import CoreGraphics
 import Foundation
 
 /// The 32 technical icons (artboard 13): vendor-neutral, a 24-pt grid like SF Symbols,
-/// drawn with a 1.6 pt round stroke and inheriting the node-type colour.
+/// drawn with a 1.6 pt round stroke and inheriting the node-type colour. The paths are the
+/// artboard's own (`Handoff/design/source/Icons.dc.html`); a zero-length `h.01` draws a dot
+/// with the round cap.
 public enum TechIcons {
     public static let paths: [String: String] = [
-        "client": "M3 5h18v11H3z M8 20h8 M12 16v4",
-        "mobile": "M7 2.5h10v19H7z M11 18.5h2",
-        "actor": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4.5 21c1-4 4-6 7.5-6s6.5 2 7.5 6",
-        "service": "M4 5h16v14H4z M8 10h8 M8 14h5",
-        "gateway": "M3 12h4 M17 12h4 M7 7h10v10H7z M10.5 9.5L13 12l-2.5 2.5",
-        "lb": "M12 3.5v5 M9 3.5h6 M12 8.5L5 17 M12 8.5V17 M12 8.5L19 17 M3.5 17h3 M10.5 17h3 M17.5 17h3",
-        "fn": "M7 4h3l7 16 M13.5 11.5L9 20",
-        "container": "M12 3l8 4.5v9L12 21l-8-4.5v-9z M4 7.5l8 4.5 8-4.5 M12 12v9",
-        "cluster":
-            "M7 3l4 2.3v4.4L7 12 3 9.7V5.3z M17 3l4 2.3v4.4L17 12l-4-2.3V5.3z M12 12l4 2.3v4.4L12 21l-4-2.3v-4.4z",
-        "host": "M4 4h16v6H4z M4 14h16v6H4z M7.5 7h1 M7.5 17h1",
+        "client": "M3 5h18v14H3z M3 9h18 M6 7h.01 M9 7h.01",
+        "mobile": "M8 3h8v18H8z M11 18h2",
+        "actor": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8z M4 21c1-4 4-6 8-6s7 2 8 6",
+        "service": "M4 6h16v12H4z M8 10h8 M8 14h5",
+        "gateway": "M2 12h5 M17 12h5 M7 6h10v12H7z M11 9l2 3-2 3",
+        "lb": "M10 3h4v4h-4z M12 7v4 M5 11h14 M5 11v3 M12 11v3 M19 11v3 M3 14h4v5H3z M10 14h4v5h-4z M17 14h4v5h-4z",
+        "fn": "M6 20l6-16h2 M9.5 12.5L14 20h4",
+        "container": "M3 8l9-5 9 5v8l-9 5-9-5z M3 8l9 5 9-5 M12 13v8",
+        "cluster": "M12 3l8 4.5v9L12 21l-8-4.5v-9z M12 8v8 M8.5 10l7 4 M15.5 10l-7 4",
+        "host": "M4 4h16v7H4z M4 13h16v7H4z M7 7.5h.01 M7 16.5h.01 M11 7.5h6 M11 16.5h6",
         "db":
             "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3",
         "cache":
-            "M4 6c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6 M13 10.5l-3 4h4l-3 4",
-        "queue": "M3 8h18v8H3z M7.5 8v8 M12 8v8 M16.5 8v8",
-        "stream": "M3 7h12 M3 12h18 M3 17h14",
-        "storage": "M4 5h16l-2 15H6z M4 5c0 1.1 3.6 2 8 2s8-.9 8-2",
+            "M4 7c0-1.7 3.6-3 8-3s8 1.3 8 3-3.6 3-8 3-8-1.3-8-3z M4 7v10c0 1.7 3.6 3 8 3s8-1.3 8-3V7 M13 11l-3 4h4l-3 4",
+        "queue": "M3 8h18v8H3z M7 8v8 M11 8v8 M15 8v8",
+        "stream": "M3 7h12 M3 12h18 M3 17h14 M17 5l2 2-2 2 M19 15l2 2-2 2",
+        "storage": "M4 6h16l-2 14H6z M4 6c0-1 3.6-2 8-2s8 1 8 2",
         "doc": "M6 3h8l4 4v14H6z M14 3v4h4 M9 12h6 M9 16h6",
-        "cloud": "M7 18h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 9.5 4.3 4.3 0 0 0 7 18z",
-        "region": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M3 12h18",
-        "saas": "M7 17h10a4 4 0 0 0 .5-8A6 6 0 0 0 6 8.5 4.3 4.3 0 0 0 7 17z M12 11v8 M9.5 16.5L12 19l2.5-2.5",
-        "router": "M4 14h16v6H4z M8 14V9 M16 14V9 M6 9h4 M14 9h4 M7.5 17h1",
-        "switch": "M4 8h13 M14 5l3 3-3 3 M20 16H7 M10 13l-3 3 3 3",
+        "cloud": "M7 18a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 8.5a4 4 0 0 1 .5 9.5z",
+        "region":
+            "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z M3 12h18 M12 3c2.5 2.5 3.5 5.5 3.5 9s-1 6.5-3.5 9 M12 3c-2.5 2.5-3.5 5.5-3.5 9s1 6.5 3.5 9",
+        "saas": "M7 16a4 4 0 0 1-.5-8A5.5 5.5 0 0 1 17 6.5a4 4 0 0 1 .5 9.5 M12 11v9 M9 17l3 3 3-3",
+        "router": "M3 14h18v6H3z M7 17h.01 M11 17h.01 M8 14L6 9 M16 14l2-5 M9 6a5 5 0 0 1 6 0",
+        "switch": "M3 8h18v8H3z M7 12h.01 M10 12h.01 M13 12h.01 M16 12h3",
         "firewall": "M3 5h18v14H3z M3 10h18 M3 15h18 M9 5v5 M15 10v5 M9 15v4",
-        "auth": "M6 11h12v10H6z M8.5 11V7.5a3.5 3.5 0 0 1 7 0V11 M12 15v2",
-        "secret": "M8 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z M11.5 12H21 M17.5 12v3 M20.5 12v2",
-        "threat": "M12 3.5l9.5 17h-19z M12 10v5 M12 17.5v.5",
-        "mitigation": "M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z M8.5 12l2.5 2.5 4.5-5",
-        "asset": "M6.5 4h11l4 5L12 21 2.5 9z M2.5 9h19 M12 21L8.5 9l2-5 M12 21l3.5-12-2-5",
-        "monitor": "M3 5h18v12H3z M6 11.5h3l2-3 2 5 2-2h3 M9 21h6",
-        "process": "M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z",
-        "entity": "M5 5h14v14H5z",
-        "store": "M4 6h16 M4 18h16 M4 6v12",
-        "decision": "M12 3l9 9-9 9-9-9z",
+        "auth": "M6 11h12v10H6z M8 11V8a4 4 0 0 1 8 0v3 M12 15v2",
+        "secret": "M8 15a4 4 0 1 1 2.8-6.8 M10.8 8.2L20 17.4V20h-2.6 M17 15l-1.5 1.5",
+        "threat": "M12 3L2 20h20z M12 9v5 M12 17h.01",
+        "mitigation": "M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z M8.5 12l2.5 2.5 4.5-5",
+        "asset": "M6 4h12l3 5-9 11L3 9z M3 9h18 M9 4l3 16 M15 4l-3 16",
+        "monitor": "M3 12h4l3-7 4 14 3-7h4",
+        "process": "M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M8 12h8",
+        "entity": "M4 7h13v13H4z M17 7l3-3v13l-3 3 M4 7l3-3h13",
+        "store": "M3 7h18 M3 17h18 M7 7v10",
+        "decision": "M12 3l9 9-9 9-9-9z M10 10a2 2 0 1 1 2.5 2c-.5.2-.5.6-.5 1 M12 15.5h.01",
     ]
 
     private nonisolated(unsafe) static var cache: [String: CGPath] = [:]

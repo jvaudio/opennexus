@@ -363,7 +363,7 @@ public struct HomeView: View {
         }
     }
 
-    static func prettyPath(_ u: URL) -> String {
+    public static func prettyPath(_ u: URL) -> String {
         let p = u.path
         if p.contains("Mobile Documents/com~apple~CloudDocs") {
             return Loc.t("iCloud Drive › ")
@@ -658,8 +658,8 @@ public struct HomeView: View {
                     .fixedSize(horizontal: false, vertical: true)
                         #endif
                 }
-                .frame(maxWidth: .infinity, minHeight: 90, maxHeight: .infinity, alignment: .topLeading)
-                .padding(16)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+                .padding(14)
                 .background(RoundedRectangle(cornerRadius: 12).fill(Color.textBackground))
                 .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.secondary.opacity(0.2)))
                 .contentShape(Rectangle())
@@ -700,12 +700,9 @@ public struct HomeView: View {
     }
 
     var emptyState: some View {
+        // Artboard 16's card, without its "EMPTY STATE · FIRST LAUNCH AFTER TOUR" header:
+        // that labels the artboard's state for the reader, it isn't part of the card.
         VStack(alignment: .leading, spacing: 0) {
-            Text("EMPTY STATE · FIRST LAUNCH AFTER TOUR").font(
-                .chrome(12, weight: .semibold, design: .monospaced)
-            ).foregroundStyle(.chromeSecondary)
-                .padding(14)
-            Divider()
             VStack(spacing: 14) {
                 Button {
                     if let u = model.tourMap { model.onOpen(u) }
@@ -723,7 +720,7 @@ public struct HomeView: View {
             }
             .padding(20)
         }
-        .sheetWidth(420)
+        .sheetWidth(340)
         .background(
             RoundedRectangle(cornerRadius: 16).fill(Color.textBackground).shadow(
                 color: .black.opacity(0.12), radius: 18, y: 6))

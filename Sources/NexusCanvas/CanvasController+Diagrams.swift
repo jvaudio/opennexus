@@ -87,6 +87,14 @@ extension CanvasController {
             out.append(
                 SlashItem(title: title, slug: slug, section: Loc.t("Insert"), icon: nil, glyph: glyph, action: action))
         }
+        // On a mind map the menu opens on artboard 17's short list (process, database,
+        // actor, decision, note, code, equation) rather than 32 icons, so the content items
+        // show without typing.
+        if !DiagramCatalog.isTechnical(type) {
+            let lead = ["process", "db", "actor", "decision", "note", "code", "math"]
+            let first = lead.compactMap { slug in out.first { $0.slug == slug } }
+            out = first + out.filter { !lead.contains($0.slug) }
+        }
         return out
     }
 
@@ -711,9 +719,21 @@ extension CanvasController {
 
     // MARK: Icon library (⇧⌘Y)
 
-    /// ↩ in the library: insert as a child of the selection.
-    public func insertIcon(_ info: NodeTypeInfo) {
-        let parent = selection.primary
+    /// What a library tile carries when dragged: the icon's slug behind a prefix, so other
+    /// text dropped on the canvas is left alone.
+    public static let iconDragPrefix = "opennexus-icon:"
+
+    /// The icon a dragged string names, if it's a library tile's.
+    public static func draggedIcon(_ string: String) -> NodeTypeInfo? {
+        guard string.hasPrefix(iconDragPrefix) else { return nil }
+        let slug = String(string.dropFirst(iconDragPrefix.count))
+        return DiagramCatalog.icons.first { $0.slug == slug }
+    }
+
+    /// ↩ in the library: insert as a child of the selection; dropped from the library, as a
+    /// child of the topic it lands on (artboard 22).
+    public func insertIcon(_ info: NodeTypeInfo, under target: NodeID? = nil) {
+        let parent = target ?? selection.primary
         let label = canvas.type == .architecture ? DiagramCatalog.defaultProtocol(for: info.id) : nil
         let c = canvas
         if let id = perform(

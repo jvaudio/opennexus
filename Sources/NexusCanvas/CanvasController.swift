@@ -271,7 +271,12 @@ public final class CanvasController {
     public internal(set) var filterClauses: [NodeFilter.Clause] = []
     public internal(set) var filterHides = false
     /// The navigation panel tab (1 Search … 5 To-dos), nil when hidden.
-    public var navTab: Int?
+    public var navTab: Int? {
+        didSet { if let navTab { lastNavTab = navTab } }
+    }
+    /// The navigation tab last open, however it was opened: what the toolbar's navigator
+    /// button reopens. Outline until one is chosen.
+    public private(set) var lastNavTab = 2
     public internal(set) var search = SearchState()
     /// Bumped to move keyboard focus into the search field (⌘F).
     public internal(set) var searchFocusSerial = 0
