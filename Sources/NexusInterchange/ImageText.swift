@@ -129,7 +129,7 @@ public enum ImageText {
         func connector(_ mark: Range<String.Index>, rest: Range<String.Index>) -> Bool {
             guard let ink, let m = at(mark) else { return false }
             if ink.runsOut(of: line, from: m) { return true }
-            // A fork Vision drew the line's box round (D484): its ink stands half as tall
+            // A fork Vision drew the line's box round (D492): its ink stands half as tall
             // again as the words beside it, which no character in a title does.
             guard let r = at(rest), let words = ink.inkHeight(in: r), let mine = ink.inkHeight(in: m) else {
                 return false
@@ -152,7 +152,7 @@ public enum ImageText {
         }
         let parts = cut(text, line: line, ink: ink, at: at)
         // Vision misreads the words beside a connector it took for a mark ("Morning" and a
-        // fork as "Moring <"): read the rest again on its own, up to the mark (D484).
+        // fork as "Moring <"): read the rest again on its own, up to the mark (D492).
         var clean: Substring?
         if text.count < string.count, parts.count == 1, let reread,
             let kept = at(text.startIndex..<text.endIndex)

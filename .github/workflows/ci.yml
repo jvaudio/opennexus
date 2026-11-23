@@ -18,6 +18,10 @@ jobs:
     # Obsidian need to open a window.
     if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
     runs-on: [self-hosted, macOS, ARM64, xcode27, gui]
+    env:
+      # The tests that time themselves: `Test packages` skips them, `Timing tests` runs them.
+      TIMED: >-
+        \.(PerformanceTests|ScalePerformanceTests|MathPerformanceTests)/|GuideTests/matchingBudgets|StarterGalleryTests/pickerAndCreateAreFast|CollabTests/keyToCaretWithTwoPeopleTyping|VoiceOverTreeTests/largeMapsCostNothingUntilRead|SyncTests/typingStaysFastWhileALibrarySyncs|PresentMotionTests/flyToFrameTimes|SceneBoundsTests/boundsCostLessThanLayingOutTheRelationships|MathCorpusTests/warmRenderIsFast|GanttTests/thousandTasksLayOutQuickly|HTMLExportTests/aThousandTopicsExportInUnderASecond
     steps:
       - uses: actions/checkout@v7
 
@@ -32,7 +36,14 @@ jobs:
         run: swift build
 
       - name: Test packages
-        run: swift test
+        # Everything but the timing tests, in parallel.
+        run: swift test --skip "$TIMED"
+
+      - name: Timing tests
+        # The frame and load budgets (README §12, A4, D297), one test at a time once the
+        # rest are done: under the parallel run the 5,000-topic zoom took 13.5 ms against 8.3
+        # (D493).
+        run: swift test --no-parallel --filter "$TIMED"
 
       - name: Test the server
         # The OpenNexus Server (M44): its own package, with its own dependencies.

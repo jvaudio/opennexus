@@ -111,16 +111,23 @@ async function launch(): Promise<Session> {
   const port = await freePort();
   const child = spawn(obsidian, [`--user-data-dir=${profile}`, `--remote-debugging-port=${String(port)}`], { stdio: "ignore" });
   let browser: Browser | undefined;
+  let last: unknown;
   for (let i = 0; i < 120 && browser === undefined; i++) {
     try {
       browser = await chromium.connectOverCDP(`http://127.0.0.1:${String(port)}`);
-    } catch {
+    } catch (e) {
+      last = e;
       await sleep(250);
     }
   }
-  const context = must(must(browser, "Obsidian over CDP").contexts()[0], "Obsidian's window");
+  // Say why it never connected: an Obsidian whose Electron is too old for this Playwright
+  // (1.5.8's Electron 28 with Playwright 1.64) fails here.
+  if (browser === undefined) {
+    throw new Error(`Obsidian over CDP never connected: ${last instanceof Error ? last.message : String(last)}`);
+  }
+  const context = must(browser.contexts()[0], "Obsidian's window");
   const page = context.pages()[0] ?? (await context.waitForEvent("page"));
-  const s: Session = { child, browser: must(browser, "browser"), page, base, vault, nexus, dialogs: 0, requests: [] };
+  const s: Session = { child, browser, page, base, vault, nexus, dialogs: 0, requests: [] };
   page.on("dialog", (d) => {
     s.dialogs++;
     void d.dismiss();

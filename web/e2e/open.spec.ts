@@ -357,16 +357,35 @@ test.describe("open", () => {
     const stage = page.locator(".onx-stage");
     const caption = page.getByRole("region", { name: "Present" });
     await expect(caption).toBeVisible();
-    await page.waitForTimeout(800);
-    const start = await stage.evaluate((e) => e.style.transform);
+    const transform = (): Promise<string> => stage.evaluate((e) => e.style.transform);
+    // Settled: the camera hasn't moved for 300 ms (and, after the key, has left `from`).
+    const settle = async (from?: string): Promise<string> => {
+      let at = "";
+      await expect
+        .poll(
+          async () => {
+            at = await transform();
+            await page.waitForTimeout(300);
+            return at === (await transform()) && at !== from;
+          },
+          { timeout: 10_000 },
+        )
+        .toBe(true);
+      return at;
+    };
+    const start = await settle();
+    // Every view the camera draws on the way, whenever its frames come: a loaded runner
+    // can start the flight late (CI saw no frame 250 ms after the key).
+    await stage.evaluate((e) => {
+      const seen: string[] = [];
+      (window as unknown as { seen: string[] }).seen = seen;
+      new MutationObserver(() => seen.push(e.style.transform)).observe(e, { attributeFilter: ["style"] });
+    });
     await page.keyboard.press("ArrowRight");
-    // Partway through the flight the camera is between the two views.
-    await page.waitForTimeout(250);
-    const mid = await stage.evaluate((e) => e.style.transform);
-    await page.waitForTimeout(700);
-    const end = await stage.evaluate((e) => e.style.transform);
-    expect(mid).not.toBe(start);
-    expect(mid).not.toBe(end);
+    const end = await settle(start);
+    const seen = await page.evaluate(() => (window as unknown as { seen: string[] }).seen);
+    // Partway through the flight the camera was between the two views.
+    expect(seen.filter((v) => v !== start && v !== end).length).toBeGreaterThan(0);
   });
 });
 
