@@ -21,7 +21,7 @@ jobs:
     env:
       # The tests that time themselves: `Test packages` skips them, `Timing tests` runs them.
       TIMED: >-
-        \.(PerformanceTests|ScalePerformanceTests|MathPerformanceTests)/|GuideTests/matchingBudgets|StarterGalleryTests/pickerAndCreateAreFast|CollabTests/keyToCaretWithTwoPeopleTyping|VoiceOverTreeTests/largeMapsCostNothingUntilRead|SyncTests/typingStaysFastWhileALibrarySyncs
+        \.(PerformanceTests|ScalePerformanceTests|MathPerformanceTests)/|GuideTests/matchingBudgets|StarterGalleryTests/pickerAndCreateAreFast|CollabTests/keyToCaretWithTwoPeopleTyping|VoiceOverTreeTests/largeMapsCostNothingUntilRead|SyncTests/typingStaysFastWhileALibrarySyncs|PresentMotionTests/flyToFrameTimes|SceneBoundsTests/boundsCostLessThanLayingOutTheRelationships|MathCorpusTests/warmRenderIsFast|GanttTests/thousandTasksLayOutQuickly|HTMLExportTests/aThousandTopicsExportInUnderASecond
     steps:
       - uses: actions/checkout@v7
 
