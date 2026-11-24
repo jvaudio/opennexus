@@ -857,7 +857,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -883,7 +883,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -901,7 +901,7 @@
 				CURRENT_PROJECT_VERSION = "1";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.nexus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -925,7 +925,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.OpenNexusNet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -951,7 +951,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.SpotlightImporter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -977,7 +977,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookThumbnail;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1001,7 +1001,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.OpenNexusNet;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1027,7 +1027,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.SpotlightImporter;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1077,7 +1077,7 @@
 				CURRENT_PROJECT_VERSION = "1";
 				ENABLE_HARDENED_RUNTIME = YES;
 				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.nexus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1127,7 +1127,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Share;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1153,7 +1153,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookThumbnail;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1179,7 +1179,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookPreview;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1211,7 +1211,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -1237,7 +1237,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.Widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1263,7 +1263,7 @@
 					"@executable_path/../Frameworks",
 					"@executable_path/../../../../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.QuickLookPreview;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1295,7 +1295,7 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -1316,7 +1316,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.UITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
@@ -1338,7 +1338,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/../Frameworks",
 				);
-				MARKETING_VERSION = "0.3";
+				MARKETING_VERSION = "0.4";
 				PRODUCT_BUNDLE_IDENTIFIER = com.opennexus.OpenNexus.UITests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SKIP_INSTALL = YES;
